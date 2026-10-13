@@ -407,8 +407,8 @@ export default function ServicesPage() {
                 {/* Content Column (Span 7) */}
                 <ScrollReveal
                   direction={isReverse ? "right" : "left"}
-                  className={`lg:col-span-7 flex flex-col justify-between ${
-                    isReverse ? "lg:order-2" : ""
+                  className={`lg:col-span-7 flex flex-col justify-between order-2 ${
+                    isReverse ? "lg:order-2" : "lg:order-1"
                   }`}
                 >
                   <div className="space-y-6">
@@ -505,7 +505,9 @@ export default function ServicesPage() {
                 {/* Visual & Deliverables Column (Span 5 - Perfectly Balanced) */}
                 <ScrollReveal
                   direction={isReverse ? "left" : "right"}
-                  className={`lg:col-span-5 h-full ${isReverse ? "lg:order-1" : ""}`}
+                  className={`lg:col-span-5 h-full order-1 ${
+                    isReverse ? "lg:order-1" : "lg:order-2"
+                  }`}
                 >
                   <SpotlightCard className="h-full">
                     <div className="p-5 md:p-6 flex flex-col justify-between h-full space-y-5">

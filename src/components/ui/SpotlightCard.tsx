@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useState, MouseEvent, ReactNode } from "react";
-import { motion } from "framer-motion";
+import { useRef, MouseEvent, ReactNode } from "react";
 
 interface SpotlightCardProps {
   children: ReactNode;
@@ -17,40 +16,46 @@ export default function SpotlightCard({
   borderColor = "rgba(242, 101, 34, 0.45)",
 }: SpotlightCardProps) {
   const divRef = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [opacity, setOpacity] = useState(0);
+  const spotlightRef = useRef<HTMLDivElement>(null);
 
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (!divRef.current) return;
     const rect = divRef.current.getBoundingClientRect();
-    setPosition({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    divRef.current.style.setProperty("--mouse-x", `${x}px`);
+    divRef.current.style.setProperty("--mouse-y", `${y}px`);
   };
 
-  const handleMouseEnter = () => setOpacity(1);
-  const handleMouseLeave = () => setOpacity(0);
+  const handleMouseEnter = () => {
+    if (spotlightRef.current) {
+      spotlightRef.current.style.opacity = "1";
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (spotlightRef.current) {
+      spotlightRef.current.style.opacity = "0";
+    }
+  };
 
   return (
-    <motion.div
+    <div
       ref={divRef}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
-      className={`relative rounded-2xl overflow-hidden p-[1px] transition-all group ${className}`}
+      className={`relative rounded-2xl overflow-hidden p-[1px] transition-transform duration-200 hover:-translate-y-1 group will-change-transform ${className}`}
       style={{
-        background: `radial-gradient(400px circle at ${position.x}px ${position.y}px, ${borderColor}, transparent 65%)`,
+        background: `radial-gradient(400px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), ${borderColor}, transparent 65%)`,
       }}
     >
       {/* Background radial spotlight on inner surface */}
       <div
-        className="pointer-events-none absolute inset-0 z-10 transition-opacity duration-300 rounded-2xl"
+        ref={spotlightRef}
+        className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-opacity duration-300 rounded-2xl"
         style={{
-          opacity,
-          background: `radial-gradient(350px circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 80%)`,
+          background: `radial-gradient(350px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), ${spotlightColor}, transparent 80%)`,
         }}
       />
 
@@ -58,6 +63,6 @@ export default function SpotlightCard({
       <div className="relative z-0 h-full w-full rounded-2xl bg-white dark:bg-[#16162c] border border-gray-100 dark:border-white/10 group-hover:border-transparent transition-colors overflow-hidden">
         {children}
       </div>
-    </motion.div>
+    </div>
   );
 }
