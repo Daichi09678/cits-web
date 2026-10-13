@@ -200,6 +200,7 @@ const workProcess = [
     subtitle: "Inisiasi Strategis",
     description:
       "Diskusi mendalam mengenai target institusi, batasan operasional, regulasi kepatuhan, dan sasaran transformasi digital yang ingin dicapai.",
+    icon: FileText,
   },
   {
     step: "02",
@@ -207,6 +208,7 @@ const workProcess = [
     subtitle: "Blueprint Sistem",
     description:
       "Penyusunan arsitektur teknis terpadu, rancangan antarmuka pengguna (UI/UX), skema basis data, dan pemilihan tumpukan teknologi yang optimal.",
+    icon: Layers,
   },
   {
     step: "03",
@@ -214,6 +216,7 @@ const workProcess = [
     subtitle: "Implementasi Mutu",
     description:
       "Penulisan kode bersih (clean code) berstandar modern, integrasi microservices, serta pengujian fungsional dan pengujian kerentanan keamanan siber.",
+    icon: Code2,
   },
   {
     step: "04",
@@ -221,6 +224,7 @@ const workProcess = [
     subtitle: "Deployment Mandiri",
     description:
       "Peluncuran sistem ke lingkungan produksi, migrasi data historis, dokumentasi teknis lengkap, serta pelatihan intensif bagi aparatur pengelola.",
+    icon: Boxes,
   },
   {
     step: "05",
@@ -228,6 +232,7 @@ const workProcess = [
     subtitle: "Kemitraan Berkelanjutan",
     description:
       "Pendampingan operasional berkala, pemantauan kesehatan server secara real-time, dan tim tanggap insiden siap siaga menjamin kelancaran layanan.",
+    icon: Clock,
   },
 ];
 
@@ -236,7 +241,7 @@ const qualityStandards = [
     title: "Kepatuhan Regulasi SPBE",
     description:
       "Seluruh rekayasa sistem dirancang selaras dengan kerangka kerja Sistem Pemerintahan Berbasis Elektronik (SPBE) untuk interoperabilitas nasional.",
-    icon: Building2,
+    icon: FileCheck,
   },
   {
     title: "Keamanan Siber Teruji",
@@ -322,8 +327,8 @@ export default function ServicesPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <ScrollReveal>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-100 dark:bg-orange-950/70 text-orange-900 dark:text-orange-200 border border-orange-300 dark:border-orange-800/80 text-xs font-bold tracking-wide uppercase shadow-sm mb-4">
-                <Sparkles className="w-3.5 h-3.5 text-orange-700 dark:text-orange-400" aria-hidden="true" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 dark:bg-orange-500/15 text-orange-950 dark:text-orange-200 border border-orange-200/90 dark:border-orange-500/30 text-xs font-bold tracking-wide uppercase shadow-sm mb-4">
+                <Sparkles className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" aria-hidden="true" />
                 <span>Katalog Resmi Layanan CITS Indonesia • Standar IDDS & SPBE</span>
               </div>
               <h1
@@ -366,7 +371,7 @@ export default function ServicesPage() {
                 </a>
                 <a
                   href="#alur-kerja"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-orange-900 dark:text-orange-200 border border-orange-200/90 dark:border-orange-800/60 hover:bg-orange-100 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-50 dark:bg-orange-500/15 text-orange-950 dark:text-orange-200 border border-orange-200/90 dark:border-orange-500/30 hover:bg-orange-100 dark:hover:bg-orange-500/25 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                 >
                   <Zap className="w-4 h-4 text-orange-600 dark:text-orange-400" aria-hidden="true" />
                   <span>Alur Metodologi</span>
@@ -413,7 +418,7 @@ export default function ServicesPage() {
                 >
                   <div className="space-y-6">
                     <div className="flex items-center gap-2.5">
-                      <span className="text-xs font-bold text-orange-900 dark:text-orange-200 bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 px-3 py-1 rounded-full uppercase tracking-wider">
+                      <span className="text-xs font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/90 dark:border-orange-500/30 px-3 py-1 rounded-full uppercase tracking-wider">
                         {service.badge}
                       </span>
                       <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -473,9 +478,9 @@ export default function ServicesPage() {
                         {service.caseStudies.map((cs) => (
                           <span
                             key={cs}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-900 dark:text-orange-200 bg-orange-50 dark:bg-orange-950/50 border border-orange-200 dark:border-orange-800/60 px-2.5 py-1 rounded-md"
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/80 dark:border-orange-500/30 px-2.5 py-1 rounded-md"
                           >
-                            <Check className="w-3.5 h-3.5 text-orange-700 dark:text-orange-400" aria-hidden="true" />
+                            <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" aria-hidden="true" />
                             <span>{cs}</span>
                           </span>
                         ))}
@@ -549,12 +554,12 @@ export default function ServicesPage() {
                       </div>
 
                       {/* Service SLA Chip */}
-                      <div className="p-3.5 rounded-xl bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-900/40 flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0">
-                          <ShieldCheck className="w-4 h-4" aria-hidden="true" />
+                      <div className="p-3.5 rounded-xl bg-orange-50/80 dark:bg-orange-500/10 border border-orange-200/80 dark:border-orange-500/30 flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-orange-600/20">
+                          <ShieldCheck className="w-4 h-4 text-white" aria-hidden="true" />
                         </div>
                         <div className="min-w-0">
-                          <span className="block text-xs font-bold text-orange-900 dark:text-orange-200">
+                          <span className="block text-xs font-bold text-orange-950 dark:text-orange-200">
                             {service.slaNote}
                           </span>
                           <span className="block text-[11px] text-slate-600 dark:text-slate-400">
@@ -581,7 +586,7 @@ export default function ServicesPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-14">
-              <span className="inline-block text-xs font-bold text-orange-900 dark:text-orange-200 bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
+              <span className="inline-block text-xs font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/90 dark:border-orange-500/30 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
                 Metodologi Profesional
               </span>
               <h2
@@ -600,6 +605,7 @@ export default function ServicesPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 items-stretch">
             {workProcess.map((p, i) => {
               const isLastOnTablet = i === 4;
+              const ProcessIcon = p.icon;
               return (
                 <ScrollReveal
                   key={p.step}
@@ -610,11 +616,12 @@ export default function ServicesPage() {
                     <article className="p-6 h-full flex flex-col justify-between">
                       <div className="w-full">
                         <div className="flex items-center justify-between mb-4">
-                          <span className="w-12 h-12 rounded-xl bg-orange-600 text-white font-extrabold text-lg flex items-center justify-center shadow-md shadow-orange-600/20 shrink-0">
+                          <span className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white font-extrabold text-lg flex items-center justify-center shadow-md shadow-orange-600/25 shrink-0">
                             {p.step}
                           </span>
-                          <span className="text-[11px] font-bold text-orange-900 dark:text-orange-200 bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 px-2.5 py-1 rounded-md uppercase">
-                            Fase #{i + 1}
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200 dark:border-orange-500/30 px-2.5 py-1 rounded-md uppercase">
+                            <ProcessIcon className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 shrink-0" aria-hidden="true" />
+                            <span>Fase #{i + 1}</span>
                           </span>
                         </div>
 
@@ -624,7 +631,7 @@ export default function ServicesPage() {
                         </h3>
 
                         {/* Subtitle Slot (Normalized height) */}
-                        <span className="inline-block text-xs font-semibold text-orange-800 dark:text-orange-400 mt-1 mb-2 min-h-[20px]">
+                        <span className="inline-block text-xs font-semibold text-orange-800 dark:text-orange-300 mt-1 mb-2 min-h-[20px]">
                           {p.subtitle}
                         </span>
 
@@ -635,8 +642,8 @@ export default function ServicesPage() {
                       </div>
 
                       {/* Footer Badge (Normalized baseline) */}
-                      <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-400">
-                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                      <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
                         <span>Standar Mutu Terverifikasi</span>
                       </div>
                     </article>
@@ -656,7 +663,7 @@ export default function ServicesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-14">
-              <span className="inline-block text-xs font-bold text-orange-900 dark:text-orange-200 bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
+              <span className="inline-block text-xs font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/90 dark:border-orange-500/30 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
                 Keandalan Layanan
               </span>
               <h2
@@ -679,8 +686,8 @@ export default function ServicesPage() {
                 <ScrollReveal key={item.title} delay={idx * 0.08} className="h-full">
                   <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-slate-200 dark:border-white/10 hover:border-orange-500/40 transition-all shadow-xs h-full flex flex-col justify-between">
                     <div>
-                      <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 flex items-center justify-center text-orange-700 dark:text-orange-400 mb-4 shadow-xs">
-                        <Icon className="w-6 h-6" aria-hidden="true" />
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center mb-4 shadow-md shadow-orange-600/25 shrink-0">
+                        <Icon className="w-6 h-6 text-white" aria-hidden="true" />
                       </div>
                       <h3 className="font-bold text-slate-900 dark:text-white text-base min-h-[44px] flex items-center">
                         {item.title}
@@ -690,8 +697,8 @@ export default function ServicesPage() {
                       </p>
                     </div>
 
-                    <div className="mt-6 pt-3 border-t border-slate-200 dark:border-white/10 flex items-center gap-1.5 text-[11px] font-semibold text-orange-800 dark:text-orange-400">
-                      <Award className="w-3.5 h-3.5" aria-hidden="true" />
+                    <div className="mt-6 pt-3 border-t border-slate-200 dark:border-white/10 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                      <Award className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
                       <span>Sesuai Regulasi Nasional</span>
                     </div>
                   </div>
@@ -711,7 +718,7 @@ export default function ServicesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-14">
-              <span className="inline-block text-xs font-bold text-orange-900 dark:text-orange-200 bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
+              <span className="inline-block text-xs font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/90 dark:border-orange-500/30 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
                 Transparansi Pengadaan
               </span>
               <h2
@@ -737,10 +744,10 @@ export default function ServicesPage() {
                       <div>
                         {/* Header badge & icon */}
                         <div className="flex items-center justify-between mb-4">
-                          <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 flex items-center justify-center text-orange-700 dark:text-orange-400 shadow-xs shrink-0">
-                            <IconModel className="w-6 h-6" aria-hidden="true" />
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-md shadow-orange-600/25 shrink-0">
+                            <IconModel className="w-6 h-6 text-white" aria-hidden="true" />
                           </div>
-                          <span className="text-[11px] font-bold text-orange-900 dark:text-orange-200 bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 px-2.5 py-1 rounded-md uppercase">
+                          <span className="text-[11px] font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200 dark:border-orange-500/30 px-2.5 py-1 rounded-md uppercase">
                             {model.badge}
                           </span>
                         </div>
@@ -804,7 +811,7 @@ export default function ServicesPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
             <div className="p-8 md:p-14 rounded-3xl bg-gradient-to-br from-white via-orange-50/40 to-white dark:from-[#181830] dark:via-[#1F1712] dark:to-[#181830] border border-orange-200/80 dark:border-orange-900/40 shadow-xl">
-              <span className="inline-block text-xs font-bold text-orange-900 dark:text-orange-200 bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 px-3.5 py-1 rounded-full uppercase tracking-wider mb-4">
+              <span className="inline-block text-xs font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/90 dark:border-orange-500/30 px-3.5 py-1 rounded-full uppercase tracking-wider mb-4">
                 Konsultasi & Solusi Kustom
               </span>
               <h2
