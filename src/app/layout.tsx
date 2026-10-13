@@ -25,6 +25,8 @@ export const metadata: Metadata = {
   },
 };
 
+import ClientLayoutWrapper from "@/components/ClientLayoutWrapper";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,11 +35,7 @@ export default function RootLayout({
   return (
     <html lang="id" className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
       <body className="min-h-screen flex flex-col" suppressHydrationWarning>
-        {/* <AccessGate> */}
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        {/* </AccessGate> */}
+        <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
       </body>
     </html>
   );

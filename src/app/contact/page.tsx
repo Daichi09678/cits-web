@@ -26,6 +26,7 @@ import GridPattern from "@/components/ui/GridPattern";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import CustomSelect from "@/components/ui/CustomSelect";
+import { useCitsStore } from "@/database/store";
 
 const serviceOptions = [
   "Pengembangan Perangkat Lunak (Software House)",
@@ -60,10 +61,18 @@ const faqs = [
 ];
 
 export default function ContactPage() {
+  const { contactInfo, actions } = useCitsStore();
   const [submitted, setSubmitted] = useState(false);
   const [selectedService, setSelectedService] = useState("");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+
+  // Form input states
+  const [formName, setFormName] = useState("");
+  const [formCompany, setFormCompany] = useState("");
+  const [formEmail, setFormEmail] = useState("");
+  const [formPhone, setFormPhone] = useState("");
+  const [formMessage, setFormMessage] = useState("");
 
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
@@ -165,10 +174,8 @@ export default function ContactPage() {
                       <h4 className="font-bold text-dark dark:text-white text-sm">
                         Alamat Kantor Operasional
                       </h4>
-                      <p className="mt-1 text-xs md:text-sm text-gray-700 dark:text-white/85 leading-relaxed">
-                        Gedung Wisma Mampang, Lantai 5<br />
-                        Jl. Mampang Prapatan No. 1<br />
-                        Jakarta Selatan 12790, DKI Jakarta
+                      <p className="mt-1 text-xs md:text-sm text-gray-700 dark:text-white/85 leading-relaxed whitespace-pre-line">
+                        {contactInfo?.address || "Gedung Wisma Mampang, Lantai 5\nJl. Mampang Prapatan No. 1\nJakarta Selatan 12790, DKI Jakarta"}
                       </p>
                     </div>
                   </div>
@@ -187,7 +194,7 @@ export default function ContactPage() {
                         </h4>
                         <button
                           type="button"
-                          onClick={() => handleCopy("02139719677", "phone")}
+                          onClick={() => handleCopy(contactInfo?.phone || "(021) 39719677", "phone")}
                           className="inline-flex items-center gap-1 text-[11px] font-semibold text-orange-800 dark:text-orange-300 hover:text-orange-900 bg-orange-100/70 dark:bg-orange-950/50 px-2 py-0.5 rounded transition-colors"
                           title="Salin nomor telepon"
                         >
@@ -205,13 +212,13 @@ export default function ContactPage() {
                         </button>
                       </div>
                       <a
-                        href="tel:02139719677"
+                        href={`tel:${(contactInfo?.phone || "02139719677").replace(/[^0-9]/g, "")}`}
                         className="mt-1 inline-block text-xs md:text-sm text-orange-700 dark:text-orange-400 font-bold hover:underline"
                       >
-                        (021) 39719677
+                        {contactInfo?.phone || "(021) 39719677"}
                       </a>
                       <span className="block mt-0.5 text-[11px] text-gray-700 dark:text-white/70">
-                        Senin – Jumat (08.30 – 17.30 WIB)
+                        {contactInfo?.workingHours || "Senin – Jumat (08.30 – 17.30 WIB)"}
                       </span>
                     </div>
                   </div>
@@ -230,7 +237,7 @@ export default function ContactPage() {
                         </h4>
                         <button
                           type="button"
-                          onClick={() => handleCopy("info@citsindonesia.co.id", "email")}
+                          onClick={() => handleCopy(contactInfo?.email || "info@citsindonesia.co.id", "email")}
                           className="inline-flex items-center gap-1 text-[11px] font-semibold text-orange-800 dark:text-orange-300 hover:text-orange-900 bg-orange-100/70 dark:bg-orange-950/50 px-2 py-0.5 rounded transition-colors"
                           title="Salin alamat email"
                         >
@@ -248,10 +255,10 @@ export default function ContactPage() {
                         </button>
                       </div>
                       <a
-                        href="mailto:info@citsindonesia.co.id"
+                        href={`mailto:${contactInfo?.email || "info@citsindonesia.co.id"}`}
                         className="mt-1 inline-block text-xs md:text-sm text-orange-700 dark:text-orange-400 font-bold hover:underline break-all"
                       >
-                        info@citsindonesia.co.id
+                        {contactInfo?.email || "info@citsindonesia.co.id"}
                       </a>
                       <span className="block mt-0.5 text-[11px] text-gray-700 dark:text-white/70">
                         Untuk penawaran, KAK, dan surat dinas
@@ -342,7 +349,20 @@ export default function ContactPage() {
                         <form
                           onSubmit={(e) => {
                             e.preventDefault();
+                            actions.addMessage({
+                              name: formName,
+                              company: formCompany,
+                              email: formEmail,
+                              phone: formPhone,
+                              serviceRequested: selectedService || "Umum / Konsultasi TI",
+                              message: formMessage,
+                            });
                             setSubmitted(true);
+                            setFormName("");
+                            setFormCompany("");
+                            setFormEmail("");
+                            setFormPhone("");
+                            setFormMessage("");
                           }}
                           className="space-y-4 sm:space-y-5"
                         >
@@ -364,6 +384,8 @@ export default function ContactPage() {
                                   name="nama"
                                   type="text"
                                   required
+                                  value={formName}
+                                  onChange={(e) => setFormName(e.target.value)}
                                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
                                   placeholder="cth. Ir. Budi Santoso"
                                 />
@@ -386,6 +408,8 @@ export default function ContactPage() {
                                   name="instansi"
                                   type="text"
                                   required
+                                  value={formCompany}
+                                  onChange={(e) => setFormCompany(e.target.value)}
                                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
                                   placeholder="cth. Kementerian / BUMN / PT"
                                 />
@@ -411,6 +435,8 @@ export default function ContactPage() {
                                   name="email"
                                   type="email"
                                   required
+                                  value={formEmail}
+                                  onChange={(e) => setFormEmail(e.target.value)}
                                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
                                   placeholder="nama@instansi.go.id"
                                 />
@@ -433,6 +459,8 @@ export default function ContactPage() {
                                   name="telepon"
                                   type="tel"
                                   required
+                                  value={formPhone}
+                                  onChange={(e) => setFormPhone(e.target.value)}
                                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
                                   placeholder="0812-xxxx-xxxx"
                                 />
@@ -469,6 +497,8 @@ export default function ContactPage() {
                               name="pesan"
                               required
                               rows={4}
+                              value={formMessage}
+                              onChange={(e) => setFormMessage(e.target.value)}
                               className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all resize-none text-sm"
                               placeholder="Jelaskan gambaran inisiatif sistem, sasaran instansi, atau jadwal target yang ingin dicapai..."
                             />

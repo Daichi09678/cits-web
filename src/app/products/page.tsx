@@ -33,6 +33,28 @@ import GradientText from "@/components/ui/GradientText";
 import GridPattern from "@/components/ui/GridPattern";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
+import { useCitsStore } from "@/database/store";
+
+const iconMap: Record<string, any> = {
+  Truck,
+  Package,
+  FileText,
+  Map,
+  MessageSquare,
+  Globe,
+  Smartphone,
+  BarChart3,
+};
+
+function getProductIcon(icon: any) {
+  if (typeof icon === "function" || (typeof icon === "object" && icon !== null && "$$typeof" in icon)) {
+    return icon;
+  }
+  if (typeof icon === "string" && iconMap[icon]) {
+    return iconMap[icon];
+  }
+  return Package;
+}
 
 export interface ProductItem {
   id: string;
@@ -43,17 +65,18 @@ export interface ProductItem {
   version: string;
   tagline: string;
   description: string;
-  icon: typeof Truck;
+  icon: any;
   features: string[];
-  techStack: string[];
-  specifications: {
+  techStack?: string[];
+  specifications?: {
     deployment: string;
     architecture: string;
     security: string;
     integration: string;
   };
-  modules: string[];
-  idealFor: string;
+  modules?: string[];
+  idealFor?: string;
+  isActive?: boolean;
 }
 
 const categories = [
@@ -407,13 +430,18 @@ const licensingModels = [
 ];
 
 export default function ProductsPage() {
+  const { products: storeProducts } = useCitsStore();
   const [selectedCategory, setSelectedCategory] = useState<string>("Semua Produk");
-  const [activeModalProduct, setActiveModalProduct] = useState<ProductItem | null>(null);
+  const [activeModalProduct, setActiveModalProduct] = useState<any | null>(null);
+
+  // Fallback to static products list if store is still loading or empty, and filter out inactive items
+  const productSource = storeProducts && storeProducts.length > 0 ? storeProducts : products;
+  const activeProducts = productSource.filter((p: any) => p.isActive !== false);
 
   const filteredProducts =
     selectedCategory === "Semua Produk"
-      ? products
-      : products.filter((p) => p.category === selectedCategory);
+      ? activeProducts
+      : activeProducts.filter((p: any) => p.category === selectedCategory);
 
   return (
     <main id="main-content" className="min-h-screen">
@@ -507,8 +535,8 @@ export default function ProductsPage() {
           </h2>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
-            {filteredProducts.map((product, i) => {
-              const Icon = product.icon;
+            {filteredProducts.map((product: any, i: number) => {
+              const Icon = getProductIcon(product.icon);
 
               return (
                 <ScrollReveal
@@ -564,7 +592,7 @@ export default function ProductsPage() {
                               Fitur & Kapabilitas Inti:
                             </h4>
                             <ul className="space-y-1.5">
-                              {product.features.map((feat) => (
+                              {product.features?.map((feat: string) => (
                                 <li
                                   key={feat}
                                   className="flex items-start gap-2 text-xs text-gray-800 dark:text-white/90 leading-tight"
@@ -583,7 +611,7 @@ export default function ProductsPage() {
                                 Model Deployment:
                               </span>
                               <span className="block font-semibold text-dark dark:text-white mt-0.5 line-clamp-1">
-                                {product.specifications.deployment.split("/")[0]}
+                                {product.specifications?.deployment ? product.specifications.deployment.split("/")[0] : "Enterprise Cloud"}
                               </span>
                             </div>
                             <div className="p-2.5 rounded-lg bg-slate-100/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10">
@@ -591,7 +619,7 @@ export default function ProductsPage() {
                                 Standar Keamanan:
                               </span>
                               <span className="block font-semibold text-dark dark:text-white mt-0.5 line-clamp-1">
-                                {product.specifications.security.split("&")[0]}
+                                {product.specifications?.security ? product.specifications.security.split("&")[0] : "TLS 1.3 & Auth"}
                               </span>
                             </div>
                           </div>
@@ -602,7 +630,7 @@ export default function ProductsPage() {
                               Modul Sistem yang Disertakan:
                             </span>
                             <div className="flex flex-wrap gap-1.5">
-                              {product.modules.slice(0, 3).map((m) => (
+                              {product.modules?.slice(0, 3).map((m: string) => (
                                 <span
                                   key={m}
                                   className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white border border-gray-200 dark:border-white/15"
@@ -610,7 +638,7 @@ export default function ProductsPage() {
                                   {m}
                                 </span>
                               ))}
-                              {product.modules.length > 3 && (
+                              {product.modules && product.modules.length > 3 && (
                                 <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/10 text-gray-600 dark:text-white/70">
                                   +{product.modules.length - 3} modul
                                 </span>
@@ -838,7 +866,7 @@ export default function ProductsPage() {
               <div className="flex items-center gap-4 pr-10">
                 <div className="w-14 h-14 rounded-2xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0">
                   {(() => {
-                    const ModalIcon = activeModalProduct.icon;
+                    const ModalIcon = getProductIcon(activeModalProduct.icon);
                     return <ModalIcon className="w-7 h-7" />;
                   })()}
                 </div>
@@ -919,7 +947,7 @@ export default function ProductsPage() {
                   Daftar Modul Sistem yang Disertakan:
                 </span>
                 <div className="grid sm:grid-cols-2 gap-2">
-                  {activeModalProduct.modules.map((m) => (
+                  {activeModalProduct.modules?.map((m: string) => (
                     <div
                       key={m}
                       className="flex items-center gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-[#121222] border border-gray-200/80 dark:border-white/10 text-xs text-gray-800 dark:text-white/90"

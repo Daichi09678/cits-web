@@ -32,6 +32,7 @@ import GradientText from "@/components/ui/GradientText";
 import GridPattern from "@/components/ui/GridPattern";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
+import { useCitsStore } from "@/database/store";
 
 interface ValueItem {
   letter: string;
@@ -357,6 +358,7 @@ const governancePillars: GovernancePillar[] = [
 ];
 
 export default function AboutPage() {
+  const { aboutData } = useCitsStore();
   const [awardFilter, setAwardFilter] = useState<"all" | "kementerian" | "bumn" | "egov">("all");
 
   const filteredAwards =
@@ -391,18 +393,23 @@ export default function AboutPage() {
               </ScrollReveal>
 
               <ScrollReveal delay={0.1}>
-                <p className="text-slate-700 dark:text-slate-200 text-base md:text-lg leading-relaxed">
-                  <strong className="text-slate-900 dark:text-white font-semibold">
-                    Cipta Integrasi Teknologi Solusi Indonesia (CITS Indonesia)
-                  </strong>{" "}
-                  adalah mitra rekayasa perangkat lunak dan arsitektur data enterprise terpercaya yang telah mendampingi kementerian, lembaga tinggi negara, BUMN, dan korporasi terkemuka sejak tahun 2006.
-                </p>
-              </ScrollReveal>
-
-              <ScrollReveal delay={0.2}>
-                <p className="text-slate-700 dark:text-slate-200 text-sm md:text-base leading-relaxed">
-                  Lahir dari komitmen penguatan ekosistem teknologi nasional, CITS memadukan standar ketat tata kelola pemerintahan digital (SPBE) dengan agilitas rekayasa modern. Pendekatan kami tidak hanya berfokus pada penulisan kode, melainkan perancangan arsitektur kesisteman yang aman, interoperabel, dan berdaya guna jangka panjang bagi efisiensi pelayanan publik Indonesia.
-                </p>
+                {aboutData?.story ? (
+                  <p className="text-slate-700 dark:text-slate-200 text-base md:text-lg leading-relaxed whitespace-pre-line">
+                    {aboutData.story}
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-slate-700 dark:text-slate-200 text-base md:text-lg leading-relaxed">
+                      <strong className="text-slate-900 dark:text-white font-semibold">
+                        Cipta Integrasi Teknologi Solusi Indonesia (CITS Indonesia)
+                      </strong>{" "}
+                      adalah mitra rekayasa perangkat lunak dan arsitektur data enterprise terpercaya yang telah mendampingi kementerian, lembaga tinggi negara, BUMN, dan korporasi terkemuka sejak tahun 2006.
+                    </p>
+                    <p className="mt-4 text-slate-700 dark:text-slate-200 text-sm md:text-base leading-relaxed">
+                      Lahir dari komitmen penguatan ekosistem teknologi nasional, CITS memadukan standar ketat tata kelola pemerintahan digital (SPBE) dengan agilitas rekayasa modern. Pendekatan kami tidak hanya berfokus pada penulisan kode, melainkan perancangan arsitektur kesisteman yang aman, interoperabel, dan berdaya guna jangka panjang bagi efisiensi pelayanan publik Indonesia.
+                    </p>
+                  </>
+                )}
               </ScrollReveal>
 
               {/* 4 Credential Badges (High Contrast WCAG AA) */}
@@ -454,41 +461,27 @@ export default function AboutPage() {
 
                     {/* 4 Key Statistics Cards (Symmetrical 2x2 Grid) */}
                     <div className="grid grid-cols-2 gap-3.5" role="region" aria-label="Statistik Kunci Perusahaan">
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 text-center">
-                        <span className="block text-2xl md:text-3xl font-extrabold text-orange-700 dark:text-orange-400">
-                          2006
-                        </span>
-                        <span className="block mt-1 text-xs text-slate-700 dark:text-slate-300 font-medium">
-                          Tahun Berdiri
-                        </span>
-                      </div>
-
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 text-center">
-                        <span className="block text-2xl md:text-3xl font-extrabold text-orange-700 dark:text-orange-400">
-                          50+
-                        </span>
-                        <span className="block mt-1 text-xs text-slate-700 dark:text-slate-300 font-medium">
-                          Proyek Nasional
-                        </span>
-                      </div>
-
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 text-center">
-                        <span className="block text-2xl md:text-3xl font-extrabold text-orange-700 dark:text-orange-400">
-                          15+
-                        </span>
-                        <span className="block mt-1 text-xs text-slate-700 dark:text-slate-300 font-medium">
-                          Kementerian & BUMN
-                        </span>
-                      </div>
-
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 text-center">
-                        <span className="block text-2xl md:text-3xl font-extrabold text-orange-700 dark:text-orange-400">
-                          FOCUS
-                        </span>
-                        <span className="block mt-1 text-xs text-slate-700 dark:text-slate-300 font-medium">
-                          Prinsip Kerja
-                        </span>
-                      </div>
+                      {(aboutData?.stats && aboutData.stats.length >= 4
+                        ? aboutData.stats.slice(0, 4)
+                        : [
+                            { value: "2006", label: "Tahun Berdiri" },
+                            { value: "50+", label: "Proyek Nasional" },
+                            { value: "15+", label: "Kementerian & BUMN" },
+                            { value: "FOCUS", label: "Prinsip Kerja" },
+                          ]
+                      ).map((st, idx) => (
+                        <div
+                          key={idx}
+                          className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 text-center"
+                        >
+                          <span className="block text-2xl md:text-3xl font-extrabold text-orange-700 dark:text-orange-400">
+                            {st.value}
+                          </span>
+                          <span className="block mt-1 text-xs text-slate-700 dark:text-slate-300 font-medium">
+                            {st.label}
+                          </span>
+                        </div>
+                      ))}
                     </div>
 
                     {/* Symmetrical Action Buttons */}
@@ -555,7 +548,7 @@ export default function AboutPage() {
                     Visi CITS Indonesia
                   </h3>
                   <blockquote className="text-white/95 text-base md:text-lg leading-relaxed font-medium border-l-4 border-white/40 pl-4 my-6 italic">
-                    &ldquo;Menjadi aset bangsa yang mampu bersaing di pasar dunia, sebagai penyedia solusi integral proses bisnis berbasis teknologi informasi yang terpercaya, adaptif, dan berkelanjutan.&rdquo;
+                    &ldquo;{aboutData?.vision || "Menjadi aset bangsa yang mampu bersaing di pasar dunia, sebagai penyedia solusi integral proses bisnis berbasis teknologi informasi yang terpercaya, adaptif, dan berkelanjutan."}&rdquo;
                   </blockquote>
                 </div>
 
@@ -604,47 +597,35 @@ export default function AboutPage() {
                     </p>
 
                     <div className="space-y-4">
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 flex items-start gap-4">
-                        <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-950/70 text-orange-900 dark:text-orange-200 border border-orange-300 dark:border-orange-800/80 flex items-center justify-center font-extrabold text-sm shrink-0 mt-0.5">
-                          1
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 dark:text-white text-sm">
-                            Pengembangan & Kontribusi Ekosistem TI
-                          </h4>
-                          <p className="mt-1 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                            Memberikan sumbangsih arah, merancang arsitektur mandiri, dan mendorong kematangan teknologi informasi sebagai pilar utama transformasi digital instansi negara.
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 flex items-start gap-4">
-                        <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-950/70 text-orange-900 dark:text-orange-200 border border-orange-300 dark:border-orange-800/80 flex items-center justify-center font-extrabold text-sm shrink-0 mt-0.5">
-                          2
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 dark:text-white text-sm">
-                            Solusi Integral Proses Bisnis Berbasis TI
-                          </h4>
-                          <p className="mt-1 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                            Menghadirkan platform perangkat lunak dan infrastruktur terpadu yang presisi menyelesaikan hambatan operasional, menjamin integritas data, serta meningkatkan akuntabilitas publik.
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 flex items-start gap-4">
-                        <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-950/70 text-orange-900 dark:text-orange-200 border border-orange-300 dark:border-orange-800/80 flex items-center justify-center font-extrabold text-sm shrink-0 mt-0.5">
-                          3
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-slate-900 dark:text-white text-sm">
-                            Kecerdasan Sumber Daya Multi-Dimensi
-                          </h4>
-                          <p className="mt-1 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                            Membina tenaga ahli yang tidak hanya unggul secara intelektual teknis, melainkan matang secara emosional dan berintegritas spiritual dalam setiap penugasan berintegritas tinggi.
-                          </p>
-                        </div>
-                      </div>
+                      {(aboutData?.mission || [
+                        "Pengembangan & Kontribusi Ekosistem TI: Memberikan sumbangsih arah, merancang arsitektur mandiri, dan mendorong kematangan teknologi informasi sebagai pilar utama transformasi digital instansi negara.",
+                        "Solusi Integral Proses Bisnis Berbasis TI: Menghadirkan platform perangkat lunak dan infrastruktur terpadu yang presisi menyelesaikan hambatan operasional, menjamin integritas data, serta meningkatkan akuntabilitas publik.",
+                        "Kecerdasan Sumber Daya Multi-Dimensi: Membina tenaga ahli yang tidak hanya unggul secara intelektual teknis, melainkan matang secara emosional dan berintegritas spiritual dalam setiap penugasan berintegritas tinggi."
+                      ]).map((misiItem, idx) => {
+                        const colonIdx = misiItem.indexOf(":");
+                        const title = colonIdx !== -1 ? misiItem.slice(0, colonIdx).trim() : `Pilar Misi #${idx + 1}`;
+                        const desc = colonIdx !== -1 ? misiItem.slice(colonIdx + 1).trim() : misiItem;
+                        return (
+                          <div
+                            key={idx}
+                            className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 flex items-start gap-4"
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-950/70 text-orange-900 dark:text-orange-200 border border-orange-300 dark:border-orange-800/80 flex items-center justify-center font-extrabold text-sm shrink-0 mt-0.5">
+                              {idx + 1}
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-slate-900 dark:text-white text-sm">
+                                {title}
+                              </h4>
+                              {desc && (
+                                <p className="mt-1 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+                                  {desc}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
