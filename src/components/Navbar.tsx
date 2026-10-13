@@ -10,10 +10,10 @@ import ThemeToggle from "./ThemeToggle";
 
 const navLinks = [
   { href: "/", label: "Beranda" },
-  { href: "/about", label: "Tentang Kami" },
   { href: "/services", label: "Layanan" },
   { href: "/products", label: "Produk" },
   { href: "/portfolio", label: "Portofolio" },
+  { href: "/about", label: "Tentang Kami" },
   { href: "/contact", label: "Kontak" },
 ];
 

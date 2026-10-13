@@ -17,10 +17,10 @@ export default function Footer() {
           <div>
             <h3 className="font-bold text-lg mb-3 text-dark dark:text-white">Tautan Cepat</h3>
             <ul className="space-y-2 text-sm text-gray-700 dark:text-white/85">
-              <li><Link href="/about" className="hover:text-orange-700 dark:hover:text-orange-400 transition-colors">Tentang Kami</Link></li>
               <li><Link href="/services" className="hover:text-orange-700 dark:hover:text-orange-400 transition-colors">Layanan</Link></li>
               <li><Link href="/products" className="hover:text-orange-700 dark:hover:text-orange-400 transition-colors">Produk</Link></li>
               <li><Link href="/portfolio" className="hover:text-orange-700 dark:hover:text-orange-400 transition-colors">Portofolio</Link></li>
+              <li><Link href="/about" className="hover:text-orange-700 dark:hover:text-orange-400 transition-colors">Tentang Kami</Link></li>
               <li><Link href="/contact" className="hover:text-orange-700 dark:hover:text-orange-400 transition-colors">Kontak</Link></li>
             </ul>
           </div>

@@ -399,10 +399,10 @@ export default function Home() {
             <div className="text-center mt-12">
               <Link
                 href="/services"
-                className="inline-flex items-center gap-2 px-7 py-3 rounded-xl border border-gray-200 dark:border-white/20 hover:border-orange-600 dark:hover:border-orange-400 bg-white/80 dark:bg-[#121222]/80 text-gray-800 dark:text-white hover:text-orange-700 dark:hover:text-orange-400 text-sm font-semibold transition-all shadow-sm"
+                className="group inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white text-sm font-semibold transition-all shadow-lg shadow-orange-600/25 hover:shadow-xl hover:shadow-orange-600/35 hover:-translate-y-0.5 active:translate-y-0"
               >
-                Lihat Alur Kerja & Spesifikasi Lengkap Layanan
-                <ArrowRight className="w-4 h-4" />
+                <span>Lihat Alur Kerja & Spesifikasi Lengkap Layanan</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           </ScrollReveal>
@@ -669,10 +669,10 @@ export default function Home() {
             <div className="text-center mt-14">
               <Link
                 href="/products"
-                className="inline-flex items-center gap-2 px-7 py-3 rounded-xl border border-gray-200 dark:border-white/20 hover:border-orange-600 dark:hover:border-orange-400 bg-white/80 dark:bg-[#121222]/80 text-gray-800 dark:text-white hover:text-orange-700 dark:hover:text-orange-400 text-sm font-semibold transition-all shadow-sm"
+                className="group inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white text-sm font-semibold transition-all shadow-lg shadow-orange-600/25 hover:shadow-xl hover:shadow-orange-600/35 hover:-translate-y-0.5 active:translate-y-0"
               >
-                Eksplorasi Semua 8 Solusi Produk
-                <ArrowRight className="w-4 h-4" />
+                <span>Eksplorasi Semua 8 Solusi Produk</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           </ScrollReveal>
