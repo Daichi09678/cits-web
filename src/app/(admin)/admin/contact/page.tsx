@@ -60,11 +60,12 @@ export default function AdminContactPage() {
   const unreadCount = messages.filter((m) => m.status === "unread").length;
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 flex flex-col min-w-0">
       <AdminTopbar
         title="Manajemen Hubungi Kami & Pesan"
         description="Kelola informasi kontak resmi kantor serta pantau pesan masuk dari pengunjung website"
       />
+      <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
 
       {/* Tab Navigation */}
       <div className="flex items-center gap-3 border-b border-slate-200/80 dark:border-white/10 pb-2">
@@ -330,6 +331,7 @@ export default function AdminContactPage() {
           </form>
         </div>
       )}
+      </div>
     </div>
   );
 }

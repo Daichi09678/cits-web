@@ -25,11 +25,12 @@ export default function AdminDashboardPage() {
   const unreadMessages = messages.filter((m) => m.status === "unread");
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 flex flex-col min-w-0">
       <AdminTopbar
         title="Ringkasan Back Office"
         description="Pantau dan kelola seluruh konten website Front Office CITS secara real-time"
       />
+      <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
 
       {/* Shopeers-style Top KPI Metric Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
@@ -230,6 +231,7 @@ export default function AdminDashboardPage() {
             )}
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

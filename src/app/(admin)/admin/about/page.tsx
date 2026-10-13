@@ -52,11 +52,12 @@ export default function AdminAboutPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 flex flex-col min-w-0">
       <AdminTopbar
         title="Manajemen Tentang Kami"
         description="Kelola narasi profil perusahaan, visi, misi, dan angka statistik pencapaian CITS Indonesia"
       />
+      <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
 
       {savedSuccess && (
         <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-2.5 text-xs text-emerald-800 dark:text-emerald-300">
@@ -241,6 +242,7 @@ export default function AdminAboutPage() {
           </button>
         </div>
       </form>
+      </div>
     </div>
   );
 }

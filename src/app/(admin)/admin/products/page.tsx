@@ -111,11 +111,12 @@ export default function AdminProductsPage() {
   const categories = ["All", "Enterprise", "Government", "Mobile", "Web", "Communication"];
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 flex flex-col min-w-0">
       <AdminTopbar
         title="Manajemen Produk Kami"
         description="Atur produk katalog CITS, tambah inovasi baru, atau switch aktif/non-aktif untuk Front Office"
       />
+      <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
 
       {/* Top Controls & Action Bar */}
       <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#151528] border border-slate-200/90 dark:border-white/10 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
@@ -408,6 +409,7 @@ export default function AdminProductsPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

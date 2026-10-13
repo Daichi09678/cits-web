@@ -10,11 +10,12 @@ export default function AdminClientsPage() {
   const { clients, actions } = useCitsStore();
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 flex flex-col min-w-0">
       <AdminTopbar
         title="Manajemen Mitra Institusi & Klien"
         description="Kelola daftar logo kementerian, lembaga negara, dan BUMN yang tampil di beranda dan portofolio"
       />
+      <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {clients.map((c) => (
@@ -47,6 +48,7 @@ export default function AdminClientsPage() {
             </span>
           </div>
         ))}
+      </div>
       </div>
     </div>
   );
