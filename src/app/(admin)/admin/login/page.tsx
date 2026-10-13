@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Link from "next/link";
 import {
   ShieldCheck,
   Lock,
@@ -15,7 +14,6 @@ import {
   KeyRound,
   CheckCircle2,
   Sparkles,
-  ArrowLeft,
   Building2,
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
@@ -74,19 +72,9 @@ export default function AdminLoginPage() {
       />
 
       {/* Top Bar Utilities */}
-      <header className="absolute top-5 left-5 right-5 flex items-center justify-between z-10 max-w-5xl mx-auto">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/15 border border-slate-200/80 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-200 backdrop-blur-md shadow-xs transition-all hover:gap-2.5"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Kembali ke Website Front Office</span>
-        </Link>
-
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-        </div>
-      </header>
+      <div className="absolute top-5 right-5 z-10">
+        <ThemeToggle />
+      </div>
 
       {/* Main Login Card */}
       <div className="relative w-full max-w-md z-10 my-16">
