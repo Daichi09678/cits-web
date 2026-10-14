@@ -44,12 +44,23 @@ export default function Navbar() {
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         <Link href="/" className="flex items-center gap-2">
+          {/* Logo Mode Terang */}
           <Image
             src="/logo.webp"
             alt="CITS Indonesia"
             width={160}
             height={48}
-            className="h-10 w-auto brightness-100 dark:brightness-110"
+            className="h-10 w-auto block dark:hidden"
+            priority
+          />
+          {/* Logo Putih Mode Gelap */}
+          <Image
+            src="/Logo 2.png"
+            alt="CITS Indonesia"
+            width={160}
+            height={48}
+            className="h-10 w-auto hidden dark:block"
+            priority
           />
         </Link>
 

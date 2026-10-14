@@ -442,12 +442,22 @@ export default function AboutPage() {
                   <div className="p-7 md:p-8 flex flex-col justify-between h-full space-y-6">
                     <div className="flex items-center justify-between pb-5 border-b border-slate-200 dark:border-white/10">
                       <div>
+                        {/* Logo Mode Terang */}
                         <Image
                           src="/logo.webp"
                           alt="Logo Resmi CITS Indonesia - Cipta Integrasi Teknologi Solusi"
                           width={150}
                           height={44}
-                          className="h-9 w-auto brightness-100 dark:brightness-110"
+                          className="h-9 w-auto block dark:hidden"
+                          priority
+                        />
+                        {/* Logo Putih Mode Gelap */}
+                        <Image
+                          src="/Logo 2.png"
+                          alt="Logo Resmi CITS Indonesia - Cipta Integrasi Teknologi Solusi"
+                          width={150}
+                          height={44}
+                          className="h-9 w-auto hidden dark:block"
                           priority
                         />
                         <p className="mt-2 text-xs text-slate-700 dark:text-slate-300 font-medium">

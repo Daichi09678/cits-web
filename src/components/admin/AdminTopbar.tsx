@@ -18,7 +18,10 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
   // Toggle Dark Mode
   const toggleDarkMode = () => {
     if (typeof document !== "undefined") {
-      document.documentElement.classList.toggle("dark");
+      const isDark = document.documentElement.classList.toggle("dark");
+      try {
+        localStorage.setItem("theme", isDark ? "dark" : "light");
+      } catch {}
     }
   };
 

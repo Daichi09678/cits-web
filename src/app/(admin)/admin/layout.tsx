@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import RealtimeNotificationToast from "@/components/admin/RealtimeNotificationToast";
 import { useAdminAuth } from "@/lib/auth";
 
 export default function AdminLayout({
@@ -60,6 +61,9 @@ export default function AdminLayout({
           {children}
         </main>
       </div>
+
+      {/* Floating Realtime Consultation Notification Toast */}
+      <RealtimeNotificationToast />
     </div>
   );
 }

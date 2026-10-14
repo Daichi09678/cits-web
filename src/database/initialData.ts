@@ -1,4 +1,4 @@
-import { ProductItem, ContactInfo, ContactMessage, AboutData, ClientPartner } from "./schema";
+import { ProductItem, ContactInfo, ContactMessage, AboutData, ClientPartner, LandingPageData, ServicePillar } from "./schema";
 
 export const initialProducts: ProductItem[] = [
   {
@@ -146,3 +146,168 @@ export const initialClients: ClientPartner[] = [
   { id: "c-4", name: "Kementerian Investasi / BKPM", logo: "/clients/bkpm.webp", category: "Kementerian", isActive: true },
   { id: "c-5", name: "Kementerian Kesehatan RI", logo: "/clients/kemenkes.webp", category: "Kementerian", isActive: true },
 ];
+
+export const initialServicePillars: ServicePillar[] = [
+  {
+    id: "pillar-1",
+    title: "Software House",
+    badge: "Pilar 01",
+    icon: "Code2",
+    desc: "Pengembangan Perangkat Lunak Kustom & Enterprise Web/Mobile",
+    sla: "Target Ketersediaan 99.9%",
+    features: ["Arsitektur Microservices / Monorepo", "Clean Code & Automated Testing", "Dukungan SLA 24/7"],
+    isActive: true,
+  },
+  {
+    id: "pillar-2",
+    title: "IT Consultant",
+    badge: "Pilar 02",
+    icon: "Cpu",
+    desc: "Konsultasi Tata Kelola TI, Enterprise Architecture, & Penyelarasan SPBE",
+    sla: "Metodologi TOGAF & LKPP",
+    features: ["Penyusunan Masterplan TI", "Audit Keamanan & Kepatuhan SPBE", "Katalog Satu Data Indonesia"],
+    isActive: true,
+  },
+  {
+    id: "pillar-3",
+    title: "IT Supplier",
+    badge: "Pilar 03",
+    icon: "Server",
+    desc: "Pengadaan Perangkat Keras Enterprise, Server Data Center, & Jaringan",
+    sla: "Faktur Resmi & SIKaP LKPP",
+    features: ["Server Rackmount & SAN Storage", "Perangkat Jaringan Cisco/Mikrotik", "Garansi Resmi Distributor"],
+    isActive: true,
+  },
+];
+
+export const defaultSectionVisibility = {
+  hero: true,
+  highlights: true,
+  services: true,
+  products: true,
+  clients: true,
+  cta: true,
+};
+
+export const initialLandingPageData: LandingPageData = {
+  sectionVisibility: {
+    hero: true,
+    highlights: true,
+    services: true,
+    products: true,
+    clients: true,
+    cta: true,
+  },
+  hero: {
+    badgeText: "Penyedia Solusi Teknologi Informasi Sejak 2006",
+    headlinePrefix: "Ciptakan Solusi",
+    typewriterWords: [
+      "Sepenuh Hati",
+      "Tingkat Enterprise",
+      "Skala Nasional",
+      "Berbasis Inovasi",
+      "Terpercaya Sejak 2006",
+    ],
+    subheadline:
+      "CITS Indonesia hadir sebagai mitra bisnis terpercaya dalam menyediakan solusi integral kesistemanan berbasis teknologi informasi untuk instansi pemerintah, BUMN, dan korporasi.",
+    primaryCtaText: "Konsultasi Sekarang",
+    primaryCtaLink: "/contact",
+    secondaryCtaText: "Eksplorasi Produk",
+    secondaryCtaLink: "/products",
+    trustBadges: ["Terdaftar LPSE & SIKaP LKPP", "Dukungan Tim Ahli 24/7"],
+    showMockup: true,
+    mockupTitle: "CITS Enterprise System Portal",
+    mockupStatus: "Sistem Aktif",
+  },
+  highlights: [
+    { label: "Tahun Berpengalaman", value: "19+", isActive: true },
+    { label: "Proyek Selesai", value: "50+", isActive: true },
+    { label: "Kementerian & Lembaga", value: "15+", isActive: true },
+    { label: "Tim Profesional", value: "30+", isActive: true },
+  ],
+  servicesIntro: {
+    badge: "Pilar Layanan Utama",
+    title: "Layanan Unggulan Kami",
+    subtitle:
+      "Kombinasi keahlian teknis tingkat enterprise dan tata kelola berstandar industri dengan prinsip FOCUS.",
+    cardSoftwareHouse: {
+      badge: "Pilar Utama Pengembangan",
+      title: "Pengembangan Perangkat Lunak (Software House)",
+      desc: "Pengembangan aplikasi custom skala enterprise dari tahap perancangan arsitektur, rekayasa kode, integrasi REST API & Microservices, hingga peluncuran sistem digital yang tangguh.",
+      linkText: "Pelajari Selengkapnya",
+      linkUrl: "/services#software-house",
+    },
+    cardConsultant: {
+      badge: "Konsultasi Strategis",
+      title: "Konsultan Teknologi Informasi",
+      desc: "Layanan konsultasi TI strategis untuk membantu organisasi merencanakan, merancang arsitektur, dan memformulasikan cetak biru digital yang tepat guna.",
+      linkText: "Detail Konsultasi",
+      linkUrl: "/services#it-consultant",
+    },
+    cardSupplier: {
+      badge: "Perangkat Keras & Jaringan",
+      title: "Pengadaan Perangkat TI (IT Supplier)",
+      desc: "Penyediaan perangkat keras dan perangkat lunak berkualitas tinggi dari vendor terpercaya dengan garansi resmi dan dukungan teknis terpadu.",
+      linkText: "Katalog Pengadaan",
+      linkUrl: "/services#it-supplier",
+    },
+    cardFocus: {
+      badge: "Budaya Kerja & Standar SLA",
+      title: "Prinsip Kerja FOCUS",
+      desc: "Setiap tahapan kolaborasi kami berakar pada 5 pilar keunggulan operasional:",
+      footerText: "Terpercaya menangani sistem kementerian sejak 2006",
+      linkText: "Kenali CITS Lebih Dekat",
+      linkUrl: "/about",
+    },
+    bottomCtaText: "Lihat Alur Kerja & Spesifikasi Lengkap Layanan",
+    bottomCtaLink: "/services",
+  },
+  productsIntro: {
+    badge: "Solusi Skala Nasional",
+    title: "Produk Unggulan CITS",
+    subtitle:
+      "Platform kesistemanan yang telah teruji melayani jutaan transaksi data di berbagai kementerian dan institusi nasional.",
+    card1: {
+      badge: "IoT & Telemetri Armada",
+      title: "CITS FleetTrack™ - Manajemen Armada & Telemetri",
+      desc: "Platform pelacakan armada kendaraan waktu nyata untuk optimalisasi logistik dan pemantauan operasional. Dilengkapi monitoring lokasi presisi, efisiensi bahan bakar, dan mitigasi risiko armada.",
+      linkUrl: "/products#cits-fleettrack",
+    },
+    card2: {
+      badge: "Manajemen Aset Perusahaan",
+      title: "CITS AssetHub™ - Tata Kelola Aset Terpadu",
+      desc: "Sistem pengelolaan aset perusahaan secara terintegrasi dari pengadaan, penempatan, kalkulasi depresiasi nilai, hingga penghapusan aset siap audit.",
+      linkUrl: "/products#cits-assethub",
+    },
+    card3: {
+      badge: "Arsip Digital & Dokumen",
+      title: "CITS DocuVault™ - Tata Kelola Arsip & EDMS",
+      desc: "Sistem digitalisasi dan pengarsipan elektronik untuk mengorganisir, mengamankan, dan mendistribusikan dokumen resmi dengan kontrol versi dan TTE.",
+      linkUrl: "/products#cits-docuvault",
+    },
+    card4: {
+      badge: "SIG & Ekosistem Produk Terintegrasi",
+      title: "CITS GeoSpatial™ & Rangkaian Platform Enterprise",
+      desc: "Platform informasi geografis untuk pemetaan infrastruktur dan analisis spasial, dilengkapi rangkaian solusi perangkat lunak teruji CITS lainnya:",
+      linkUrl: "/products",
+    },
+    bottomCtaText: "Eksplorasi Semua 8 Solusi Produk",
+    bottomCtaLink: "/products",
+  },
+  clientsIntro: {
+    title: "Dipercaya oleh Kementerian, BUMN, dan Lembaga Nasional",
+  },
+  cta: {
+    badge: "Mitra Transformasi Digital Terpercaya",
+    title: "Siap Mengakselerasi Sistem Informasi Perusahaan Anda?",
+    subtitle:
+      "Konsultasikan kebutuhan IT, rekayasa software custom, atau pengadaan infrastruktur Anda dengan tim profesional CITS Indonesia.",
+    primaryText: "Mulai Konsultasi Gratis",
+    primaryLink: "/contact",
+    secondaryText: "Pelajari Profil Perusahaan",
+    secondaryLink: "/about",
+  },
+};
+
+
+

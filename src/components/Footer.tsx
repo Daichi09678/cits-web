@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -7,7 +8,22 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-orange-700 dark:text-orange-400 font-bold text-lg mb-3">CITS Indonesia</h3>
+            <div className="mb-4">
+              <Image
+                src="/logo.webp"
+                alt="CITS Indonesia"
+                width={140}
+                height={40}
+                className="h-8 w-auto block dark:hidden"
+              />
+              <Image
+                src="/Logo 2.png"
+                alt="CITS Indonesia"
+                width={140}
+                height={40}
+                className="h-8 w-auto hidden dark:block"
+              />
+            </div>
             <p className="text-gray-700 dark:text-white/85 text-sm leading-relaxed">
               Cipta Integrasi Teknologi Solusi - Mitra bisnis terpercaya untuk solusi integral kesistemanan berbasis teknologi informasi.
             </p>

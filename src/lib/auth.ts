@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { siteConfig } from "@/config/siteConfig";
+import { citsApi } from "./api";
 
 export interface AdminSession {
   isLoggedIn: boolean;
   user: {
+    id?: string;
     name: string;
     email: string;
     role: string;
@@ -15,10 +17,11 @@ export interface AdminSession {
 }
 
 const defaultUser = {
-  name: "Administrator CITS",
+  id: "admin-1",
+  name: "maswahyuganteng",
   email: siteConfig.admin.defaultEmail,
   role: "Super Admin",
-  avatar: "/logo.webp",
+  avatar: "/avatars/admin.webp",
 };
 
 export const AdminAuth = {
@@ -33,13 +36,51 @@ export const AdminAuth = {
     }
   },
 
-  login(email: string, pass: string): { success: boolean; message?: string } {
+  async login(email: string, pass: string): Promise<{ success: boolean; message?: string }> {
     if (typeof window === "undefined") return { success: false, message: "Window not available" };
 
-    const validEmail = email.trim().toLowerCase() === siteConfig.admin.defaultEmail.toLowerCase() || email.trim().toLowerCase() === "admin";
-    const validPass = pass.trim() === siteConfig.admin.defaultPassword || pass.trim() === "admin123";
+    const cleanInput = email.trim().toLowerCase();
+    const cleanPass = pass.trim();
 
-    if (validEmail && validPass) {
+    // Verifikasi ketat: Username/Email HARUS akun resmi admin yang sah
+    const isOfficialEmail =
+      cleanInput === "maswahyuganteng@cits.id" ||
+      cleanInput === "maswahyuganteng" ||
+      cleanInput === siteConfig.admin.defaultEmail.toLowerCase();
+    const isOfficialPass = cleanPass === "admin" || cleanPass === "admin123";
+
+    // Jika username / email berbeda dari kredensial resmi, LOGIN PASTI GAGAL
+    if (!isOfficialEmail) {
+      return {
+        success: false,
+        message: "Email atau username tidak terdaftar sebagai administrator resmi CITS.",
+      };
+    }
+
+    try {
+      const res = await citsApi.login(cleanInput, cleanPass);
+      if (res && res.success && res.token) {
+        localStorage.setItem("cits_jwt_token", res.token);
+        const session: AdminSession = {
+          isLoggedIn: true,
+          user: res.user || defaultUser,
+          loginTime: new Date().toISOString(),
+        };
+        localStorage.setItem(siteConfig.admin.sessionKey, JSON.stringify(session));
+        window.dispatchEvent(new Event("cits-auth-changed"));
+        return { success: true };
+      } else if (res && !res.success) {
+        return {
+          success: false,
+          message: res.message || "Kata sandi yang Anda masukkan salah.",
+        };
+      }
+    } catch (e) {
+      console.warn("Backend auth request error, checking local fallback:", e);
+    }
+
+    // Fallback lokal hanya jika backend offline dan kata sandi benar
+    if (isOfficialEmail && isOfficialPass) {
       const session: AdminSession = {
         isLoggedIn: true,
         user: defaultUser,
@@ -52,13 +93,14 @@ export const AdminAuth = {
 
     return {
       success: false,
-      message: "Email atau password admin salah. Gunakan admin@cits.id / admin",
+      message: "Kata sandi salah. Silakan periksa kembali kredensial Anda.",
     };
   },
 
   logout(): void {
     if (typeof window === "undefined") return;
     localStorage.removeItem(siteConfig.admin.sessionKey);
+    localStorage.removeItem("cits_jwt_token");
     window.dispatchEvent(new Event("cits-auth-changed"));
   },
 

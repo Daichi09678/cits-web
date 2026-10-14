@@ -15,6 +15,7 @@ import {
   ExternalLink,
   ChevronRight,
   ShieldCheck,
+  LayoutTemplate,
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
 import { useCitsStore } from "@/database/store";
@@ -34,6 +35,13 @@ export default function AdminSidebar() {
       href: "/admin",
       icon: LayoutDashboard,
       exact: true,
+    },
+    {
+      title: "Landing Page",
+      href: "/admin/landing",
+      icon: LayoutTemplate,
+      badge: "Beranda",
+      badgeColor: "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300 font-semibold",
     },
     {
       title: "Produk Kami",
@@ -80,19 +88,32 @@ export default function AdminSidebar() {
     <aside className="w-64 bg-white dark:bg-[#151528] border-r border-slate-200/90 dark:border-white/10 flex flex-col justify-between h-screen sticky top-0 z-40 transition-colors select-none">
       {/* Top Header & Brand */}
       <div>
-        <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
-          <Link href="/admin" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-orange-600 text-white flex items-center justify-center shadow-md shadow-orange-600/20 shrink-0 font-bold">
-              <ShieldCheck className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <span className="block font-extrabold text-sm text-slate-900 dark:text-white leading-tight tracking-tight">
-                CITS Back Office
+        <div className="p-4 border-b border-slate-100 dark:border-white/5">
+          <Link href="/admin" className="block">
+            <div className="flex items-center justify-between mb-1.5">
+              <Image
+                src="/logo.webp"
+                alt="CITS Indonesia"
+                width={130}
+                height={38}
+                className="h-8 w-auto block dark:hidden"
+                priority
+              />
+              <Image
+                src="/Logo 2.png"
+                alt="CITS Indonesia"
+                width={130}
+                height={38}
+                className="h-8 w-auto hidden dark:block"
+                priority
+              />
+              <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-950/60 border border-orange-200 dark:border-orange-800/60 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                Admin
               </span>
-              <span className="block text-[10px] text-orange-600 dark:text-orange-400 font-semibold uppercase tracking-wider">
-                Admin CMS Portal
-              </span>
             </div>
+            <span className="block text-[11px] text-slate-700 dark:text-slate-300 font-medium">
+              Sistem Manajemen Konten
+            </span>
           </Link>
         </div>
 
