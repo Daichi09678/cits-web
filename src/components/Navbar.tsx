@@ -55,7 +55,7 @@ export default function Navbar() {
           />
           {/* Logo Putih Mode Gelap */}
           <Image
-            src="/Logo 2.png"
+            src="/logo-dark.webp"
             alt="CITS Indonesia"
             width={160}
             height={48}

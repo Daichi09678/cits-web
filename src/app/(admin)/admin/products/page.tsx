@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Package,
   Plus,
@@ -20,6 +20,9 @@ import {
   Globe,
   Archive,
   Layers,
+  Image as ImageIcon,
+  Upload,
+  Camera,
 } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useCitsStore } from "@/database/store";
@@ -40,7 +43,36 @@ export default function AdminProductsPage() {
   const [formFeatures, setFormFeatures] = useState("");
   const [formTags, setFormTags] = useState("");
   const [formIcon, setFormIcon] = useState("Package");
+  const [formImage, setFormImage] = useState("");
   const [formIsActive, setFormIsActive] = useState(true);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Handle local file upload
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 3 * 1024 * 1024) {
+      alert("Ukuran foto maksimal 3 MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setFormImage(event.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setFormImage("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   // Open Add Modal
   const openAddModal = () => {
@@ -51,7 +83,9 @@ export default function AdminProductsPage() {
     setFormFeatures("Integrasi API, Laporan Real-Time, Multi-User");
     setFormTags("Enterprise, Cloud, Secure");
     setFormIcon("Package");
+    setFormImage("");
     setFormIsActive(true);
+    if (fileInputRef.current) fileInputRef.current.value = "";
     setModalOpen(true);
   };
 
@@ -64,7 +98,9 @@ export default function AdminProductsPage() {
     setFormFeatures(prod.features.join(", "));
     setFormTags(prod.tags.join(", "));
     setFormIcon(prod.icon || "Package");
+    setFormImage(prod.image || "");
     setFormIsActive(prod.isActive);
+    if (fileInputRef.current) fileInputRef.current.value = "";
     setModalOpen(true);
   };
 
@@ -82,6 +118,7 @@ export default function AdminProductsPage() {
         features: featuresArr,
         tags: tagsArr,
         icon: formIcon,
+        image: formImage.trim() || undefined,
         isActive: formIsActive,
       });
     } else {
@@ -92,6 +129,7 @@ export default function AdminProductsPage() {
         features: featuresArr,
         tags: tagsArr,
         icon: formIcon,
+        image: formImage.trim() || undefined,
         isActive: formIsActive,
       });
     }
@@ -188,13 +226,30 @@ export default function AdminProductsPage() {
                     className="hover:bg-slate-50/60 dark:hover:bg-white/5 transition-colors"
                   >
                     {/* Product Name & Description */}
-                    <td className="py-4 px-5 max-w-xs">
-                      <div className="font-extrabold text-slate-900 dark:text-white text-sm mb-1">
-                        {prod.name}
+                    <td className="py-4 px-5 max-w-sm">
+                      <div className="flex items-center gap-3">
+                        {prod.image ? (
+                          <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 shrink-0 shadow-2xs">
+                            <img
+                              src={prod.image}
+                              alt={prod.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0 shadow-2xs">
+                            <Package className="w-6 h-6" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <div className="font-extrabold text-slate-900 dark:text-white text-sm mb-0.5 truncate">
+                            {prod.name}
+                          </div>
+                          <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                            {prod.description}
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                        {prod.description}
-                      </p>
                     </td>
 
                     {/* Category */}
@@ -276,9 +331,9 @@ export default function AdminProductsPage() {
       {/* Add / Edit Product Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-          <div className="w-full max-w-xl bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
+          <div className="w-full max-w-xl max-h-[90vh] flex flex-col bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
             {/* Modal Header */}
-            <div className="px-6 py-5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between">
+            <div className="px-6 py-5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between shrink-0">
               <div>
                 <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
                   {editingProduct ? "Edit Informasi Produk" : "Tambah Produk Baru"}
@@ -296,7 +351,7 @@ export default function AdminProductsPage() {
             </div>
 
             {/* Modal Form */}
-            <form onSubmit={handleSave} className="p-6 space-y-4">
+            <form onSubmit={handleSave} className="p-6 space-y-4 overflow-y-auto">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
@@ -343,6 +398,97 @@ export default function AdminProductsPage() {
                   placeholder="Jelaskan fungsi, keunggulan, dan manfaat produk untuk instansi..."
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                 ></textarea>
+              </div>
+
+              {/* Foto / Gambar Produk */}
+              <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                    <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                      Foto / Gambar Produk
+                    </label>
+                  </div>
+                  {formImage && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Hapus Foto
+                    </button>
+                  )}
+                </div>
+
+                {/* Preview jika sudah ada foto */}
+                {formImage ? (
+                  <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-[#121224] p-3 flex items-center gap-3.5 shadow-2xs">
+                    <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/20 shrink-0">
+                      <img
+                        src={formImage}
+                        alt="Preview Foto Produk"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        <span>Foto Produk Berhasil Dipilih</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate font-mono">
+                        {formImage.startsWith("data:") ? "Foto diunggah dari perangkat lokal (Base64)" : formImage}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-[11px] font-bold text-slate-700 dark:text-white transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                      >
+                        <Upload className="w-3 h-3" />
+                        Ganti Foto
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Dropzone unggah file */
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-5 rounded-xl border-2 border-dashed border-slate-300 dark:border-white/15 hover:border-orange-500/60 dark:hover:border-orange-500/60 bg-white dark:bg-[#151528] transition-all text-center cursor-pointer group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                      <Upload className="w-5 h-5" />
+                    </div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      Klik untuk Pilih / Unggah Foto Produk
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      Mendukung format PNG, JPG, atau WebP (Maksimal 3 MB)
+                    </p>
+                  </div>
+                )}
+
+                {/* Input File Tersembunyi */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/jpg"
+                  onChange={handleImageFileChange}
+                  className="hidden"
+                />
+
+                {/* Opsi alternatif: Input URL / Path */}
+                <div className="pt-1">
+                  <span className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">
+                    Atau masukkan Path / URL Gambar:
+                  </span>
+                  <input
+                    type="text"
+                    value={formImage}
+                    onChange={(e) => setFormImage(e.target.value)}
+                    placeholder="cth: /services/software-house.webp atau https://..."
+                    className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-[#121224] border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
               </div>
 
               <div>

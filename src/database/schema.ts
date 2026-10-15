@@ -6,6 +6,7 @@ export interface ProductItem {
   features: string[];
   tags: string[];
   icon: string; // nama icon lucide: MessageSquare, Smartphone, FileText, Vote, Globe, Archive, Server, Database, Shield
+  image?: string; // foto / gambar produk (URL atau Base64 data URL)
   isActive: boolean; // toggle aktif / non-aktif
   updatedAt: string;
 }

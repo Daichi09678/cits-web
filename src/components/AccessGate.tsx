@@ -62,7 +62,7 @@ export default function AccessGate({ children }: { children: ReactNode }) {
           <div className="text-center mb-8">
             <div className="flex justify-center mb-6">
               <Image src="/logo.webp" alt="CITS Indonesia" width={180} height={54} className="h-12 w-auto block dark:hidden" priority />
-              <Image src="/Logo 2.png" alt="CITS Indonesia" width={180} height={54} className="h-12 w-auto hidden dark:block" priority />
+              <Image src="/logo-dark.webp" alt="CITS Indonesia" width={180} height={54} className="h-12 w-auto hidden dark:block" priority />
             </div>
             <div className="w-16 h-16 rounded-2xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/70 dark:border-orange-800/50 flex items-center justify-center mx-auto mb-4">
               <Lock className="w-8 h-8 text-orange-600 dark:text-orange-400" />

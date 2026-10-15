@@ -548,6 +548,17 @@ export default function ProductsPage() {
                     <SpotlightCard className="h-full">
                       <article className="p-6 sm:p-7 flex flex-col justify-between h-full bg-white dark:bg-[#16162c] space-y-6">
                         <div>
+                          {/* Product Image Banner if available */}
+                          {product.image && (
+                            <div className="relative w-full h-44 -mt-1 mb-4 rounded-2xl overflow-hidden bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 group shadow-xs">
+                              <img
+                                src={product.image}
+                                alt={product.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                            </div>
+                          )}
+
                           {/* Card Header: Category & Release Version */}
                           <div className="flex items-center justify-between gap-3 mb-4">
                             <span
@@ -857,10 +868,22 @@ export default function ProductsPage() {
               <button
                 onClick={() => setActiveModalProduct(null)}
                 aria-label="Tutup jendela spesifikasi produk"
-                className="absolute top-5 right-5 p-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-600 dark:text-white/80 hover:bg-orange-600 hover:text-white transition-all cursor-pointer"
+                className="absolute top-5 right-5 p-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-600 dark:text-white/80 hover:bg-orange-600 hover:text-white transition-all cursor-pointer z-10"
               >
                 <X className="w-5 h-5" />
               </button>
+
+              {/* Product Photo Banner if available */}
+              {activeModalProduct.image && (
+                <div className="relative w-full h-52 sm:h-64 mb-6 rounded-2xl overflow-hidden bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 shadow-sm">
+                  <img
+                    src={activeModalProduct.image}
+                    alt={activeModalProduct.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+                </div>
+              )}
 
               {/* Modal Header */}
               <div className="flex items-center gap-4 pr-10">

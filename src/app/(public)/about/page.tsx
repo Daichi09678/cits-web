@@ -453,7 +453,7 @@ export default function AboutPage() {
                         />
                         {/* Logo Putih Mode Gelap */}
                         <Image
-                          src="/Logo 2.png"
+                          src="/logo-dark.webp"
                           alt="Logo Resmi CITS Indonesia - Cipta Integrasi Teknologi Solusi"
                           width={150}
                           height={44}

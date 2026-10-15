@@ -17,7 +17,7 @@ export default function Footer() {
                 className="h-8 w-auto block dark:hidden"
               />
               <Image
-                src="/Logo 2.png"
+                src="/logo-dark.webp"
                 alt="CITS Indonesia"
                 width={140}
                 height={40}

@@ -90,7 +90,7 @@ export default function AdminLoginPage() {
               />
               {/* Logo Putih Mode Gelap */}
               <Image
-                src="/Logo 2.png"
+                src="/logo-dark.webp"
                 alt="Logo Resmi CITS Indonesia"
                 width={150}
                 height={44}

@@ -100,7 +100,7 @@ export default function AdminSidebar() {
                 priority
               />
               <Image
-                src="/Logo 2.png"
+                src="/logo-dark.webp"
                 alt="CITS Indonesia"
                 width={130}
                 height={38}
