@@ -22,6 +22,10 @@ import {
   Volume2,
   Sparkles,
   Calendar,
+  Copy,
+  Reply,
+  Check,
+  FileText,
 } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useCitsStore } from "@/database/store";
@@ -36,6 +40,16 @@ export default function AdminContactPage() {
   const [filterStatus, setFilterStatus] = useState<string>("All");
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
 
+  // Email Reply Modal State
+  const [replyModalOpen, setReplyModalOpen] = useState(false);
+  const [replyingMessage, setReplyingMessage] = useState<ContactMessage | null>(null);
+  const [replyTo, setReplyTo] = useState("");
+  const [replySubject, setReplySubject] = useState("");
+  const [replyBody, setReplyBody] = useState("");
+  const [activeTemplate, setActiveTemplate] = useState<"diskusi" | "penawaran" | "spesifikasi">("diskusi");
+  const [copiedText, setCopiedText] = useState(false);
+  const [replyFeedback, setReplyFeedback] = useState("");
+
   // Contact Info Form State
   const [address, setAddress] = useState(contactInfo.address);
   const [phone, setPhone] = useState(contactInfo.phone);
@@ -43,6 +57,114 @@ export default function AdminContactPage() {
   const [workingHours, setWorkingHours] = useState(contactInfo.workingHours);
   const [emergencyPhone, setEmergencyPhone] = useState(contactInfo.emergencyPhone || "");
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // Email Draft Generator with Professional Templates
+  const generateEmailDraft = (msg: ContactMessage, templateType: "diskusi" | "penawaran" | "spesifikasi" = "diskusi") => {
+    const greeting = `Yth. Bapak/Ibu ${msg.name},\n${msg.company ? `${msg.company}\n` : ""}`;
+    const closing = `\n\nSalam hormat,\nTim Konsultasi & Solusi TI\nPT Cipta Integrasi Teknologi Solusi (CITS)\nWebsite: https://cits.co.id\nEmail: contact@cits.co.id | Telepon: (021) 5082-0000`;
+
+    if (templateType === "penawaran") {
+      return `${greeting}
+Terima kasih atas ketertarikan Anda terhadap portofolio dan layanan CITS Indonesia terkait kebutuhan "${msg.serviceRequested || "Solusi TI"}".
+
+Menindaklanjuti pesan konsultasi Anda:
+"${msg.message}"
+
+Bersama ini kami informasikan bahwa tim konsultan dan engineer CITS memiliki pengalaman serta kapabilitas menyeluruh untuk mengimplementasikan arsitektur sistem tersebut sesuai standar tata kelola instansi Anda.
+
+Kami telah menyiapkan ringkasan solusi serta estimasi tahapan implementasi. Jika Bapak/Ibu berkenan, kami siap mengirimkan dokumen proposal resmi dan presentasi teknis secara lebih komprehensif.
+
+Mohon konfirmasi kesediaan waktu Anda untuk dapat kami hubungi lebih lanjut.${closing}`;
+    }
+
+    if (templateType === "spesifikasi") {
+      return `${greeting}
+Terima kasih telah menghubungi PT Cipta Integrasi Teknologi Solusi (CITS).
+
+Terkait permohonan konsultasi:
+"${msg.message}"
+
+Agar tim kami dapat menyusun Kerangka Acuan Kerja (KAK) dan estimasi anggaran (RAB) yang presisi sesuai kebutuhan Bapak/Ibu, mohon bantuan untuk melengkapi beberapa informasi awal berikut:
+1. Ruang lingkup utama dan target waktu penyelesaian sistem.
+2. Lingkungan infrastruktur saat ini (Cloud / On-Premise Data Center).
+3. Apakah terdapat integrasi data dengan sistem pihak ketiga atau SPBE / Satu Data Indonesia.
+
+Kami siap mendiskusikan hal ini lebih lanjut melalui pertemuan daring (Google Meet / Zoom).${closing}`;
+    }
+
+    // Default template: Undangan Diskusi & Konfirmasi
+    return `${greeting}
+Terima kasih telah menghubungi PT Cipta Integrasi Teknologi Solusi (CITS). Kami telah menerima permohonan konsultasi Anda mengenai "${msg.serviceRequested || "Solusi & Layanan TI"}".
+
+Pesan Anda:
+"${msg.message}"
+
+Kami menyambut baik inisiatif kerja sama ini dan ingin mengundang Bapak/Ibu dalam sesi diskusi / eksplorasi teknis secara singkat (sekitar 20–30 menit) via Google Meet atau Zoom untuk membahas kebutuhan tersebut secara lebih mendalam.
+
+Mohon informasikan jadwal ketersediaan waktu Anda, atau Anda dapat langsung membalas email ini dengan usulan tanggal dan jam yang sesuai.
+
+Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
+  };
+
+  const openReplyModal = (msg: ContactMessage, templateType: "diskusi" | "penawaran" | "spesifikasi" = "diskusi") => {
+    setReplyingMessage(msg);
+    setReplyTo(msg.email);
+    setReplySubject(`Tanggapan Konsultasi CITS Indonesia - ${msg.company || msg.name}`);
+    setActiveTemplate(templateType);
+    setReplyBody(generateEmailDraft(msg, templateType));
+    setReplyModalOpen(true);
+    if (msg.status === "unread") {
+      actions.updateMessageStatus(msg.id, "read");
+    }
+  };
+
+  const applyTemplate = (type: "diskusi" | "penawaran" | "spesifikasi") => {
+    if (!replyingMessage) return;
+    setActiveTemplate(type);
+    setReplyBody(generateEmailDraft(replyingMessage, type));
+  };
+
+  const handleLaunchEmail = (provider: "gmail" | "outlook" | "default") => {
+    if (!replyingMessage) return;
+
+    // Automatically update message status to replied
+    actions.updateMessageStatus(replyingMessage.id, "replied");
+    if (selectedMessage && selectedMessage.id === replyingMessage.id) {
+      setSelectedMessage({ ...selectedMessage, status: "replied" });
+    }
+
+    let url = "";
+    if (provider === "gmail") {
+      url = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(replyTo)}&su=${encodeURIComponent(replySubject)}&body=${encodeURIComponent(replyBody)}`;
+      window.open(url, "_blank");
+    } else if (provider === "outlook") {
+      url = `https://outlook.live.com/mail/0/deeplink/compose?to=${encodeURIComponent(replyTo)}&subject=${encodeURIComponent(replySubject)}&body=${encodeURIComponent(replyBody)}`;
+      window.open(url, "_blank");
+    } else {
+      url = `mailto:${encodeURIComponent(replyTo)}?subject=${encodeURIComponent(replySubject)}&body=${encodeURIComponent(replyBody)}`;
+      window.location.href = url;
+    }
+
+    setReplyFeedback(`Membuka halaman compose via ${provider === "gmail" ? "Gmail" : provider === "outlook" ? "Outlook Web" : "Email Bawaan"} dan status pesan otomatis ditandai "Sudah Dibalas"!`);
+    setTimeout(() => setReplyFeedback(""), 4500);
+  };
+
+  const handleCopyReplyDraft = () => {
+    navigator.clipboard.writeText(`To: ${replyTo}\nSubject: ${replySubject}\n\n${replyBody}`);
+    setCopiedText(true);
+    setTimeout(() => setCopiedText(false), 2500);
+  };
+
+  const handleMarkAsRepliedOnly = () => {
+    if (!replyingMessage) return;
+    actions.updateMessageStatus(replyingMessage.id, "replied");
+    if (selectedMessage && selectedMessage.id === replyingMessage.id) {
+      setSelectedMessage({ ...selectedMessage, status: "replied" });
+    }
+    setReplyFeedback(`Status pesan berhasil ditandai sebagai "Sudah Dibalas"!`);
+    setReplyModalOpen(false);
+    setTimeout(() => setReplyFeedback(""), 3500);
+  };
 
   // Save Contact Info
   const handleSaveInfo = (e: React.FormEvent) => {
@@ -96,6 +218,14 @@ export default function AdminContactPage() {
         description="Pantau pesan masuk dan formulir konsultasi secara realtime dari front office website"
       />
       <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
+
+        {/* Reply Action Feedback Alert */}
+        {replyFeedback && (
+          <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-2.5 text-xs text-emerald-800 dark:text-emerald-300 shadow-xs animate-in fade-in">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <span className="font-semibold">{replyFeedback}</span>
+          </div>
+        )}
 
         {/* Tab Navigation & Realtime Status Indicator */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/80 dark:border-white/10 pb-3">
@@ -258,6 +388,15 @@ export default function AdminContactPage() {
                             <option value="read">Sudah Dibaca</option>
                             <option value="replied">Sudah Dibalas</option>
                           </select>
+
+                          <button
+                            onClick={() => openReplyModal(msg)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+                            title="Balas pesan ini via email"
+                          >
+                            <Reply className="w-3.5 h-3.5" />
+                            <span>Balas Email</span>
+                          </button>
 
                           <button
                             onClick={() => handleOpenDetail(msg)}
@@ -553,18 +692,202 @@ export default function AdminContactPage() {
                     </a>
 
                     {/* Balas via Email */}
-                    <a
-                      href={`mailto:${selectedMessage.email}?subject=Tanggapan%20Konsultasi%20CITS%20Indonesia%20-%20${encodeURIComponent(
-                        selectedMessage.company
-                      )}&body=Yth.%20${encodeURIComponent(
-                        selectedMessage.name
-                      )},%0A%0ATerima%20kasih%20atas%20ketertarikan%20Anda%20menghubungi%20PT%20Cipta%20Integrasi%20Teknologi%20Solusi%20(CITS).`}
+                    <button
+                      type="button"
+                      onClick={() => openReplyModal(selectedMessage)}
                       className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition-all cursor-pointer"
                     >
-                      <Mail className="w-3.5 h-3.5" />
-                      <span>Kirim Email Balasan</span>
-                    </a>
+                      <Reply className="w-3.5 h-3.5" />
+                      <span>Kirim Email Balasan (Otomatis)</span>
+                    </button>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL BALAS EMAIL OTOMATIS & REDIRECT KE WEBMAIL */}
+        {replyModalOpen && replyingMessage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+            <div className="w-full max-w-2xl bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col max-h-[92vh]">
+              {/* Header */}
+              <div className="px-6 py-4 border-b border-slate-100 dark:border-white/10 flex items-center justify-between bg-slate-50/70 dark:bg-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center shadow-md shadow-orange-600/20 shrink-0">
+                    <Reply className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-sm md:text-base text-slate-900 dark:text-white flex items-center gap-2">
+                      <span>Kirim Balasan Email Konsultasi</span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300">
+                        Otomatis
+                      </span>
+                    </h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Balasan untuk <strong className="text-slate-700 dark:text-slate-200">{replyingMessage.name}</strong> ({replyingMessage.company || "Umum"})
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setReplyModalOpen(false)}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Body Form */}
+              <div className="p-6 space-y-4 overflow-y-auto text-xs flex-1">
+                {/* Recipient & Subject */}
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                      Email Tujuan (To)
+                    </label>
+                    <div className="relative">
+                      <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="email"
+                        value={replyTo}
+                        onChange={(e) => setReplyTo(e.target.value)}
+                        className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-1 focus:ring-orange-500 font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                      Subjek Email
+                    </label>
+                    <input
+                      type="text"
+                      value={replySubject}
+                      onChange={(e) => setReplySubject(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-1 focus:ring-orange-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Template Selector Pills */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                      Pilih Template Balasan Cepat:
+                    </label>
+                    <span className="text-[10px] text-slate-400">Klik untuk mengganti draft otomatis</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    {[
+                      { id: "diskusi", title: "Undangan Diskusi / Meeting", icon: Calendar, desc: "Ajak meeting daring via GMeet/Zoom" },
+                      { id: "penawaran", title: "Penawaran & Portofolio", icon: FileText, desc: "Kirim proposal & estimasi tahapan" },
+                      { id: "spesifikasi", title: "Klarifikasi KAK / Teknis", icon: Sparkles, desc: "Minta detail spek & ruang lingkup" },
+                    ].map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => applyTemplate(t.id as any)}
+                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                          activeTemplate === t.id
+                            ? "bg-orange-50 dark:bg-orange-950/40 border-orange-500 shadow-xs ring-1 ring-orange-500/20"
+                            : "bg-slate-50/70 dark:bg-white/5 border-slate-200 dark:border-white/10 hover:border-orange-400"
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <t.icon className={`w-3.5 h-3.5 ${activeTemplate === t.id ? "text-orange-600" : "text-slate-400"}`} />
+                          <span className={`text-[11px] font-bold ${activeTemplate === t.id ? "text-orange-700 dark:text-orange-300" : "text-slate-700 dark:text-slate-300"}`}>
+                            {t.title}
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                          {t.desc}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Email Body Textarea */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Isi Pesan Balasan Email
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleCopyReplyDraft}
+                      className="text-[11px] text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1 font-semibold cursor-pointer"
+                    >
+                      {copiedText ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-600" />
+                          <span className="text-emerald-600">Draf Berhasil Disalin!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3" />
+                          <span>Salin Seluruh Draf</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <textarea
+                    rows={11}
+                    value={replyBody}
+                    onChange={(e) => setReplyBody(e.target.value)}
+                    className="w-full p-3.5 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-slate-100 font-normal leading-relaxed focus:outline-none focus:ring-2 focus:ring-orange-500 font-sans"
+                  />
+                </div>
+              </div>
+
+              {/* Footer Actions: Automatic redirect to webmail / client */}
+              <div className="p-4 px-6 border-t border-slate-100 dark:border-white/10 bg-slate-50/80 dark:bg-white/5 flex flex-wrap items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={handleMarkAsRepliedOnly}
+                  className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 cursor-pointer"
+                  title="Tandai status pesan sudah dibalas tanpa membuka browser email"
+                >
+                  <CheckCheck className="w-4 h-4 text-emerald-600" />
+                  <span>Tandai Saja Sebagai Dibalas</span>
+                </button>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Default Client */}
+                  <button
+                    type="button"
+                    onClick={() => handleLaunchEmail("default")}
+                    className="px-3.5 py-2 rounded-xl border border-slate-200 dark:border-white/15 bg-white dark:bg-[#1A1A2E] text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-slate-100 dark:hover:bg-white/10 transition-all flex items-center gap-1.5 cursor-pointer"
+                    title="Buka di aplikasi email bawaan Windows"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>Email Bawaan</span>
+                  </button>
+
+                  {/* Outlook Web */}
+                  <button
+                    type="button"
+                    onClick={() => handleLaunchEmail("outlook")}
+                    className="px-3.5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                    title="Buka halaman compose Outlook Web di tab baru"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Buka Outlook Web</span>
+                  </button>
+
+                  {/* Gmail Web (Primary Action) */}
+                  <button
+                    type="button"
+                    onClick={() => handleLaunchEmail("gmail")}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold text-xs shadow-md shadow-red-600/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                    title="Buka halaman compose Gmail langsung terisi di tab baru"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Kirim via Gmail (Otomatis)</span>
+                  </button>
                 </div>
               </div>
             </div>

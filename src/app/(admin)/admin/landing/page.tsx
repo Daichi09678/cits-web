@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   LayoutTemplate,
   Save,
@@ -27,14 +28,120 @@ import {
   Cpu,
   FileText,
   Map,
+  Upload,
+  Search,
+  Edit3,
+  X,
+  Check,
+  Filter,
 } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useCitsStore } from "@/database/store";
-import { LandingPageData, SectionVisibility } from "@/database/schema";
+import { LandingPageData, SectionVisibility, ClientPartner } from "@/database/schema";
 import { initialLandingPageData, defaultSectionVisibility } from "@/database/initialData";
 
 export default function AdminLandingPage() {
-  const { landingData, actions } = useCitsStore();
+  const { landingData, clients, actions } = useCitsStore();
+
+  // Client Management States inside Landing Page
+  const [clientSearch, setClientSearch] = useState("");
+  const [clientFilter, setClientFilter] = useState<string>("Semua");
+  const [clientModalOpen, setClientModalOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<ClientPartner | null>(null);
+  const [clientFormName, setClientFormName] = useState("");
+  const [clientFormCategory, setClientFormCategory] = useState<ClientPartner["category"]>("Kementerian");
+  const [clientFormLogo, setClientFormLogo] = useState("/clients/kemenhub.webp");
+  const [clientFormIsActive, setClientFormIsActive] = useState(true);
+  const [clientSuccessMsg, setClientSuccessMsg] = useState("");
+  const [newCard1Tag, setNewCard1Tag] = useState("");
+  const [newProd1Tag, setNewProd1Tag] = useState("");
+  const [newProd4Tag, setNewProd4Tag] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const PRESET_CLIENT_LOGOS = [
+    { name: "Kementerian Perhubungan RI", logo: "/clients/kemenhub.webp" },
+    { name: "Kementerian ESDM", logo: "/clients/esdm.webp" },
+    { name: "Kementerian Ketenagakerjaan RI", logo: "/clients/kemnaker.webp" },
+    { name: "Kementerian Investasi / BKPM", logo: "/clients/bkpm.webp" },
+    { name: "Kementerian Kesehatan RI", logo: "/clients/kemenkes.webp" },
+    { name: "Kementerian Dalam Negeri RI", logo: "/clients/kemendagri.svg" },
+    { name: "Kementerian Kominfo RI", logo: "/clients/kominfo.webp" },
+    { name: "Kementerian Perdagangan RI", logo: "/clients/perdagangan.webp" },
+    { name: "Kementerian Koperasi dan UKM RI", logo: "/clients/kemenkop.webp" },
+    { name: "Kementerian ATR/BPN", logo: "/clients/atr-bpn.webp" },
+    { name: "PT Indonesia Power", logo: "/clients/indonesia-power.webp" },
+    { name: "Mahkamah Agung RI", logo: "/clients/makamah-agung.webp" },
+    { name: "BPPT", logo: "/clients/bppt.webp" },
+    { name: "BRIN", logo: "/clients/brin.webp" },
+  ];
+
+  const openAddClientModal = () => {
+    setEditingClient(null);
+    setClientFormName("");
+    setClientFormCategory("Kementerian");
+    setClientFormLogo("/clients/kemenhub.webp");
+    setClientFormIsActive(true);
+    setClientModalOpen(true);
+  };
+
+  const openEditClientModal = (c: ClientPartner) => {
+    setEditingClient(c);
+    setClientFormName(c.name);
+    setClientFormCategory(c.category);
+    setClientFormLogo(c.logo);
+    setClientFormIsActive(c.isActive);
+    setClientModalOpen(true);
+  };
+
+  const handleSaveClient = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!clientFormName.trim()) return;
+
+    if (editingClient) {
+      actions.updateClient(editingClient.id, {
+        name: clientFormName.trim(),
+        category: clientFormCategory,
+        logo: clientFormLogo.trim(),
+        isActive: clientFormIsActive,
+      });
+      setClientSuccessMsg(`Perubahan data "${clientFormName}" berhasil disimpan!`);
+    } else {
+      actions.addClient({
+        name: clientFormName.trim(),
+        category: clientFormCategory,
+        logo: clientFormLogo.trim(),
+        isActive: clientFormIsActive,
+      });
+      setClientSuccessMsg(`Mitra "${clientFormName}" berhasil ditambahkan!`);
+    }
+
+    setClientModalOpen(false);
+    setTimeout(() => setClientSuccessMsg(""), 3500);
+  };
+
+  const handleDeleteClient = (c: ClientPartner) => {
+    if (confirm(`Hapus kementerian / mitra "${c.name}"?`)) {
+      actions.deleteClient(c.id);
+      setClientSuccessMsg(`Mitra "${c.name}" berhasil dihapus.`);
+      setTimeout(() => setClientSuccessMsg(""), 3500);
+    }
+  };
+
+  const handleToggleClientActive = (c: ClientPartner) => {
+    actions.updateClient(c.id, { isActive: !c.isActive });
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setClientFormLogo(event.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const [activeTab, setActiveTab] = useState<"hero" | "stats" | "services" | "products" | "clients" | "cta">("hero");
   const [formData, setFormData] = useState<LandingPageData>(() => {
@@ -169,6 +276,409 @@ export default function AdminLandingPage() {
     setFormData({
       ...formData,
       highlights: formData.highlights.filter((_, i) => i !== index),
+    });
+  };
+
+  // Service Card 1 helpers
+  const handleCard1PipelineChange = (idx: number, val: string) => {
+    const current = formData.servicesIntro.cardSoftwareHouse?.pipelineSteps || [
+      "Aplikasi Web & Mobile",
+      "REST API & Microservices",
+      "Basis Data PostgreSQL / Oracle",
+    ];
+    const updated = [...current];
+    updated[idx] = val;
+    setFormData({
+      ...formData,
+      servicesIntro: {
+        ...formData.servicesIntro,
+        cardSoftwareHouse: {
+          ...formData.servicesIntro.cardSoftwareHouse,
+          pipelineSteps: updated,
+        },
+      },
+    });
+  };
+
+  const handleCard1AddTag = () => {
+    if (!newCard1Tag.trim()) return;
+    const current = formData.servicesIntro.cardSoftwareHouse?.tags || [
+      "Aplikasi Web",
+      "Aplikasi Mobile",
+      "Integrasi Sistem",
+      "Pengembangan API",
+      "Pemeliharaan Berkala",
+    ];
+    setFormData({
+      ...formData,
+      servicesIntro: {
+        ...formData.servicesIntro,
+        cardSoftwareHouse: {
+          ...formData.servicesIntro.cardSoftwareHouse,
+          tags: [...current, newCard1Tag.trim()],
+        },
+      },
+    });
+    setNewCard1Tag("");
+  };
+
+  const handleCard1RemoveTag = (idx: number) => {
+    const current = formData.servicesIntro.cardSoftwareHouse?.tags || [];
+    setFormData({
+      ...formData,
+      servicesIntro: {
+        ...formData.servicesIntro,
+        cardSoftwareHouse: {
+          ...formData.servicesIntro.cardSoftwareHouse,
+          tags: current.filter((_, i) => i !== idx),
+        },
+      },
+    });
+  };
+
+  // Service Card 2 helpers
+  const handleCard2ItemChange = (idx: number, val: string) => {
+    const current = formData.servicesIntro.cardConsultant?.items || [
+      "Analisis kebutuhan sistem informasi",
+      "Perencanaan arsitektur TI enterprise",
+      "Audit infrastruktur & keamanan teknologi",
+      "Rekomendasi solusi & peta jalan digital",
+      "Pendampingan implementasi kesistemanan",
+    ];
+    const updated = [...current];
+    updated[idx] = val;
+    setFormData({
+      ...formData,
+      servicesIntro: {
+        ...formData.servicesIntro,
+        cardConsultant: {
+          ...formData.servicesIntro.cardConsultant,
+          items: updated,
+        },
+      },
+    });
+  };
+
+  const handleCard2AddItem = () => {
+    const current = formData.servicesIntro.cardConsultant?.items || [];
+    setFormData({
+      ...formData,
+      servicesIntro: {
+        ...formData.servicesIntro,
+        cardConsultant: {
+          ...formData.servicesIntro.cardConsultant,
+          items: [...current, "Poin Keunggulan Baru"],
+        },
+      },
+    });
+  };
+
+  const handleCard2RemoveItem = (idx: number) => {
+    const current = formData.servicesIntro.cardConsultant?.items || [];
+    if (current.length <= 1) return;
+    setFormData({
+      ...formData,
+      servicesIntro: {
+        ...formData.servicesIntro,
+        cardConsultant: {
+          ...formData.servicesIntro.cardConsultant,
+          items: current.filter((_, i) => i !== idx),
+        },
+      },
+    });
+  };
+
+  // Service Card 3 helpers
+  const handleCard3ItemChange = (idx: number, val: string) => {
+    const current = formData.servicesIntro.cardSupplier?.items || [
+      "Perangkat server & infrastruktur jaringan",
+      "Komputer desktop, laptop & periferal kerja",
+      "Lisensi & langganan software resmi",
+      "Instalasi, konfigurasi & pengujian perangkat",
+      "Layanan purna jual & pemeliharaan berkala",
+    ];
+    const updated = [...current];
+    updated[idx] = val;
+    setFormData({
+      ...formData,
+      servicesIntro: {
+        ...formData.servicesIntro,
+        cardSupplier: {
+          ...formData.servicesIntro.cardSupplier,
+          items: updated,
+        },
+      },
+    });
+  };
+
+  const handleCard3AddItem = () => {
+    const current = formData.servicesIntro.cardSupplier?.items || [];
+    setFormData({
+      ...formData,
+      servicesIntro: {
+        ...formData.servicesIntro,
+        cardSupplier: {
+          ...formData.servicesIntro.cardSupplier,
+          items: [...current, "Poin Pengadaan Baru"],
+        },
+      },
+    });
+  };
+
+  const handleCard3RemoveItem = (idx: number) => {
+    const current = formData.servicesIntro.cardSupplier?.items || [];
+    if (current.length <= 1) return;
+    setFormData({
+      ...formData,
+      servicesIntro: {
+        ...formData.servicesIntro,
+        cardSupplier: {
+          ...formData.servicesIntro.cardSupplier,
+          items: current.filter((_, i) => i !== idx),
+        },
+      },
+    });
+  };
+
+  // Service Card 4 FOCUS helpers
+  const handleCard4FocusChange = (idx: number, field: "letter" | "word" | "desc", val: string) => {
+    const current = formData.servicesIntro.cardFocus?.focusItems || [
+      { letter: "F", word: "Focus", desc: "Kebutuhan klien" },
+      { letter: "O", word: "On Time", desc: "Tepat waktu" },
+      { letter: "C", word: "Customer", desc: "Kepuasan pelanggan" },
+      { letter: "U", word: "Update", desc: "Teknologi terkini" },
+      { letter: "S", word: "Synergy", desc: "Sinergi tim maksimal" },
+    ];
+    const updated = [...current];
+    updated[idx] = { ...updated[idx], [field]: val };
+    setFormData({
+      ...formData,
+      servicesIntro: {
+        ...formData.servicesIntro,
+        cardFocus: {
+          ...formData.servicesIntro.cardFocus,
+          focusItems: updated,
+        },
+      },
+    });
+  };
+
+  // Product Card 1 helpers
+  const handleProd1FeatureChange = (idx: number, field: "title" | "desc", val: string) => {
+    const current = formData.productsIntro?.card1?.features || [
+      { title: "GPS Waktu Nyata", desc: "Akurasi pelacakan tinggi" },
+      { title: "Geofencing", desc: "Batas perimeter otomatis" },
+      { title: "Riwayat Rute", desc: "Rekam jejak perjalanan" },
+      { title: "Peringatan Darurat", desc: "Notifikasi insiden instan" },
+    ];
+    const updated = [...current];
+    updated[idx] = { ...updated[idx], [field]: val };
+    setFormData({
+      ...formData,
+      productsIntro: {
+        ...formData.productsIntro,
+        card1: {
+          ...formData.productsIntro?.card1,
+          features: updated,
+        },
+      },
+    });
+  };
+
+  const handleProd1AddTag = () => {
+    if (!newProd1Tag.trim()) return;
+    const current = formData.productsIntro?.card1?.tags || [
+      "GPS Waktu Nyata",
+      "Geofencing",
+      "Riwayat Rute",
+      "Sistem Peringatan",
+      "Manajemen Armada",
+    ];
+    setFormData({
+      ...formData,
+      productsIntro: {
+        ...formData.productsIntro,
+        card1: {
+          ...formData.productsIntro?.card1,
+          tags: [...current, newProd1Tag.trim()],
+        },
+      },
+    });
+    setNewProd1Tag("");
+  };
+
+  const handleProd1RemoveTag = (idx: number) => {
+    const current = formData.productsIntro?.card1?.tags || [];
+    setFormData({
+      ...formData,
+      productsIntro: {
+        ...formData.productsIntro,
+        card1: {
+          ...formData.productsIntro?.card1,
+          tags: current.filter((_, i) => i !== idx),
+        },
+      },
+    });
+  };
+
+  // Product Card 2 helpers
+  const handleProd2FeatureChange = (idx: number, val: string) => {
+    const current = formData.productsIntro?.card2?.features || [
+      "Pengelolaan siklus hidup aset lengkap",
+      "Pemindaian kode QR & Barcode presisi",
+      "Kalkulasi penyusutan nilai otomatis",
+      "Pelaporan komprehensif & siap audit",
+    ];
+    const updated = [...current];
+    updated[idx] = val;
+    setFormData({
+      ...formData,
+      productsIntro: {
+        ...formData.productsIntro,
+        card2: {
+          ...formData.productsIntro?.card2,
+          features: updated,
+        },
+      },
+    });
+  };
+
+  const handleProd2AddFeature = () => {
+    const current = formData.productsIntro?.card2?.features || [];
+    setFormData({
+      ...formData,
+      productsIntro: {
+        ...formData.productsIntro,
+        card2: {
+          ...formData.productsIntro?.card2,
+          features: [...current, "Fitur Baru"],
+        },
+      },
+    });
+  };
+
+  const handleProd2RemoveFeature = (idx: number) => {
+    const current = formData.productsIntro?.card2?.features || [];
+    if (current.length <= 1) return;
+    setFormData({
+      ...formData,
+      productsIntro: {
+        ...formData.productsIntro,
+        card2: {
+          ...formData.productsIntro?.card2,
+          features: current.filter((_, i) => i !== idx),
+        },
+      },
+    });
+  };
+
+  // Product Card 3 helpers
+  const handleProd3FeatureChange = (idx: number, val: string) => {
+    const current = formData.productsIntro?.card3?.features || [
+      "Kontrol versi & manajemen hak akses",
+      "Pencarian teks lengkap OCR & barcode",
+      "Klasifikasi dinamis & jejak audit digital",
+      "Cadangan otomatis & enkripsi AES-256",
+    ];
+    const updated = [...current];
+    updated[idx] = val;
+    setFormData({
+      ...formData,
+      productsIntro: {
+        ...formData.productsIntro,
+        card3: {
+          ...formData.productsIntro?.card3,
+          features: updated,
+        },
+      },
+    });
+  };
+
+  const handleProd3AddFeature = () => {
+    const current = formData.productsIntro?.card3?.features || [];
+    setFormData({
+      ...formData,
+      productsIntro: {
+        ...formData.productsIntro,
+        card3: {
+          ...formData.productsIntro?.card3,
+          features: [...current, "Fitur Baru"],
+        },
+      },
+    });
+  };
+
+  const handleProd3RemoveFeature = (idx: number) => {
+    const current = formData.productsIntro?.card3?.features || [];
+    if (current.length <= 1) return;
+    setFormData({
+      ...formData,
+      productsIntro: {
+        ...formData.productsIntro,
+        card3: {
+          ...formData.productsIntro?.card3,
+          features: current.filter((_, i) => i !== idx),
+        },
+      },
+    });
+  };
+
+  // Product Card 4 helpers
+  const handleProd4SubProductChange = (idx: number, field: "name" | "desc", val: string) => {
+    const current = formData.productsIntro?.card4?.subProducts || [
+      { name: "CITS GeoSpatial™", desc: "Peta interaktif multi-layer, analisis spasial wilayah & monitoring infrastruktur utilitas." },
+      { name: "CITS Omnichannel Gateway™", desc: "Pengiriman pesan massal WhatsApp API & SMS OTP dengan throughput tinggi dan fallback otomatis." },
+      { name: "CITS SmartGov Portal™", desc: "Portal pelayanan publik satu pintu, pelacakan permohonan berkas & gerbang retribusi SPBE." },
+      { name: "CITS Executive BI™", desc: "Dasbor analitik eksekutif real-time, agregasi multi-database & perumusan keputusan pimpinan." },
+    ];
+    const updated = [...current];
+    updated[idx] = { ...updated[idx], [field]: val };
+    setFormData({
+      ...formData,
+      productsIntro: {
+        ...formData.productsIntro,
+        card4: {
+          ...formData.productsIntro?.card4,
+          subProducts: updated,
+        },
+      },
+    });
+  };
+
+  const handleProd4AddTag = () => {
+    if (!newProd4Tag.trim()) return;
+    const current = formData.productsIntro?.card4?.tags || [
+      "CITS FleetTrack",
+      "CITS AssetHub",
+      "CITS DocuVault",
+      "CITS GeoSpatial",
+      "CITS Omnichannel",
+      "CITS SmartGov",
+    ];
+    setFormData({
+      ...formData,
+      productsIntro: {
+        ...formData.productsIntro,
+        card4: {
+          ...formData.productsIntro?.card4,
+          tags: [...current, newProd4Tag.trim()],
+        },
+      },
+    });
+    setNewProd4Tag("");
+  };
+
+  const handleProd4RemoveTag = (idx: number) => {
+    const current = formData.productsIntro?.card4?.tags || [];
+    setFormData({
+      ...formData,
+      productsIntro: {
+        ...formData.productsIntro,
+        card4: {
+          ...formData.productsIntro?.card4,
+          tags: current.filter((_, i) => i !== idx),
+        },
+      },
     });
   };
 
@@ -1058,6 +1568,85 @@ export default function AdminLandingPage() {
                         />
                       </div>
                     </div>
+
+                    {/* Pipeline Architecture Steps */}
+                    <div className="pt-2 border-t border-slate-200/70 dark:border-white/10 space-y-2">
+                      <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Alur Arsitektur Rekayasa (3 Langkah Pipeline)
+                      </label>
+                      <div className="space-y-1.5">
+                        {(formData.servicesIntro.cardSoftwareHouse?.pipelineSteps || [
+                          "Aplikasi Web & Mobile",
+                          "REST API & Microservices",
+                          "Basis Data PostgreSQL / Oracle",
+                        ]).map((step, sIdx) => (
+                          <div key={sIdx} className="flex items-center gap-2">
+                            <span className="w-5 h-5 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 text-[10px] font-bold flex items-center justify-center shrink-0">
+                              {sIdx + 1}
+                            </span>
+                            <input
+                              type="text"
+                              value={step}
+                              onChange={(e) => handleCard1PipelineChange(sIdx, e.target.value)}
+                              className="flex-1 px-2.5 py-1 rounded-md border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Tags List */}
+                    <div className="pt-2 border-t border-slate-200/70 dark:border-white/10 space-y-2">
+                      <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Tag Layanan & Spesifikasi
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(formData.servicesIntro.cardSoftwareHouse?.tags || [
+                          "Aplikasi Web",
+                          "Aplikasi Mobile",
+                          "Integrasi Sistem",
+                          "Pengembangan API",
+                          "Pemeliharaan Berkala",
+                        ]).map((tag, tIdx) => (
+                          <span
+                            key={tIdx}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-white/10 border border-slate-200 dark:border-white/15 text-[11px] font-medium text-slate-800 dark:text-white"
+                          >
+                            <span>{tag}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleCard1RemoveTag(tIdx)}
+                              className="hover:text-red-500 cursor-pointer"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-1.5 pt-1">
+                        <input
+                          type="text"
+                          value={newCard1Tag}
+                          onChange={(e) => setNewCard1Tag(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleCard1AddTag();
+                            }
+                          }}
+                          placeholder="Tambah tag baru..."
+                          className="flex-1 px-2.5 py-1 rounded-md border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleCard1AddTag}
+                          className="px-2.5 py-1 rounded-md bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>Tambah</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Card 2: IT Consultant */}
@@ -1169,6 +1758,51 @@ export default function AdminLandingPage() {
                           }
                           className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
                         />
+                      </div>
+                    </div>
+
+                    {/* Bullet Items Manager */}
+                    <div className="pt-2 border-t border-slate-200/70 dark:border-white/10 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                          Daftar Poin Keunggulan Konsultasi
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleCard2AddItem}
+                          className="px-2 py-0.5 rounded-md bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 hover:bg-orange-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <Plus className="w-2.5 h-2.5" /> Tambah Poin
+                        </button>
+                      </div>
+                      <div className="space-y-1.5">
+                        {(formData.servicesIntro.cardConsultant?.items || [
+                          "Analisis kebutuhan sistem informasi",
+                          "Perencanaan arsitektur TI enterprise",
+                          "Audit infrastruktur & keamanan teknologi",
+                          "Rekomendasi solusi & peta jalan digital",
+                          "Pendampingan implementasi kesistemanan",
+                        ]).map((item, iIdx) => (
+                          <div key={iIdx} className="flex items-center gap-1.5">
+                            <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-[9px] font-bold flex items-center justify-center shrink-0">
+                              {iIdx + 1}
+                            </span>
+                            <input
+                              type="text"
+                              value={item}
+                              onChange={(e) => handleCard2ItemChange(iIdx, e.target.value)}
+                              className="flex-1 px-2.5 py-1 rounded-md border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleCard2RemoveItem(iIdx)}
+                              className="p-1 text-slate-400 hover:text-red-500 cursor-pointer"
+                              title="Hapus poin"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -1284,6 +1918,51 @@ export default function AdminLandingPage() {
                         />
                       </div>
                     </div>
+
+                    {/* Bullet Items Manager */}
+                    <div className="pt-2 border-t border-slate-200/70 dark:border-white/10 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                          Daftar Poin Pengadaan Perangkat TI
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleCard3AddItem}
+                          className="px-2 py-0.5 rounded-md bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 hover:bg-orange-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <Plus className="w-2.5 h-2.5" /> Tambah Poin
+                        </button>
+                      </div>
+                      <div className="space-y-1.5">
+                        {(formData.servicesIntro.cardSupplier?.items || [
+                          "Perangkat server & infrastruktur jaringan",
+                          "Komputer desktop, laptop & periferal kerja",
+                          "Lisensi & langganan software resmi",
+                          "Instalasi, konfigurasi & pengujian perangkat",
+                          "Layanan purna jual & pemeliharaan berkala",
+                        ]).map((item, sIdx) => (
+                          <div key={sIdx} className="flex items-center gap-1.5">
+                            <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-[9px] font-bold flex items-center justify-center shrink-0">
+                              {sIdx + 1}
+                            </span>
+                            <input
+                              type="text"
+                              value={item}
+                              onChange={(e) => handleCard3ItemChange(sIdx, e.target.value)}
+                              className="flex-1 px-2.5 py-1 rounded-md border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleCard3RemoveItem(sIdx)}
+                              className="p-1 text-slate-400 hover:text-red-500 cursor-pointer"
+                              title="Hapus poin"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Card 4: Prinsip Kerja FOCUS */}
@@ -1355,6 +2034,27 @@ export default function AdminLandingPage() {
                       />
                     </div>
 
+                    <div>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">Teks Footer Kartu</label>
+                      <input
+                        type="text"
+                        value={formData.servicesIntro.cardFocus?.footerText || "Terpercaya menangani sistem kementerian sejak 2006"}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            servicesIntro: {
+                              ...formData.servicesIntro,
+                              cardFocus: {
+                                ...formData.servicesIntro.cardFocus,
+                                footerText: e.target.value,
+                              },
+                            },
+                          })
+                        }
+                        className="w-full px-3 py-1.5 rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      />
+                    </div>
+
                     <div className="grid grid-cols-2 gap-2">
                       <div>
                         <label className="block text-[10px] font-semibold text-slate-500 mb-1">Teks Link</label>
@@ -1395,6 +2095,48 @@ export default function AdminLandingPage() {
                           }
                           className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
                         />
+                      </div>
+                    </div>
+
+                    {/* 5 FOCUS Items Editor */}
+                    <div className="pt-2 border-t border-slate-200/70 dark:border-white/10 space-y-2">
+                      <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        5 Pilar Prinsip Kerja FOCUS (F - O - C - U - S)
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+                        {(formData.servicesIntro.cardFocus?.focusItems || [
+                          { letter: "F", word: "Focus", desc: "Kebutuhan klien" },
+                          { letter: "O", word: "On Time", desc: "Tepat waktu" },
+                          { letter: "C", word: "Customer", desc: "Kepuasan pelanggan" },
+                          { letter: "U", word: "Update", desc: "Teknologi terkini" },
+                          { letter: "S", word: "Synergy", desc: "Sinergi tim maksimal" },
+                        ]).map((fItem, fIdx) => (
+                          <div key={fIdx} className="p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <input
+                                type="text"
+                                maxLength={2}
+                                value={fItem.letter}
+                                onChange={(e) => handleCard4FocusChange(fIdx, "letter", e.target.value)}
+                                className="w-7 text-center py-0.5 rounded font-black text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 border border-orange-200 text-xs focus:outline-none"
+                              />
+                              <input
+                                type="text"
+                                value={fItem.word}
+                                onChange={(e) => handleCard4FocusChange(fIdx, "word", e.target.value)}
+                                placeholder="Kata"
+                                className="flex-1 px-1.5 py-0.5 rounded border border-slate-300 dark:border-white/15 text-xs font-bold text-slate-900 dark:text-white focus:outline-none"
+                              />
+                            </div>
+                            <input
+                              type="text"
+                              value={fItem.desc}
+                              onChange={(e) => handleCard4FocusChange(fIdx, "desc", e.target.value)}
+                              placeholder="Deskripsi"
+                              className="w-full px-1.5 py-0.5 rounded border border-slate-300 dark:border-white/15 text-[10px] text-slate-600 dark:text-slate-300 focus:outline-none"
+                            />
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -1658,6 +2400,91 @@ export default function AdminLandingPage() {
                         className="w-full px-3 py-1.5 rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
                       />
                     </div>
+
+                    {/* 4 Feature Items (Grid 2x2) */}
+                    <div className="pt-2 border-t border-slate-200/70 dark:border-white/10 space-y-2">
+                      <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        4 Fitur Unggulan Armada (Grid 2x2)
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {(formData.productsIntro?.card1?.features || [
+                          { title: "GPS Waktu Nyata", desc: "Akurasi pelacakan tinggi" },
+                          { title: "Geofencing", desc: "Batas perimeter otomatis" },
+                          { title: "Riwayat Rute", desc: "Rekam jejak perjalanan" },
+                          { title: "Peringatan Darurat", desc: "Notifikasi insiden instan" },
+                        ]).map((feat, fIdx) => (
+                          <div key={fIdx} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-1">
+                            <input
+                              type="text"
+                              value={feat.title}
+                              onChange={(e) => handleProd1FeatureChange(fIdx, "title", e.target.value)}
+                              placeholder="Judul Fitur"
+                              className="w-full px-2 py-0.5 rounded border border-slate-300 dark:border-white/15 text-xs font-bold text-slate-900 dark:text-white focus:outline-none"
+                            />
+                            <input
+                              type="text"
+                              value={feat.desc}
+                              onChange={(e) => handleProd1FeatureChange(fIdx, "desc", e.target.value)}
+                              placeholder="Keterangan singkat"
+                              className="w-full px-2 py-0.5 rounded border border-slate-300 dark:border-white/15 text-[10px] text-slate-600 dark:text-slate-300 focus:outline-none"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Tags List */}
+                    <div className="pt-2 border-t border-slate-200/70 dark:border-white/10 space-y-2">
+                      <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Tag Solusi IoT & Telemetri
+                      </label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(formData.productsIntro?.card1?.tags || [
+                          "GPS Waktu Nyata",
+                          "Geofencing",
+                          "Riwayat Rute",
+                          "Sistem Peringatan",
+                          "Manajemen Armada",
+                        ]).map((tag, tIdx) => (
+                          <span
+                            key={tIdx}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-white/10 border border-slate-200 dark:border-white/15 text-[11px] font-medium text-slate-800 dark:text-white"
+                          >
+                            <span>{tag}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleProd1RemoveTag(tIdx)}
+                              className="hover:text-red-500 cursor-pointer"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-1.5 pt-1">
+                        <input
+                          type="text"
+                          value={newProd1Tag}
+                          onChange={(e) => setNewProd1Tag(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleProd1AddTag();
+                            }
+                          }}
+                          placeholder="Tambah tag baru..."
+                          className="flex-1 px-2.5 py-1 rounded-md border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleProd1AddTag}
+                          className="px-2.5 py-1 rounded-md bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>Tambah</span>
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Product Card 2: AssetHub */}
@@ -1760,6 +2587,49 @@ export default function AdminLandingPage() {
                         }
                         className="w-full px-3 py-1.5 rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
                       />
+                    </div>
+
+                    {/* Fitur Produk Card 2 */}
+                    <div className="pt-2 border-t border-slate-200 dark:border-white/10 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                          Daftar Fitur Utama ({formData.productsIntro?.card2?.features?.length || 4})
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleProd2AddFeature}
+                          className="px-2 py-0.5 rounded text-[11px] font-medium bg-orange-100 hover:bg-orange-200 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300 transition-colors"
+                        >
+                          + Tambah Fitur
+                        </button>
+                      </div>
+                      <div className="space-y-1.5">
+                        {(formData.productsIntro?.card2?.features || [
+                          "Pencatatan BMN / BMD terintegrasi",
+                          "QR code & Barcode tag fisik",
+                          "Jadwal pemeliharaan preventif",
+                          "Kalkulasi depresiasi & audit trail",
+                        ]).map((feat, fIdx) => (
+                          <div key={fIdx} className="flex items-center gap-1.5">
+                            <input
+                              type="text"
+                              value={feat}
+                              onChange={(e) => handleProd2FeatureChange(fIdx, e.target.value)}
+                              className="flex-1 px-2.5 py-1 rounded border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                            />
+                            {(formData.productsIntro?.card2?.features?.length || 4) > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleProd2RemoveFeature(fIdx)}
+                                className="p-1 rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 transition-colors"
+                                title="Hapus Fitur"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
@@ -1864,6 +2734,49 @@ export default function AdminLandingPage() {
                         className="w-full px-3 py-1.5 rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
                       />
                     </div>
+
+                    {/* Fitur Dokumen Card 3 */}
+                    <div className="pt-2 border-t border-slate-200 dark:border-white/10 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                          Daftar Fitur Arsip ({formData.productsIntro?.card3?.features?.length || 4})
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleProd3AddFeature}
+                          className="px-2 py-0.5 rounded text-[11px] font-medium bg-orange-100 hover:bg-orange-200 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300 transition-colors"
+                        >
+                          + Tambah Fitur
+                        </button>
+                      </div>
+                      <div className="space-y-1.5">
+                        {(formData.productsIntro?.card3?.features || [
+                          "OCR & Pengindeksan Full-Text Otomatis",
+                          "Integrasi Tanda Tangan Elektronik (TTE BSrE)",
+                          "Role-Based Access Control & Audit Log",
+                          "Retensi Dokumen Sesuai Jadwal ANRI",
+                        ]).map((feat, fIdx) => (
+                          <div key={fIdx} className="flex items-center gap-1.5">
+                            <input
+                              type="text"
+                              value={feat}
+                              onChange={(e) => handleProd3FeatureChange(fIdx, e.target.value)}
+                              className="flex-1 px-2.5 py-1 rounded border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                            />
+                            {(formData.productsIntro?.card3?.features?.length || 4) > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => handleProd3RemoveFeature(fIdx)}
+                                className="p-1 rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-500/20 transition-colors"
+                                title="Hapus Fitur"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Product Card 4: GeoSpatial & Ecosystem */}
@@ -1966,6 +2879,94 @@ export default function AdminLandingPage() {
                         }
                         className="w-full px-3 py-1.5 rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
                       />
+                    </div>
+
+                    {/* 4 Sub-Produk Ekosistem */}
+                    <div className="pt-2 border-t border-slate-200 dark:border-white/10 space-y-2">
+                      <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        4 Sub-Platform Ekosistem
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                        {(formData.productsIntro?.card4?.subProducts || [
+                          { name: "CITS GeoSpatial™", desc: "Peta interaktif multi-layer, analisis spasial wilayah & monitoring infrastruktur utilitas." },
+                          { name: "CITS Omnichannel Gateway™", desc: "Pengiriman pesan massal WhatsApp API & SMS OTP dengan throughput tinggi dan fallback otomatis." },
+                          { name: "CITS SmartGov Portal™", desc: "Portal pelayanan publik satu pintu, pelacakan permohonan berkas & gerbang retribusi SPBE." },
+                          { name: "CITS Executive BI™", desc: "Dasbor analitik eksekutif real-time, agregasi multi-database & perumusan keputusan pimpinan." },
+                        ]).map((sub, sIdx) => (
+                          <div key={sIdx} className="p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 space-y-1.5">
+                            <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400">
+                              Solusi #{sIdx + 1}
+                            </span>
+                            <input
+                              type="text"
+                              placeholder="Nama Platform"
+                              value={sub.name}
+                              onChange={(e) => handleProd4SubProductChange(sIdx, "name", e.target.value)}
+                              className="w-full px-2 py-1 rounded border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
+                            />
+                            <textarea
+                              rows={2}
+                              placeholder="Deskripsi Platform"
+                              value={sub.desc}
+                              onChange={(e) => handleProd4SubProductChange(sIdx, "desc", e.target.value)}
+                              className="w-full px-2 py-1 rounded border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-[11px] text-slate-700 dark:text-slate-300 focus:outline-none"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Tag Ekosistem Produk */}
+                    <div className="pt-2 border-t border-slate-200 dark:border-white/10 space-y-2">
+                      <label className="block text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Tag Badge Produk Ekosistem
+                      </label>
+                      <div className="flex flex-wrap gap-1.5 mb-2">
+                        {(formData.productsIntro?.card4?.tags || [
+                          "CITS FleetTrack",
+                          "CITS AssetHub",
+                          "CITS DocuVault",
+                          "CITS GeoSpatial",
+                          "CITS Omnichannel",
+                          "CITS SmartGov",
+                        ]).map((tag, tIdx) => (
+                          <span
+                            key={tIdx}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-300 border border-orange-200 dark:border-orange-500/30"
+                          >
+                            {tag}
+                            <button
+                              type="button"
+                              onClick={() => handleProd4RemoveTag(tIdx)}
+                              className="hover:text-red-500 ml-0.5"
+                            >
+                              &times;
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Tambah badge tag produk..."
+                          value={newProd4Tag}
+                          onChange={(e) => setNewProd4Tag(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleProd4AddTag();
+                            }
+                          }}
+                          className="flex-1 px-3 py-1.5 rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleProd4AddTag}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-orange-500 hover:bg-orange-600 text-white transition-colors"
+                        >
+                          Tambah Tag
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2075,24 +3076,360 @@ export default function AdminLandingPage() {
                 />
               </div>
 
-              {/* Informative Preview & Quick Navigation */}
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    Manajemen Logo Mitra & Klien:
-                  </span>
-                  <Link
-                    href="/admin/clients"
-                    className="px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 font-bold hover:bg-orange-100 dark:hover:bg-orange-900/50 flex items-center gap-1 text-[11px] transition-colors"
-                  >
-                    Buka Halaman Kelola Logo Klien <ExternalLink className="w-3 h-3" />
-                  </Link>
+              {/* Success Notification for Client Actions */}
+              {clientSuccessMsg && (
+                <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-2.5 text-xs text-emerald-800 dark:text-emerald-300 animate-in fade-in">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{clientSuccessMsg}</span>
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Semua logo yang Anda tambahkan, edit, atau aktifkan/nonaktifkan di menu Mitra & Klien akan otomatis tersinkronisasi dan tampil di deretan marquee beranda depan.
-                </p>
+              )}
+
+              {/* Title Input */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wider">
+                  Judul Bagian Marquee Klien
+                </label>
+                <input
+                  type="text"
+                  value={formData.clientsIntro?.title || "Dipercaya oleh Kementerian, BUMN, dan Lembaga Nasional"}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      clientsIntro: {
+                        title: e.target.value,
+                      },
+                    })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-white/15 bg-slate-50 dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-orange-500 font-semibold"
+                  placeholder="e.g. Dipercaya oleh Kementerian, BUMN, dan Lembaga Nasional"
+                />
               </div>
+
+              {/* Header & Controls for Ministries / Clients List */}
+              <div className="pt-4 border-t border-slate-100 dark:border-white/10 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-orange-600" />
+                      <span>Daftar Kementerian, BUMN & Mitra ({clients.length} Terdaftar)</span>
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Kelola nama kementerian, foto logo, dan visibilitasnya yang tampil langsung di barisan beranda.
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={openAddClientModal}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Tambah Kementerian / Mitra</span>
+                  </button>
+                </div>
+
+                {/* Filter and Search Bar */}
+                <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
+                  <div className="relative flex-1 min-w-[200px] max-w-sm">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={clientSearch}
+                      onChange={(e) => setClientSearch(e.target.value)}
+                      placeholder="Cari kementerian / instansi..."
+                      className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-white dark:bg-[#16162d] border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                    {["Semua", "Kementerian", "BUMN", "Lembaga", "Swasta"].map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setClientFilter(cat)}
+                        className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                          clientFilter === cat
+                            ? "bg-orange-600 text-white shadow-xs"
+                            : "bg-white dark:bg-[#16162d] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:border-orange-400"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Grid of Ministries / Clients */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
+                  {clients
+                    .filter((c) => {
+                      const matchSearch =
+                        c.name.toLowerCase().includes(clientSearch.toLowerCase()) ||
+                        c.category.toLowerCase().includes(clientSearch.toLowerCase());
+                      const matchFilter = clientFilter === "Semua" || c.category === clientFilter;
+                      return matchSearch && matchFilter;
+                    })
+                    .map((c) => (
+                      <div
+                        key={c.id}
+                        className={`p-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                          c.isActive
+                            ? "bg-white dark:bg-[#16162d] border-slate-200/90 dark:border-white/10 hover:border-orange-500/40"
+                            : "bg-slate-50/60 dark:bg-white/5 border-slate-200/50 dark:border-white/5 opacity-60"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-12 h-12 rounded-lg bg-slate-50 dark:bg-white/10 border border-slate-200/70 dark:border-white/10 p-1.5 flex items-center justify-center shrink-0 overflow-hidden">
+                            <Image
+                              src={c.logo}
+                              alt={c.name}
+                              width={44}
+                              height={44}
+                              unoptimized
+                              className="max-h-full max-w-full object-contain"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                if (target && c.logo.endsWith(".webp")) {
+                                  target.src = c.logo.replace(/\.webp$/, ".png");
+                                }
+                              }}
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <h5 className="text-xs font-bold text-slate-900 dark:text-white truncate" title={c.name}>
+                              {c.name}
+                            </h5>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/10 text-[10px] font-semibold text-slate-600 dark:text-slate-300">
+                                {c.category}
+                              </span>
+                              <span
+                                className={`text-[10px] font-medium ${
+                                  c.isActive ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"
+                                }`}
+                              >
+                                {c.isActive ? "Aktif di Beranda" : "Disembunyikan"}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleClientActive(c)}
+                            title={c.isActive ? "Sembunyikan dari beranda" : "Tampilkan di beranda"}
+                            className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
+                              c.isActive
+                                ? "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                                : "text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10"
+                            }`}
+                          >
+                            {c.isActive ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openEditClientModal(c)}
+                            title="Edit kementerian / foto"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/40 transition-colors cursor-pointer"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteClient(c)}
+                            title="Hapus kementerian"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              {/* Modal Add / Edit Ministry & Client */}
+              {clientModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+                  <div className="w-full max-w-lg bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="px-6 py-4 border-b border-slate-100 dark:border-white/10 flex items-center justify-between">
+                      <div>
+                        <h3 className="font-extrabold text-sm md:text-base text-slate-900 dark:text-white">
+                          {editingClient ? "Edit Kementerian & Foto Logo" : "Tambah Kementerian / Mitra Baru"}
+                        </h3>
+                        <p className="text-[11px] text-slate-500">
+                          Logo dan nama akan langsung sinkron ke deretan kementerian di beranda depan
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setClientModalOpen(false)}
+                        className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleSaveClient} className="p-6 overflow-y-auto space-y-4 text-xs">
+                      {/* Name */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                          Nama Kementerian / Instansi <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={clientFormName}
+                          onChange={(e) => setClientFormName(e.target.value)}
+                          placeholder="cth. Kementerian Perhubungan RI"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 font-semibold"
+                        />
+                      </div>
+
+                      {/* Category */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                          Kategori Institusi
+                        </label>
+                        <select
+                          value={clientFormCategory}
+                          onChange={(e) => setClientFormCategory(e.target.value as any)}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        >
+                          <option value="Kementerian">Kementerian</option>
+                          <option value="BUMN">BUMN</option>
+                          <option value="Lembaga">Lembaga Tinggi Negara</option>
+                          <option value="Swasta">Korporasi Swasta</option>
+                        </select>
+                      </div>
+
+                      {/* Selected Logo Preview & Upload */}
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                          Foto / Logo Kementerian
+                        </label>
+
+                        <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center gap-4">
+                          <div className="w-16 h-16 rounded-xl bg-white dark:bg-[#1A1A2E] border border-slate-200/80 dark:border-white/10 p-2 flex items-center justify-center shrink-0 shadow-xs">
+                            {clientFormLogo ? (
+                              <Image
+                                src={clientFormLogo}
+                                alt="Preview"
+                                width={60}
+                                height={60}
+                                unoptimized
+                                className="max-h-full max-w-full object-contain"
+                              />
+                            ) : (
+                              <Building2 className="w-8 h-8 text-slate-400" />
+                            )}
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <input
+                              type="file"
+                              ref={fileInputRef}
+                              accept="image/*"
+                              onChange={handleLogoUpload}
+                              className="hidden"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 font-bold text-[11px] cursor-pointer transition-colors"
+                            >
+                              <Upload className="w-3.5 h-3.5" />
+                              <span>Unggah Foto dari Komputer</span>
+                            </button>
+                            <input
+                              type="text"
+                              value={clientFormLogo}
+                              onChange={(e) => setClientFormLogo(e.target.value)}
+                              placeholder="/clients/kemenhub.webp atau URL gambar"
+                              className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-[#1A1A2E] border border-slate-200 dark:border-white/10 text-[11px] text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-orange-500 font-mono"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Preset Logos Selector */}
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                          Atau Pilih Cepat dari Logo Kementerian Siap Pakai:
+                        </label>
+                        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 max-h-36 overflow-y-auto p-2 rounded-xl bg-slate-50/70 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
+                          {PRESET_CLIENT_LOGOS.map((p) => {
+                            const isSelected = clientFormLogo === p.logo;
+                            return (
+                              <button
+                                key={p.logo}
+                                type="button"
+                                onClick={() => {
+                                  setClientFormLogo(p.logo);
+                                  if (!clientFormName || clientFormName === "Kementerian Perhubungan RI") {
+                                    setClientFormName(p.name);
+                                  }
+                                }}
+                                title={p.name}
+                                className={`h-12 rounded-lg p-1 border flex items-center justify-center transition-all cursor-pointer relative ${
+                                  isSelected
+                                    ? "bg-orange-50 dark:bg-orange-950/60 border-orange-500 ring-2 ring-orange-500/30"
+                                    : "bg-white dark:bg-[#1A1A2E] border-slate-200 dark:border-white/10 hover:border-orange-400"
+                                }`}
+                              >
+                                <Image
+                                  src={p.logo}
+                                  alt={p.name}
+                                  width={36}
+                                  height={36}
+                                  unoptimized
+                                  className="max-h-full max-w-full object-contain"
+                                />
+                                {isSelected && (
+                                  <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-orange-600 text-white flex items-center justify-center text-[9px]">
+                                    ✓
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Active Toggle */}
+                      <div className="flex items-center gap-2 pt-1">
+                        <input
+                          type="checkbox"
+                          id="clientActiveCheck"
+                          checked={clientFormIsActive}
+                          onChange={(e) => setClientFormIsActive(e.target.checked)}
+                          className="w-4 h-4 accent-orange-600 rounded cursor-pointer"
+                        />
+                        <label htmlFor="clientActiveCheck" className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                          Tampilkan kementerian ini di beranda depan
+                        </label>
+                      </div>
+
+                      {/* Modal Footer Buttons */}
+                      <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-end gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => setClientModalOpen(false)}
+                          className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 cursor-pointer transition-all"
+                        >
+                          {editingClient ? "Simpan Perubahan" : "Tambahkan Mitra"}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

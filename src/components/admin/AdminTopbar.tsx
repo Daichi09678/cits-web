@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, Bell, Sun, Moon, CheckCircle2, Mail, ExternalLink } from "lucide-react";
+import { Search, Bell, Sun, Moon, CheckCircle2, Mail } from "lucide-react";
 import { useCitsStore } from "@/database/store";
 
 interface AdminTopbarProps {
@@ -127,16 +127,6 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
           )}
         </div>
 
-        {/* View Live Front Office Button */}
-        <a
-          href="/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-500/30 text-xs font-bold hover:bg-orange-100 transition-all"
-        >
-          <ExternalLink className="w-3.5 h-3.5" />
-          <span>Lihat Website</span>
-        </a>
       </div>
     </header>
   );

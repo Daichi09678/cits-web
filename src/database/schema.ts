@@ -118,6 +118,8 @@ export interface LandingServicesIntro {
     desc?: string;
     linkText?: string;
     linkUrl?: string;
+    pipelineSteps?: string[];
+    tags?: string[];
   };
   cardConsultant?: {
     badge?: string;
@@ -125,6 +127,7 @@ export interface LandingServicesIntro {
     desc?: string;
     linkText?: string;
     linkUrl?: string;
+    items?: string[];
   };
   cardSupplier?: {
     badge?: string;
@@ -132,6 +135,7 @@ export interface LandingServicesIntro {
     desc?: string;
     linkText?: string;
     linkUrl?: string;
+    items?: string[];
   };
   cardFocus?: {
     badge?: string;
@@ -140,6 +144,7 @@ export interface LandingServicesIntro {
     footerText?: string;
     linkText?: string;
     linkUrl?: string;
+    focusItems?: { letter: string; word: string; desc: string }[];
   };
   bottomCtaText?: string;
   bottomCtaLink?: string;
@@ -149,10 +154,36 @@ export interface LandingProductsIntro {
   badge?: string;
   title?: string;
   subtitle?: string;
-  card1?: { badge?: string; title?: string; desc?: string; linkUrl?: string };
-  card2?: { badge?: string; title?: string; desc?: string; linkUrl?: string };
-  card3?: { badge?: string; title?: string; desc?: string; linkUrl?: string };
-  card4?: { badge?: string; title?: string; desc?: string; linkUrl?: string };
+  card1?: {
+    badge?: string;
+    title?: string;
+    desc?: string;
+    linkUrl?: string;
+    features?: { title: string; desc: string }[];
+    tags?: string[];
+  };
+  card2?: {
+    badge?: string;
+    title?: string;
+    desc?: string;
+    linkUrl?: string;
+    features?: string[];
+  };
+  card3?: {
+    badge?: string;
+    title?: string;
+    desc?: string;
+    linkUrl?: string;
+    features?: string[];
+  };
+  card4?: {
+    badge?: string;
+    title?: string;
+    desc?: string;
+    linkUrl?: string;
+    subProducts?: { name: string; desc: string }[];
+    tags?: string[];
+  };
   bottomCtaText?: string;
   bottomCtaLink?: string;
 }
@@ -183,5 +214,27 @@ export interface LandingPageData {
   updatedAt?: string;
 }
 
-
-
+export interface CaseStudyItem {
+  id: string;
+  title: string;
+  client: string;
+  clientShort: string;
+  clientLogo: string;
+  sector: string;
+  categoryTag: string;
+  period: string;
+  servicePillar: string;
+  isFlagship?: boolean;
+  tagline: string;
+  challenge: string;
+  solution: string;
+  measurableImpact: {
+    highlightValue: string;
+    highlightLabel: string;
+    detail: string;
+  };
+  scopeOfWork: string[];
+  techStack: string[];
+  deliverables: string[];
+  isActive?: boolean;
+}

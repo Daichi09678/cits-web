@@ -17,5 +17,6 @@ export const siteConfig = {
     clients: "cits_db_clients",
     landing: "cits_db_landing",
     services: "cits_db_services",
+    portfolio: "cits_db_portfolio",
   },
 };

@@ -9,6 +9,7 @@ import {
   ClientPartner,
   LandingPageData,
   ServicePillar,
+  CaseStudyItem,
 } from "./schema";
 import {
   initialProducts,
@@ -18,6 +19,7 @@ import {
   initialClients,
   initialLandingPageData,
   initialServicePillars,
+  initialCaseStudies,
 } from "./initialData";
 import { siteConfig } from "@/config/siteConfig";
 import { citsApi } from "@/lib/api";
@@ -197,6 +199,49 @@ export const CitsStore = {
     citsApi.updateLandingData(data).catch((err) => console.warn("Sync landing error:", err));
   },
 
+  // CASE STUDIES (PORTOFOLIO)
+  getCaseStudies(): CaseStudyItem[] {
+    return getStorageItem<CaseStudyItem[]>(siteConfig.storageKeys.portfolio, initialCaseStudies);
+  },
+  getActiveCaseStudies(): CaseStudyItem[] {
+    return this.getCaseStudies().filter((c) => c.isActive !== false);
+  },
+  saveCaseStudies(studies: CaseStudyItem[]): void {
+    setStorageItem(siteConfig.storageKeys.portfolio, studies);
+  },
+  addCaseStudy(study: Omit<CaseStudyItem, "id">): CaseStudyItem {
+    const current = this.getCaseStudies();
+    const newStudy: CaseStudyItem = {
+      ...study,
+      id: "cs-" + Date.now(),
+      isActive: study.isActive !== false,
+    };
+    this.saveCaseStudies([newStudy, ...current]);
+    return newStudy;
+  },
+  updateCaseStudy(id: string, updates: Partial<CaseStudyItem>): void {
+    const current = this.getCaseStudies();
+    const updated = current.map((c) => (c.id === id ? { ...c, ...updates } : c));
+    this.saveCaseStudies(updated);
+  },
+  deleteCaseStudy(id: string): void {
+    const current = this.getCaseStudies();
+    this.saveCaseStudies(current.filter((c) => c.id !== id));
+  },
+  toggleCaseStudyStatus(id: string): boolean {
+    const current = this.getCaseStudies();
+    let newStatus = true;
+    const updated = current.map((c) => {
+      if (c.id === id) {
+        newStatus = !(c.isActive !== false);
+        return { ...c, isActive: newStatus };
+      }
+      return c;
+    });
+    this.saveCaseStudies(updated);
+    return newStatus;
+  },
+
   // RESET TO DEFAULT
   resetAllToDefault(): void {
     if (typeof window === "undefined") return;
@@ -207,6 +252,7 @@ export const CitsStore = {
     localStorage.removeItem(siteConfig.storageKeys.clients);
     localStorage.removeItem(siteConfig.storageKeys.landing);
     localStorage.removeItem(siteConfig.storageKeys.services);
+    localStorage.removeItem(siteConfig.storageKeys.portfolio);
     window.dispatchEvent(new Event("cits-data-updated"));
   },
 };
@@ -219,6 +265,7 @@ export function useCitsStore() {
   const [aboutData, setAboutData] = useState<AboutData>(initialAboutData);
   const [clients, setClients] = useState<ClientPartner[]>(initialClients);
   const [services, setServices] = useState<ServicePillar[]>(initialServicePillars);
+  const [caseStudies, setCaseStudies] = useState<CaseStudyItem[]>(initialCaseStudies);
   const [landingData, setLandingData] = useState<LandingPageData>(initialLandingPageData);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLiveConnected, setIsLiveConnected] = useState(false);
@@ -231,6 +278,7 @@ export function useCitsStore() {
       setAboutData(CitsStore.getAboutData());
       setClients(CitsStore.getClients());
       setServices(CitsStore.getServices());
+      setCaseStudies(CitsStore.getCaseStudies());
       setLandingData(CitsStore.getLandingData());
       setIsLoaded(true);
     }
@@ -373,6 +421,8 @@ export function useCitsStore() {
     aboutData,
     clients,
     services,
+    caseStudies,
+    activeCaseStudies: caseStudies.filter((c) => c.isActive !== false),
     landingData,
     actions: CitsStore,
   };

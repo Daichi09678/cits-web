@@ -50,6 +50,7 @@ export default function Navbar() {
             alt="CITS Indonesia"
             width={160}
             height={48}
+            unoptimized
             className="h-10 w-auto block dark:hidden"
             priority
           />
@@ -59,6 +60,7 @@ export default function Navbar() {
             alt="CITS Indonesia"
             width={160}
             height={48}
+            unoptimized
             className="h-10 w-auto hidden dark:block"
             priority
           />

@@ -34,30 +34,10 @@ import GridPattern from "@/components/ui/GridPattern";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import TestimonialSlider from "@/components/ui/TestimonialSlider";
+import { useCitsStore } from "@/database/store";
+import { CaseStudyItem } from "@/database/schema";
 
-export interface CaseStudyItem {
-  id: string;
-  title: string;
-  client: string;
-  clientShort: string;
-  clientLogo: string;
-  sector: string;
-  categoryTag: string;
-  period: string;
-  servicePillar: string;
-  isFlagship?: boolean;
-  tagline: string;
-  challenge: string;
-  solution: string;
-  measurableImpact: {
-    highlightValue: string;
-    highlightLabel: string;
-    detail: string;
-  };
-  scopeOfWork: string[];
-  techStack: string[];
-  deliverables: string[];
-}
+export type { CaseStudyItem };
 
 const categories = [
   "Semua Studi Kasus",
@@ -560,16 +540,20 @@ const testimonials = [
 ];
 
 export default function PortfolioPage() {
+  const { caseStudies: storeCaseStudies } = useCitsStore();
   const [selectedCategory, setSelectedCategory] = useState<string>("Semua Studi Kasus");
   const [activeModalStudy, setActiveModalStudy] = useState<CaseStudyItem | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
 
-  const flagshipProjects = caseStudies.filter((item) => item.isFlagship);
+  const studySource = storeCaseStudies && storeCaseStudies.length > 0 ? storeCaseStudies : caseStudies;
+  const activeStudies = studySource.filter((item) => item.isActive !== false);
+
+  const flagshipProjects = activeStudies.filter((item) => item.isFlagship);
 
   const filteredProjects =
     selectedCategory === "Semua Studi Kasus"
-      ? caseStudies
-      : caseStudies.filter((p) => p.sector === selectedCategory);
+      ? activeStudies
+      : activeStudies.filter((p) => p.sector === selectedCategory);
 
   return (
     <main id="main-content" className="min-h-screen">
@@ -690,6 +674,7 @@ export default function PortfolioPage() {
                               alt={project.client}
                               width={44}
                               height={44}
+                              unoptimized
                               className="object-contain max-h-9 w-auto"
                             />
                           </div>
@@ -889,6 +874,7 @@ export default function PortfolioPage() {
                                   alt={project.client}
                                   width={36}
                                   height={36}
+                                  unoptimized
                                   className="object-contain max-h-7 w-auto"
                                 />
                               </div>
@@ -1031,6 +1017,7 @@ export default function PortfolioPage() {
                               alt={project.client}
                               width={32}
                               height={32}
+                              unoptimized
                               className="object-contain max-h-6 w-auto"
                             />
                           </div>
@@ -1256,6 +1243,7 @@ export default function PortfolioPage() {
                     alt={activeModalStudy.client}
                     width={52}
                     height={52}
+                    unoptimized
                     className="object-contain max-h-10 w-auto"
                   />
                 </div>

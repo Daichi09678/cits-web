@@ -85,6 +85,7 @@ export default function AdminLoginPage() {
                 alt="Logo Resmi CITS Indonesia"
                 width={150}
                 height={44}
+                unoptimized
                 className="h-9 w-auto block dark:hidden"
                 priority
               />
@@ -94,6 +95,7 @@ export default function AdminLoginPage() {
                 alt="Logo Resmi CITS Indonesia"
                 width={150}
                 height={44}
+                unoptimized
                 className="h-9 w-auto hidden dark:block"
                 priority
               />

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
-import { Handshake, Plus, CheckCircle2, Trash2, Edit, X, Search, Building2 } from "lucide-react";
+import { Handshake, Plus, CheckCircle2, Trash2, Edit, X, Search, Building2, Upload, Check } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useCitsStore } from "@/database/store";
 import { ClientPartner } from "@/database/schema";
@@ -14,12 +14,42 @@ export default function AdminClientsPage() {
   const [editingClient, setEditingClient] = useState<ClientPartner | null>(null);
   const [search, setSearch] = useState("");
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form State
   const [formName, setFormName] = useState("");
   const [formLogo, setFormLogo] = useState("/clients/kemenhub.webp");
   const [formCategory, setFormCategory] = useState<ClientPartner["category"]>("Kementerian");
   const [formIsActive, setFormIsActive] = useState(true);
+
+  const PRESET_CLIENT_LOGOS = [
+    { name: "Kementerian Perhubungan RI", logo: "/clients/kemenhub.webp" },
+    { name: "Kementerian ESDM", logo: "/clients/esdm.webp" },
+    { name: "Kementerian Ketenagakerjaan RI", logo: "/clients/kemnaker.webp" },
+    { name: "Kementerian Investasi / BKPM", logo: "/clients/bkpm.webp" },
+    { name: "Kementerian Kesehatan RI", logo: "/clients/kemenkes.webp" },
+    { name: "Kementerian Dalam Negeri RI", logo: "/clients/kemendagri.svg" },
+    { name: "Kementerian Kominfo RI", logo: "/clients/kominfo.webp" },
+    { name: "Kementerian Perdagangan RI", logo: "/clients/perdagangan.webp" },
+    { name: "Kementerian Koperasi dan UKM RI", logo: "/clients/kemenkop.webp" },
+    { name: "Kementerian ATR/BPN", logo: "/clients/atr-bpn.webp" },
+    { name: "PT Indonesia Power", logo: "/clients/indonesia-power.webp" },
+    { name: "Mahkamah Agung RI", logo: "/clients/makamah-agung.webp" },
+    { name: "BPPT", logo: "/clients/bppt.webp" },
+    { name: "BRIN", logo: "/clients/brin.webp" },
+  ];
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setFormLogo(event.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const openAddModal = () => {
     setEditingClient(null);
@@ -119,7 +149,14 @@ export default function AdminClientsPage() {
                     alt={c.name}
                     width={40}
                     height={40}
+                    unoptimized
                     className="max-h-full w-auto object-contain"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      if (target && c.logo.endsWith(".webp")) {
+                        target.src = c.logo.replace(/\.webp$/, ".png");
+                      }
+                    }}
                   />
                 </div>
                 <div className="min-w-0">
@@ -221,18 +258,111 @@ export default function AdminClientsPage() {
                   </select>
                 </div>
 
+                {/* Logo Preview, File Upload, & Path */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Path File / URL Logo
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                    Foto / Logo Kementerian & Mitra
                   </label>
+
+                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-xl bg-white dark:bg-[#1A1A2E] border border-slate-200/80 dark:border-white/10 p-2 flex items-center justify-center shrink-0 shadow-xs">
+                      {formLogo ? (
+                        <Image
+                          src={formLogo}
+                          alt="Preview"
+                          width={60}
+                          height={60}
+                          unoptimized
+                          className="max-h-full max-w-full object-contain"
+                        />
+                      ) : (
+                        <Building2 className="w-8 h-8 text-slate-400" />
+                      )}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 font-bold text-[11px] cursor-pointer transition-colors"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Unggah Foto dari Komputer</span>
+                      </button>
+                      <input
+                        type="text"
+                        required
+                        value={formLogo}
+                        onChange={(e) => setFormLogo(e.target.value)}
+                        placeholder="/clients/kemenhub.webp atau URL gambar"
+                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-[#1A1A2E] border border-slate-200 dark:border-white/10 text-[11px] text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-orange-500 font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preset Logos Selector */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                    Atau Pilih Cepat dari Logo Tersedia:
+                  </label>
+                  <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 max-h-36 overflow-y-auto p-2 rounded-xl bg-slate-50/70 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
+                    {PRESET_CLIENT_LOGOS.map((p) => {
+                      const isSelected = formLogo === p.logo;
+                      return (
+                        <button
+                          key={p.logo}
+                          type="button"
+                          onClick={() => {
+                            setFormLogo(p.logo);
+                            if (!formName || formName === "Kementerian Perhubungan RI") {
+                              setFormName(p.name);
+                            }
+                          }}
+                          title={p.name}
+                          className={`h-12 rounded-lg p-1 border flex items-center justify-center transition-all cursor-pointer relative ${
+                            isSelected
+                              ? "bg-orange-50 dark:bg-orange-950/60 border-orange-500 ring-2 ring-orange-500/30"
+                              : "bg-white dark:bg-[#1A1A2E] border-slate-200 dark:border-white/10 hover:border-orange-400"
+                          }`}
+                        >
+                          <Image
+                            src={p.logo}
+                            alt={p.name}
+                            width={36}
+                            height={36}
+                            unoptimized
+                            className="max-h-full max-w-full object-contain"
+                          />
+                          {isSelected && (
+                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-orange-600 text-white flex items-center justify-center text-[9px]">
+                              ✓
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Active Checkbox */}
+                <div className="flex items-center gap-2 pt-1">
                   <input
-                    type="text"
-                    required
-                    value={formLogo}
-                    onChange={(e) => setFormLogo(e.target.value)}
-                    placeholder="/clients/kemenhub.webp"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    type="checkbox"
+                    id="clientActiveCheckModal"
+                    checked={formIsActive}
+                    onChange={(e) => setFormIsActive(e.target.checked)}
+                    className="w-4 h-4 accent-orange-600 rounded cursor-pointer"
                   />
+                  <label htmlFor="clientActiveCheckModal" className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                    Tampilkan mitra ini di slider beranda & portofolio
+                  </label>
                 </div>
 
                 <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-end gap-2.5">

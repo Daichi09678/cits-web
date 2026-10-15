@@ -382,13 +382,17 @@ export default function AboutPage() {
               <ScrollReveal>
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-100 dark:bg-orange-950/70 text-orange-900 dark:text-orange-200 border border-orange-300 dark:border-orange-800/80 text-xs font-bold tracking-wide uppercase shadow-sm">
                   <Building2 className="w-4 h-4 text-orange-700 dark:text-orange-400" aria-hidden="true" />
-                  <span>Profil Resmi CITS Indonesia • Standar IDDS & SPBE</span>
+                  <span>{aboutData?.subtitle || "Profil Resmi CITS Indonesia • Standar IDDS & SPBE"}</span>
                 </div>
                 <h1
                   id="about-hero-heading"
                   className="mt-4 text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.2]"
                 >
-                  Membangun Kemandirian <GradientText>Teknologi Informasi</GradientText> Skala Nasional
+                  {aboutData?.title || (
+                    <>
+                      Membangun Kemandirian <GradientText>Teknologi Informasi</GradientText> Skala Nasional
+                    </>
+                  )}
                 </h1>
               </ScrollReveal>
 
@@ -448,6 +452,7 @@ export default function AboutPage() {
                           alt="Logo Resmi CITS Indonesia - Cipta Integrasi Teknologi Solusi"
                           width={150}
                           height={44}
+                          unoptimized
                           className="h-9 w-auto block dark:hidden"
                           priority
                         />
@@ -457,6 +462,7 @@ export default function AboutPage() {
                           alt="Logo Resmi CITS Indonesia - Cipta Integrasi Teknologi Solusi"
                           width={150}
                           height={44}
+                          unoptimized
                           className="h-9 w-auto hidden dark:block"
                           priority
                         />

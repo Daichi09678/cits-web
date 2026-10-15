@@ -231,24 +231,29 @@ export default function Home() {
                         </span>
                       </div>
                       <div className="flex flex-wrap items-center gap-2 pt-1 font-sans text-xs">
-                        <span className="px-2.5 py-1 rounded-md bg-white dark:bg-[#1a1a32] border border-gray-200 dark:border-white/15 text-gray-800 dark:text-white font-medium shadow-sm">
-                          Aplikasi Web & Mobile
-                        </span>
-                        <span className="text-orange-700 dark:text-orange-400 font-bold">→</span>
-                        <span className="px-2.5 py-1 rounded-md bg-white dark:bg-[#1a1a32] border border-gray-200 dark:border-white/15 text-gray-800 dark:text-white font-medium shadow-sm">
-                          REST API & Microservices
-                        </span>
-                        <span className="text-orange-700 dark:text-orange-400 font-bold">→</span>
-                        <span className="px-2.5 py-1 rounded-md bg-white dark:bg-[#1a1a32] border border-gray-200 dark:border-white/15 text-gray-800 dark:text-white font-medium shadow-sm">
-                          Basis Data PostgreSQL / Oracle
-                        </span>
+                        {(servicesIntro.cardSoftwareHouse?.pipelineSteps && servicesIntro.cardSoftwareHouse.pipelineSteps.length > 0
+                          ? servicesIntro.cardSoftwareHouse.pipelineSteps
+                          : ["Aplikasi Web & Mobile", "REST API & Microservices", "Basis Data PostgreSQL / Oracle"]
+                        ).map((step, sIdx, sArr) => (
+                          <div key={sIdx} className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 rounded-md bg-white dark:bg-[#1a1a32] border border-gray-200 dark:border-white/15 text-gray-800 dark:text-white font-medium shadow-sm">
+                              {step}
+                            </span>
+                            {sIdx < sArr.length - 1 && (
+                              <span className="text-orange-700 dark:text-orange-400 font-bold">→</span>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
 
                   <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10 flex flex-wrap items-center justify-between gap-4">
                     <div className="flex flex-wrap gap-2 text-xs">
-                      {["Aplikasi Web", "Aplikasi Mobile", "Integrasi Sistem", "Pengembangan API", "Pemeliharaan Berkala"].map((tech) => (
+                      {(servicesIntro.cardSoftwareHouse?.tags && servicesIntro.cardSoftwareHouse.tags.length > 0
+                        ? servicesIntro.cardSoftwareHouse.tags
+                        : ["Aplikasi Web", "Aplikasi Mobile", "Integrasi Sistem", "Pengembangan API", "Pemeliharaan Berkala"]
+                      ).map((tech) => (
                         <span key={tech} className="px-2.5 py-1 rounded-md bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-white font-medium border border-gray-200/60 dark:border-white/10">
                           {tech}
                         </span>
@@ -288,13 +293,16 @@ export default function Home() {
                     </p>
 
                     <ul className="mt-6 space-y-2.5 text-xs text-gray-700 dark:text-white/90">
-                      {[
-                        "Analisis kebutuhan sistem informasi",
-                        "Perencanaan arsitektur TI enterprise",
-                        "Audit infrastruktur & keamanan teknologi",
-                        "Rekomendasi solusi & peta jalan digital",
-                        "Pendampingan implementasi kesistemanan",
-                      ].map((item) => (
+                      {(servicesIntro.cardConsultant?.items && servicesIntro.cardConsultant.items.length > 0
+                        ? servicesIntro.cardConsultant.items
+                        : [
+                            "Analisis kebutuhan sistem informasi",
+                            "Perencanaan arsitektur TI enterprise",
+                            "Audit infrastruktur & keamanan teknologi",
+                            "Rekomendasi solusi & peta jalan digital",
+                            "Pendampingan implementasi kesistemanan",
+                          ]
+                      ).map((item) => (
                         <li key={item} className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
                           <span>{item}</span>
@@ -338,13 +346,16 @@ export default function Home() {
                     </p>
 
                     <ul className="mt-6 space-y-2.5 text-xs text-gray-700 dark:text-white/90">
-                      {[
-                        "Perangkat server & infrastruktur jaringan",
-                        "Komputer desktop, laptop & periferal kerja",
-                        "Lisensi & langganan software resmi",
-                        "Instalasi, konfigurasi & pengujian perangkat",
-                        "Layanan purna jual & pemeliharaan berkala",
-                      ].map((item) => (
+                      {(servicesIntro.cardSupplier?.items && servicesIntro.cardSupplier.items.length > 0
+                        ? servicesIntro.cardSupplier.items
+                        : [
+                            "Perangkat server & infrastruktur jaringan",
+                            "Komputer desktop, laptop & periferal kerja",
+                            "Lisensi & langganan software resmi",
+                            "Instalasi, konfigurasi & pengujian perangkat",
+                            "Layanan purna jual & pemeliharaan berkala",
+                          ]
+                      ).map((item) => (
                         <li key={item} className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
                           <span>{item}</span>
@@ -389,13 +400,16 @@ export default function Home() {
 
                     {/* FOCUS Pill Row */}
                     <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
-                      {[
-                        { letter: "F", word: "Focus", desc: "Kebutuhan klien" },
-                        { letter: "O", word: "On Time", desc: "Tepat waktu" },
-                        { letter: "C", word: "Customer", desc: "Kepuasan pelanggan" },
-                        { letter: "U", word: "Update", desc: "Teknologi terkini" },
-                        { letter: "S", word: "Synergy", desc: "Sinergi tim maksimal" },
-                      ].map((item) => (
+                      {(servicesIntro.cardFocus?.focusItems && servicesIntro.cardFocus.focusItems.length > 0
+                        ? servicesIntro.cardFocus.focusItems
+                        : [
+                            { letter: "F", word: "Focus", desc: "Kebutuhan klien" },
+                            { letter: "O", word: "On Time", desc: "Tepat waktu" },
+                            { letter: "C", word: "Customer", desc: "Kepuasan pelanggan" },
+                            { letter: "U", word: "Update", desc: "Teknologi terkini" },
+                            { letter: "S", word: "Synergy", desc: "Sinergi tim maksimal" },
+                          ]
+                      ).map((item) => (
                         <div
                           key={item.word}
                           className="p-3 rounded-xl bg-orange-50/70 dark:bg-[#121222] border border-orange-200/70 dark:border-white/10 hover:border-orange-500/40 text-center transition-all"
@@ -494,12 +508,15 @@ export default function Home() {
 
                       {/* Features Grid */}
                       <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                        {[
-                          { title: "GPS Waktu Nyata", desc: "Akurasi pelacakan tinggi" },
-                          { title: "Geofencing", desc: "Batas perimeter otomatis" },
-                          { title: "Riwayat Rute", desc: "Rekam jejak perjalanan" },
-                          { title: "Peringatan Darurat", desc: "Notifikasi insiden instan" },
-                        ].map((item) => (
+                        {(productsIntro?.card1?.features && productsIntro.card1.features.length > 0
+                          ? productsIntro.card1.features
+                          : [
+                              { title: "GPS Waktu Nyata", desc: "Akurasi pelacakan tinggi" },
+                              { title: "Geofencing", desc: "Batas perimeter otomatis" },
+                              { title: "Riwayat Rute", desc: "Rekam jejak perjalanan" },
+                              { title: "Peringatan Darurat", desc: "Notifikasi insiden instan" },
+                            ]
+                        ).map((item) => (
                           <div key={item.title} className="p-3 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10">
                             <span className="font-bold text-dark dark:text-white block">{item.title}</span>
                             <span className="text-[11px] text-gray-700 dark:text-white/80 block mt-0.5">{item.desc}</span>
@@ -510,7 +527,10 @@ export default function Home() {
 
                     <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10 flex flex-wrap items-center justify-between gap-4">
                       <div className="flex flex-wrap gap-2 text-xs">
-                        {["GPS Waktu Nyata", "Geofencing", "Riwayat Rute", "Sistem Peringatan", "Manajemen Armada"].map((tag) => (
+                        {(productsIntro?.card1?.tags && productsIntro.card1.tags.length > 0
+                          ? productsIntro.card1.tags
+                          : ["GPS Waktu Nyata", "Geofencing", "Riwayat Rute", "Sistem Peringatan", "Manajemen Armada"]
+                        ).map((tag) => (
                           <span key={tag} className="text-xs bg-orange-50 dark:bg-orange-950/40 text-orange-900 dark:text-orange-300 border border-orange-200/80 dark:border-orange-800/60 font-semibold px-2.5 py-1 rounded-md">
                             {tag}
                           </span>
@@ -550,12 +570,15 @@ export default function Home() {
                       </p>
 
                       <ul className="mt-6 space-y-2.5 text-xs text-gray-700 dark:text-white/90">
-                        {[
-                          "Pengelolaan siklus hidup aset lengkap",
-                          "Pemindaian kode QR & Barcode presisi",
-                          "Kalkulasi penyusutan nilai otomatis",
-                          "Pelaporan komprehensif & siap audit",
-                        ].map((feat) => (
+                        {(productsIntro?.card2?.features && productsIntro.card2.features.length > 0
+                          ? productsIntro.card2.features
+                          : [
+                              "Pengelolaan siklus hidup aset lengkap",
+                              "Pemindaian kode QR & Barcode presisi",
+                              "Kalkulasi penyusutan nilai otomatis",
+                              "Pelaporan komprehensif & siap audit",
+                            ]
+                        ).map((feat) => (
                           <li key={feat} className="flex items-center gap-2">
                             <CheckCircle2 className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
                             <span>{feat}</span>
@@ -599,12 +622,15 @@ export default function Home() {
                       </p>
 
                       <ul className="mt-6 space-y-2.5 text-xs text-gray-700 dark:text-white/90">
-                        {[
-                          "Kontrol versi & manajemen hak akses",
-                          "Pencarian teks lengkap OCR & barcode",
-                          "Klasifikasi dinamis & jejak audit digital",
-                          "Cadangan otomatis & enkripsi AES-256",
-                        ].map((feat) => (
+                        {(productsIntro?.card3?.features && productsIntro.card3.features.length > 0
+                          ? productsIntro.card3.features
+                          : [
+                              "Kontrol versi & manajemen hak akses",
+                              "Pencarian teks lengkap OCR & barcode",
+                              "Klasifikasi dinamis & jejak audit digital",
+                              "Cadangan otomatis & enkripsi AES-256",
+                            ]
+                        ).map((feat) => (
                           <li key={feat} className="flex items-center gap-2">
                             <CheckCircle2 className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
                             <span>{feat}</span>
@@ -649,51 +675,46 @@ export default function Home() {
 
                       {/* 4 Additional Products from products/page.tsx */}
                       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-orange-600 dark:bg-orange-400" />
-                            <span className="font-bold text-dark dark:text-white text-sm">CITS GeoSpatial™</span>
+                        {(productsIntro?.card4?.subProducts && productsIntro.card4.subProducts.length > 0
+                          ? productsIntro.card4.subProducts
+                          : [
+                              {
+                                name: "CITS GeoSpatial™",
+                                desc: "Peta interaktif multi-layer, analisis spasial wilayah & monitoring infrastruktur utilitas.",
+                              },
+                              {
+                                name: "CITS Omnichannel Gateway™",
+                                desc: "Pengiriman pesan massal WhatsApp API & SMS OTP dengan throughput tinggi dan fallback otomatis.",
+                              },
+                              {
+                                name: "CITS SmartGov Portal™",
+                                desc: "Portal pelayanan publik satu pintu, pelacakan permohonan berkas & gerbang retribusi SPBE.",
+                              },
+                              {
+                                name: "CITS Executive BI™",
+                                desc: "Dasbor analitik eksekutif real-time, agregasi multi-database & perumusan keputusan pimpinan.",
+                              },
+                            ]
+                        ).map((subProd) => (
+                          <div key={subProd.name} className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-orange-600 dark:bg-orange-400" />
+                              <span className="font-bold text-dark dark:text-white text-sm">{subProd.name}</span>
+                            </div>
+                            <p className="mt-1 text-gray-700 dark:text-white/80 text-[11px] leading-relaxed">
+                              {subProd.desc}
+                            </p>
                           </div>
-                          <p className="mt-1 text-gray-700 dark:text-white/80 text-[11px] leading-relaxed">
-                            Peta interaktif multi-layer, analisis spasial wilayah & monitoring infrastruktur utilitas.
-                          </p>
-                        </div>
-
-                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-orange-600 dark:bg-orange-400" />
-                            <span className="font-bold text-dark dark:text-white text-sm">CITS Omnichannel Gateway™</span>
-                          </div>
-                          <p className="mt-1 text-gray-700 dark:text-white/80 text-[11px] leading-relaxed">
-                            Pengiriman pesan massal WhatsApp API & SMS OTP dengan throughput tinggi dan fallback otomatis.
-                          </p>
-                        </div>
-
-                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-orange-600 dark:bg-orange-400" />
-                            <span className="font-bold text-dark dark:text-white text-sm">CITS SmartGov Portal™</span>
-                          </div>
-                          <p className="mt-1 text-gray-700 dark:text-white/80 text-[11px] leading-relaxed">
-                            Portal pelayanan publik satu pintu, pelacakan permohonan berkas & gerbang retribusi SPBE.
-                          </p>
-                        </div>
-
-                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-orange-600 dark:bg-orange-400" />
-                            <span className="font-bold text-dark dark:text-white text-sm">CITS Executive BI™</span>
-                          </div>
-                          <p className="mt-1 text-gray-700 dark:text-white/80 text-[11px] leading-relaxed">
-                            Dasbor analitik eksekutif real-time, agregasi multi-database & perumusan keputusan pimpinan.
-                          </p>
-                        </div>
+                        ))}
                       </div>
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10 flex flex-wrap items-center justify-between gap-4">
                       <div className="flex flex-wrap gap-2 text-xs">
-                        {["CITS FleetTrack", "CITS AssetHub", "CITS DocuVault", "CITS GeoSpatial", "CITS Omnichannel", "CITS SmartGov"].map((tag) => (
+                        {(productsIntro?.card4?.tags && productsIntro.card4.tags.length > 0
+                          ? productsIntro.card4.tags
+                          : ["CITS FleetTrack", "CITS AssetHub", "CITS DocuVault", "CITS GeoSpatial", "CITS Omnichannel", "CITS SmartGov"]
+                        ).map((tag) => (
                           <span key={tag} className="text-xs bg-orange-50 dark:bg-orange-950/40 text-orange-900 dark:text-orange-300 border border-orange-200/80 dark:border-orange-800/60 font-semibold px-2.5 py-1 rounded-md">
                             {tag}
                           </span>

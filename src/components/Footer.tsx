@@ -1,7 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useCitsStore } from "@/database/store";
+import { initialContactInfo } from "@/database/initialData";
 
 export default function Footer() {
+  const { contactInfo: storeContact } = useCitsStore();
+  const contact = storeContact || initialContactInfo;
+
   return (
     <footer className="bg-gray-50 dark:bg-[#121222] text-gray-800 dark:text-white border-t border-gray-200 dark:border-white/10 mt-auto transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -14,6 +21,7 @@ export default function Footer() {
                 alt="CITS Indonesia"
                 width={140}
                 height={40}
+                unoptimized
                 className="h-8 w-auto block dark:hidden"
               />
               <Image
@@ -21,6 +29,7 @@ export default function Footer() {
                 alt="CITS Indonesia"
                 width={140}
                 height={40}
+                unoptimized
                 className="h-8 w-auto hidden dark:block"
               />
             </div>
@@ -45,11 +54,10 @@ export default function Footer() {
           <div>
             <h3 className="font-bold text-lg mb-3 text-dark dark:text-white">Hubungi Kami</h3>
             <ul className="space-y-2 text-sm text-gray-700 dark:text-white/85">
-              <li>Gedung Wisma Mampang, Lt. 5</li>
-              <li>Jl. Mampang Prapatan No. 1</li>
-              <li>Jakarta Selatan 12790</li>
-              <li className="pt-2 font-medium text-dark dark:text-white">021 - 39719677</li>
-              <li>info@citsindonesia.co.id</li>
+              <li className="leading-relaxed">{contact.address || "Gedung Wisma Mampang, Lt. 5, Jl. Mampang Prapatan No. 1, Jakarta Selatan"}</li>
+              <li className="pt-2 font-medium text-dark dark:text-white">{contact.phone || "021 - 39719677"}</li>
+              <li>{contact.email || "info@citsindonesia.co.id"}</li>
+              {contact.workingHours && <li className="text-xs text-gray-500 dark:text-white/60">{contact.workingHours}</li>}
             </ul>
           </div>
         </div>
@@ -61,3 +69,4 @@ export default function Footer() {
     </footer>
   );
 }
+

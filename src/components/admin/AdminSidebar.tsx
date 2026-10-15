@@ -16,6 +16,7 @@ import {
   ChevronRight,
   ShieldCheck,
   LayoutTemplate,
+  Briefcase,
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
 import { useCitsStore } from "@/database/store";
@@ -24,10 +25,11 @@ export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { session, logout } = useAdminAuth();
-  const { products, messages } = useCitsStore();
+  const { products, messages, caseStudies } = useCitsStore();
 
   const unreadMessagesCount = messages.filter((m) => m.status === "unread").length;
   const activeProductsCount = products.filter((p) => p.isActive).length;
+  const activeCaseStudiesCount = caseStudies.filter((c) => c.isActive !== false).length;
 
   const navItems = [
     {
@@ -49,6 +51,13 @@ export default function AdminSidebar() {
       icon: Package,
       badge: `${activeProductsCount} Aktif`,
       badgeColor: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+    },
+    {
+      title: "Portofolio Kami",
+      href: "/admin/portfolio",
+      icon: Briefcase,
+      badge: `${activeCaseStudiesCount} Kasus`,
+      badgeColor: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 font-semibold",
     },
     {
       title: "Tentang Kami",
@@ -96,6 +105,7 @@ export default function AdminSidebar() {
                 alt="CITS Indonesia"
                 width={130}
                 height={38}
+                unoptimized
                 className="h-8 w-auto block dark:hidden"
                 priority
               />
@@ -104,6 +114,7 @@ export default function AdminSidebar() {
                 alt="CITS Indonesia"
                 width={130}
                 height={38}
+                unoptimized
                 className="h-8 w-auto hidden dark:block"
                 priority
               />
