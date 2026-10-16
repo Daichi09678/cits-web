@@ -1,5 +1,5 @@
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+  process.env.NEXT_PUBLIC_API_URL || "/api";
 
 function getHeaders(token?: string): HeadersInit {
   const headers: HeadersInit = {
@@ -207,6 +207,38 @@ export const citsApi = {
 
   async updateLandingData(data: any) {
     const res = await fetch(`${API_URL}/landing`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  // 9. Services Data
+  async getServices() {
+    const res = await fetch(`${API_URL}/services`, { cache: "no-store" });
+    const json = await res.json();
+    return json.data || [];
+  },
+
+  async updateServices(data: any) {
+    const res = await fetch(`${API_URL}/services`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  // 10. Portfolio / Case Studies
+  async getPortfolio() {
+    const res = await fetch(`${API_URL}/portfolio`, { cache: "no-store" });
+    const json = await res.json();
+    return json.data || [];
+  },
+
+  async updatePortfolio(data: any) {
+    const res = await fetch(`${API_URL}/portfolio`, {
       method: "PUT",
       headers: getHeaders(),
       body: JSON.stringify(data),

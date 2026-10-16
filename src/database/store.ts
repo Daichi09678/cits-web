@@ -183,6 +183,7 @@ export const CitsStore = {
   },
   saveServices(services: ServicePillar[]): void {
     setStorageItem(siteConfig.storageKeys.services, services);
+    citsApi.updateServices(services).catch((err) => console.warn("Sync services error:", err));
   },
   updateService(id: string, updates: Partial<ServicePillar>): void {
     const current = this.getServices();
@@ -208,6 +209,7 @@ export const CitsStore = {
   },
   saveCaseStudies(studies: CaseStudyItem[]): void {
     setStorageItem(siteConfig.storageKeys.portfolio, studies);
+    citsApi.updatePortfolio(studies).catch((err) => console.warn("Sync portfolio error:", err));
   },
   addCaseStudy(study: Omit<CaseStudyItem, "id">): CaseStudyItem {
     const current = this.getCaseStudies();
@@ -288,16 +290,18 @@ export function useCitsStore() {
     // 1. Initial Sync with Central Backend REST API
     async function syncBackend() {
       try {
-        const [prodRes, contactRes, aboutRes, clientRes, msgRes, landRes] = await Promise.allSettled([
+        const [prodRes, contactRes, aboutRes, clientRes, msgRes, landRes, srvRes, portRes] = await Promise.allSettled([
           citsApi.getAllProducts(),
           citsApi.getContactInfo(),
           citsApi.getAboutData(),
           citsApi.getClients(),
           citsApi.getMessages(),
           citsApi.getLandingData(),
+          citsApi.getServices(),
+          citsApi.getPortfolio(),
         ]);
 
-        if (prodRes.status === "fulfilled" && Array.isArray(prodRes.value) && prodRes.value.length > 0) {
+        if (prodRes.status === "fulfilled" && Array.isArray(prodRes.value)) {
           setProducts(prodRes.value);
           setStorageItem(siteConfig.storageKeys.products, prodRes.value);
         }
@@ -309,17 +313,25 @@ export function useCitsStore() {
           setAboutData(aboutRes.value);
           setStorageItem(siteConfig.storageKeys.about, aboutRes.value);
         }
-        if (clientRes.status === "fulfilled" && Array.isArray(clientRes.value) && clientRes.value.length > 0) {
+        if (clientRes.status === "fulfilled" && Array.isArray(clientRes.value)) {
           setClients(clientRes.value);
           setStorageItem(siteConfig.storageKeys.clients, clientRes.value);
         }
-        if (msgRes.status === "fulfilled" && Array.isArray(msgRes.value) && msgRes.value.length > 0) {
+        if (msgRes.status === "fulfilled" && Array.isArray(msgRes.value)) {
           setMessages(msgRes.value);
           setStorageItem(siteConfig.storageKeys.messages, msgRes.value);
         }
         if (landRes.status === "fulfilled" && landRes.value) {
           setLandingData(landRes.value);
           setStorageItem(siteConfig.storageKeys.landing, landRes.value);
+        }
+        if (srvRes.status === "fulfilled" && Array.isArray(srvRes.value) && srvRes.value.length > 0) {
+          setServices(srvRes.value);
+          setStorageItem(siteConfig.storageKeys.services, srvRes.value);
+        }
+        if (portRes.status === "fulfilled" && Array.isArray(portRes.value) && portRes.value.length > 0) {
+          setCaseStudies(portRes.value);
+          setStorageItem(siteConfig.storageKeys.portfolio, portRes.value);
         }
       } catch (err) {
         console.warn("Backend background sync fallback:", err);
@@ -328,13 +340,17 @@ export function useCitsStore() {
 
     syncBackend();
 
-    // 2. Realtime SSE Stream for Live Inbox & Consultations
+    // 2. Realtime SSE Stream for Live Inbox & Consultations (hanya jika ada backend external URL)
     let eventSource: EventSource | null = null;
     let reconnectTimeout: any = null;
 
     function connectSSE() {
+      if (!process.env.NEXT_PUBLIC_API_URL) {
+        // Mode terintegrasi Next.js: gunakan periodic polling yang aman dan reliabel
+        return;
+      }
       try {
-        const streamUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api") + "/messages/stream";
+        const streamUrl = process.env.NEXT_PUBLIC_API_URL + "/messages/stream";
         eventSource = new EventSource(streamUrl);
 
         eventSource.onopen = () => {
