@@ -120,11 +120,6 @@ export default function ParticleNetwork({ className = "" }: { className?: string
       { threshold: 0.05 }
     );
 
-    observer.observe(canvas);
-
-    resize();
-    createParticles();
-
     let resizeTimer: ReturnType<typeof setTimeout>;
     const handleResize = () => {
       clearTimeout(resizeTimer);
@@ -136,7 +131,15 @@ export default function ParticleNetwork({ className = "" }: { className?: string
 
     window.addEventListener("resize", handleResize, { passive: true });
 
+    // Non-blocking deferred start to give priority to LCP headline painting
+    const startTimer = setTimeout(() => {
+      observer.observe(canvas);
+      resize();
+      createParticles();
+    }, 120);
+
     return () => {
+      clearTimeout(startTimer);
       cancelAnimationFrame(animationId);
       observer.disconnect();
       window.removeEventListener("resize", handleResize);

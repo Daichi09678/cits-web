@@ -41,7 +41,9 @@ function setStorageItem<T>(key: string, value: T): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(key, JSON.stringify(value));
-    window.dispatchEvent(new Event("cits-data-updated"));
+    setTimeout(() => {
+      window.dispatchEvent(new Event("cits-data-updated"));
+    }, 0);
   } catch (e) {
     console.error("Failed to write to localStorage", e);
   }
@@ -396,19 +398,16 @@ export function useCitsStore() {
       try {
         const latestMsgs = await citsApi.getMessages();
         if (Array.isArray(latestMsgs) && latestMsgs.length > 0) {
-          setMessages((current) => {
-            const currentIds = new Set(current.map((m) => m.id));
-            const brandNew = latestMsgs.filter((m: ContactMessage) => !currentIds.has(m.id));
+          const currentMsgs = CitsStore.getMessages();
+          const currentIds = new Set(currentMsgs.map((m) => m.id));
+          const brandNew = latestMsgs.filter((m: ContactMessage) => !currentIds.has(m.id));
 
-            if (brandNew.length > 0) {
-              // Trigger realtime notification for the newest message found
-              playNewMessageSound();
-              window.dispatchEvent(new CustomEvent("cits-realtime-message", { detail: brandNew[0] }));
-              setStorageItem(siteConfig.storageKeys.messages, latestMsgs);
-              return latestMsgs;
-            }
-            return current;
-          });
+          if (brandNew.length > 0) {
+            playNewMessageSound();
+            window.dispatchEvent(new CustomEvent("cits-realtime-message", { detail: brandNew[0] }));
+            setStorageItem(siteConfig.storageKeys.messages, latestMsgs);
+            setMessages(latestMsgs);
+          }
         }
       } catch {
         // Polling silent catch

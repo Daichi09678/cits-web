@@ -48,6 +48,7 @@ function MarqueeLogoImage({
       alt={alt}
       width={160}
       height={80}
+      loading="lazy"
       unoptimized
       onError={() => {
         if (!hasTriedFallback) {
