@@ -102,11 +102,13 @@ export const citsApi = {
       cache: "no-store",
     });
     if (!res.ok) {
-      console.warn("API getMessages failed:", res.status);
-      return [];
+      throw new Error(`API getMessages failed: ${res.status}`);
     }
     const json = await res.json();
-    return json && json.success && Array.isArray(json.data) ? json.data : [];
+    if (!json?.success || !Array.isArray(json.data)) {
+      throw new Error("Invalid inbox response");
+    }
+    return json.data;
   },
 
   async updateMessageStatus(id: string, status: "unread" | "read" | "replied") {

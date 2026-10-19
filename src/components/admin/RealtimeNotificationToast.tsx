@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Mail, Sparkles, X, ArrowRight, Building2, Phone, Volume2 } from "lucide-react";
+import { Mail, X, ArrowRight, Volume2 } from "lucide-react";
 import { ContactMessage } from "@/database/schema";
 import { playNewMessageSound } from "@/lib/audio";
+import { startAdminInboxSync } from "@/database/store";
 
 export default function RealtimeNotificationToast() {
   const [activeMessage, setActiveMessage] = useState<ContactMessage | null>(null);
@@ -21,7 +22,9 @@ export default function RealtimeNotificationToast() {
     }
 
     window.addEventListener("cits-realtime-message", handleRealtimeMessage);
+    const stopSync = startAdminInboxSync();
     return () => {
+      stopSync();
       window.removeEventListener("cits-realtime-message", handleRealtimeMessage);
     };
   }, []);
@@ -35,7 +38,7 @@ export default function RealtimeNotificationToast() {
       }, 10000);
       return () => clearTimeout(timer);
     }
-  }, [visible]);
+  }, [visible, activeMessage?.id]);
 
   if (!visible || !activeMessage) return null;
 
