@@ -40,7 +40,7 @@ function storeHarness() {
   };
   const storageApi = { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) };
   const api = new Proxy({}, { get: (_, name) => async () => {
-    if (name === 'getMessages') { requests++; if (response instanceof Error) throw response; return response; }
+    if (name === 'getMessages' || name === 'sendMessage') { requests++; if (response instanceof Error) throw response; return response; }
     return null;
   }});
   const store = load('database/store.ts', {
@@ -73,7 +73,7 @@ test('generic store consumers do not start private inbox polling or swallow noti
 
 test('admin sync keeps messages on failure and notifies each new ID only once across remounts', async () => {
   const h = storeHarness();
-  const old = { id: 'old', status: 'unread' };
+  const old = { id: 'old', status: 'read' };
   const incoming = { id: 'new', status: 'unread' };
   h.response = [old];
   let stop = h.startAdminInboxSync();
@@ -119,6 +119,41 @@ test('locally cached incoming messages still notify and batches notify once per 
   for (let i = 0; i < 5; i++) await Promise.all([...h.intervals.values()].map(fn => fn()));
   stop();
   assert.equal(h.events.filter(e => e.type === 'cits-realtime-message').length, 2);
+});
+
+test('database failures must reject writes and reads instead of using per-instance memory', async () => {
+  const { DbRepo } = load('lib/db.ts', {
+    postgres: { default: () => async () => { throw new Error('database offline'); } },
+    '@/database/initialData': new Proxy({}, { get: () => [] }),
+  }, { process: { env: { DATABASE_URL: 'postgres://localhost/test' } }, console: { error() {} } });
+  await assert.rejects(DbRepo.addMessage({ id: 'test', name: 'Test', email: 'test@example.invalid', company: 'Test', phone: '0', message: 'Test' }), /database offline/);
+  await assert.rejects(DbRepo.getMessages(), /database offline/);
+});
+
+test('missing database configuration cannot report durable message success', async () => {
+  const { DbRepo } = load('lib/db.ts', {
+    postgres: {}, '@/database/initialData': new Proxy({}, { get: () => [] }),
+  }, { process: { env: {} } });
+  await assert.rejects(DbRepo.getMessages(), /DATABASE_URL/);
+});
+
+test('submission waits for server confirmation and does not cache a failed send', async () => {
+  const h = storeHarness();
+  h.response = { success: false, message: 'Cannot save' };
+  await assert.rejects(async () => h.CitsStore.addMessage({ name: 'Test' }), /Cannot save/);
+  assert.equal(h.CitsStore.getMessages().length, 0);
+});
+
+test('unread messages received while logged out notify on fresh login only once', async () => {
+  const h = storeHarness();
+  h.response = [{ id: 'offline-arrival', status: 'unread' }];
+  let stop = h.startAdminInboxSync();
+  await flush();
+  stop();
+  stop = h.startAdminInboxSync();
+  await flush();
+  stop();
+  assert.equal(h.events.filter(e => e.type === 'cits-realtime-message').length, 1);
 });
 
 module.exports = { load };

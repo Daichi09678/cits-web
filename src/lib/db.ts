@@ -196,6 +196,7 @@ export const DbRepo = {
   // CONTACT MESSAGES
   async getMessages(): Promise<ContactMessage[]> {
     const sql = getSql();
+    if (!sql) throw new Error("DATABASE_URL is required for persistent inbox storage");
     if (sql) {
       await ensureDbReady();
       try {
@@ -217,6 +218,7 @@ export const DbRepo = {
         return mapped;
       } catch (e) {
         console.error("DB Error getMessages:", e);
+        throw e;
       }
     }
     return memoryDb.messages;
@@ -231,6 +233,7 @@ export const DbRepo = {
     };
 
     const sql = getSql();
+    if (!sql) throw new Error("DATABASE_URL is required for persistent inbox storage");
     if (sql) {
       await ensureDbReady();
       try {
@@ -251,6 +254,7 @@ export const DbRepo = {
         `;
       } catch (e) {
         console.error("DB Error addMessage:", e);
+        throw e;
       }
     }
 
@@ -260,11 +264,13 @@ export const DbRepo = {
 
   async updateMessageStatus(id: string, status: "unread" | "read" | "replied"): Promise<boolean> {
     const sql = getSql();
+    if (!sql) throw new Error("DATABASE_URL is required for persistent inbox storage");
     if (sql) {
       try {
         await sql`UPDATE contact_messages SET status = ${status} WHERE id = ${id};`;
       } catch (e) {
         console.error("DB Error updateMessageStatus:", e);
+        throw e;
       }
     }
     memoryDb.messages = memoryDb.messages.map((m) => (m.id === id ? { ...m, status } : m));
@@ -273,12 +279,14 @@ export const DbRepo = {
 
   async deleteMessage(id: string): Promise<boolean> {
     const sql = getSql();
+    if (!sql) throw new Error("DATABASE_URL is required for persistent inbox storage");
     if (sql) {
       await ensureDbReady();
       try {
         await sql`DELETE FROM contact_messages WHERE id = ${id};`;
       } catch (e) {
         console.error("DB Error deleteMessage:", e);
+        throw e;
       }
     }
     memoryDb.messages = memoryDb.messages.filter((m) => m.id !== id);

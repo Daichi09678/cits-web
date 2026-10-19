@@ -267,19 +267,15 @@ export const CitsStore = {
     const valid = msgs.filter((m) => !isMessageDeleted(m.id));
     setStorageItem(siteConfig.storageKeys.messages, valid);
   },
-  addMessage(msg: Omit<ContactMessage, "id" | "status" | "createdAt"> & { id?: string }): ContactMessage {
-    const current = this.getMessages();
-    const newMsg: ContactMessage = {
-      ...msg,
-      id: msg.id || "msg-" + Date.now(),
-      status: "unread",
-      createdAt: new Date().toISOString(),
-    };
-    this.saveMessages([newMsg, ...current.filter((m) => m.id !== newMsg.id)]);
-    // Track as optimistic so it survives the next server sync
-    addOptimisticMessage(newMsg);
-    citsApi.sendMessage(newMsg).catch((err) => console.warn("Sync send message error:", err));
-    return newMsg;
+  async addMessage(msg: Omit<ContactMessage, "id" | "status" | "createdAt"> & { id?: string }): Promise<ContactMessage> {
+    const result = await citsApi.sendMessage(msg);
+    if (!result?.success || !result.data?.id) {
+      throw new Error(result?.message || "Pesan belum tersimpan. Silakan coba lagi.");
+    }
+    // Only confirmed server records may appear in the local inbox.
+    const saved = result.data as ContactMessage;
+    this.saveMessages([saved, ...this.getMessages().filter((m) => m.id !== saved.id)]);
+    return saved;
   },
   updateMessageStatus(id: string, status: "unread" | "read" | "replied"): void {
     saveRecentStatusUpdate(id, status);
@@ -418,7 +414,7 @@ export const CitsStore = {
 };
 
 let inboxConnected = false;
-let inboxInitialized = false;
+// Notification history persists in sessionStorage across logout/reload.
 const observedInboxIds = new Set<string>();
 let stopInboxSync: (() => void) | null = null;
 
@@ -436,15 +432,11 @@ export function startAdminInboxSync(): () => void {
       const latest = await citsApi.getMessages() as ContactMessage[];
       if (disposed) return;
       const fresh = latest.filter((msg) => !observedInboxIds.has(msg.id));
-      const shouldNotify = inboxInitialized;
       latest.forEach((msg) => observedInboxIds.add(msg.id));
-      inboxInitialized = true;
       inboxConnected = true;
       CitsStore.saveMessages(mergeMessagesWithOptimistic(latest));
-      if (shouldNotify) {
-        for (const msg of fresh) {
-          if (msg.status === "unread" && !isMessageDeleted(msg.id)) notifyNewMessage(msg);
-        }
+      for (const msg of fresh) {
+        if (msg.status === "unread" && !isMessageDeleted(msg.id)) notifyNewMessage(msg);
       }
     } catch {
       if (!disposed) {
