@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   ProductItem,
   ContactInfo,
@@ -25,7 +25,7 @@ import { siteConfig } from "@/config/siteConfig";
 import { citsApi } from "@/lib/api";
 import { playNewMessageSound } from "@/lib/audio";
 
-// Tracking deleted message IDs to prevent in-flight polling race condition
+// ─── Deleted Message ID Tracking ───────────────────────────────────────
 function getDeletedMessageIds(): Set<string> {
   if (typeof window === "undefined") return new Set();
   try {
@@ -52,7 +52,37 @@ function isMessageDeleted(id: string): boolean {
   return getDeletedMessageIds().has(id);
 }
 
-// Optimistic status update cache to prevent background polling race conditions
+// ─── Notified Message ID Tracking (prevents duplicate toasts/sounds) ───
+function getNotifiedMessageIds(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = sessionStorage.getItem("cits_notified_message_ids");
+    if (!raw) return new Set();
+    return new Set(JSON.parse(raw));
+  } catch {
+    return new Set();
+  }
+}
+
+function markMessageNotified(id: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const set = getNotifiedMessageIds();
+    set.add(id);
+    // Cap at 200 entries to prevent unbounded growth
+    const arr = Array.from(set);
+    if (arr.length > 200) arr.splice(0, arr.length - 200);
+    sessionStorage.setItem("cits_notified_message_ids", JSON.stringify(arr));
+  } catch {
+    // silent
+  }
+}
+
+function isMessageNotified(id: string): boolean {
+  return getNotifiedMessageIds().has(id);
+}
+
+// ─── Optimistic Status Update Cache ────────────────────────────────────
 function getRecentStatusUpdates(): Record<string, { status: "unread" | "read" | "replied"; timestamp: number }> {
   if (typeof window === "undefined") return {};
   try {
@@ -75,7 +105,40 @@ function saveRecentStatusUpdate(id: string, status: "unread" | "read" | "replied
   }
 }
 
-// Helper safe JSON parse & write
+// ─── Optimistic Local Messages Cache (survives until server confirms) ──
+function getOptimisticMessages(): ContactMessage[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = sessionStorage.getItem("cits_optimistic_messages");
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+function addOptimisticMessage(msg: ContactMessage): void {
+  if (typeof window === "undefined") return;
+  try {
+    const list = getOptimisticMessages();
+    list.push(msg);
+    sessionStorage.setItem("cits_optimistic_messages", JSON.stringify(list));
+  } catch {
+    // silent
+  }
+}
+
+function removeOptimisticMessage(id: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const list = getOptimisticMessages().filter((m) => m.id !== id);
+    sessionStorage.setItem("cits_optimistic_messages", JSON.stringify(list));
+  } catch {
+    // silent
+  }
+}
+
+// ─── localStorage Helpers ──────────────────────────────────────────────
 function getStorageItem<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
   try {
@@ -97,7 +160,43 @@ function setStorageItem<T>(key: string, value: T): void {
   }
 }
 
+// ─── Notification Helper (deduplicated) ────────────────────────────────
+function notifyNewMessage(msg: ContactMessage): void {
+  if (isMessageNotified(msg.id)) return;
+  markMessageNotified(msg.id);
+  playNewMessageSound();
+  window.dispatchEvent(new CustomEvent("cits-realtime-message", { detail: msg }));
+}
+
+// ─── Merge server messages with optimistic local messages ──────────────
+function mergeMessagesWithOptimistic(serverMsgs: ContactMessage[]): ContactMessage[] {
+  const recentMap = getRecentStatusUpdates();
+  const validServerMsgs = serverMsgs.filter((m) => !isMessageDeleted(m.id));
+  const merged = validServerMsgs.map((serverMsg) => {
+    const recent = recentMap[serverMsg.id];
+    if (recent && Date.now() - recent.timestamp < 30000) {
+      return { ...serverMsg, status: recent.status };
+    }
+    return serverMsg;
+  });
+
+  // Add any optimistic messages not yet confirmed by the server
+  const serverIds = new Set(merged.map((m) => m.id));
+  const optimistic = getOptimisticMessages().filter(
+    (m) => !serverIds.has(m.id) && !isMessageDeleted(m.id)
+  );
+
+  // Remove optimistic messages that ARE now on the server (confirmed)
+  for (const sm of merged) {
+    removeOptimisticMessage(sm.id);
+  }
+
+  return [...optimistic, ...merged];
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // Global Store API with Optimistic UI & Backend Synchronization
+// ═══════════════════════════════════════════════════════════════════════
 export const CitsStore = {
   // PRODUCTS
   getProducts(): ProductItem[] {
@@ -175,6 +274,10 @@ export const CitsStore = {
       createdAt: new Date().toISOString(),
     };
     this.saveMessages([newMsg, ...current.filter((m) => m.id !== newMsg.id)]);
+    // Track as optimistic so it survives the next server sync
+    addOptimisticMessage(newMsg);
+    // Mark as already notified so we don't double-notify when polling picks it up
+    markMessageNotified(newMsg.id);
     citsApi.sendMessage(newMsg).catch((err) => console.warn("Sync send message error:", err));
     return newMsg;
   },
@@ -187,6 +290,7 @@ export const CitsStore = {
   },
   deleteMessage(id: string): void {
     markMessageDeleted(id);
+    removeOptimisticMessage(id);
     const current = this.getMessages();
     this.saveMessages(current.filter((m) => m.id !== id));
     citsApi.deleteMessage(id).catch((err) => console.warn("Sync delete message error:", err));
@@ -313,7 +417,9 @@ export const CitsStore = {
   },
 };
 
-// React Hook to subscribe to store updates and background sync with Central API + Realtime SSE Stream
+// ═══════════════════════════════════════════════════════════════════════
+// React Hook — subscribe to store + background sync + SSE + polling
+// ═══════════════════════════════════════════════════════════════════════
 export function useCitsStore() {
   const [products, setProducts] = useState<ProductItem[]>(() => {
     if (typeof window !== "undefined") {
@@ -371,6 +477,9 @@ export function useCitsStore() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLiveConnected, setIsLiveConnected] = useState(false);
 
+  // Guard against duplicate syncBackend calls from React strict mode / remounts
+  const hasSyncedRef = useRef(false);
+
   useEffect(() => {
     function refreshFromLocal() {
       setProducts(CitsStore.getProducts());
@@ -386,8 +495,12 @@ export function useCitsStore() {
 
     refreshFromLocal();
 
-    // 1. Initial Sync with Central Backend REST API
+    // ── 1. Initial Backend Sync ────────────────────────────────────────
     async function syncBackend() {
+      // Prevent duplicate sync on React strict mode double-mount
+      if (hasSyncedRef.current) return;
+      hasSyncedRef.current = true;
+
       try {
         const [prodRes, contactRes, aboutRes, clientRes, msgRes, landRes, srvRes, portRes] = await Promise.allSettled([
           citsApi.getAllProducts(),
@@ -417,17 +530,9 @@ export function useCitsStore() {
           setStorageItem(siteConfig.storageKeys.clients, clientRes.value);
         }
         if (msgRes.status === "fulfilled" && Array.isArray(msgRes.value)) {
-          const recentMap = getRecentStatusUpdates();
-          const validServerMsgs = msgRes.value.filter((m: ContactMessage) => !isMessageDeleted(m.id));
-          const merged = validServerMsgs.map((serverMsg: ContactMessage) => {
-            const recent = recentMap[serverMsg.id];
-            if (recent && Date.now() - recent.timestamp < 30000) {
-              return { ...serverMsg, status: recent.status };
-            }
-            return serverMsg;
-          });
-          setMessages(merged);
-          setStorageItem(siteConfig.storageKeys.messages, merged);
+          const finalMsgs = mergeMessagesWithOptimistic(msgRes.value);
+          setMessages(finalMsgs);
+          setStorageItem(siteConfig.storageKeys.messages, finalMsgs);
         }
         if (landRes.status === "fulfilled" && landRes.value) {
           setLandingData(landRes.value);
@@ -448,14 +553,12 @@ export function useCitsStore() {
 
     syncBackend();
 
-    // 2. Realtime SSE Stream for Live Inbox & Consultations (hanya jika ada backend external URL)
+    // ── 2. SSE Realtime Stream ─────────────────────────────────────────
     let eventSource: EventSource | null = null;
-    let reconnectTimeout: any = null;
+    let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
 
     function connectSSE() {
-      if (!process.env.NEXT_PUBLIC_API_URL) {
-        return;
-      }
+      if (!process.env.NEXT_PUBLIC_API_URL) return;
       try {
         const streamUrl = process.env.NEXT_PUBLIC_API_URL + "/messages/stream";
         eventSource = new EventSource(streamUrl);
@@ -470,6 +573,7 @@ export function useCitsStore() {
             if (data.type === "new_message" && data.message) {
               const newMsg = data.message as ContactMessage;
               if (isMessageDeleted(newMsg.id)) return;
+
               setMessages((prev) => {
                 if (prev.some((m) => m.id === newMsg.id)) return prev;
                 const nextList = [newMsg, ...prev];
@@ -477,61 +581,59 @@ export function useCitsStore() {
                 return nextList;
               });
 
-              playNewMessageSound();
-              window.dispatchEvent(new CustomEvent("cits-realtime-message", { detail: newMsg }));
+              // Deduplicated notification
+              notifyNewMessage(newMsg);
             }
-          } catch (e) {
-            // keepalive or non-json message
+          } catch {
+            // keepalive or non-json
           }
         };
 
         eventSource.onerror = () => {
           setIsLiveConnected(false);
           eventSource?.close();
-          reconnectTimeout = setTimeout(connectSSE, 4000);
+          reconnectTimeout = setTimeout(connectSSE, 5000);
         };
-      } catch (err) {
+      } catch {
         setIsLiveConnected(false);
       }
     }
 
     connectSSE();
 
-    // 3. Fallback Periodic Polling & Instant Window Focus Sync
+    // ── 3. Periodic Polling (fallback) ─────────────────────────────────
     const syncInbox = async () => {
       try {
         const latestMsgs = await citsApi.getMessages();
-        if (Array.isArray(latestMsgs)) {
-          const recentMap = getRecentStatusUpdates();
-          const validServerMsgs = latestMsgs.filter((m: ContactMessage) => !isMessageDeleted(m.id));
-          const merged = validServerMsgs.map((serverMsg: ContactMessage) => {
-            const recent = recentMap[serverMsg.id];
-            if (recent && Date.now() - recent.timestamp < 30000) {
-              return { ...serverMsg, status: recent.status };
-            }
-            return serverMsg;
-          });
+        if (!Array.isArray(latestMsgs)) return;
 
-          const currentMsgs = CitsStore.getMessages();
-          const hasChanged = JSON.stringify(merged) !== JSON.stringify(currentMsgs);
-          if (hasChanged) {
-            const currentIds = new Set(currentMsgs.map((m) => m.id));
-            const brandNew = merged.filter((m: ContactMessage) => !currentIds.has(m.id) && !isMessageDeleted(m.id));
+        const finalMsgs = mergeMessagesWithOptimistic(latestMsgs);
+        const currentMsgs = CitsStore.getMessages();
 
-            if (brandNew.length > 0) {
-              playNewMessageSound();
-              window.dispatchEvent(new CustomEvent("cits-realtime-message", { detail: brandNew[0] }));
-            }
-            setStorageItem(siteConfig.storageKeys.messages, merged);
-            setMessages(merged);
-          }
+        // Detect truly new messages (not yet in current list & not already notified)
+        const currentIds = new Set(currentMsgs.map((m) => m.id));
+        const brandNew = finalMsgs.filter(
+          (m) => !currentIds.has(m.id) && !isMessageDeleted(m.id) && !isMessageNotified(m.id)
+        );
+
+        // Notify only genuinely brand-new messages
+        if (brandNew.length > 0) {
+          notifyNewMessage(brandNew[0]);
+        }
+
+        // Check if data actually changed to avoid unnecessary re-renders
+        const hasChanged = JSON.stringify(finalMsgs) !== JSON.stringify(currentMsgs);
+        if (hasChanged) {
+          setStorageItem(siteConfig.storageKeys.messages, finalMsgs);
+          setMessages(finalMsgs);
         }
       } catch {
         // Polling silent catch
       }
     };
 
-    const pollInterval = setInterval(syncInbox, 3000);
+    // Poll every 8 seconds (reduced from 3s to prevent race conditions)
+    const pollInterval = setInterval(syncInbox, 8000);
 
     const handleWindowFocus = () => {
       if (typeof document !== "undefined" && document.visibilityState === "visible") {
@@ -571,3 +673,4 @@ export function useCitsStore() {
     actions: CitsStore,
   };
 }
+

@@ -16,8 +16,7 @@ export default function RealtimeNotificationToast() {
       if (customEvent.detail) {
         setActiveMessage(customEvent.detail);
         setVisible(true);
-        // Play gentle chime
-        playNewMessageSound();
+        // Sound is already played by the store's notifyNewMessage() before this event fires
       }
     }
 
@@ -26,6 +25,7 @@ export default function RealtimeNotificationToast() {
       window.removeEventListener("cits-realtime-message", handleRealtimeMessage);
     };
   }, []);
+
 
   // Auto-dismiss after 10 seconds
   useEffect(() => {
