@@ -73,6 +73,8 @@ export default function ContactPage() {
   const [formEmail, setFormEmail] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formMessage, setFormMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
@@ -347,25 +349,41 @@ export default function ContactPage() {
                         </div>
                       ) : (
                         <form
-                          onSubmit={(e) => {
+                          onSubmit={async (e) => {
                             e.preventDefault();
-                            actions.addMessage({
-                              name: formName,
-                              company: formCompany,
-                              email: formEmail,
-                              phone: formPhone,
-                              serviceRequested: selectedService || "Umum / Konsultasi TI",
-                              message: formMessage,
-                            });
-                            setSubmitted(true);
-                            setFormName("");
-                            setFormCompany("");
-                            setFormEmail("");
-                            setFormPhone("");
-                            setFormMessage("");
+                            setSubmitError("");
+                            setIsSubmitting(true);
+                            try {
+                              await actions.addMessage({
+                                name: formName,
+                                company: formCompany,
+                                email: formEmail,
+                                phone: formPhone,
+                                serviceRequested: selectedService || "Umum / Konsultasi TI",
+                                message: formMessage,
+                              });
+                              setSubmitted(true);
+                              setFormName("");
+                              setFormCompany("");
+                              setFormEmail("");
+                              setFormPhone("");
+                              setFormMessage("");
+                            } catch (err: any) {
+                              setSubmitError(
+                                err?.message ||
+                                  "Gagal mengirim pesan ke server. Mohon periksa koneksi internet Anda atau hubungi kami langsung via WhatsApp."
+                              );
+                            } finally {
+                              setIsSubmitting(false);
+                            }
                           }}
                           className="space-y-4 sm:space-y-5"
                         >
+                          {submitError && (
+                            <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-xs text-red-700 dark:text-red-300">
+                              {submitError}
+                            </div>
+                          )}
                           {/* Nama & Instansi */}
                           <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
                             <div>
@@ -525,10 +543,20 @@ export default function ContactPage() {
                           <div className="pt-2">
                             <button
                               type="submit"
-                              className="w-full py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-600/30 transition-all flex items-center justify-center gap-2 group cursor-pointer text-sm shadow-md shadow-orange-600/20 active:scale-[0.99]"
+                              disabled={isSubmitting}
+                              className="w-full py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-600/30 transition-all flex items-center justify-center gap-2 group cursor-pointer text-sm shadow-md shadow-orange-600/20 active:scale-[0.99]"
                             >
-                              <Send className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                              Kirim Permintaan Konsultasi
+                              {isSubmitting ? (
+                                <>
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                  <span>Mengirim Permintaan Konsultasi...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Send className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                  <span>Kirim Permintaan Konsultasi</span>
+                                </>
+                              )}
                             </button>
                           </div>
                         </form>

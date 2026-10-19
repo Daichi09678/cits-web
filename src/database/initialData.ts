@@ -84,41 +84,7 @@ export const initialContactInfo: ContactInfo = {
   mapsUrl: "https://maps.google.com/?q=Wisma+Mampang+Jakarta+Selatan",
 };
 
-export const initialContactMessages: ContactMessage[] = [
-  {
-    id: "msg-101",
-    name: "Bambang Sudarmono",
-    email: "bambang.s@dephub.go.id",
-    phone: "081288992211",
-    company: "Kementerian Perhubungan RI",
-    serviceRequested: "Software House",
-    message: "Kami bermaksud menjadwalkan audiensi teknis terkait rencana modernisasi aplikasi pemantauan pelabuhan logistik untuk anggaran 2027.",
-    status: "unread",
-    createdAt: "2026-10-13T09:30:00Z",
-  },
-  {
-    id: "msg-102",
-    name: "Dian Permatasari",
-    email: "dian.p@esdm.go.id",
-    phone: "081399887766",
-    company: "Kementerian ESDM",
-    serviceRequested: "IT Consultant",
-    message: "Mohon informasi ketersediaan jadwal tim ahli CITS untuk pendampingan penyelarasan arsitektur SPBE sektor ketenagalistrikan.",
-    status: "read",
-    createdAt: "2026-10-12T14:15:00Z",
-  },
-  {
-    id: "msg-103",
-    name: "Ir. Hendra Gunawan",
-    email: "hendra.g@indonesiapower.co.id",
-    phone: "081122334455",
-    company: "PT Indonesia Power",
-    serviceRequested: "IT Supplier",
-    message: "Klarifikasi spesifikasi pengadaan server rackmount enterprise dan perangkat firewall redundancy untuk DRC kantor pusat.",
-    status: "replied",
-    createdAt: "2026-10-11T11:00:00Z",
-  },
-];
+export const initialContactMessages: ContactMessage[] = [];
 
 export const initialAboutData: AboutData = {
   title: "Tentang CITS Indonesia",

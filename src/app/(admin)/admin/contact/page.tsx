@@ -68,7 +68,7 @@ export default function AdminContactPage() {
     if (!deletingMessage) return;
     setIsDeleting(true);
     try {
-      actions.deleteMessage(deletingMessage.id);
+      await actions.deleteMessage(deletingMessage.id);
       if (selectedMessage && selectedMessage.id === deletingMessage.id) {
         setSelectedMessage(null);
       }

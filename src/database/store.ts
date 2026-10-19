@@ -25,8 +25,55 @@ import { siteConfig } from "@/config/siteConfig";
 import { citsApi } from "@/lib/api";
 import { playNewMessageSound } from "@/lib/audio";
 
+// Tracking deleted message IDs to prevent in-flight polling race condition
+function getDeletedMessageIds(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = sessionStorage.getItem("cits_deleted_message_ids");
+    if (!raw) return new Set();
+    return new Set(JSON.parse(raw));
+  } catch {
+    return new Set();
+  }
+}
+
+function markMessageDeleted(id: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const set = getDeletedMessageIds();
+    set.add(id);
+    sessionStorage.setItem("cits_deleted_message_ids", JSON.stringify(Array.from(set)));
+  } catch (e) {
+    console.error("Failed to mark message as deleted", e);
+  }
+}
+
+function isMessageDeleted(id: string): boolean {
+  return getDeletedMessageIds().has(id);
+}
+
 // Optimistic status update cache to prevent background polling race conditions
-const recentStatusUpdates = new Map<string, { status: "unread" | "read" | "replied"; timestamp: number }>();
+function getRecentStatusUpdates(): Record<string, { status: "unread" | "read" | "replied"; timestamp: number }> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = sessionStorage.getItem("cits_recent_status_updates");
+    if (!raw) return {};
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
+}
+
+function saveRecentStatusUpdate(id: string, status: "unread" | "read" | "replied"): void {
+  if (typeof window === "undefined") return;
+  try {
+    const map = getRecentStatusUpdates();
+    map[id] = { status, timestamp: Date.now() };
+    sessionStorage.setItem("cits_recent_status_updates", JSON.stringify(map));
+  } catch (e) {
+    console.error("Failed to save status update", e);
+  }
+}
 
 // Helper safe JSON parse & write
 function getStorageItem<T>(key: string, fallback: T): T {
@@ -112,10 +159,12 @@ export const CitsStore = {
 
   // CONTACT MESSAGES (INBOX & REALTIME)
   getMessages(): ContactMessage[] {
-    return getStorageItem<ContactMessage[]>(siteConfig.storageKeys.messages, initialContactMessages);
+    const list = getStorageItem<ContactMessage[]>(siteConfig.storageKeys.messages, []);
+    return list.filter((m) => !isMessageDeleted(m.id));
   },
   saveMessages(msgs: ContactMessage[]): void {
-    setStorageItem(siteConfig.storageKeys.messages, msgs);
+    const valid = msgs.filter((m) => !isMessageDeleted(m.id));
+    setStorageItem(siteConfig.storageKeys.messages, valid);
   },
   addMessage(msg: Omit<ContactMessage, "id" | "status" | "createdAt"> & { id?: string }): ContactMessage {
     const current = this.getMessages();
@@ -130,13 +179,14 @@ export const CitsStore = {
     return newMsg;
   },
   updateMessageStatus(id: string, status: "unread" | "read" | "replied"): void {
+    saveRecentStatusUpdate(id, status);
     const current = this.getMessages();
     const updated = current.map((m) => (m.id === id ? { ...m, status } : m));
     this.saveMessages(updated);
-    recentStatusUpdates.set(id, { status, timestamp: Date.now() });
     citsApi.updateMessageStatus(id, status).catch((err) => console.warn("Sync msg status error:", err));
   },
   deleteMessage(id: string): void {
+    markMessageDeleted(id);
     const current = this.getMessages();
     this.saveMessages(current.filter((m) => m.id !== id));
     citsApi.deleteMessage(id).catch((err) => console.warn("Sync delete message error:", err));
@@ -281,9 +331,9 @@ export function useCitsStore() {
   const [messages, setMessages] = useState<ContactMessage[]>(() => {
     if (typeof window !== "undefined") {
       const stored = CitsStore.getMessages();
-      if (stored && stored.length > 0) return stored;
+      if (stored && Array.isArray(stored)) return stored;
     }
-    return initialContactMessages;
+    return [];
   });
   const [aboutData, setAboutData] = useState<AboutData>(() => {
     if (typeof window !== "undefined") {
@@ -366,10 +416,12 @@ export function useCitsStore() {
           setClients(clientRes.value);
           setStorageItem(siteConfig.storageKeys.clients, clientRes.value);
         }
-        if (msgRes.status === "fulfilled" && Array.isArray(msgRes.value) && msgRes.value.length > 0) {
-          const merged = msgRes.value.map((serverMsg: ContactMessage) => {
-            const recent = recentStatusUpdates.get(serverMsg.id);
-            if (recent && Date.now() - recent.timestamp < 20000) {
+        if (msgRes.status === "fulfilled" && Array.isArray(msgRes.value)) {
+          const recentMap = getRecentStatusUpdates();
+          const validServerMsgs = msgRes.value.filter((m: ContactMessage) => !isMessageDeleted(m.id));
+          const merged = validServerMsgs.map((serverMsg: ContactMessage) => {
+            const recent = recentMap[serverMsg.id];
+            if (recent && Date.now() - recent.timestamp < 30000) {
               return { ...serverMsg, status: recent.status };
             }
             return serverMsg;
@@ -417,6 +469,7 @@ export function useCitsStore() {
             const data = JSON.parse(event.data);
             if (data.type === "new_message" && data.message) {
               const newMsg = data.message as ContactMessage;
+              if (isMessageDeleted(newMsg.id)) return;
               setMessages((prev) => {
                 if (prev.some((m) => m.id === newMsg.id)) return prev;
                 const nextList = [newMsg, ...prev];
@@ -448,10 +501,12 @@ export function useCitsStore() {
     const syncInbox = async () => {
       try {
         const latestMsgs = await citsApi.getMessages();
-        if (Array.isArray(latestMsgs) && latestMsgs.length > 0) {
-          const merged = latestMsgs.map((serverMsg: ContactMessage) => {
-            const recent = recentStatusUpdates.get(serverMsg.id);
-            if (recent && Date.now() - recent.timestamp < 20000) {
+        if (Array.isArray(latestMsgs)) {
+          const recentMap = getRecentStatusUpdates();
+          const validServerMsgs = latestMsgs.filter((m: ContactMessage) => !isMessageDeleted(m.id));
+          const merged = validServerMsgs.map((serverMsg: ContactMessage) => {
+            const recent = recentMap[serverMsg.id];
+            if (recent && Date.now() - recent.timestamp < 30000) {
               return { ...serverMsg, status: recent.status };
             }
             return serverMsg;
@@ -461,7 +516,7 @@ export function useCitsStore() {
           const hasChanged = JSON.stringify(merged) !== JSON.stringify(currentMsgs);
           if (hasChanged) {
             const currentIds = new Set(currentMsgs.map((m) => m.id));
-            const brandNew = merged.filter((m: ContactMessage) => !currentIds.has(m.id));
+            const brandNew = merged.filter((m: ContactMessage) => !currentIds.has(m.id) && !isMessageDeleted(m.id));
 
             if (brandNew.length > 0) {
               playNewMessageSound();
