@@ -3295,12 +3295,12 @@ export default function AdminLandingPage() {
                         <select
                           value={clientFormCategory}
                           onChange={(e) => setClientFormCategory(e.target.value as any)}
-                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
                         >
-                          <option value="Kementerian">Kementerian</option>
-                          <option value="BUMN">BUMN</option>
-                          <option value="Lembaga">Lembaga Tinggi Negara</option>
-                          <option value="Swasta">Korporasi Swasta</option>
+                          <option value="Kementerian" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Kementerian</option>
+                          <option value="BUMN" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">BUMN</option>
+                          <option value="Lembaga" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Lembaga Tinggi Negara</option>
+                          <option value="Swasta" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Korporasi Swasta</option>
                         </select>
                       </div>
 

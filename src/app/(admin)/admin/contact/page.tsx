@@ -406,11 +406,11 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                           <select
                             value={msg.status}
                             onChange={(e) => actions.updateMessageStatus(msg.id, e.target.value as any)}
-                            className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                            className="text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/15 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-orange-500 cursor-pointer"
                           >
-                            <option value="unread">Belum Dibaca</option>
-                            <option value="read">Sudah Dibaca</option>
-                            <option value="replied">Sudah Dibalas</option>
+                            <option value="unread" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Belum Dibaca</option>
+                            <option value="read" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Sudah Dibaca</option>
+                            <option value="replied" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Sudah Dibalas</option>
                           </select>
 
                           <button

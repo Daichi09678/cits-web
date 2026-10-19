@@ -25,6 +25,26 @@ html {
   scroll-behavior: smooth;
 }
 
+html.dark {
+  color-scheme: dark;
+}
+
+/* Fix browser select dropdown popup in dark mode */
+select {
+  color-scheme: light dark;
+}
+
+html.dark select,
+html.dark select option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+html:not(.dark) select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
 @keyframes marquee {
   0% {
     transform: translateX(0);

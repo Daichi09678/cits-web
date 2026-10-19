@@ -303,11 +303,11 @@ export default function AdminPortfolioPage() {
             <select
               value={sectorFilter}
               onChange={(e) => setSectorFilter(e.target.value)}
-              className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-700 dark:text-slate-300 font-semibold focus:outline-none"
+              className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-700 dark:text-slate-200 font-semibold focus:outline-none cursor-pointer"
             >
-              <option value="All">Semua Sektor Penugasan</option>
+              <option value="All" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Semua Sektor Penugasan</option>
               {SECTOR_OPTIONS.map((sec) => (
-                <option key={sec} value={sec}>
+                <option key={sec} value={sec} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                   {sec}
                 </option>
               ))}
@@ -316,12 +316,12 @@ export default function AdminPortfolioPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-700 dark:text-slate-300 font-semibold focus:outline-none"
+              className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-700 dark:text-slate-200 font-semibold focus:outline-none cursor-pointer"
             >
-              <option value="all">Semua Status</option>
-              <option value="active">Hanya Aktif</option>
-              <option value="inactive">Non-aktif (Draft)</option>
-              <option value="flagship">Hanya Flagship</option>
+              <option value="all" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Semua Status</option>
+              <option value="active" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Hanya Aktif</option>
+              <option value="inactive" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Non-aktif (Draft)</option>
+              <option value="flagship" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Hanya Flagship</option>
             </select>
           </div>
 
@@ -617,10 +617,10 @@ export default function AdminPortfolioPage() {
                     <select
                       value={formSector}
                       onChange={(e) => setFormSector(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none cursor-pointer"
                     >
                       {SECTOR_OPTIONS.map((sec) => (
-                        <option key={sec} value={sec}>
+                        <option key={sec} value={sec} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                           {sec}
                         </option>
                       ))}
