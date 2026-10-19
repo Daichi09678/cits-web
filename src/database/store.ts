@@ -41,9 +41,7 @@ function setStorageItem<T>(key: string, value: T): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(key, JSON.stringify(value));
-    setTimeout(() => {
-      window.dispatchEvent(new Event("cits-data-updated"));
-    }, 0);
+    window.dispatchEvent(new Event("cits-data-updated"));
   } catch (e) {
     console.error("Failed to write to localStorage", e);
   }
@@ -263,14 +261,59 @@ export const CitsStore = {
 
 // React Hook to subscribe to store updates and background sync with Central API + Realtime SSE Stream
 export function useCitsStore() {
-  const [products, setProducts] = useState<ProductItem[]>(initialProducts);
-  const [contactInfo, setContactInfo] = useState<ContactInfo>(initialContactInfo);
-  const [messages, setMessages] = useState<ContactMessage[]>(initialContactMessages);
-  const [aboutData, setAboutData] = useState<AboutData>(initialAboutData);
-  const [clients, setClients] = useState<ClientPartner[]>(initialClients);
-  const [services, setServices] = useState<ServicePillar[]>(initialServicePillars);
-  const [caseStudies, setCaseStudies] = useState<CaseStudyItem[]>(initialCaseStudies);
-  const [landingData, setLandingData] = useState<LandingPageData>(initialLandingPageData);
+  const [products, setProducts] = useState<ProductItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = CitsStore.getProducts();
+      if (stored && stored.length > 0) return stored;
+    }
+    return initialProducts;
+  });
+  const [contactInfo, setContactInfo] = useState<ContactInfo>(() => {
+    if (typeof window !== "undefined") {
+      return CitsStore.getContactInfo();
+    }
+    return initialContactInfo;
+  });
+  const [messages, setMessages] = useState<ContactMessage[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = CitsStore.getMessages();
+      if (stored && stored.length > 0) return stored;
+    }
+    return initialContactMessages;
+  });
+  const [aboutData, setAboutData] = useState<AboutData>(() => {
+    if (typeof window !== "undefined") {
+      return CitsStore.getAboutData();
+    }
+    return initialAboutData;
+  });
+  const [clients, setClients] = useState<ClientPartner[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = CitsStore.getClients();
+      if (stored && stored.length > 0) return stored;
+    }
+    return initialClients;
+  });
+  const [services, setServices] = useState<ServicePillar[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = CitsStore.getServices();
+      if (stored && stored.length > 0) return stored;
+    }
+    return initialServicePillars;
+  });
+  const [caseStudies, setCaseStudies] = useState<CaseStudyItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const stored = CitsStore.getCaseStudies();
+      if (stored && stored.length > 0) return stored;
+    }
+    return initialCaseStudies;
+  });
+  const [landingData, setLandingData] = useState<LandingPageData>(() => {
+    if (typeof window !== "undefined") {
+      return CitsStore.getLandingData();
+    }
+    return initialLandingPageData;
+  });
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLiveConnected, setIsLiveConnected] = useState(false);
 
@@ -393,18 +436,21 @@ export function useCitsStore() {
 
     connectSSE();
 
-    // 3. Fallback Periodic Polling (every 6 seconds) to guarantee 100% reliable inbox sync
+    // 3. Fallback Periodic Polling (every 5 seconds) to guarantee 100% reliable inbox sync & status update
     const pollInterval = setInterval(async () => {
       try {
         const latestMsgs = await citsApi.getMessages();
         if (Array.isArray(latestMsgs) && latestMsgs.length > 0) {
           const currentMsgs = CitsStore.getMessages();
-          const currentIds = new Set(currentMsgs.map((m) => m.id));
-          const brandNew = latestMsgs.filter((m: ContactMessage) => !currentIds.has(m.id));
+          const hasChanged = JSON.stringify(latestMsgs) !== JSON.stringify(currentMsgs);
+          if (hasChanged) {
+            const currentIds = new Set(currentMsgs.map((m) => m.id));
+            const brandNew = latestMsgs.filter((m: ContactMessage) => !currentIds.has(m.id));
 
-          if (brandNew.length > 0) {
-            playNewMessageSound();
-            window.dispatchEvent(new CustomEvent("cits-realtime-message", { detail: brandNew[0] }));
+            if (brandNew.length > 0) {
+              playNewMessageSound();
+              window.dispatchEvent(new CustomEvent("cits-realtime-message", { detail: brandNew[0] }));
+            }
             setStorageItem(siteConfig.storageKeys.messages, latestMsgs);
             setMessages(latestMsgs);
           }
@@ -412,7 +458,7 @@ export function useCitsStore() {
       } catch {
         // Polling silent catch
       }
-    }, 6000);
+    }, 5000);
 
     window.addEventListener("cits-data-updated", refreshFromLocal);
     window.addEventListener("storage", refreshFromLocal);

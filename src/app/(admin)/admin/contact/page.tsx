@@ -220,7 +220,8 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
 
   // Open Message Detail & mark as read if unread
   const handleOpenDetail = (msg: ContactMessage) => {
-    setSelectedMessage(msg);
+    const readMsg: ContactMessage = msg.status === "unread" ? { ...msg, status: "read" } : msg;
+    setSelectedMessage(readMsg);
     if (msg.status === "unread") {
       actions.updateMessageStatus(msg.id, "read");
     }
