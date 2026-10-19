@@ -81,6 +81,7 @@ export const citsApi = {
 
   // 3. Contact Messages
   async sendMessage(data: {
+    id?: string;
     name: string;
     email: string;
     phone: string;
@@ -101,8 +102,12 @@ export const citsApi = {
       headers: getHeaders(),
       cache: "no-store",
     });
+    if (!res.ok) {
+      console.warn("API getMessages failed:", res.status);
+      return [];
+    }
     const json = await res.json();
-    return json.data || [];
+    return json && json.success && Array.isArray(json.data) ? json.data : [];
   },
 
   async updateMessageStatus(id: string, status: "unread" | "read" | "replied") {

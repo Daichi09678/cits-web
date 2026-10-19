@@ -206,12 +206,13 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
 
   // Filter messages
   const filteredMessages = messages.filter((m) => {
+    const s = search.toLowerCase();
     const matchSearch =
-      m.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.company.toLowerCase().includes(search.toLowerCase()) ||
-      m.email.toLowerCase().includes(search.toLowerCase()) ||
-      m.message.toLowerCase().includes(search.toLowerCase()) ||
-      (m.serviceRequested && m.serviceRequested.toLowerCase().includes(search.toLowerCase()));
+      (m.name || "").toLowerCase().includes(s) ||
+      (m.company || "").toLowerCase().includes(s) ||
+      (m.email || "").toLowerCase().includes(s) ||
+      (m.message || "").toLowerCase().includes(s) ||
+      (Boolean(m.serviceRequested) && (m.serviceRequested || "").toLowerCase().includes(s));
     const matchStatus = filterStatus === "All" || m.status === filterStatus;
     return matchSearch && matchStatus;
   });

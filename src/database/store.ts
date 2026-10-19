@@ -25,6 +25,9 @@ import { siteConfig } from "@/config/siteConfig";
 import { citsApi } from "@/lib/api";
 import { playNewMessageSound } from "@/lib/audio";
 
+// Optimistic status update cache to prevent background polling race conditions
+const recentStatusUpdates = new Map<string, { status: "unread" | "read" | "replied"; timestamp: number }>();
+
 // Helper safe JSON parse & write
 function getStorageItem<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -114,22 +117,23 @@ export const CitsStore = {
   saveMessages(msgs: ContactMessage[]): void {
     setStorageItem(siteConfig.storageKeys.messages, msgs);
   },
-  addMessage(msg: Omit<ContactMessage, "id" | "status" | "createdAt">): ContactMessage {
+  addMessage(msg: Omit<ContactMessage, "id" | "status" | "createdAt"> & { id?: string }): ContactMessage {
     const current = this.getMessages();
     const newMsg: ContactMessage = {
       ...msg,
-      id: "msg-" + Date.now(),
+      id: msg.id || "msg-" + Date.now(),
       status: "unread",
       createdAt: new Date().toISOString(),
     };
-    this.saveMessages([newMsg, ...current]);
-    citsApi.sendMessage(msg).catch((err) => console.warn("Sync send message error:", err));
+    this.saveMessages([newMsg, ...current.filter((m) => m.id !== newMsg.id)]);
+    citsApi.sendMessage(newMsg).catch((err) => console.warn("Sync send message error:", err));
     return newMsg;
   },
   updateMessageStatus(id: string, status: "unread" | "read" | "replied"): void {
     const current = this.getMessages();
     const updated = current.map((m) => (m.id === id ? { ...m, status } : m));
     this.saveMessages(updated);
+    recentStatusUpdates.set(id, { status, timestamp: Date.now() });
     citsApi.updateMessageStatus(id, status).catch((err) => console.warn("Sync msg status error:", err));
   },
   deleteMessage(id: string): void {
@@ -346,7 +350,7 @@ export function useCitsStore() {
           citsApi.getPortfolio(),
         ]);
 
-        if (prodRes.status === "fulfilled" && Array.isArray(prodRes.value)) {
+        if (prodRes.status === "fulfilled" && Array.isArray(prodRes.value) && prodRes.value.length > 0) {
           setProducts(prodRes.value);
           setStorageItem(siteConfig.storageKeys.products, prodRes.value);
         }
@@ -358,13 +362,20 @@ export function useCitsStore() {
           setAboutData(aboutRes.value);
           setStorageItem(siteConfig.storageKeys.about, aboutRes.value);
         }
-        if (clientRes.status === "fulfilled" && Array.isArray(clientRes.value)) {
+        if (clientRes.status === "fulfilled" && Array.isArray(clientRes.value) && clientRes.value.length > 0) {
           setClients(clientRes.value);
           setStorageItem(siteConfig.storageKeys.clients, clientRes.value);
         }
-        if (msgRes.status === "fulfilled" && Array.isArray(msgRes.value)) {
-          setMessages(msgRes.value);
-          setStorageItem(siteConfig.storageKeys.messages, msgRes.value);
+        if (msgRes.status === "fulfilled" && Array.isArray(msgRes.value) && msgRes.value.length > 0) {
+          const merged = msgRes.value.map((serverMsg: ContactMessage) => {
+            const recent = recentStatusUpdates.get(serverMsg.id);
+            if (recent && Date.now() - recent.timestamp < 20000) {
+              return { ...serverMsg, status: recent.status };
+            }
+            return serverMsg;
+          });
+          setMessages(merged);
+          setStorageItem(siteConfig.storageKeys.messages, merged);
         }
         if (landRes.status === "fulfilled" && landRes.value) {
           setLandingData(landRes.value);
@@ -391,7 +402,6 @@ export function useCitsStore() {
 
     function connectSSE() {
       if (!process.env.NEXT_PUBLIC_API_URL) {
-        // Mode terintegrasi Next.js: gunakan periodic polling yang aman dan reliabel
         return;
       }
       try {
@@ -414,7 +424,6 @@ export function useCitsStore() {
                 return nextList;
               });
 
-              // Play subtle sound and notify admin in realtime
               playNewMessageSound();
               window.dispatchEvent(new CustomEvent("cits-realtime-message", { detail: newMsg }));
             }
@@ -426,7 +435,6 @@ export function useCitsStore() {
         eventSource.onerror = () => {
           setIsLiveConnected(false);
           eventSource?.close();
-          // Reconnect in 4 seconds
           reconnectTimeout = setTimeout(connectSSE, 4000);
         };
       } catch (err) {
@@ -436,36 +444,56 @@ export function useCitsStore() {
 
     connectSSE();
 
-    // 3. Fallback Periodic Polling (every 5 seconds) to guarantee 100% reliable inbox sync & status update
-    const pollInterval = setInterval(async () => {
+    // 3. Fallback Periodic Polling & Instant Window Focus Sync
+    const syncInbox = async () => {
       try {
         const latestMsgs = await citsApi.getMessages();
         if (Array.isArray(latestMsgs) && latestMsgs.length > 0) {
+          const merged = latestMsgs.map((serverMsg: ContactMessage) => {
+            const recent = recentStatusUpdates.get(serverMsg.id);
+            if (recent && Date.now() - recent.timestamp < 20000) {
+              return { ...serverMsg, status: recent.status };
+            }
+            return serverMsg;
+          });
+
           const currentMsgs = CitsStore.getMessages();
-          const hasChanged = JSON.stringify(latestMsgs) !== JSON.stringify(currentMsgs);
+          const hasChanged = JSON.stringify(merged) !== JSON.stringify(currentMsgs);
           if (hasChanged) {
             const currentIds = new Set(currentMsgs.map((m) => m.id));
-            const brandNew = latestMsgs.filter((m: ContactMessage) => !currentIds.has(m.id));
+            const brandNew = merged.filter((m: ContactMessage) => !currentIds.has(m.id));
 
             if (brandNew.length > 0) {
               playNewMessageSound();
               window.dispatchEvent(new CustomEvent("cits-realtime-message", { detail: brandNew[0] }));
             }
-            setStorageItem(siteConfig.storageKeys.messages, latestMsgs);
-            setMessages(latestMsgs);
+            setStorageItem(siteConfig.storageKeys.messages, merged);
+            setMessages(merged);
           }
         }
       } catch {
         // Polling silent catch
       }
-    }, 5000);
+    };
 
+    const pollInterval = setInterval(syncInbox, 3000);
+
+    const handleWindowFocus = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        syncInbox();
+      }
+    };
+
+    window.addEventListener("focus", handleWindowFocus);
+    window.addEventListener("visibilitychange", handleWindowFocus);
     window.addEventListener("cits-data-updated", refreshFromLocal);
     window.addEventListener("storage", refreshFromLocal);
 
     return () => {
       window.removeEventListener("cits-data-updated", refreshFromLocal);
       window.removeEventListener("storage", refreshFromLocal);
+      window.removeEventListener("focus", handleWindowFocus);
+      window.removeEventListener("visibilitychange", handleWindowFocus);
       clearInterval(pollInterval);
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
       if (eventSource) eventSource.close();

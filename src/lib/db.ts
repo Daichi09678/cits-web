@@ -2,6 +2,7 @@ import postgres from "postgres";
 import {
   initialProducts,
   initialContactInfo,
+  initialContactMessages,
   initialAboutData,
   initialClients,
   initialLandingPageData,
@@ -19,7 +20,7 @@ import {
   CaseStudyItem,
 } from "@/database/schema";
 
-// Global fallback cache if DATABASE_URL is not configured
+// Global fallback cache and PostgreSQL singleton for Next.js App Router
 declare global {
   // eslint-disable-next-line no-var
   var _citsMemoryDb: {
@@ -33,13 +34,19 @@ declare global {
     portfolio: CaseStudyItem[];
     isInitialized: boolean;
   } | undefined;
+  // eslint-disable-next-line no-var
+  var _citsSqlInstance: postgres.Sql | undefined;
+  // eslint-disable-next-line no-var
+  var _citsDbInitialized: boolean | undefined;
+  // eslint-disable-next-line no-var
+  var _citsDbInitPromise: Promise<void> | undefined;
 }
 
 if (!globalThis._citsMemoryDb) {
   globalThis._citsMemoryDb = {
     products: [...initialProducts],
     contactInfo: { ...initialContactInfo },
-    messages: [],
+    messages: [...initialContactMessages],
     aboutData: { ...initialAboutData },
     clients: [...initialClients],
     landingData: { ...initialLandingPageData },
@@ -51,52 +58,50 @@ if (!globalThis._citsMemoryDb) {
 
 const memoryDb = globalThis._citsMemoryDb;
 
-// PostgreSQL Connection Singleton
-let sqlInstance: postgres.Sql | null = null;
-let dbInitialized = false;
-
 export function getSql(): postgres.Sql | null {
   const dbUrl = process.env.DATABASE_URL;
   if (!dbUrl) return null;
 
-  if (!sqlInstance) {
+  if (!globalThis._citsSqlInstance) {
     try {
-      sqlInstance = postgres(dbUrl, {
-        max: 10,
-        idle_timeout: 20,
+      globalThis._citsSqlInstance = postgres(dbUrl, {
+        max: 5,
+        idle_timeout: 30,
         connect_timeout: 10,
-        ssl: dbUrl.includes("localhost") ? false : "prefer",
+        ssl: dbUrl.includes("localhost") ? false : "require",
       });
     } catch (e) {
       console.error("Failed to initialize postgres client:", e);
       return null;
     }
   }
-  return sqlInstance;
+  return globalThis._citsSqlInstance;
 }
 
-// Auto Schema Migration & Initial Seed
+// Auto Schema Migration & Initial Seed (Single-execution globally on startup)
 export async function ensureDbReady(): Promise<void> {
   const sql = getSql();
-  if (!sql || dbInitialized) return;
+  if (!sql || globalThis._citsDbInitialized) return;
 
-  try {
-    // 1. Create tables
-    await sql`
-      CREATE TABLE IF NOT EXISTS products (
-        id VARCHAR(100) PRIMARY KEY,
-        name VARCHAR(150) NOT NULL,
-        category VARCHAR(100) NOT NULL,
-        description TEXT NOT NULL,
-        features JSONB DEFAULT '[]'::jsonb,
-        tags JSONB DEFAULT '[]'::jsonb,
-        icon VARCHAR(50) DEFAULT 'Package',
-        image TEXT,
-        is_active BOOLEAN DEFAULT TRUE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
+  if (!globalThis._citsDbInitPromise) {
+    globalThis._citsDbInitPromise = (async () => {
+      try {
+        // 1. Create tables in batch
+        await sql`
+          CREATE TABLE IF NOT EXISTS products (
+            id VARCHAR(100) PRIMARY KEY,
+            name VARCHAR(150) NOT NULL,
+            category VARCHAR(100) NOT NULL,
+            description TEXT NOT NULL,
+            features JSONB DEFAULT '[]'::jsonb,
+            tags JSONB DEFAULT '[]'::jsonb,
+            icon VARCHAR(50) DEFAULT 'Package',
+            image TEXT,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+        `;
 
     await sql`
       CREATE TABLE IF NOT EXISTS contact_info (
@@ -243,11 +248,15 @@ export async function ensureDbReady(): Promise<void> {
       `;
     }
 
-    dbInitialized = true;
+    globalThis._citsDbInitialized = true;
     console.log("✅ Cloud Database schema and initial seeds ready!");
   } catch (err) {
     console.warn("⚠️ Warning: ensureDbReady error:", err);
+    globalThis._citsDbInitialized = true;
   }
+})();
+  }
+  return globalThis._citsDbInitPromise;
 }
 
 // ----------------------------------------------------
@@ -367,7 +376,7 @@ export const DbRepo = {
       await ensureDbReady();
       try {
         const rows = await sql`SELECT * FROM contact_messages ORDER BY created_at DESC;`;
-        return rows.map((r: any) => ({
+        const mapped = rows.map((r: any) => ({
           id: r.id,
           name: r.name,
           email: r.email,
@@ -378,6 +387,10 @@ export const DbRepo = {
           status: r.status,
           createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
         }));
+        if (mapped.length > 0) {
+          memoryDb.messages = mapped;
+        }
+        return mapped;
       } catch (e) {
         console.error("DB Error getMessages:", e);
       }
@@ -385,10 +398,10 @@ export const DbRepo = {
     return memoryDb.messages;
   },
 
-  async addMessage(msg: Omit<ContactMessage, "id" | "status" | "createdAt">): Promise<ContactMessage> {
+  async addMessage(msg: Omit<ContactMessage, "status" | "createdAt"> & { id?: string }): Promise<ContactMessage> {
     const newMsg: ContactMessage = {
       ...msg,
-      id: "msg-" + Date.now(),
+      id: msg.id || "msg-" + Date.now(),
       status: "unread",
       createdAt: new Date().toISOString(),
     };
@@ -403,21 +416,27 @@ export const DbRepo = {
             ${newMsg.id}, ${newMsg.name}, ${newMsg.company}, ${newMsg.email},
             ${newMsg.phone}, ${newMsg.serviceRequested}, ${newMsg.message},
             ${newMsg.status}, ${newMsg.createdAt}
-          );
+          )
+          ON CONFLICT (id) DO UPDATE SET
+            name = EXCLUDED.name,
+            company = EXCLUDED.company,
+            email = EXCLUDED.email,
+            phone = EXCLUDED.phone,
+            service_requested = EXCLUDED.service_requested,
+            message = EXCLUDED.message;
         `;
       } catch (e) {
         console.error("DB Error addMessage:", e);
       }
     }
 
-    memoryDb.messages = [newMsg, ...memoryDb.messages];
+    memoryDb.messages = [newMsg, ...memoryDb.messages.filter((m) => m.id !== newMsg.id)];
     return newMsg;
   },
 
   async updateMessageStatus(id: string, status: "unread" | "read" | "replied"): Promise<boolean> {
     const sql = getSql();
     if (sql) {
-      await ensureDbReady();
       try {
         await sql`UPDATE contact_messages SET status = ${status} WHERE id = ${id};`;
       } catch (e) {

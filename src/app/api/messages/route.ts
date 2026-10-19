@@ -24,6 +24,7 @@ export async function POST(req: Request) {
 
     // 1. Simpan pesan ke Cloud Database / Persistent Repo
     const savedMsg = await DbRepo.addMessage({
+      id: body.id,
       name: body.name.trim(),
       email: body.email.trim(),
       phone: body.phone.trim(),
