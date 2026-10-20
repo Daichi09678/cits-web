@@ -8,38 +8,40 @@ import {
   initialLandingPageData,
   initialServicePillars,
   initialCaseStudies,
-} from "@/database/initialData";
+} from "@/data/initialData";
+import { getMessageRetentionDays } from "@/config/inbox";
 import {
   ProductItem,
   ContactInfo,
   ContactMessage,
+  DealStage,
   AboutData,
   ClientPartner,
   LandingPageData,
   ServicePillar,
   CaseStudyItem,
-} from "@/database/schema";
+} from "@/types/schema";
 
 // Global fallback cache and PostgreSQL singleton for Next.js App Router
 declare global {
-  // eslint-disable-next-line no-var
-  var _citsMemoryDb: {
-    products: ProductItem[];
-    contactInfo: ContactInfo;
-    messages: ContactMessage[];
-    aboutData: AboutData;
-    clients: ClientPartner[];
-    landingData: LandingPageData;
-    services: ServicePillar[];
-    portfolio: CaseStudyItem[];
-    isInitialized: boolean;
-  } | undefined;
-  // eslint-disable-next-line no-var
+  var _citsMemoryDb:
+    | {
+        products: ProductItem[];
+        contactInfo: ContactInfo;
+        messages: ContactMessage[];
+        aboutData: AboutData;
+        clients: ClientPartner[];
+        landingData: LandingPageData;
+        services: ServicePillar[];
+        portfolio: CaseStudyItem[];
+        isInitialized: boolean;
+      }
+    | undefined;
   var _citsSqlInstance: postgres.Sql | undefined;
-  // eslint-disable-next-line no-var
   var _citsDbInitialized: boolean | undefined;
-  // eslint-disable-next-line no-var
   var _citsDbInitPromise: Promise<void> | undefined;
+  // Waktu purge retensi inbox terakhir (ms) — mencegah DELETE berulang tiap request.
+  var _citsLastInboxPurge: number | undefined;
 }
 
 if (!globalThis._citsMemoryDb) {
@@ -69,6 +71,11 @@ export function getSql(): postgres.Sql | null {
         idle_timeout: 30,
         connect_timeout: 10,
         ssl: dbUrl.includes("localhost") ? false : "require",
+        // Aplikasi ini menjalankan migrasi DDL saat start (mis. perubahan tipe
+        // created_at). Prepared statement yang di-cache per koneksi akan gagal
+        // ("cached plan must not change result type") setelah tipe kolom berubah,
+        // jadi prepared statement dimatikan. Beban query kecil (CMS internal).
+        prepare: false,
       });
     } catch (e) {
       console.error("Failed to initialize postgres client:", e);
@@ -78,9 +85,106 @@ export function getSql(): postgres.Sql | null {
   return globalThis._citsSqlInstance;
 }
 
-// Auto Schema Migration & Initial Seed (Tables are permanently provisioned on Neon Cloud DB)
+// postgres.js menuntut parameter bertipe JSONValue (punya index signature) agar
+// kolom jsonb benar-benar menyimpan objek/array, bukan JSON string. Interface TS
+// biasa tidak punya index signature, jadi cast-nya dipusatkan di sini.
+function jsonb(sql: postgres.Sql, value: unknown) {
+  return sql.json(value as any);
+}
+
+// Beberapa kolom JSONB terlanjur tersimpan sebagai JSON *string* (double-encoded)
+// karena sebelumnya ditulis dengan JSON.stringify(). Helper ini menormalkannya
+// saat dibaca tanpa mengubah kontrak API.
+function asJson<T>(value: unknown, fallback: T): T {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return (parsed ?? fallback) as T;
+    } catch {
+      return fallback;
+    }
+  }
+  return value as T;
+}
+
+// Auto Schema Migration & Initial Seed (Ensures new columns exist on Cloud DB)
 export async function ensureDbReady(): Promise<void> {
-  return;
+  const sql = getSql();
+  if (!sql) return;
+  if (globalThis._citsDbInitialized) return;
+  if (globalThis._citsDbInitPromise) return globalThis._citsDbInitPromise;
+
+  globalThis._citsDbInitPromise = (async () => {
+    // PENTING: postgres.js mengirim query berparameter sebagai *prepared statement*,
+    // dan PostgreSQL menolak beberapa perintah dalam satu prepared statement
+    // (error 42601: "cannot insert multiple commands into a prepared statement").
+    // Karena itu setiap DDL WAJIB dijalankan sebagai query terpisah.
+    const migrations: string[] = [
+      `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS deal_stage VARCHAR(50) DEFAULT 'baru'`,
+      `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS deal_notes TEXT DEFAULT ''`,
+      `ALTER TABLE contact_info ADD COLUMN IF NOT EXISTS faqs JSONB DEFAULT '[]'::jsonb`,
+      `ALTER TABLE contact_info ADD COLUMN IF NOT EXISTS custom_services JSONB DEFAULT '[]'::jsonb`,
+      `ALTER TABLE contact_info ADD COLUMN IF NOT EXISTS announcement JSONB DEFAULT '{}'::jsonb`,
+      `ALTER TABLE landing_page_data ADD COLUMN IF NOT EXISTS section_visibility JSONB DEFAULT '{}'::jsonb`,
+      `ALTER TABLE landing_page_data ADD COLUMN IF NOT EXISTS products_intro JSONB DEFAULT '{}'::jsonb`,
+      `ALTER TABLE landing_page_data ADD COLUMN IF NOT EXISTS clients_intro JSONB DEFAULT '{}'::jsonb`,
+    ];
+
+    let allApplied = true;
+    for (const statement of migrations) {
+      try {
+        await sql.unsafe(statement, [], { prepare: false });
+      } catch (e: any) {
+        allApplied = false;
+        console.warn("DB migration schema notice:", e?.message || e);
+      }
+    }
+    // Kolom created_at lama bertipe "timestamp without time zone" sehingga driver
+    // menafsirkannya sebagai waktu lokal mesin (di WIB bergeser -7 jam).
+    // Ubah ke timestamptz agar waktu simpan/baca selalu sama di mesin mana pun.
+    //
+    // Dijalankan lewat koneksi terpisah: ALTER TABLE mengubah tipe hasil query,
+    // dan bila memakai pool utama akan membuat prepared plan yang sudah cache
+    // gagal ("cached plan must not change result type").
+    try {
+      const [col] = await sql`
+        SELECT data_type FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'contact_messages' AND column_name = 'created_at'
+      `;
+      if (col && col.data_type === "timestamp without time zone") {
+        const dbUrl = process.env.DATABASE_URL as string;
+        const migrationClient = postgres(dbUrl, {
+          max: 1,
+          connect_timeout: 10,
+          idle_timeout: 5,
+          ssl: dbUrl.includes("localhost") ? false : "require",
+        });
+        try {
+          await migrationClient.unsafe(
+            `ALTER TABLE contact_messages ALTER COLUMN created_at TYPE timestamptz USING created_at AT TIME ZONE 'UTC'`
+          );
+          console.log("DB migration: contact_messages.created_at -> timestamptz");
+        } finally {
+          await migrationClient.end({ timeout: 5 });
+        }
+      }
+    } catch (e: any) {
+      console.warn("DB migration created_at notice:", e?.message || e);
+    }
+
+    if (allApplied) globalThis._citsDbInitialized = true;
+  })()
+    .catch((e) => {
+      // Inisialisasi DB tidak boleh menjatuhkan request: repo akan fallback ke memory.
+      console.error("DB initialization error:", e);
+    })
+    .finally(() => {
+      // Jangan pernah menyimpan promise yang gagal. Promise rejected yang di-cache
+      // membuat SEMUA request berikutnya langsung gagal (500) tanpa mencoba ulang.
+      globalThis._citsDbInitPromise = undefined;
+    });
+  return globalThis._citsDbInitPromise;
 }
 
 // ----------------------------------------------------
@@ -94,14 +198,17 @@ export const DbRepo = {
     if (sql) {
       await ensureDbReady();
       try {
-        const rows = await sql`SELECT * FROM products ORDER BY created_at DESC;`;
+        const rows = await sql`
+          SELECT id, name, category, description, features, tags, icon, image, is_active, updated_at
+          FROM products ORDER BY created_at DESC;
+        `;
         return rows.map((r: any) => ({
           id: r.id,
           name: r.name,
           category: r.category,
           description: r.description,
-          features: r.features || [],
-          tags: r.tags || [],
+          features: asJson(r.features, []),
+          tags: asJson(r.tags, []),
           icon: r.icon,
           image: r.image,
           isActive: r.is_active,
@@ -133,7 +240,7 @@ export const DbRepo = {
           INSERT INTO products (id, name, category, description, features, tags, icon, image, is_active, updated_at)
           VALUES (
             ${p.id}, ${p.name}, ${p.category}, ${p.description},
-            ${JSON.stringify(p.features)}, ${JSON.stringify(p.tags)},
+            ${jsonb(sql, p.features || [])}, ${jsonb(sql, p.tags || [])},
             ${p.icon}, ${p.image || null}, ${p.isActive}, ${p.updatedAt}
           );
         `;
@@ -163,8 +270,8 @@ export const DbRepo = {
           SET name = ${merged.name},
               category = ${merged.category},
               description = ${merged.description},
-              features = ${JSON.stringify(merged.features)},
-              tags = ${JSON.stringify(merged.tags)},
+              features = ${jsonb(sql, merged.features || [])},
+              tags = ${jsonb(sql, merged.tags || [])},
               icon = ${merged.icon},
               image = ${merged.image || null},
               is_active = ${merged.isActive},
@@ -200,7 +307,14 @@ export const DbRepo = {
     if (sql) {
       await ensureDbReady();
       try {
-        const rows = await sql`SELECT * FROM contact_messages ORDER BY created_at DESC;`;
+        const retentionDays = getMessageRetentionDays();
+        const rows = await sql`
+          SELECT id, name, email, phone, company, service_requested, message, status,
+                 deal_stage, deal_notes, created_at
+          FROM contact_messages
+          WHERE created_at >= NOW() - make_interval(days => ${retentionDays})
+          ORDER BY created_at DESC;
+        `;
         const mapped = rows.map((r: any) => ({
           id: r.id,
           name: r.name,
@@ -210,6 +324,8 @@ export const DbRepo = {
           serviceRequested: r.service_requested,
           message: r.message,
           status: r.status,
+          dealStage: (r.deal_stage as any) || "baru",
+          dealNotes: r.deal_notes || "",
           createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
         }));
         if (mapped.length > 0) {
@@ -229,6 +345,8 @@ export const DbRepo = {
       ...msg,
       id: msg.id || "msg-" + Date.now(),
       status: "unread",
+      dealStage: msg.dealStage || "baru",
+      dealNotes: msg.dealNotes || "",
       createdAt: new Date().toISOString(),
     };
 
@@ -238,11 +356,11 @@ export const DbRepo = {
       await ensureDbReady();
       try {
         await sql`
-          INSERT INTO contact_messages (id, name, company, email, phone, service_requested, message, status, created_at)
+          INSERT INTO contact_messages (id, name, company, email, phone, service_requested, message, status, deal_stage, deal_notes, created_at)
           VALUES (
             ${newMsg.id}, ${newMsg.name}, ${newMsg.company}, ${newMsg.email},
             ${newMsg.phone}, ${newMsg.serviceRequested}, ${newMsg.message},
-            ${newMsg.status}, ${newMsg.createdAt}
+            ${newMsg.status}, ${newMsg.dealStage || "baru"}, ${newMsg.dealNotes || ""}, ${newMsg.createdAt}
           )
           ON CONFLICT (id) DO UPDATE SET
             name = EXCLUDED.name,
@@ -277,6 +395,28 @@ export const DbRepo = {
     return true;
   },
 
+  async updateMessageStage(id: string, stage: DealStage, notes?: string): Promise<boolean> {
+    const sql = getSql();
+    if (!sql) throw new Error("DATABASE_URL is required for persistent inbox storage");
+    if (sql) {
+      await ensureDbReady();
+      try {
+        if (notes !== undefined) {
+          await sql`UPDATE contact_messages SET deal_stage = ${stage}, deal_notes = ${notes} WHERE id = ${id};`;
+        } else {
+          await sql`UPDATE contact_messages SET deal_stage = ${stage} WHERE id = ${id};`;
+        }
+      } catch (e) {
+        console.error("DB Error updateMessageStage:", e);
+        throw e;
+      }
+    }
+    memoryDb.messages = memoryDb.messages.map((m) =>
+      m.id === id ? { ...m, dealStage: stage, ...(notes !== undefined ? { dealNotes: notes } : {}) } : m
+    );
+    return true;
+  },
+
   async deleteMessage(id: string): Promise<boolean> {
     const sql = getSql();
     if (!sql) throw new Error("DATABASE_URL is required for persistent inbox storage");
@@ -293,15 +433,87 @@ export const DbRepo = {
     return true;
   },
 
+  /**
+   * Hapus permanen pesan yang lebih tua dari `retentionDays` hari.
+   * Mengembalikan jumlah pesan yang dihapus.
+   */
+  async purgeExpiredMessages(retentionDays: number = getMessageRetentionDays()): Promise<number> {
+    const days = Number.isFinite(retentionDays) && retentionDays > 0 ? Math.floor(retentionDays) : 30;
+    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+
+    // Cache in-memory ikut dibersihkan, termasuk saat DB tidak tersedia.
+    const before = memoryDb.messages.length;
+    memoryDb.messages = memoryDb.messages.filter((m) => {
+      const time = new Date(m.createdAt).getTime();
+      return Number.isFinite(time) ? time >= cutoff : true;
+    });
+    let deleted = before - memoryDb.messages.length;
+
+    const sql = getSql();
+    if (!sql) return deleted;
+    await ensureDbReady();
+    try {
+      const rows = await sql`
+        DELETE FROM contact_messages
+        WHERE created_at < NOW() - make_interval(days => ${days})
+        RETURNING id;
+      `;
+      deleted = Math.max(deleted, rows.length);
+    } catch (e) {
+      console.error("DB Error purgeExpiredMessages:", e);
+    }
+    return deleted;
+  },
+
+  /**
+   * Versi hemat: paling sering berjalan sekali per `minIntervalMs` per proses.
+   * Dipanggil setiap inbox dibuka, sehingga pembersihan tetap jalan tanpa cron.
+   */
+  async purgeExpiredMessagesIfDue(minIntervalMs: number = 60 * 1000): Promise<number> {
+    const now = Date.now();
+    const last = globalThis._citsLastInboxPurge;
+    if (last && now - last < minIntervalMs) return 0;
+    globalThis._citsLastInboxPurge = now;
+    return this.purgeExpiredMessages();
+  },
+
+  async deleteMessages(ids: string[]): Promise<boolean> {
+    if (!ids || ids.length === 0) return true;
+    const sql = getSql();
+    if (!sql) throw new Error("DATABASE_URL is required for persistent inbox storage");
+    if (sql) {
+      await ensureDbReady();
+      try {
+        await sql`DELETE FROM contact_messages WHERE id = ANY(${ids});`;
+      } catch (e) {
+        console.error("DB Error deleteMessages:", e);
+        throw e;
+      }
+    }
+    const idSet = new Set(ids);
+    memoryDb.messages = memoryDb.messages.filter((m) => !idSet.has(m.id));
+    return true;
+  },
+
   // CONTACT INFO
   async getContactInfo(): Promise<ContactInfo> {
     const sql = getSql();
     if (sql) {
       await ensureDbReady();
       try {
-        const rows = await sql`SELECT * FROM contact_info WHERE id = 'default' LIMIT 1;`;
+        const rows = await sql`
+          SELECT address, phone, email, working_hours, maps_url, emergency_phone,
+                 faqs, custom_services, announcement
+          FROM contact_info WHERE id = 'default' LIMIT 1;
+        `;
         if (rows.length > 0) {
           const r = rows[0];
+          const faqs = asJson<ContactInfo["faqs"]>(r.faqs, initialContactInfo.faqs);
+          const customServices = asJson<ContactInfo["customServices"]>(
+            r.custom_services,
+            initialContactInfo.customServices
+          );
+          const announcement = asJson<ContactInfo["announcement"]>(r.announcement, initialContactInfo.announcement);
           return {
             address: r.address,
             phone: r.phone,
@@ -309,6 +521,13 @@ export const DbRepo = {
             workingHours: r.working_hours,
             mapsUrl: r.maps_url || undefined,
             emergencyPhone: r.emergency_phone || undefined,
+            faqs: Array.isArray(faqs) && faqs.length > 0 ? faqs : initialContactInfo.faqs,
+            customServices:
+              Array.isArray(customServices) && customServices.length > 0
+                ? customServices
+                : initialContactInfo.customServices,
+            announcement:
+              announcement && typeof announcement === "object" ? announcement : initialContactInfo.announcement,
           };
         }
       } catch (e) {
@@ -324,11 +543,14 @@ export const DbRepo = {
       await ensureDbReady();
       try {
         await sql`
-          INSERT INTO contact_info (id, company_name, address, phone, email, working_hours, maps_url, emergency_phone, updated_at)
+          INSERT INTO contact_info (id, company_name, address, phone, email, working_hours, maps_url, emergency_phone, faqs, custom_services, announcement, updated_at)
           VALUES (
             'default', 'CV CITS Indonesia', ${info.address}, ${info.phone},
             ${info.email}, ${info.workingHours}, ${info.mapsUrl || null},
-            ${info.emergencyPhone || null}, NOW()
+            ${info.emergencyPhone || null},
+            ${jsonb(sql, info.faqs || initialContactInfo.faqs || [])},
+            ${jsonb(sql, info.customServices || initialContactInfo.customServices || [])},
+            ${jsonb(sql, info.announcement || initialContactInfo.announcement || {})}, NOW()
           )
           ON CONFLICT (id) DO UPDATE SET
             address = EXCLUDED.address,
@@ -337,6 +559,9 @@ export const DbRepo = {
             working_hours = EXCLUDED.working_hours,
             maps_url = EXCLUDED.maps_url,
             emergency_phone = EXCLUDED.emergency_phone,
+            faqs = EXCLUDED.faqs,
+            custom_services = EXCLUDED.custom_services,
+            announcement = EXCLUDED.announcement,
             updated_at = NOW();
         `;
       } catch (e) {
@@ -353,9 +578,21 @@ export const DbRepo = {
     if (sql) {
       await ensureDbReady();
       try {
-        const rows = await sql`SELECT data FROM about_data WHERE id = 'default' LIMIT 1;`;
-        if (rows.length > 0 && rows[0].data) {
-          return rows[0].data as AboutData;
+        const rows = await sql`
+          SELECT title, subtitle, story, vision, mission, core_values, stats
+          FROM about_data WHERE id = 'default' LIMIT 1;
+        `;
+        if (rows.length > 0) {
+          const r = rows[0];
+          return {
+            title: r.title,
+            subtitle: r.subtitle,
+            story: r.story,
+            vision: r.vision,
+            mission: asJson(r.mission, memoryDb.aboutData.mission),
+            coreValues: asJson(r.core_values, memoryDb.aboutData.coreValues),
+            stats: asJson(r.stats, memoryDb.aboutData.stats),
+          } as AboutData;
         }
       } catch (e) {
         console.error("DB Error getAboutData:", e);
@@ -370,9 +607,22 @@ export const DbRepo = {
       await ensureDbReady();
       try {
         await sql`
-          INSERT INTO about_data (id, data, updated_at)
-          VALUES ('default', ${JSON.stringify(data)}, NOW())
-          ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW();
+          INSERT INTO about_data (id, title, subtitle, story, vision, mission, core_values, stats, updated_at)
+          VALUES (
+            'default', ${data.title}, ${data.subtitle}, ${data.story}, ${data.vision},
+            ${jsonb(sql, data.mission || [])},
+            ${jsonb(sql, data.coreValues || [])},
+            ${jsonb(sql, data.stats || [])}, NOW()
+          )
+          ON CONFLICT (id) DO UPDATE SET
+            title = EXCLUDED.title,
+            subtitle = EXCLUDED.subtitle,
+            story = EXCLUDED.story,
+            vision = EXCLUDED.vision,
+            mission = EXCLUDED.mission,
+            core_values = EXCLUDED.core_values,
+            stats = EXCLUDED.stats,
+            updated_at = NOW();
         `;
       } catch (e) {
         console.error("DB Error updateAboutData:", e);
@@ -388,7 +638,10 @@ export const DbRepo = {
     if (sql) {
       await ensureDbReady();
       try {
-        const rows = await sql`SELECT * FROM clients ORDER BY created_at ASC;`;
+        const rows = await sql`
+          SELECT id, name, logo, category, is_active
+          FROM clients ORDER BY created_at ASC;
+        `;
         return rows.map((r: any) => ({
           id: r.id,
           name: r.name,
@@ -463,9 +716,23 @@ export const DbRepo = {
     if (sql) {
       await ensureDbReady();
       try {
-        const rows = await sql`SELECT data FROM landing_page_data WHERE id = 'default' LIMIT 1;`;
-        if (rows.length > 0 && rows[0].data) {
-          return rows[0].data as LandingPageData;
+        const rows = await sql`
+          SELECT hero, highlights, services_intro, products_intro, clients_intro,
+                 section_visibility, cta
+          FROM landing_page_data WHERE id = 'default' LIMIT 1;
+        `;
+        if (rows.length > 0) {
+          const r = rows[0];
+          return {
+            ...memoryDb.landingData,
+            hero: asJson(r.hero, memoryDb.landingData.hero),
+            highlights: asJson(r.highlights, memoryDb.landingData.highlights),
+            servicesIntro: asJson(r.services_intro, memoryDb.landingData.servicesIntro),
+            productsIntro: asJson(r.products_intro, memoryDb.landingData.productsIntro),
+            clientsIntro: asJson(r.clients_intro, memoryDb.landingData.clientsIntro),
+            sectionVisibility: asJson(r.section_visibility, memoryDb.landingData.sectionVisibility),
+            cta: asJson(r.cta, memoryDb.landingData.cta),
+          } as LandingPageData;
         }
       } catch (e) {
         console.error("DB Error getLandingData:", e);
@@ -484,9 +751,29 @@ export const DbRepo = {
       await ensureDbReady();
       try {
         await sql`
-          INSERT INTO landing_page_data (id, data, updated_at)
-          VALUES ('default', ${JSON.stringify(updated)}, NOW())
-          ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW();
+          INSERT INTO landing_page_data (
+            id, hero, highlights, services_intro, products_intro, clients_intro,
+            section_visibility, cta, updated_at
+          )
+          VALUES (
+            'default',
+            ${jsonb(sql, updated.hero || {})},
+            ${jsonb(sql, updated.highlights || [])},
+            ${jsonb(sql, updated.servicesIntro || {})},
+            ${jsonb(sql, updated.productsIntro || {})},
+            ${jsonb(sql, updated.clientsIntro || {})},
+            ${jsonb(sql, updated.sectionVisibility || {})},
+            ${jsonb(sql, updated.cta || {})}, NOW()
+          )
+          ON CONFLICT (id) DO UPDATE SET
+            hero = EXCLUDED.hero,
+            highlights = EXCLUDED.highlights,
+            services_intro = EXCLUDED.services_intro,
+            products_intro = EXCLUDED.products_intro,
+            clients_intro = EXCLUDED.clients_intro,
+            section_visibility = EXCLUDED.section_visibility,
+            cta = EXCLUDED.cta,
+            updated_at = NOW();
         `;
       } catch (e) {
         console.error("DB Error updateLandingData:", e);
@@ -503,8 +790,9 @@ export const DbRepo = {
       await ensureDbReady();
       try {
         const rows = await sql`SELECT data FROM services_data WHERE id = 'default' LIMIT 1;`;
-        if (rows.length > 0 && rows[0].data) {
-          return rows[0].data as ServicePillar[];
+        if (rows.length > 0) {
+          const list = asJson<ServicePillar[]>(rows[0].data, []);
+          if (Array.isArray(list) && list.length > 0) return list;
         }
       } catch (e) {
         console.error("DB Error getServices:", e);
@@ -520,7 +808,7 @@ export const DbRepo = {
       try {
         await sql`
           INSERT INTO services_data (id, data, updated_at)
-          VALUES ('default', ${JSON.stringify(data)}, NOW())
+          VALUES ('default', ${jsonb(sql, data)}, NOW())
           ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW();
         `;
       } catch (e) {
@@ -538,8 +826,9 @@ export const DbRepo = {
       await ensureDbReady();
       try {
         const rows = await sql`SELECT data FROM portfolio_data WHERE id = 'default' LIMIT 1;`;
-        if (rows.length > 0 && rows[0].data) {
-          return rows[0].data as CaseStudyItem[];
+        if (rows.length > 0) {
+          const list = asJson<CaseStudyItem[]>(rows[0].data, []);
+          if (Array.isArray(list) && list.length > 0) return list;
         }
       } catch (e) {
         console.error("DB Error getPortfolio:", e);
@@ -555,7 +844,7 @@ export const DbRepo = {
       try {
         await sql`
           INSERT INTO portfolio_data (id, data, updated_at)
-          VALUES ('default', ${JSON.stringify(data)}, NOW())
+          VALUES ('default', ${jsonb(sql, data)}, NOW())
           ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW();
         `;
       } catch (e) {
