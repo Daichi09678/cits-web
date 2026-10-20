@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
 
-export async function GET(
-  _req: Request,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function GET(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
     const prod = await DbRepo.getProductById(id);
@@ -17,10 +14,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  req: Request,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
     const body = await req.json();
@@ -34,10 +28,7 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  _req: Request,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
     await DbRepo.deleteProduct(id);

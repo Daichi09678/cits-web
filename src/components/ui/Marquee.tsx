@@ -15,15 +15,7 @@ interface MarqueeProps {
   speed?: number;
 }
 
-function MarqueeLogoImage({
-  src,
-  alt,
-  showLabel,
-}: {
-  src: string;
-  alt: string;
-  showLabel?: boolean;
-}) {
+function MarqueeLogoImage({ src, alt, showLabel }: { src: string; alt: string; showLabel?: boolean }) {
   const [currentSrc, setCurrentSrc] = useState(src);
   const [loadError, setLoadError] = useState(false);
   const [hasTriedFallback, setHasTriedFallback] = useState(false);
@@ -66,19 +58,14 @@ function MarqueeLogoImage({
           setLoadError(true);
         }
       }}
-      className={`object-contain ${
-        showLabel ? "h-10 w-auto max-w-[48px]" : "h-14 w-auto max-w-[160px]"
-      }`}
+      className={`object-contain ${showLabel ? "h-10 w-auto max-w-[48px]" : "h-14 w-auto max-w-[160px]"}`}
     />
   );
 }
 
 export default function Marquee({ items, speed = 30 }: MarqueeProps) {
   // If items list is short, duplicate items to make marquee loop smooth
-  const displayItems =
-    items.length > 0 && items.length < 8
-      ? [...items, ...items]
-      : items;
+  const displayItems = items.length > 0 && items.length < 8 ? [...items, ...items] : items;
 
   return (
     <div className="overflow-hidden relative">
@@ -101,11 +88,7 @@ export default function Marquee({ items, speed = 30 }: MarqueeProps) {
               >
                 {item.logo ? (
                   <>
-                    <MarqueeLogoImage
-                      src={item.logo}
-                      alt={item.name}
-                      showLabel={item.showLabel}
-                    />
+                    <MarqueeLogoImage src={item.logo} alt={item.name} showLabel={item.showLabel} />
                     {item.showLabel && (
                       <span className="text-xs text-gray-700 dark:text-white font-medium whitespace-nowrap leading-tight">
                         {item.name}
@@ -113,7 +96,9 @@ export default function Marquee({ items, speed = 30 }: MarqueeProps) {
                     )}
                   </>
                 ) : (
-                  <span className="text-sm text-gray-700 dark:text-white font-medium whitespace-nowrap">{item.name}</span>
+                  <span className="text-sm text-gray-700 dark:text-white font-medium whitespace-nowrap">
+                    {item.name}
+                  </span>
                 )}
               </div>
             ))}

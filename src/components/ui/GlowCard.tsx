@@ -10,11 +10,7 @@ interface GlowCardProps {
 
 export default function GlowCard({ children, className = "" }: GlowCardProps) {
   return (
-    <motion.div
-      className={`relative group h-full ${className}`}
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.3 }}
-    >
+    <motion.div className={`relative group h-full ${className}`} whileHover={{ y: -4 }} transition={{ duration: 0.3 }}>
       {/* Glow effect */}
       <div className="absolute -inset-0.5 bg-gradient-to-r from-brand to-orange-400 rounded-2xl opacity-0 group-hover:opacity-20 blur-sm transition-opacity duration-300" />
       {/* Card content */}

@@ -16,7 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "CITS Indonesia - Cipta Integrasi Teknologi Solusi",
-  description: "Konsultan TI, Pengadaan Perangkat TI, dan Rekayasa Perangkat Lunak terpercaya di Indonesia. Solusi integral kesistemanan berbasis teknologi informasi sejak 2006.",
+  description:
+    "Konsultan TI, Pengadaan Perangkat TI, dan Rekayasa Perangkat Lunak terpercaya di Indonesia. Solusi integral kesistemanan berbasis teknologi informasi sejak 2006.",
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",

@@ -29,6 +29,8 @@ import GradientText from "@/components/ui/GradientText";
 import GridPattern from "@/components/ui/GridPattern";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
+import { useCitsStore } from "@/stores/citsStore";
+import { getPillarIcon } from "@/lib/serviceIcons";
 
 interface ServiceItem {
   id: string;
@@ -36,7 +38,7 @@ interface ServiceItem {
   category: string;
   title: string;
   description: string;
-  icon: typeof Code2;
+  icon: any;
   gradient: string;
   image: string;
   features: string[];
@@ -49,7 +51,7 @@ interface ServiceItem {
   slaNote: string;
 }
 
-const services: ServiceItem[] = [
+const defaultServices: ServiceItem[] = [
   {
     id: "software-house",
     badge: "Pilar Layanan 01",
@@ -68,19 +70,8 @@ const services: ServiceItem[] = [
       "Pengujian otomatis, audit keamanan kode (SAST), & optimasi performa",
       "Pemeliharaan berkala, perbaikan bug, & penyempurnaan fungsi sistem",
     ],
-    techStack: [
-      "Next.js / React",
-      "TypeScript",
-      "Golang",
-      "PostgreSQL",
-      "Docker / K8s",
-      "REST & Microservices",
-    ],
-    caseStudies: [
-      "BI & EIS SPIPISE BKPM RI",
-      "SIMLALA Kemenhub RI",
-      "Portal Satu Data Kelautan BPPT/BRIN",
-    ],
+    techStack: ["Next.js / React", "TypeScript", "Golang", "PostgreSQL", "Docker / K8s", "REST & Microservices"],
+    caseStudies: ["BI & EIS SPIPISE BKPM RI", "SIMLALA Kemenhub RI", "Portal Satu Data Kelautan BPPT/BRIN"],
     deliverables: [
       {
         label: "Deliverable Utama",
@@ -315,8 +306,41 @@ const engagementModels: EngagementModel[] = [
 ];
 
 export default function ServicesPage() {
+  const { services: storeServices } = useCitsStore();
+
+  const displayServices: ServiceItem[] =
+    storeServices && storeServices.length > 0
+      ? storeServices
+          .filter((s) => s.isActive !== false)
+          .map((s, idx) => {
+            const fallback = defaultServices[idx] || defaultServices[0];
+            const IconComp = getPillarIcon(s.icon);
+            return {
+              ...fallback,
+              id:
+                s.id === "pillar-1"
+                  ? "software-house"
+                  : s.id === "pillar-2"
+                    ? "it-consultant"
+                    : s.id === "pillar-3"
+                      ? "it-supplier"
+                      : s.id,
+              badge: s.badge || fallback.badge,
+              category: s.title || fallback.category,
+              title: s.title ? `${s.title}${s.title.includes("(") ? "" : ` (${s.title})`}` : fallback.title,
+              description: s.desc || fallback.description,
+              icon: IconComp,
+              features: s.features && s.features.length > 0 ? s.features : fallback.features,
+              slaNote: s.sla || fallback.slaNote,
+            };
+          })
+      : defaultServices;
+
   return (
-    <main id="main-content" className="min-h-screen bg-white dark:bg-dark text-slate-900 dark:text-white transition-colors">
+    <main
+      id="main-content"
+      className="min-h-screen bg-white dark:bg-dark text-slate-900 dark:text-white transition-colors"
+    >
       {/* 1. HERO SECTION & PROFIL KATALOG LAYANAN (IDDS Standard) */}
       <section
         aria-labelledby="services-hero-heading"
@@ -341,34 +365,27 @@ export default function ServicesPage() {
 
             <ScrollReveal delay={0.1}>
               <p className="mt-5 text-slate-700 dark:text-slate-200 text-base md:text-lg leading-relaxed">
-                Menghadirkan tiga pilar layanan terintegrasi untuk mendukung efisiensi proses bisnis, tata kelola pemerintahan digital, dan keandalan operasional kementerian, BUMN, serta korporasi terkemuka.
+                Menghadirkan tiga pilar layanan terintegrasi untuk mendukung efisiensi proses bisnis, tata kelola
+                pemerintahan digital, dan keandalan operasional kementerian, BUMN, serta korporasi terkemuka.
               </p>
             </ScrollReveal>
 
             {/* Quick Service Anchor Navigation (High-Contrast & Focus-Visible) */}
             <ScrollReveal delay={0.2}>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <a
-                  href="#software-house"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A2E] text-slate-800 dark:text-white border border-slate-200 dark:border-white/15 hover:border-orange-500/60 shadow-xs text-xs font-semibold transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
-                >
-                  <Code2 className="w-4 h-4 text-orange-600 dark:text-orange-400" aria-hidden="true" />
-                  <span>Software House</span>
-                </a>
-                <a
-                  href="#it-consultant"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A2E] text-slate-800 dark:text-white border border-slate-200 dark:border-white/15 hover:border-orange-500/60 shadow-xs text-xs font-semibold transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
-                >
-                  <Cpu className="w-4 h-4 text-blue-600 dark:text-blue-400" aria-hidden="true" />
-                  <span>Konsultan TI & SPBE</span>
-                </a>
-                <a
-                  href="#it-supplier"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A2E] text-slate-800 dark:text-white border border-slate-200 dark:border-white/15 hover:border-orange-500/60 shadow-xs text-xs font-semibold transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
-                >
-                  <Server className="w-4 h-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-                  <span>Pengadaan TI (IT Supplier)</span>
-                </a>
+                {displayServices.slice(0, 3).map((item) => {
+                  const NavIcon = item.icon;
+                  return (
+                    <a
+                      key={item.id}
+                      href={`#${item.id}`}
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A2E] text-slate-800 dark:text-white border border-slate-200 dark:border-white/15 hover:border-orange-500/60 shadow-xs text-xs font-semibold transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                    >
+                      <NavIcon className="w-4 h-4 text-orange-600 dark:text-orange-400" aria-hidden="true" />
+                      <span>{item.category}</span>
+                    </a>
+                  );
+                })}
                 <a
                   href="#alur-kerja"
                   className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-50 dark:bg-orange-500/15 text-orange-950 dark:text-orange-200 border border-orange-200/90 dark:border-orange-500/30 hover:bg-orange-100 dark:hover:bg-orange-500/25 text-xs font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
@@ -399,7 +416,7 @@ export default function ServicesPage() {
             Detail Pilar Layanan CITS Indonesia
           </h2>
 
-          {services.map((service, i) => {
+          {displayServices.map((service, i) => {
             const Icon = service.icon;
             const isReverse = i % 2 === 1;
 
@@ -445,7 +462,10 @@ export default function ServicesPage() {
                             key={feature}
                             className="flex items-start gap-2.5 text-xs text-slate-800 dark:text-slate-200 leading-normal"
                           >
-                            <CheckCircle2 className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5" aria-hidden="true" />
+                            <CheckCircle2
+                              className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5"
+                              aria-hidden="true"
+                            />
                             <span>{feature}</span>
                           </li>
                         ))}
@@ -510,9 +530,7 @@ export default function ServicesPage() {
                 {/* Visual & Deliverables Column (Span 5 - Perfectly Balanced) */}
                 <ScrollReveal
                   direction={isReverse ? "left" : "right"}
-                  className={`lg:col-span-5 h-full order-1 ${
-                    isReverse ? "lg:order-1" : "lg:order-2"
-                  }`}
+                  className={`lg:col-span-5 h-full order-1 ${isReverse ? "lg:order-1" : "lg:order-2"}`}
                 >
                   <SpotlightCard className="h-full">
                     <div className="p-5 md:p-6 flex flex-col justify-between h-full space-y-5">
@@ -542,9 +560,7 @@ export default function ServicesPage() {
                         <div className="space-y-2.5">
                           {service.deliverables.map((item) => (
                             <div key={item.label} className="text-xs">
-                              <span className="font-bold text-slate-800 dark:text-slate-200 block">
-                                {item.label}:
-                              </span>
+                              <span className="font-bold text-slate-800 dark:text-slate-200 block">{item.label}:</span>
                               <span className="text-slate-600 dark:text-slate-400 leading-relaxed block mt-0.5">
                                 {item.description}
                               </span>
@@ -596,7 +612,8 @@ export default function ServicesPage() {
                 Alur Kerja Rekayasa <GradientText>Sistematis</GradientText>
               </h2>
               <p className="mt-4 text-slate-700 dark:text-slate-200 text-base leading-relaxed">
-                Lima tahapan berkesinambungan yang kami terapkan dalam memastikan setiap inisiatif proyek selesai tepat waktu, tepat fungsi, teruji aman, dan selaras regulasi.
+                Lima tahapan berkesinambungan yang kami terapkan dalam memastikan setiap inisiatif proyek selesai tepat
+                waktu, tepat fungsi, teruji aman, dan selaras regulasi.
               </p>
             </div>
           </ScrollReveal>
@@ -620,7 +637,10 @@ export default function ServicesPage() {
                             {p.step}
                           </span>
                           <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200 dark:border-orange-500/30 px-2.5 py-1 rounded-md uppercase">
-                            <ProcessIcon className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 shrink-0" aria-hidden="true" />
+                            <ProcessIcon
+                              className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 shrink-0"
+                              aria-hidden="true"
+                            />
                             <span>Fase #{i + 1}</span>
                           </span>
                         </div>
@@ -643,7 +663,10 @@ export default function ServicesPage() {
 
                       {/* Footer Badge (Normalized baseline) */}
                       <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
+                        <CheckCircle2
+                          className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0"
+                          aria-hidden="true"
+                        />
                         <span>Standar Mutu Terverifikasi</span>
                       </div>
                     </article>
@@ -673,7 +696,8 @@ export default function ServicesPage() {
                 Jaminan Standar Mutu <GradientText>Layanan CITS</GradientText>
               </h2>
               <p className="mt-4 text-slate-700 dark:text-slate-200 text-base leading-relaxed">
-                Landasan kepatuhan dan keandalan yang menjadi komitmen kami pada setiap pengadaan dan rekayasa sistem informasi.
+                Landasan kepatuhan dan keandalan yang menjadi komitmen kami pada setiap pengadaan dan rekayasa sistem
+                informasi.
               </p>
             </div>
           </ScrollReveal>
@@ -728,7 +752,8 @@ export default function ServicesPage() {
                 Model Kerjasama & <GradientText>Skema Pengadaan PBJ</GradientText>
               </h2>
               <p className="mt-4 text-slate-700 dark:text-slate-200 text-base leading-relaxed">
-                Pilihan skema kemitraan yang fleksibel dan akuntabel, memudahkan Pejabat Pembuat Komitmen (PPK) dan manajemen korporasi dalam merealisasikan kebutuhan digital.
+                Pilihan skema kemitraan yang fleksibel dan akuntabel, memudahkan Pejabat Pembuat Komitmen (PPK) dan
+                manajemen korporasi dalam merealisasikan kebutuhan digital.
               </p>
             </div>
           </ScrollReveal>
@@ -766,8 +791,14 @@ export default function ServicesPage() {
                             Karakteristik Skema:
                           </span>
                           {model.characteristics.map((point) => (
-                            <div key={point} className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" aria-hidden="true" />
+                            <div
+                              key={point}
+                              className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300"
+                            >
+                              <CheckCircle2
+                                className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5"
+                                aria-hidden="true"
+                              />
                               <span className="leading-tight">{point}</span>
                             </div>
                           ))}
@@ -821,7 +852,8 @@ export default function ServicesPage() {
                 Punya Kebutuhan Khusus untuk Sistem Informasi Instansi Anda?
               </h2>
               <p className="mt-4 text-slate-700 dark:text-slate-200 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-                Tim ahli CITS Indonesia siap membantu menganalisis kerangka acuan kerja (KAK), merancang arsitektur sistem SPBE, dan memberikan estimasi implementasi yang efisien serta tepat sasaran.
+                Tim ahli CITS Indonesia siap membantu menganalisis kerangka acuan kerja (KAK), merancang arsitektur
+                sistem SPBE, dan memberikan estimasi implementasi yang efisien serta tepat sasaran.
               </p>
 
               <div className="mt-8 flex flex-wrap justify-center gap-3.5">

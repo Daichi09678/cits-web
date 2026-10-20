@@ -41,7 +41,7 @@ export const citsApi = {
   },
 
   async getAllProducts() {
-    const res = await fetch(`${API_URL}/products/all`, { cache: "no-store" });
+    const res = await fetch(`${API_URL}/products?all=true`, { cache: "no-store" });
     const json = await res.json();
     return json.data || [];
   },
@@ -120,10 +120,28 @@ export const citsApi = {
     return res.json();
   },
 
+  async updateMessageStage(id: string, dealStage: string, dealNotes?: string) {
+    const res = await fetch(`${API_URL}/messages/${id}/status`, {
+      method: "PATCH",
+      headers: getHeaders(),
+      body: JSON.stringify({ dealStage, dealNotes }),
+    });
+    return res.json();
+  },
+
   async deleteMessage(id: string) {
     const res = await fetch(`${API_URL}/messages/${id}`, {
       method: "DELETE",
       headers: getHeaders(),
+    });
+    return res.json();
+  },
+
+  async deleteMessages(ids: string[]) {
+    const res = await fetch(`${API_URL}/messages`, {
+      method: "DELETE",
+      headers: getHeaders(),
+      body: JSON.stringify({ ids }),
     });
     return res.json();
   },

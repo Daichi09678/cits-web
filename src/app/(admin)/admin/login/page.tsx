@@ -17,7 +17,7 @@ import {
   Building2,
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
-import ThemeToggle from "@/components/ThemeToggle";
+import ThemeToggle from "@/components/layout/ThemeToggle";
 import GridPattern from "@/components/ui/GridPattern";
 
 export default function AdminLoginPage() {
@@ -75,7 +75,6 @@ export default function AdminLoginPage() {
       {/* Main Login Card */}
       <div className="relative w-full max-w-md z-10 my-16">
         <div className="p-7 sm:p-9 rounded-3xl bg-white/95 dark:bg-[#16162d]/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-2xl shadow-slate-900/10 dark:shadow-black/50 space-y-6">
-          
           {/* Header Brand & Badge */}
           <div className="text-center space-y-3">
             <div className="flex justify-center">
@@ -261,7 +260,6 @@ export default function AdminLoginPage() {
               Sistem Terproteksi IDDS & SPBE. Akses terbatas hanya untuk staf berwenang.
             </p>
           </div>
-
         </div>
       </div>
     </div>

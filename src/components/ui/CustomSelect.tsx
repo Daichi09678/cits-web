@@ -38,13 +38,17 @@ export default function CustomSelect({ options, placeholder = "Pilih opsi", valu
         type="button"
         onClick={() => setOpen(!open)}
         className={`w-full px-4 py-3 rounded-xl border bg-white dark:bg-[#1A1A2E] text-left outline-none transition-all relative ${
-          open ? "border-orange-600 ring-2 ring-orange-600/20" : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+          open
+            ? "border-orange-600 ring-2 ring-orange-600/20"
+            : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
         }`}
       >
         <span className={selected ? "text-gray-900 dark:text-white font-medium" : "text-gray-700 dark:text-white/70"}>
           {selected || placeholder}
         </span>
-        <ChevronDown className={`w-4 h-4 text-gray-700 dark:text-white/70 transition-transform absolute right-4 top-1/2 -translate-y-1/2 ${open ? "rotate-180" : ""}`} />
+        <ChevronDown
+          className={`w-4 h-4 text-gray-700 dark:text-white/70 transition-transform absolute right-4 top-1/2 -translate-y-1/2 ${open ? "rotate-180" : ""}`}
+        />
       </button>
 
       <AnimatePresence>

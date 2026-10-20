@@ -26,7 +26,7 @@ import GridPattern from "@/components/ui/GridPattern";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import CustomSelect from "@/components/ui/CustomSelect";
-import { useCitsStore } from "@/database/store";
+import { useCitsStore } from "@/stores/citsStore";
 
 const serviceOptions = [
   "Pengembangan Perangkat Lunak (Software House)",
@@ -67,6 +67,14 @@ export default function ContactPage() {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
+  const effectiveServiceOptions =
+    contactInfo.customServices && contactInfo.customServices.length > 0 ? contactInfo.customServices : serviceOptions;
+
+  const effectiveFaqs =
+    contactInfo.faqs && contactInfo.faqs.length > 0 ? contactInfo.faqs.filter((f) => f.isActive !== false) : faqs;
+
+  const announcement = contactInfo.announcement;
+
   // Form input states
   const [formName, setFormName] = useState("");
   const [formCompany, setFormCompany] = useState("");
@@ -90,6 +98,32 @@ export default function ContactPage() {
 
   return (
     <main id="main-content" className="min-h-screen">
+      {/* Dynamic Announcement Banner if enabled */}
+      {announcement?.isActive && announcement.text && (
+        <aside
+          aria-label="Pengumuman Resmi"
+          className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-2.5 px-4 text-xs font-semibold shadow-xs"
+        >
+          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-center sm:text-left">
+            <div className="flex items-center gap-2 mx-auto sm:mx-0">
+              <span className="w-2 h-2 rounded-full bg-white animate-ping shrink-0" />
+              <span>{announcement.text}</span>
+            </div>
+            {announcement.linkText && announcement.linkUrl && (
+              <a
+                href={announcement.linkUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mx-auto sm:mx-0 inline-flex items-center gap-1 underline hover:text-orange-100 font-bold text-[11px]"
+              >
+                <span>{announcement.linkText}</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
+          </div>
+        </aside>
+      )}
+
       {/* 1. HERO SECTION (Clean, WCAG compliant, No breadcrumbs, No black border line) */}
       <section
         aria-labelledby="contact-hero-heading"
@@ -114,7 +148,8 @@ export default function ContactPage() {
 
           <ScrollReveal delay={0.1}>
             <p className="mt-5 text-gray-700 dark:text-white/85 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
-              Kami siap mendampingi kementerian, lembaga tinggi negara, BUMN, dan korporasi dalam merumuskan arsitektur sistem digital yang andal, aman, dan berdaya guna jangka panjang.
+              Kami siap mendampingi kementerian, lembaga tinggi negara, BUMN, dan korporasi dalam merumuskan arsitektur
+              sistem digital yang andal, aman, dan berdaya guna jangka panjang.
             </p>
           </ScrollReveal>
 
@@ -160,7 +195,8 @@ export default function ContactPage() {
                     Hubungi Kantor CITS
                   </h3>
                   <p className="mt-2 text-xs md:text-sm text-gray-700 dark:text-white/85 leading-relaxed">
-                    Kunjungi kantor operasional kami atau hubungi saluran resmi berikut untuk penjadwalan audiensi dan konsultasi teknis.
+                    Kunjungi kantor operasional kami atau hubungi saluran resmi berikut untuk penjadwalan audiensi dan
+                    konsultasi teknis.
                   </p>
                 </div>
               </ScrollReveal>
@@ -173,11 +209,10 @@ export default function ContactPage() {
                       <MapPin className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-dark dark:text-white text-sm">
-                        Alamat Kantor Operasional
-                      </h4>
+                      <h4 className="font-bold text-dark dark:text-white text-sm">Alamat Kantor Operasional</h4>
                       <p className="mt-1 text-xs md:text-sm text-gray-700 dark:text-white/85 leading-relaxed whitespace-pre-line">
-                        {contactInfo?.address || "Gedung Wisma Mampang, Lantai 5\nJl. Mampang Prapatan No. 1\nJakarta Selatan 12790, DKI Jakarta"}
+                        {contactInfo?.address ||
+                          "Gedung Wisma Mampang, Lantai 5\nJl. Mampang Prapatan No. 1\nJakarta Selatan 12790, DKI Jakarta"}
                       </p>
                     </div>
                   </div>
@@ -191,9 +226,7 @@ export default function ContactPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <h4 className="font-bold text-dark dark:text-white text-sm">
-                          Telepon Kantor
-                        </h4>
+                        <h4 className="font-bold text-dark dark:text-white text-sm">Telepon Kantor</h4>
                         <button
                           type="button"
                           onClick={() => handleCopy(contactInfo?.phone || "(021) 39719677", "phone")}
@@ -234,9 +267,7 @@ export default function ContactPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <h4 className="font-bold text-dark dark:text-white text-sm">
-                          Email Korespondensi Resmi
-                        </h4>
+                        <h4 className="font-bold text-dark dark:text-white text-sm">Email Korespondensi Resmi</h4>
                         <button
                           type="button"
                           onClick={() => handleCopy(contactInfo?.email || "info@citsindonesia.co.id", "email")}
@@ -337,7 +368,8 @@ export default function ContactPage() {
                             Pesan Berhasil Terkirim!
                           </h4>
                           <p className="text-sm text-emerald-800 dark:text-emerald-300 max-w-md mx-auto leading-relaxed">
-                            Terima kasih telah menghubungi CITS Indonesia. Tim konsultan kami akan meninjau pesan Anda dan segera menghubungi Anda kembali dalam 1x24 jam kerja.
+                            Terima kasih telah menghubungi CITS Indonesia. Tim konsultan kami akan meninjau pesan Anda
+                            dan segera menghubungi Anda kembali dalam 1x24 jam kerja.
                           </p>
                           <button
                             type="button"
@@ -496,7 +528,7 @@ export default function ContactPage() {
                             </label>
                             <CustomSelect
                               placeholder="Pilih jenis layanan atau produk yang dibutuhkan"
-                              options={serviceOptions}
+                              options={effectiveServiceOptions}
                               value={selectedService}
                               onChange={(val) => setSelectedService(val)}
                             />
@@ -535,7 +567,8 @@ export default function ContactPage() {
                               htmlFor="contact-consent"
                               className="text-xs text-gray-700 dark:text-white/80 leading-normal cursor-pointer select-none"
                             >
-                              Saya menyetujui data formulir ini digunakan oleh CITS Indonesia untuk keperluan komunikasi teknis dan penyusunan proposal konsultasi.
+                              Saya menyetujui data formulir ini digunakan oleh CITS Indonesia untuk keperluan komunikasi
+                              teknis dan penyusunan proposal konsultasi.
                             </label>
                           </div>
 
@@ -571,30 +604,25 @@ export default function ContactPage() {
       </section>
 
       {/* 3. FAQ SECTION (IDDS Inquiries Accordion with Smooth Interactivity) */}
-      <section
-        aria-labelledby="faq-heading"
-        className="py-16 md:py-24 bg-gray-50 dark:bg-[#151528] transition-colors"
-      >
+      <section aria-labelledby="faq-heading" className="py-16 md:py-24 bg-gray-50 dark:bg-[#151528] transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-16">
               <span className="inline-block text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
                 Pertanyaan Umum
               </span>
-              <h2
-                id="faq-heading"
-                className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white"
-              >
+              <h2 id="faq-heading" className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white">
                 Informasi & <GradientText>Tanya Jawab</GradientText>
               </h2>
               <p className="mt-4 text-gray-700 dark:text-white/85 text-base leading-relaxed">
-                Jawaban atas pertanyaan yang sering diajukan seputar tata kelola kerja sama, proses pengadaan, dan kepatuhan sistem bersama CITS Indonesia.
+                Jawaban atas pertanyaan yang sering diajukan seputar tata kelola kerja sama, proses pengadaan, dan
+                kepatuhan sistem bersama CITS Indonesia.
               </p>
             </div>
           </ScrollReveal>
 
           <div className="max-w-4xl mx-auto space-y-4">
-            {faqs.map((faq, idx) => {
+            {effectiveFaqs.map((faq, idx) => {
               const isOpen = openFaqIndex === idx;
               return (
                 <ScrollReveal key={faq.question} delay={idx * 0.06}>
@@ -609,9 +637,7 @@ export default function ContactPage() {
                         <div className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0">
                           <HelpCircle className="w-4 h-4" />
                         </div>
-                        <h3 className="font-extrabold text-dark dark:text-white text-base">
-                          {faq.question}
-                        </h3>
+                        <h3 className="font-extrabold text-dark dark:text-white text-base">{faq.question}</h3>
                       </div>
                       <ChevronDown
                         className={`w-5 h-5 text-gray-500 dark:text-white/60 transition-transform duration-300 shrink-0 ${

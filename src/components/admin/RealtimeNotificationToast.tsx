@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Mail, X, ArrowRight, Volume2 } from "lucide-react";
-import { ContactMessage } from "@/database/schema";
+import { ContactMessage } from "@/types/schema";
 import { playNewMessageSound } from "@/lib/audio";
-import { startAdminInboxSync } from "@/database/store";
+import { startAdminInboxSync } from "@/stores/citsStore";
 
 export default function RealtimeNotificationToast() {
   const [activeMessage, setActiveMessage] = useState<ContactMessage | null>(null);
@@ -28,7 +28,6 @@ export default function RealtimeNotificationToast() {
       window.removeEventListener("cits-realtime-message", handleRealtimeMessage);
     };
   }, []);
-
 
   // Auto-dismiss after 10 seconds
   useEffect(() => {
@@ -75,9 +74,7 @@ export default function RealtimeNotificationToast() {
         {/* Sender details */}
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <span className="font-extrabold text-sm truncate">
-              {activeMessage.name}
-            </span>
+            <span className="font-extrabold text-sm truncate">{activeMessage.name}</span>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-500/15 text-orange-800 dark:text-orange-300 truncate max-w-[130px]">
               {activeMessage.company}
             </span>

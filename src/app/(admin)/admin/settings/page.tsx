@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Settings, RefreshCw, ShieldCheck, CheckCircle2, AlertTriangle, Key } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
-import { useCitsStore } from "@/database/store";
+import { useCitsStore } from "@/stores/citsStore";
 import { useAdminAuth } from "@/lib/auth";
 
 export default function AdminSettingsPage() {
@@ -13,7 +13,11 @@ export default function AdminSettingsPage() {
   const [resetSuccess, setResetSuccess] = useState(false);
 
   const handleReset = () => {
-    if (confirm("Peringatan: Semua data yang telah Anda edit atau tambahkan akan dikembalikan ke data awal default pabrik. Lanjutkan?")) {
+    if (
+      confirm(
+        "Peringatan: Semua data yang telah Anda edit atau tambahkan akan dikembalikan ke data awal default pabrik. Lanjutkan?"
+      )
+    ) {
       actions.resetAllToDefault();
       setResetSuccess(true);
       setTimeout(() => setResetSuccess(false), 4000);
@@ -42,12 +46,8 @@ export default function AdminSettingsPage() {
               <Key className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">
-                Akun Administrator Aktif
-              </h3>
-              <p className="text-xs text-slate-500">
-                Hak akses super administrator untuk seluruh modul CMS
-              </p>
+              <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Akun Administrator Aktif</h3>
+              <p className="text-xs text-slate-500">Hak akses super administrator untuk seluruh modul CMS</p>
             </div>
           </div>
 
@@ -61,9 +61,7 @@ export default function AdminSettingsPage() {
 
             <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
               <span className="text-slate-500">Email Login:</span>
-              <span className="font-bold text-slate-900 dark:text-white">
-                {session?.user.email || "admin@cits.id"}
-              </span>
+              <span className="font-bold text-slate-900 dark:text-white">{session?.user.email || "admin@cits.id"}</span>
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
@@ -92,7 +90,8 @@ export default function AdminSettingsPage() {
           </div>
 
           <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-            Gunakan tombol di bawah jika Anda ingin menghapus seluruh riwayat edit percobaan dan mengembalikan data produk, kontak Wisma Mampang, dan profil CITS kembali seperti semula.
+            Gunakan tombol di bawah jika Anda ingin menghapus seluruh riwayat edit percobaan dan mengembalikan data
+            produk, kontak Wisma Mampang, dan profil CITS kembali seperti semula.
           </p>
 
           <div className="pt-2">

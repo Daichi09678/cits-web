@@ -1,13 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  ShieldCheck,
-  Zap,
-  Building2,
-  Ship,
-  TrendingUp,
-} from "lucide-react";
+import { ShieldCheck, Zap, Building2, Ship, TrendingUp } from "lucide-react";
 
 interface HeroMockupProps {
   title?: string;
@@ -76,7 +70,8 @@ export default function HeroMockup({ title, status }: HeroMockupProps) {
                   </div>
                   <div className="min-w-0">
                     <p className="font-semibold text-slate-900 dark:text-white text-xs truncate">
-                      Kemendagri RI <span className="font-normal text-slate-600 dark:text-slate-300">· Layanan Data e-KTP</span>
+                      Kemendagri RI{" "}
+                      <span className="font-normal text-slate-600 dark:text-slate-300">· Layanan Data e-KTP</span>
                     </p>
                   </div>
                 </div>
@@ -96,7 +91,8 @@ export default function HeroMockup({ title, status }: HeroMockupProps) {
                   </div>
                   <div className="min-w-0">
                     <p className="font-semibold text-slate-900 dark:text-white text-xs truncate">
-                      Kemenhub RI <span className="font-normal text-slate-600 dark:text-slate-300">· SIMLALA & Pelabuhan</span>
+                      Kemenhub RI{" "}
+                      <span className="font-normal text-slate-600 dark:text-slate-300">· SIMLALA & Pelabuhan</span>
                     </p>
                   </div>
                 </div>
@@ -116,7 +112,8 @@ export default function HeroMockup({ title, status }: HeroMockupProps) {
                   </div>
                   <div className="min-w-0">
                     <p className="font-semibold text-slate-900 dark:text-white text-xs truncate">
-                      Kementerian Investasi <span className="font-normal text-slate-600 dark:text-slate-300">· Satu Data BKPM</span>
+                      Kementerian Investasi{" "}
+                      <span className="font-normal text-slate-600 dark:text-slate-300">· Satu Data BKPM</span>
                     </p>
                   </div>
                 </div>

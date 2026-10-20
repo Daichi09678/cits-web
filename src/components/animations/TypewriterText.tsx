@@ -12,13 +12,7 @@ interface TypewriterTextProps {
 }
 
 export default function TypewriterText({
-  words = [
-    "Sepenuh Hati",
-    "Tingkat Enterprise",
-    "Skala Nasional",
-    "Berbasis Inovasi",
-    "Terpercaya Sejak 2006",
-  ],
+  words = ["Sepenuh Hati", "Tingkat Enterprise", "Skala Nasional", "Berbasis Inovasi", "Terpercaya Sejak 2006"],
   typingSpeed = 90,
   deletingSpeed = 45,
   pauseDuration = 2200,
@@ -69,7 +63,9 @@ export default function TypewriterText({
 
   return (
     <span className="inline-flex items-center min-h-[1.15em]">
-      <span className={`text-orange-700 dark:text-orange-400 bg-gradient-to-r from-orange-600 to-brand dark:from-brand dark:to-orange-400 bg-clip-text [-webkit-text-fill-color:transparent] ${className}`}>
+      <span
+        className={`text-orange-700 dark:text-orange-400 bg-gradient-to-r from-orange-600 to-brand dark:from-brand dark:to-orange-400 bg-clip-text [-webkit-text-fill-color:transparent] ${className}`}
+      >
         {currentText || "\u00A0"}
       </span>
       <span

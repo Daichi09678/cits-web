@@ -4,8 +4,8 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import { Handshake, Plus, CheckCircle2, Trash2, Edit, X, Search, Building2, Upload, Check } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
-import { useCitsStore } from "@/database/store";
-import { ClientPartner } from "@/database/schema";
+import { useCitsStore } from "@/stores/citsStore";
+import { ClientPartner } from "@/types/schema";
 
 export default function AdminClientsPage() {
   const { clients, actions } = useCitsStore();
@@ -94,8 +94,7 @@ export default function AdminClientsPage() {
 
   const filteredClients = clients.filter(
     (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.category.toLowerCase().includes(search.toLowerCase())
+      c.name.toLowerCase().includes(search.toLowerCase()) || c.category.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -105,7 +104,6 @@ export default function AdminClientsPage() {
         description="Kelola daftar logo kementerian, lembaga tinggi negara, dan BUMN yang tampil di beranda dan portofolio"
       />
       <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
-
         {savedSuccess && (
           <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-2.5 text-xs text-emerald-800 dark:text-emerald-300">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -160,9 +158,7 @@ export default function AdminClientsPage() {
                   />
                 </div>
                 <div className="min-w-0">
-                  <span className="block font-bold text-xs text-slate-900 dark:text-white truncate">
-                    {c.name}
-                  </span>
+                  <span className="block font-bold text-xs text-slate-900 dark:text-white truncate">{c.name}</span>
                   <span className="block text-[10px] text-orange-600 dark:text-orange-400 font-semibold">
                     {c.category}
                   </span>
@@ -178,9 +174,15 @@ export default function AdminClientsPage() {
                       ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30"
                       : "bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/15 opacity-70"
                   }`}
-                  title={c.isActive !== false ? "Mitra Aktif (Klik untuk Sembunyikan)" : "Mitra Sembunyi (Klik untuk Tampilkan)"}
+                  title={
+                    c.isActive !== false
+                      ? "Mitra Aktif (Klik untuk Sembunyikan)"
+                      : "Mitra Sembunyi (Klik untuk Tampilkan)"
+                  }
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full ${c.isActive !== false ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${c.isActive !== false ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}
+                  />
                   <span>{c.isActive !== false ? "Aktif" : "Sembunyi"}</span>
                 </button>
                 <button
@@ -251,10 +253,18 @@ export default function AdminClientsPage() {
                     onChange={(e) => setFormCategory(e.target.value as any)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
                   >
-                    <option value="Kementerian" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Kementerian</option>
-                    <option value="BUMN" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">BUMN</option>
-                    <option value="Lembaga" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Lembaga Tinggi Negara</option>
-                    <option value="Swasta" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Korporasi Swasta</option>
+                    <option value="Kementerian" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                      Kementerian
+                    </option>
+                    <option value="BUMN" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                      BUMN
+                    </option>
+                    <option value="Lembaga" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                      Lembaga Tinggi Negara
+                    </option>
+                    <option value="Swasta" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                      Korporasi Swasta
+                    </option>
                   </select>
                 </div>
 
@@ -360,7 +370,10 @@ export default function AdminClientsPage() {
                     onChange={(e) => setFormIsActive(e.target.checked)}
                     className="w-4 h-4 accent-orange-600 rounded cursor-pointer"
                   />
-                  <label htmlFor="clientActiveCheckModal" className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                  <label
+                    htmlFor="clientActiveCheckModal"
+                    className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+                  >
                     Tampilkan mitra ini di slider beranda & portofolio
                   </label>
                 </div>
@@ -384,7 +397,6 @@ export default function AdminClientsPage() {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

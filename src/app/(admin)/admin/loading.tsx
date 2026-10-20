@@ -15,9 +15,7 @@ export default function AdminLoading() {
         </div>
 
         <div className="space-y-1">
-          <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">
-            Memuat Halaman Back Office...
-          </h3>
+          <h3 className="font-extrabold text-sm text-slate-900 dark:text-white">Memuat Halaman Back Office...</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Menghubungkan data dan mengoptimalkan aset tampilan
           </p>

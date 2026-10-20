@@ -22,18 +22,14 @@ export default function MetricCard({
   return (
     <div className="p-5 rounded-2xl bg-white dark:bg-[#151528] border border-slate-200/90 dark:border-white/10 shadow-xs hover:shadow-md transition-all">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-          {title}
-        </span>
+        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{title}</span>
         <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconColor}`}>
           <Icon className="w-4 h-4" />
         </div>
       </div>
 
       <div className="flex items-baseline gap-2.5">
-        <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-          {value}
-        </span>
+        <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{value}</span>
 
         {change && (
           <span
@@ -49,11 +45,7 @@ export default function MetricCard({
         )}
       </div>
 
-      {subtitle && (
-        <span className="block text-[11px] text-slate-600 dark:text-slate-400 mt-2">
-          {subtitle}
-        </span>
-      )}
+      {subtitle && <span className="block text-[11px] text-slate-600 dark:text-slate-400 mt-2">{subtitle}</span>}
     </div>
   );
 }

@@ -1,22 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Cpu,
-  Code2,
-  Server,
-  ShieldCheck,
-  CheckCircle2,
-  Save,
-  Edit,
-  Plus,
-  Trash2,
-  X,
-  Sparkles,
-} from "lucide-react";
+import { ShieldCheck, CheckCircle2, Edit, Plus, Trash2, X, Search, ChevronDown } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
-import { useCitsStore } from "@/database/store";
-import { ServicePillar } from "@/database/schema";
+import { useCitsStore } from "@/stores/citsStore";
+import { ServicePillar } from "@/types/schema";
+import { getPillarIcon, PILLAR_ICON_OPTIONS, PillarIconOption } from "@/lib/serviceIcons";
 
 export default function AdminServicesPage() {
   const { services, actions } = useCitsStore();
@@ -33,15 +22,25 @@ export default function AdminServicesPage() {
   const [formIsActive, setFormIsActive] = useState(true);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  // Icon Picker Filter State
+  const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
+  const [iconCategoryFilter, setIconCategoryFilter] = useState("Semua");
+  const [iconSearch, setIconSearch] = useState("");
+  const [hoveredIconOption, setHoveredIconOption] = useState<PillarIconOption | null>(null);
+
   const openEditModal = (pillar: ServicePillar) => {
     setEditingPillar(pillar);
     setFormTitle(pillar.title);
     setFormBadge(pillar.badge);
-    setFormIcon(pillar.icon);
+    setFormIcon(pillar.icon || "Code2");
     setFormDesc(pillar.desc);
     setFormSla(pillar.sla);
     setFormFeatures(pillar.features ? pillar.features.join(", ") : "");
     setFormIsActive(pillar.isActive !== false);
+    setIsIconPickerOpen(false);
+    setIconCategoryFilter("Semua");
+    setIconSearch("");
+    setHoveredIconOption(null);
     setModalOpen(true);
   };
 
@@ -49,17 +48,24 @@ export default function AdminServicesPage() {
     setEditingPillar(null);
     setFormTitle("");
     setFormBadge(`Pilar 0${services.length + 1}`);
-    setFormIcon("Cpu");
+    setFormIcon("Code2");
     setFormDesc("");
     setFormSla("SLA Terjamin & Bergaransi");
     setFormFeatures("Arsitektur Andal, Pengujian Ketat, Dukungan 24/7");
     setFormIsActive(true);
+    setIsIconPickerOpen(false);
+    setIconCategoryFilter("Semua");
+    setIconSearch("");
+    setHoveredIconOption(null);
     setModalOpen(true);
   };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    const featArr = formFeatures.split(",").map((s) => s.trim()).filter(Boolean);
+    const featArr = formFeatures
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
 
     if (editingPillar) {
       actions.updateService(editingPillar.id, {
@@ -96,17 +102,6 @@ export default function AdminServicesPage() {
     }
   };
 
-  const getIconComponent = (name: string) => {
-    switch (name) {
-      case "Code2":
-        return Code2;
-      case "Server":
-        return Server;
-      default:
-        return Cpu;
-    }
-  };
-
   return (
     <div className="flex-1 flex flex-col min-w-0">
       <AdminTopbar
@@ -114,7 +109,6 @@ export default function AdminServicesPage() {
         description="Kelola 3 pilar layanan utama, target SLA, dan ruang lingkup rekayasa teknologi CITS Indonesia"
       />
       <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
-
         {savedSuccess && (
           <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-2.5 text-xs text-emerald-800 dark:text-emerald-300">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -138,7 +132,7 @@ export default function AdminServicesPage() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {services.map((p) => {
-            const Icon = getIconComponent(p.icon);
+            const Icon = getPillarIcon(p.icon);
             return (
               <div
                 key={p.id}
@@ -160,7 +154,9 @@ export default function AdminServicesPage() {
                         }`}
                         title="Klik untuk mengubah status aktif/non-aktif"
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${p.isActive !== false ? "bg-emerald-500" : "bg-slate-400"}`} />
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${p.isActive !== false ? "bg-emerald-500" : "bg-slate-400"}`}
+                        />
                         <span>{p.isActive !== false ? "Aktif" : "Non-aktif"}</span>
                       </button>
                       <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-500/30">
@@ -169,17 +165,16 @@ export default function AdminServicesPage() {
                     </div>
                   </div>
 
-                  <h4 className="font-extrabold text-base text-slate-900 dark:text-white">
-                    {p.title}
-                  </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">
-                    {p.desc}
-                  </p>
+                  <h4 className="font-extrabold text-base text-slate-900 dark:text-white">{p.title}</h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">{p.desc}</p>
 
                   {p.features && p.features.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-slate-100 dark:border-white/5 space-y-1">
                       {p.features.map((f, i) => (
-                        <div key={i} className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-300">
+                        <div
+                          key={i}
+                          className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-300"
+                        >
                           <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
                           <span>{f}</span>
                         </div>
@@ -221,8 +216,8 @@ export default function AdminServicesPage() {
         {/* Modal Edit / Add Pillar */}
         {modalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-            <div className="w-full max-w-lg bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between">
+            <div className="w-full max-w-xl bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col max-h-[92vh]">
+              <div className="px-6 py-4.5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between shrink-0">
                 <div>
                   <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
                     {editingPillar ? "Edit Pilar Layanan CITS" : "Tambah Pilar Layanan Baru"}
@@ -232,6 +227,7 @@ export default function AdminServicesPage() {
                   </p>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setModalOpen(false)}
                   className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
                 >
@@ -239,10 +235,47 @@ export default function AdminServicesPage() {
                 </button>
               </div>
 
-              <form onSubmit={handleSave} className="p-6 space-y-4 text-xs">
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+              <form onSubmit={handleSave} className="overflow-y-auto p-6 space-y-4 text-xs">
+                {/* Baris 1: Ikon Layanan + Nama Layanan + Label Badge */}
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                  {/* Ikon Layanan Trigger Button */}
+                  <div className="sm:col-span-4">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                      Ikon Layanan
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsIconPickerOpen(!isIconPickerOpen)}
+                      className={`w-full h-10 px-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer ${
+                        isIconPickerOpen
+                          ? "bg-orange-50 dark:bg-orange-500/15 border-orange-500 ring-2 ring-orange-500/20 text-orange-950 dark:text-orange-200"
+                          : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 hover:border-orange-400 dark:hover:border-orange-500/40 text-slate-900 dark:text-white"
+                      }`}
+                      title="Klik untuk memilih ikon pilar layanan"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-6 h-6 rounded-lg bg-orange-500/15 dark:bg-orange-500/25 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                          {(() => {
+                            const CurrIcon = getPillarIcon(formIcon);
+                            return <CurrIcon className="w-3.5 h-3.5" />;
+                          })()}
+                        </div>
+                        <span className="text-xs font-semibold truncate">
+                          {PILLAR_ICON_OPTIONS.find((o) => o.name.toLowerCase() === formIcon.toLowerCase())?.label ||
+                            formIcon}
+                        </span>
+                      </div>
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${
+                          isIconPickerOpen ? "rotate-180 text-orange-600 dark:text-orange-400" : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Nama Layanan */}
+                  <div className="sm:col-span-5">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                       Nama Layanan
                     </label>
                     <input
@@ -251,12 +284,13 @@ export default function AdminServicesPage() {
                       value={formTitle}
                       onChange={(e) => setFormTitle(e.target.value)}
                       placeholder="cth. Software House"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                  {/* Label Badge */}
+                  <div className="sm:col-span-3">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                       Label Badge
                     </label>
                     <input
@@ -265,10 +299,127 @@ export default function AdminServicesPage() {
                       value={formBadge}
                       onChange={(e) => setFormBadge(e.target.value)}
                       placeholder="cth. Pilar 01"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
                 </div>
+
+                {/* PEMILIH IKON TERPADU (Hanya terbuka saat diklik, tanpa scrollbar ganda & tanpa teks terpotong) */}
+                {isIconPickerOpen && (
+                  <div className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-[#121226] border border-orange-200/80 dark:border-orange-500/30 space-y-2.5 animate-in fade-in zoom-in-98 duration-150">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                          Pilih Ikon Layanan
+                        </span>
+                        <span className="text-[10px] text-slate-400">(Klik ikon untuk langsung memilih)</span>
+                      </div>
+
+                      <div className="relative w-full sm:w-48">
+                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={iconSearch}
+                          onChange={(e) => setIconSearch(e.target.value)}
+                          placeholder="Cari ikon..."
+                          className="w-full pl-8 pr-7 py-1 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-[11px] text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                        />
+                        {iconSearch && (
+                          <button
+                            type="button"
+                            onClick={() => setIconSearch("")}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Kategori Ikon (Rapi tanpa horizontal scrollbar) */}
+                    <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                      {[
+                        { id: "Semua", label: "Semua" },
+                        { id: "Rekayasa & Software", label: "Software" },
+                        { id: "Infrastruktur & Cloud", label: "Cloud & Server" },
+                        { id: "Konsultansi & SPBE", label: "Konsultasi" },
+                        { id: "Keamanan & Dukungan", label: "Keamanan" },
+                      ].map((cat) => (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setIconCategoryFilter(cat.id)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-medium transition-all cursor-pointer ${
+                            iconCategoryFilter === cat.id
+                              ? "bg-orange-600 text-white font-semibold shadow-xs"
+                              : "bg-white dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200/80 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10"
+                          }`}
+                        >
+                          {cat.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Grid Ikon Lucide - Clean Square Buttons tanpa teks terpotong */}
+                    <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5 p-2 rounded-xl bg-white dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10 max-h-36 overflow-y-auto">
+                      {PILLAR_ICON_OPTIONS.filter((opt) => {
+                        if (iconCategoryFilter !== "Semua" && opt.category !== iconCategoryFilter) return false;
+                        if (
+                          iconSearch &&
+                          !opt.name.toLowerCase().includes(iconSearch.toLowerCase()) &&
+                          !opt.label.toLowerCase().includes(iconSearch.toLowerCase())
+                        )
+                          return false;
+                        return true;
+                      }).map((opt) => {
+                        const IconComp = opt.icon;
+                        const isSelected = formIcon.toLowerCase() === opt.name.toLowerCase();
+                        return (
+                          <button
+                            key={opt.name}
+                            type="button"
+                            onClick={() => {
+                              setFormIcon(opt.name);
+                              setIsIconPickerOpen(false);
+                            }}
+                            onMouseEnter={() => setHoveredIconOption(opt)}
+                            onMouseLeave={() => setHoveredIconOption(null)}
+                            className={`h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                              isSelected
+                                ? "bg-orange-600 text-white shadow-md shadow-orange-600/30 scale-105"
+                                : "text-slate-600 dark:text-slate-300 hover:bg-orange-50 dark:hover:bg-orange-500/15 hover:text-orange-600 dark:hover:text-orange-400 hover:scale-105"
+                            }`}
+                            title={`${opt.label} (${opt.name})`}
+                          >
+                            <IconComp className="w-4 h-4" />
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Footer Keterangan & Tombol Tutup */}
+                    <div className="flex items-center justify-between text-[11px] pt-1 text-slate-500 dark:text-slate-400">
+                      <div className="truncate pr-2">
+                        {hoveredIconOption ? (
+                          <span className="text-slate-900 dark:text-white font-medium">
+                            Ikon:{" "}
+                            <strong className="text-orange-600 dark:text-orange-400">{hoveredIconOption.label}</strong>{" "}
+                            ({hoveredIconOption.name})
+                          </span>
+                        ) : (
+                          <span>Arahkan kursor ke ikon untuk melihat fungsi & nama</span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsIconPickerOpen(false)}
+                        className="text-[10px] font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-white underline cursor-pointer shrink-0"
+                      >
+                        Tutup
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
@@ -313,7 +464,9 @@ export default function AdminServicesPage() {
 
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between">
                   <div>
-                    <span className="block text-xs font-bold text-slate-800 dark:text-white">Status Tayang Layanan</span>
+                    <span className="block text-xs font-bold text-slate-800 dark:text-white">
+                      Status Tayang Layanan
+                    </span>
                     <span className="block text-[11px] text-slate-500">Tampilkan layanan ini di website utama</span>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -346,7 +499,6 @@ export default function AdminServicesPage() {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

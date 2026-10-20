@@ -32,7 +32,7 @@ import GradientText from "@/components/ui/GradientText";
 import GridPattern from "@/components/ui/GridPattern";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
-import { useCitsStore } from "@/database/store";
+import { useCitsStore } from "@/stores/citsStore";
 
 interface ValueItem {
   letter: string;
@@ -361,13 +361,13 @@ export default function AboutPage() {
   const { aboutData } = useCitsStore();
   const [awardFilter, setAwardFilter] = useState<"all" | "kementerian" | "bumn" | "egov">("all");
 
-  const filteredAwards =
-    awardFilter === "all"
-      ? awards
-      : awards.filter((item) => item.category === awardFilter);
+  const filteredAwards = awardFilter === "all" ? awards : awards.filter((item) => item.category === awardFilter);
 
   return (
-    <main id="main-content" className="min-h-screen bg-white dark:bg-dark text-slate-900 dark:text-white transition-colors">
+    <main
+      id="main-content"
+      className="min-h-screen bg-white dark:bg-dark text-slate-900 dark:text-white transition-colors"
+    >
       {/* 1. HERO SECTION & PROFIL RESMI INSTANSI (IDDS Standard) */}
       <section
         aria-labelledby="about-hero-heading"
@@ -407,10 +407,14 @@ export default function AboutPage() {
                       <strong className="text-slate-900 dark:text-white font-semibold">
                         Cipta Integrasi Teknologi Solusi Indonesia (CITS Indonesia)
                       </strong>{" "}
-                      adalah mitra rekayasa perangkat lunak dan arsitektur data enterprise terpercaya yang telah mendampingi kementerian, lembaga tinggi negara, BUMN, dan korporasi terkemuka sejak tahun 2006.
+                      adalah mitra rekayasa perangkat lunak dan arsitektur data enterprise terpercaya yang telah
+                      mendampingi kementerian, lembaga tinggi negara, BUMN, dan korporasi terkemuka sejak tahun 2006.
                     </p>
                     <p className="mt-4 text-slate-700 dark:text-slate-200 text-sm md:text-base leading-relaxed">
-                      Lahir dari komitmen penguatan ekosistem teknologi nasional, CITS memadukan standar ketat tata kelola pemerintahan digital (SPBE) dengan agilitas rekayasa modern. Pendekatan kami tidak hanya berfokus pada penulisan kode, melainkan perancangan arsitektur kesisteman yang aman, interoperabel, dan berdaya guna jangka panjang bagi efisiensi pelayanan publik Indonesia.
+                      Lahir dari komitmen penguatan ekosistem teknologi nasional, CITS memadukan standar ketat tata
+                      kelola pemerintahan digital (SPBE) dengan agilitas rekayasa modern. Pendekatan kami tidak hanya
+                      berfokus pada penulisan kode, melainkan perancangan arsitektur kesisteman yang aman,
+                      interoperabel, dan berdaya guna jangka panjang bagi efisiensi pelayanan publik Indonesia.
                     </p>
                   </>
                 )}
@@ -420,11 +424,17 @@ export default function AboutPage() {
               <ScrollReveal delay={0.3}>
                 <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100/90 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200 font-semibold shadow-xs">
-                    <ShieldCheck className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0" aria-hidden="true" />
+                    <ShieldCheck
+                      className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0"
+                      aria-hidden="true"
+                    />
                     <span>Kepatuhan SPBE & Keamanan Siber</span>
                   </div>
                   <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100/90 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200 font-semibold shadow-xs">
-                    <CheckCircle2 className="w-4 h-4 text-orange-700 dark:text-orange-400 shrink-0" aria-hidden="true" />
+                    <CheckCircle2
+                      className="w-4 h-4 text-orange-700 dark:text-orange-400 shrink-0"
+                      aria-hidden="true"
+                    />
                     <span>Mitra Rekayasa 18+ Tahun</span>
                   </div>
                   <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-100/90 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200 font-semibold shadow-xs">
@@ -514,7 +524,10 @@ export default function AboutPage() {
                         href="#legalitas-governance"
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/15 text-slate-800 dark:text-white font-semibold text-xs border border-slate-200 dark:border-white/15 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                       >
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
+                        <ShieldCheck
+                          className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400"
+                          aria-hidden="true"
+                        />
                         <span>Verifikasi Legalitas & Kepatuhan SPBE</span>
                       </a>
                     </div>
@@ -544,7 +557,8 @@ export default function AboutPage() {
                 Visi & Misi <GradientText>Perusahaan</GradientText>
               </h2>
               <p className="mt-4 text-slate-700 dark:text-slate-200 text-base leading-relaxed">
-                Panduan terarah yang mendasari setiap rekayasa arsitektur, kepatuhan tata kelola, dan hubungan kerja sama strategis CITS bersama pemangku kepentingan digital Indonesia.
+                Panduan terarah yang mendasari setiap rekayasa arsitektur, kepatuhan tata kelola, dan hubungan kerja
+                sama strategis CITS bersama pemangku kepentingan digital Indonesia.
               </p>
             </div>
           </ScrollReveal>
@@ -560,11 +574,12 @@ export default function AboutPage() {
                   <span className="text-xs font-bold uppercase tracking-wider text-orange-200">
                     Arah Jangka Panjang
                   </span>
-                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mt-1 mb-4">
-                    Visi CITS Indonesia
-                  </h3>
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mt-1 mb-4">Visi CITS Indonesia</h3>
                   <blockquote className="text-white/95 text-base md:text-lg leading-relaxed font-medium border-l-4 border-white/40 pl-4 my-6 italic">
-                    &ldquo;{aboutData?.vision || "Menjadi aset bangsa yang mampu bersaing di pasar dunia, sebagai penyedia solusi integral proses bisnis berbasis teknologi informasi yang terpercaya, adaptif, dan berkelanjutan."}&rdquo;
+                    &ldquo;
+                    {aboutData?.vision ||
+                      "Menjadi aset bangsa yang mampu bersaing di pasar dunia, sebagai penyedia solusi integral proses bisnis berbasis teknologi informasi yang terpercaya, adaptif, dan berkelanjutan."}
+                    &rdquo;
                   </blockquote>
                 </div>
 
@@ -609,15 +624,18 @@ export default function AboutPage() {
                       Misi Strategis Perusahaan
                     </h3>
                     <p className="text-slate-700 dark:text-slate-200 text-sm md:text-base leading-relaxed mb-6">
-                      Tiga komitmen nyata yang kami laksanakan secara berkesinambungan untuk merealisasikan visi perusahaan:
+                      Tiga komitmen nyata yang kami laksanakan secara berkesinambungan untuk merealisasikan visi
+                      perusahaan:
                     </p>
 
                     <div className="space-y-4">
-                      {(aboutData?.mission || [
-                        "Pengembangan & Kontribusi Ekosistem TI: Memberikan sumbangsih arah, merancang arsitektur mandiri, dan mendorong kematangan teknologi informasi sebagai pilar utama transformasi digital instansi negara.",
-                        "Solusi Integral Proses Bisnis Berbasis TI: Menghadirkan platform perangkat lunak dan infrastruktur terpadu yang presisi menyelesaikan hambatan operasional, menjamin integritas data, serta meningkatkan akuntabilitas publik.",
-                        "Kecerdasan Sumber Daya Multi-Dimensi: Membina tenaga ahli yang tidak hanya unggul secara intelektual teknis, melainkan matang secara emosional dan berintegritas spiritual dalam setiap penugasan berintegritas tinggi."
-                      ]).map((misiItem, idx) => {
+                      {(
+                        aboutData?.mission || [
+                          "Pengembangan & Kontribusi Ekosistem TI: Memberikan sumbangsih arah, merancang arsitektur mandiri, dan mendorong kematangan teknologi informasi sebagai pilar utama transformasi digital instansi negara.",
+                          "Solusi Integral Proses Bisnis Berbasis TI: Menghadirkan platform perangkat lunak dan infrastruktur terpadu yang presisi menyelesaikan hambatan operasional, menjamin integritas data, serta meningkatkan akuntabilitas publik.",
+                          "Kecerdasan Sumber Daya Multi-Dimensi: Membina tenaga ahli yang tidak hanya unggul secara intelektual teknis, melainkan matang secara emosional dan berintegritas spiritual dalam setiap penugasan berintegritas tinggi.",
+                        ]
+                      ).map((misiItem, idx) => {
                         const colonIdx = misiItem.indexOf(":");
                         const title = colonIdx !== -1 ? misiItem.slice(0, colonIdx).trim() : `Pilar Misi #${idx + 1}`;
                         const desc = colonIdx !== -1 ? misiItem.slice(colonIdx + 1).trim() : misiItem;
@@ -630,9 +648,7 @@ export default function AboutPage() {
                               {idx + 1}
                             </div>
                             <div>
-                              <h4 className="font-bold text-slate-900 dark:text-white text-sm">
-                                {title}
-                              </h4>
+                              <h4 className="font-bold text-slate-900 dark:text-white text-sm">{title}</h4>
                               {desc && (
                                 <p className="mt-1 text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                                   {desc}
@@ -670,7 +686,8 @@ export default function AboutPage() {
                 Prinsip Layanan <GradientText>FOCUS</GradientText>
               </h2>
               <p className="mt-4 text-slate-700 dark:text-slate-200 text-base leading-relaxed">
-                Lima pilar operasional terpadu yang memandu etos kerja profesional seluruh personel CITS dalam memastikan keberhasilan proyek rekayasa teknologi informasi.
+                Lima pilar operasional terpadu yang memandu etos kerja profesional seluruh personel CITS dalam
+                memastikan keberhasilan proyek rekayasa teknologi informasi.
               </p>
             </div>
           </ScrollReveal>
@@ -741,7 +758,8 @@ export default function AboutPage() {
                 Linimasa Perjalanan <GradientText>CITS Indonesia</GradientText>
               </h2>
               <p className="mt-4 text-slate-700 dark:text-slate-200 text-base leading-relaxed">
-                Bukti konsistensi dedikasi kami dalam menghadirkan solusi teknologi informasi strategis di berbagai sektor krusial tanah air secara berkesinambungan sejak 2006.
+                Bukti konsistensi dedikasi kami dalam menghadirkan solusi teknologi informasi strategis di berbagai
+                sektor krusial tanah air secara berkesinambungan sejak 2006.
               </p>
             </div>
           </ScrollReveal>
@@ -765,10 +783,7 @@ export default function AboutPage() {
                 const isEven = i % 2 === 0;
                 return (
                   <li key={m.year}>
-                    <ScrollReveal
-                      delay={i * 0.05}
-                      direction={isEven ? "left" : "right"}
-                    >
+                    <ScrollReveal delay={i * 0.05} direction={isEven ? "left" : "right"}>
                       <div className="relative grid md:grid-cols-2 gap-6 md:gap-12 items-center">
                         {/* Desktop Center Node Badge */}
                         <div
@@ -787,11 +802,7 @@ export default function AboutPage() {
                         </div>
 
                         {/* Content Card (Left or Right on desktop, indented on mobile) */}
-                        <div
-                          className={`pl-11 md:pl-0 ${
-                            isEven ? "md:text-right md:pr-4" : "md:col-start-2 md:pl-4"
-                          }`}
-                        >
+                        <div className={`pl-11 md:pl-0 ${isEven ? "md:text-right md:pr-4" : "md:col-start-2 md:pl-4"}`}>
                           <article className="p-6 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-slate-200 dark:border-white/10 hover:border-orange-500/40 transition-all shadow-sm">
                             <div
                               className={`flex flex-wrap items-center gap-2 mb-2.5 ${
@@ -812,9 +823,7 @@ export default function AboutPage() {
                               </span>
                             </div>
 
-                            <h3 className="text-base md:text-lg font-bold text-slate-900 dark:text-white">
-                              {m.title}
-                            </h3>
+                            <h3 className="text-base md:text-lg font-bold text-slate-900 dark:text-white">{m.title}</h3>
                             <p className="mt-2 text-xs md:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                               {m.description}
                             </p>
@@ -849,7 +858,8 @@ export default function AboutPage() {
                 Sertifikasi & <GradientText>Penghargaan Resmi</GradientText>
               </h2>
               <p className="mt-4 text-slate-700 dark:text-slate-200 text-base leading-relaxed">
-                Dokumentasi resmi apresiasi dan sertifikat penyelesaian proyek dari kementerian, BUMN, dan lembaga negara atas integritas layanan CITS Indonesia.
+                Dokumentasi resmi apresiasi dan sertifikat penyelesaian proyek dari kementerian, BUMN, dan lembaga
+                negara atas integritas layanan CITS Indonesia.
               </p>
             </div>
 
@@ -950,7 +960,8 @@ export default function AboutPage() {
                 Tata Kelola & <GradientText>Legalitas Perusahaan</GradientText>
               </h2>
               <p className="mt-4 text-slate-700 dark:text-slate-200 text-base leading-relaxed">
-                Kepatuhan institusional dan perizinan berusaha resmi yang menjamin akuntabilitas serta keamanan CITS Indonesia sebagai penyedia pengadaan barang/jasa instansi publik.
+                Kepatuhan institusional dan perizinan berusaha resmi yang menjamin akuntabilitas serta keamanan CITS
+                Indonesia sebagai penyedia pengadaan barang/jasa instansi publik.
               </p>
             </div>
           </ScrollReveal>
@@ -986,8 +997,14 @@ export default function AboutPage() {
                         {/* Checklist items */}
                         <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10 space-y-2.5">
                           {pillar.items.map((point) => (
-                            <div key={point} className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" aria-hidden="true" />
+                            <div
+                              key={point}
+                              className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300"
+                            >
+                              <CheckCircle2
+                                className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5"
+                                aria-hidden="true"
+                              />
                               <span className="leading-tight">{point}</span>
                             </div>
                           ))}
@@ -1026,7 +1043,8 @@ export default function AboutPage() {
                 Siap Bermitra Membangun Solusi TI Bersama CITS Indonesia?
               </h2>
               <p className="mt-4 text-slate-700 dark:text-slate-200 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-                Diskusikan rencana transformasi digital, kebutuhan konsultasi arsitektur SPBE, atau pengembangan sistem kustom instansi Anda bersama tim tenaga ahli kami.
+                Diskusikan rencana transformasi digital, kebutuhan konsultasi arsitektur SPBE, atau pengembangan sistem
+                kustom instansi Anda bersama tim tenaga ahli kami.
               </p>
 
               <div className="mt-8 flex flex-wrap justify-center gap-3.5">

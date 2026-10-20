@@ -17,12 +17,7 @@ const directionOffset = {
   right: { x: -40, y: 0 },
 };
 
-export default function ScrollReveal({
-  children,
-  className = "",
-  delay = 0,
-  direction = "up",
-}: ScrollRevealProps) {
+export default function ScrollReveal({ children, className = "", delay = 0, direction = "up" }: ScrollRevealProps) {
   const offset = directionOffset[direction];
 
   return (

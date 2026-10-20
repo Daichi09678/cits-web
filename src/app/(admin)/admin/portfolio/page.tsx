@@ -19,12 +19,11 @@ import {
   Award,
   Layers,
   Clock,
-  ShieldCheck,
   TrendingUp,
 } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
-import { useCitsStore } from "@/database/store";
-import { CaseStudyItem } from "@/database/schema";
+import { useCitsStore } from "@/stores/citsStore";
+import { CaseStudyItem } from "@/types/schema";
 
 const SECTOR_OPTIONS = [
   "Kementerian & Lembaga Pusat",
@@ -305,7 +304,9 @@ export default function AdminPortfolioPage() {
               onChange={(e) => setSectorFilter(e.target.value)}
               className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-700 dark:text-slate-200 font-semibold focus:outline-none cursor-pointer"
             >
-              <option value="All" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Semua Sektor Penugasan</option>
+              <option value="All" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                Semua Sektor Penugasan
+              </option>
               {SECTOR_OPTIONS.map((sec) => (
                 <option key={sec} value={sec} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                   {sec}
@@ -318,10 +319,18 @@ export default function AdminPortfolioPage() {
               onChange={(e) => setStatusFilter(e.target.value as any)}
               className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-700 dark:text-slate-200 font-semibold focus:outline-none cursor-pointer"
             >
-              <option value="all" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Semua Status</option>
-              <option value="active" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Hanya Aktif</option>
-              <option value="inactive" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Non-aktif (Draft)</option>
-              <option value="flagship" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Hanya Flagship</option>
+              <option value="all" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                Semua Status
+              </option>
+              <option value="active" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                Hanya Aktif
+              </option>
+              <option value="inactive" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                Non-aktif (Draft)
+              </option>
+              <option value="flagship" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                Hanya Flagship
+              </option>
             </select>
           </div>
 
@@ -620,7 +629,11 @@ export default function AdminPortfolioPage() {
                       className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none cursor-pointer"
                     >
                       {SECTOR_OPTIONS.map((sec) => (
-                        <option key={sec} value={sec} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                        <option
+                          key={sec}
+                          value={sec}
+                          className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                        >
                           {sec}
                         </option>
                       ))}
@@ -677,7 +690,10 @@ export default function AdminPortfolioPage() {
                       onChange={(e) => setFormIsFlagship(e.target.checked)}
                       className="w-4 h-4 accent-orange-600 rounded cursor-pointer"
                     />
-                    <label htmlFor="formIsFlagship" className="font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
+                    <label
+                      htmlFor="formIsFlagship"
+                      className="font-bold text-slate-700 dark:text-slate-300 cursor-pointer"
+                    >
                       Jadikan Studi Kasus Unggulan (Flagship)
                     </label>
                   </div>
@@ -794,7 +810,10 @@ export default function AdminPortfolioPage() {
                     onChange={(e) => setFormIsActive(e.target.checked)}
                     className="w-4 h-4 accent-orange-600 rounded cursor-pointer"
                   />
-                  <label htmlFor="formIsActiveCheck" className="font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                  <label
+                    htmlFor="formIsActiveCheck"
+                    className="font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+                  >
                     Tampilkan studi kasus ini di Front Office (/portfolio)
                   </label>
                 </div>

@@ -14,9 +14,7 @@ export async function POST(req: Request) {
       email === "admin@cits.id";
 
     const isOfficialPass =
-      password === siteConfig.admin.defaultPassword ||
-      password === "admin" ||
-      password === "admin123";
+      password === siteConfig.admin.defaultPassword || password === "admin" || password === "admin123";
 
     if (!isOfficialEmail) {
       return NextResponse.json(

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import {
   Lightbulb,
-  Monitor,  
+  Monitor,
   Cog,
   ArrowRight,
   Truck,
@@ -29,8 +29,9 @@ import HeroMockup from "@/components/ui/HeroMockup";
 import GridPattern from "@/components/ui/GridPattern";
 import GradientText from "@/components/ui/GradientText";
 import Marquee from "@/components/ui/Marquee";
-import { useCitsStore } from "@/database/store";
-import { initialLandingPageData, defaultSectionVisibility } from "@/database/initialData";
+import { useCitsStore } from "@/stores/citsStore";
+import { initialLandingPageData, defaultSectionVisibility } from "@/data/initialData";
+import { getPillarIcon } from "@/lib/serviceIcons";
 
 const clients = [
   { name: "Kementerian Dalam Negeri RI", logo: "/clients/kemendagri.svg", showLabel: true },
@@ -50,7 +51,7 @@ const clients = [
 ];
 
 export default function Home() {
-  const { landingData, clients: storeClients } = useCitsStore();
+  const { landingData, clients: storeClients, contactInfo, services: storeServices } = useCitsStore();
   const currentLanding = landingData || initialLandingPageData;
   const visibility = currentLanding.sectionVisibility || defaultSectionVisibility;
   const hero = currentLanding.hero || initialLandingPageData.hero;
@@ -58,95 +59,135 @@ export default function Home() {
   const activeHighlights = highlights.filter((h) => h.isActive !== false);
   const servicesIntro = currentLanding.servicesIntro || initialLandingPageData.servicesIntro;
   const productsIntro = currentLanding.productsIntro || initialLandingPageData.productsIntro;
+
+  const IconPillar1 = storeServices?.[0]?.icon ? getPillarIcon(storeServices[0].icon) : Cog;
+  const IconPillar2 = storeServices?.[1]?.icon ? getPillarIcon(storeServices[1].icon) : Lightbulb;
+  const IconPillar3 = storeServices?.[2]?.icon ? getPillarIcon(storeServices[2].icon) : Monitor;
   const clientsIntro = currentLanding.clientsIntro || initialLandingPageData.clientsIntro;
   const cta = currentLanding.cta || initialLandingPageData.cta;
 
-  const activeStoreClients = (storeClients && storeClients.length > 0 ? storeClients : []).filter((c) => c.isActive !== false);
-  const marqueeList = activeStoreClients.length > 0 ? activeStoreClients.map((c) => ({ name: c.name, logo: c.logo, showLabel: true })) : clients;
+  const activeStoreClients = (storeClients && storeClients.length > 0 ? storeClients : []).filter(
+    (c) => c.isActive !== false
+  );
+  const marqueeList =
+    activeStoreClients.length > 0
+      ? activeStoreClients.map((c) => ({ name: c.name, logo: c.logo, showLabel: true }))
+      : clients;
 
   return (
     <>
+      {/* Top Official Announcement Banner */}
+      {contactInfo?.announcement?.isActive && contactInfo.announcement.text && (
+        <aside
+          aria-label="Pengumuman Resmi"
+          className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-2.5 px-4 text-xs font-semibold shadow-xs"
+        >
+          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-center sm:text-left">
+            <div className="flex items-center gap-2 mx-auto sm:mx-0">
+              <span className="w-2 h-2 rounded-full bg-white animate-ping shrink-0" />
+              <span>{contactInfo.announcement.text}</span>
+            </div>
+            {contactInfo.announcement.linkText && contactInfo.announcement.linkUrl && (
+              <a
+                href={contactInfo.announcement.linkUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mx-auto sm:mx-0 inline-flex items-center gap-1 underline hover:text-orange-100 font-bold text-[11px]"
+              >
+                <span>{contactInfo.announcement.linkText}</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </a>
+            )}
+          </div>
+        </aside>
+      )}
+
       {/* Hero Section */}
       {visibility.hero !== false && (
         <section className="relative overflow-hidden bg-white dark:bg-[#1A1A2E] min-h-[92vh] flex items-center transition-colors">
-        <ParticleNetwork />
-        <FloatingShapes />
-        <GridPattern />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-          <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            {/* Left Headline */}
-            <div className={hero.showMockup !== false ? "lg:col-span-7" : "lg:col-span-12 max-w-3xl"}>
-              <ScrollReveal>
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 text-orange-800 dark:text-orange-300 text-sm font-semibold mb-6 shadow-sm">
-                  <span className="w-2.5 h-2.5 rounded-full bg-orange-600 animate-pulse" />
-                  <span>{hero.badgeText || "Penyedia Solusi Teknologi Informasi Sejak 2006"}</span>
-                </div>
-              </ScrollReveal>
+          <ParticleNetwork />
+          <FloatingShapes />
+          <GridPattern />
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+            <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+              {/* Left Headline */}
+              <div className={hero.showMockup !== false ? "lg:col-span-7" : "lg:col-span-12 max-w-3xl"}>
+                <ScrollReveal>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 text-orange-800 dark:text-orange-300 text-sm font-semibold mb-6 shadow-sm">
+                    <span className="w-2.5 h-2.5 rounded-full bg-orange-600 animate-pulse" />
+                    <span>{hero.badgeText || "Penyedia Solusi Teknologi Informasi Sejak 2006"}</span>
+                  </div>
+                </ScrollReveal>
 
-              <ScrollReveal delay={0.1}>
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-dark dark:text-white tracking-tight leading-[1.15]">
-                  {hero.headlinePrefix || "Ciptakan Solusi"}
-                  <br />
-                  <TypewriterText
-                    words={hero.typewriterWords && hero.typewriterWords.length > 0 ? hero.typewriterWords : [
-                      "Sepenuh Hati",
-                      "Tingkat Enterprise",
-                      "Skala Nasional",
-                      "Berbasis Inovasi",
-                      "Terpercaya Sejak 2006",
-                    ]}
-                  />
-                </h1>
-              </ScrollReveal>
+                <ScrollReveal delay={0.1}>
+                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-dark dark:text-white tracking-tight leading-[1.15]">
+                    {hero.headlinePrefix || "Ciptakan Solusi"}
+                    <br />
+                    <TypewriterText
+                      words={
+                        hero.typewriterWords && hero.typewriterWords.length > 0
+                          ? hero.typewriterWords
+                          : [
+                              "Sepenuh Hati",
+                              "Tingkat Enterprise",
+                              "Skala Nasional",
+                              "Berbasis Inovasi",
+                              "Terpercaya Sejak 2006",
+                            ]
+                      }
+                    />
+                  </h1>
+                </ScrollReveal>
 
-              <ScrollReveal delay={0.2}>
-                <p className="mt-6 text-base sm:text-lg text-gray-600 dark:text-white/90 leading-relaxed max-w-xl">
-                  {hero.subheadline}
-                </p>
-              </ScrollReveal>
+                <ScrollReveal delay={0.2}>
+                  <p className="mt-6 text-base sm:text-lg text-gray-600 dark:text-white/90 leading-relaxed max-w-xl">
+                    {hero.subheadline}
+                  </p>
+                </ScrollReveal>
 
-              <ScrollReveal delay={0.3}>
-                <div className="mt-8 flex flex-wrap gap-4 items-center">
-                  <Link
-                    href={hero.primaryCtaLink || "/contact"}
-                    className="group px-7 py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-lg shadow-orange-600/25 hover:shadow-xl hover:shadow-orange-600/35 flex items-center gap-2.5 text-sm"
-                  >
-                    {hero.primaryCtaText || "Konsultasi Sekarang"}
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </Link>
+                <ScrollReveal delay={0.3}>
+                  <div className="mt-8 flex flex-wrap gap-4 items-center">
+                    <Link
+                      href={hero.primaryCtaLink || "/contact"}
+                      className="group px-7 py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-lg shadow-orange-600/25 hover:shadow-xl hover:shadow-orange-600/35 flex items-center gap-2.5 text-sm"
+                    >
+                      {hero.primaryCtaText || "Konsultasi Sekarang"}
+                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </Link>
 
-                  <Link
-                    href={hero.secondaryCtaLink || "/products"}
-                    className="px-7 py-3.5 border-2 border-gray-200 dark:border-white/20 hover:border-orange-600 dark:hover:border-orange-400 text-gray-700 dark:text-white hover:text-orange-700 dark:hover:text-orange-400 font-semibold rounded-xl transition-all bg-white/70 dark:bg-white/10 backdrop-blur-sm text-sm shadow-sm"
-                  >
-                    {hero.secondaryCtaText || "Eksplorasi Produk"}
-                  </Link>
-                </div>
-              </ScrollReveal>
+                    <Link
+                      href={hero.secondaryCtaLink || "/products"}
+                      className="px-7 py-3.5 border-2 border-gray-200 dark:border-white/20 hover:border-orange-600 dark:hover:border-orange-400 text-gray-700 dark:text-white hover:text-orange-700 dark:hover:text-orange-400 font-semibold rounded-xl transition-all bg-white/70 dark:bg-white/10 backdrop-blur-sm text-sm shadow-sm"
+                    >
+                      {hero.secondaryCtaText || "Eksplorasi Produk"}
+                    </Link>
+                  </div>
+                </ScrollReveal>
 
-              <ScrollReveal delay={0.4}>
-                <div className="mt-10 pt-6 border-t border-gray-200/60 dark:border-white/10 flex flex-wrap items-center gap-6 text-xs text-gray-600 dark:text-white/80">
-                  {hero.trustBadges && hero.trustBadges.map((badge, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      <span>{badge}</span>
-                    </div>
-                  ))}
-                </div>
-              </ScrollReveal>
-            </div>
-
-            {/* Right Interactive Mockup */}
-            {hero.showMockup !== false && (
-              <div className="lg:col-span-5">
-                <ScrollReveal direction="right" delay={0.2}>
-                  <HeroMockup title={hero.mockupTitle} status={hero.mockupStatus} />
+                <ScrollReveal delay={0.4}>
+                  <div className="mt-10 pt-6 border-t border-gray-200/60 dark:border-white/10 flex flex-wrap items-center gap-6 text-xs text-gray-600 dark:text-white/80">
+                    {hero.trustBadges &&
+                      hero.trustBadges.map((badge, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                          <span>{badge}</span>
+                        </div>
+                      ))}
+                  </div>
                 </ScrollReveal>
               </div>
-            )}
+
+              {/* Right Interactive Mockup */}
+              {hero.showMockup !== false && (
+                <div className="lg:col-span-5">
+                  <ScrollReveal direction="right" delay={0.2}>
+                    <HeroMockup title={hero.mockupTitle} status={hero.mockupStatus} />
+                  </ScrollReveal>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
       )}
 
       {/* Stats Counter Section - Foto 1 & 3: #1A1A2E Navy in Dark Mode with White Text */}
@@ -159,7 +200,10 @@ export default function Home() {
             <div className={`grid grid-cols-2 md:grid-cols-${Math.min(activeHighlights.length, 4)} gap-8 text-center`}>
               {activeHighlights.map((item) => (
                 <div key={item.label} className="p-3">
-                  <Counter value={item.value} className="text-3xl sm:text-4xl md:text-5xl font-black text-orange-600 dark:text-orange-400 tracking-tight" />
+                  <Counter
+                    value={item.value}
+                    className="text-3xl sm:text-4xl md:text-5xl font-black text-orange-600 dark:text-orange-400 tracking-tight"
+                  />
                   <p className="mt-2 text-xs sm:text-sm font-semibold text-gray-700 dark:text-white">{item.label}</p>
                 </div>
               ))}
@@ -171,288 +215,306 @@ export default function Home() {
       {/* Services Bento Grid Section */}
       {visibility.services !== false && (
         <section className="relative py-24 bg-white dark:bg-[#1A1A2E] overflow-hidden transition-colors">
-        <ParticleNetwork className="opacity-35" />
-        <FloatingShapes />
-        <GridPattern className="opacity-50" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ScrollReveal>
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 text-orange-800 dark:text-orange-300 text-xs font-semibold mb-4">
-                <Sparkles className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
-                <span>{servicesIntro.badge || "Pilar Layanan Utama"}</span>
+          <ParticleNetwork className="opacity-35" />
+          <FloatingShapes />
+          <GridPattern className="opacity-50" />
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <ScrollReveal>
+              <div className="text-center max-w-3xl mx-auto mb-16">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 text-orange-800 dark:text-orange-300 text-xs font-semibold mb-4">
+                  <Sparkles className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
+                  <span>{servicesIntro.badge || "Pilar Layanan Utama"}</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-dark dark:text-white">
+                  {servicesIntro.title ? (
+                    servicesIntro.title
+                  ) : (
+                    <>
+                      Layanan <GradientText>Unggulan Kami</GradientText>
+                    </>
+                  )}
+                </h2>
+                <p className="mt-4 text-gray-600 dark:text-white/85 text-sm md:text-base leading-relaxed">
+                  {servicesIntro.subtitle}
+                </p>
               </div>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-dark dark:text-white">
-                {servicesIntro.title ? (
-                  servicesIntro.title
-                ) : (
-                  <>
-                    Layanan <GradientText>Unggulan Kami</GradientText>
-                  </>
-                )}
-              </h2>
-              <p className="mt-4 text-gray-600 dark:text-white/85 text-sm md:text-base leading-relaxed">
-                {servicesIntro.subtitle}
-              </p>
-            </div>
-          </ScrollReveal>
+            </ScrollReveal>
 
-          {/* Bento Grid Layanan */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-            {/* Bento Card 1: Software House (Span 2) */}
-            <ScrollReveal className="md:col-span-2">
-              <SpotlightCard className="h-full">
-                <div className="p-8 md:p-10 flex flex-col justify-between h-full">
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/20">
-                        <Cog className="w-7 h-7 text-white" />
+            {/* Bento Grid Layanan */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+              {/* Bento Card 1: Software House (Span 2) */}
+              <ScrollReveal className="md:col-span-2">
+                <SpotlightCard className="h-full">
+                  <div className="p-8 md:p-10 flex flex-col justify-between h-full">
+                    <div>
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/20">
+                          <IconPillar1 className="w-7 h-7 text-white" />
+                        </div>
+                        <span className="text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1.5 rounded-full uppercase tracking-wider">
+                          {servicesIntro.cardSoftwareHouse?.badge || "Pilar Utama Pengembangan"}
+                        </span>
                       </div>
-                      <span className="text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1.5 rounded-full uppercase tracking-wider">
-                        {servicesIntro.cardSoftwareHouse?.badge || "Pilar Utama Pengembangan"}
-                      </span>
+
+                      <h3 className="text-2xl font-bold text-dark dark:text-white">
+                        {servicesIntro.cardSoftwareHouse?.title || "Pengembangan Perangkat Lunak (Software House)"}
+                      </h3>
+                      <p className="mt-3 text-gray-700 dark:text-white/85 text-sm md:text-base leading-relaxed max-w-xl">
+                        {servicesIntro.cardSoftwareHouse?.desc ||
+                          "Pengembangan aplikasi custom skala enterprise dari tahap perancangan arsitektur, rekayasa kode, integrasi REST API & Microservices, hingga peluncuran sistem digital yang tangguh."}
+                      </p>
+
+                      {/* Interactive Architecture Mockup */}
+                      <div className="mt-6 p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10 text-xs text-gray-800 dark:text-white space-y-2.5">
+                        <div className="flex items-center justify-between text-gray-700 dark:text-white/70 border-b border-gray-200/80 dark:border-white/10 pb-2">
+                          <span className="flex items-center gap-2 text-dark dark:text-white font-medium">
+                            <Terminal className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
+                            <span>Alur Arsitektur Rekayasa Sistem</span>
+                          </span>
+                          <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-sans font-semibold bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-200/70 dark:border-emerald-800/50 px-2 py-0.5 rounded">
+                            Pengiriman Berkelanjutan
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 pt-1 font-sans text-xs">
+                          {(servicesIntro.cardSoftwareHouse?.pipelineSteps &&
+                          servicesIntro.cardSoftwareHouse.pipelineSteps.length > 0
+                            ? servicesIntro.cardSoftwareHouse.pipelineSteps
+                            : ["Aplikasi Web & Mobile", "REST API & Microservices", "Basis Data PostgreSQL / Oracle"]
+                          ).map((step, sIdx, sArr) => (
+                            <div key={sIdx} className="flex items-center gap-2">
+                              <span className="px-2.5 py-1 rounded-md bg-white dark:bg-[#1a1a32] border border-gray-200 dark:border-white/15 text-gray-800 dark:text-white font-medium shadow-sm">
+                                {step}
+                              </span>
+                              {sIdx < sArr.length - 1 && (
+                                <span className="text-orange-700 dark:text-orange-400 font-bold">→</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
 
-                    <h3 className="text-2xl font-bold text-dark dark:text-white">
-                      {servicesIntro.cardSoftwareHouse?.title || "Pengembangan Perangkat Lunak (Software House)"}
-                    </h3>
-                    <p className="mt-3 text-gray-700 dark:text-white/85 text-sm md:text-base leading-relaxed max-w-xl">
-                      {servicesIntro.cardSoftwareHouse?.desc || "Pengembangan aplikasi custom skala enterprise dari tahap perancangan arsitektur, rekayasa kode, integrasi REST API & Microservices, hingga peluncuran sistem digital yang tangguh."}
-                    </p>
+                    <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10 flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex flex-wrap gap-2 text-xs">
+                        {(servicesIntro.cardSoftwareHouse?.tags && servicesIntro.cardSoftwareHouse.tags.length > 0
+                          ? servicesIntro.cardSoftwareHouse.tags
+                          : [
+                              "Aplikasi Web",
+                              "Aplikasi Mobile",
+                              "Integrasi Sistem",
+                              "Pengembangan API",
+                              "Pemeliharaan Berkala",
+                            ]
+                        ).map((tech) => (
+                          <span
+                            key={tech}
+                            className="px-2.5 py-1 rounded-md bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-white font-medium border border-gray-200/60 dark:border-white/10"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                      <Link
+                        href={servicesIntro.cardSoftwareHouse?.linkUrl || "/services#software-house"}
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-700 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 transition-colors group"
+                      >
+                        {servicesIntro.cardSoftwareHouse?.linkText || "Pelajari Selengkapnya"}
+                        <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </Link>
+                    </div>
+                  </div>
+                </SpotlightCard>
+              </ScrollReveal>
 
-                    {/* Interactive Architecture Mockup */}
-                    <div className="mt-6 p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10 text-xs text-gray-800 dark:text-white space-y-2.5">
-                      <div className="flex items-center justify-between text-gray-700 dark:text-white/70 border-b border-gray-200/80 dark:border-white/10 pb-2">
-                        <span className="flex items-center gap-2 text-dark dark:text-white font-medium">
-                          <Terminal className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
-                          <span>Alur Arsitektur Rekayasa Sistem</span>
-                        </span>
-                        <span className="text-[10px] text-emerald-800 dark:text-emerald-300 font-sans font-semibold bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-200/70 dark:border-emerald-800/50 px-2 py-0.5 rounded">
-                          Pengiriman Berkelanjutan
+              {/* Bento Card 2: IT Consultant (Span 1) */}
+              <ScrollReveal delay={0.15}>
+                <SpotlightCard className="h-full">
+                  <div className="p-8 flex flex-col justify-between h-full">
+                    <div>
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/20">
+                          <IconPillar2 className="w-7 h-7 text-white" />
+                        </div>
+                        <span className="text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1.5 rounded-full uppercase tracking-wider">
+                          {servicesIntro.cardConsultant?.badge || "Konsultasi Strategis"}
                         </span>
                       </div>
-                      <div className="flex flex-wrap items-center gap-2 pt-1 font-sans text-xs">
-                        {(servicesIntro.cardSoftwareHouse?.pipelineSteps && servicesIntro.cardSoftwareHouse.pipelineSteps.length > 0
-                          ? servicesIntro.cardSoftwareHouse.pipelineSteps
-                          : ["Aplikasi Web & Mobile", "REST API & Microservices", "Basis Data PostgreSQL / Oracle"]
-                        ).map((step, sIdx, sArr) => (
-                          <div key={sIdx} className="flex items-center gap-2">
-                            <span className="px-2.5 py-1 rounded-md bg-white dark:bg-[#1a1a32] border border-gray-200 dark:border-white/15 text-gray-800 dark:text-white font-medium shadow-sm">
-                              {step}
+
+                      <h3 className="text-xl font-bold text-dark dark:text-white">
+                        {servicesIntro.cardConsultant?.title || "Konsultan Teknologi Informasi"}
+                      </h3>
+                      <p className="mt-3 text-gray-700 dark:text-white/85 text-sm leading-relaxed">
+                        {servicesIntro.cardConsultant?.desc ||
+                          "Layanan konsultasi TI strategis untuk membantu organisasi merencanakan, merancang arsitektur, dan memformulasikan cetak biru digital yang tepat guna."}
+                      </p>
+
+                      <ul className="mt-6 space-y-2.5 text-xs text-gray-700 dark:text-white/90">
+                        {(servicesIntro.cardConsultant?.items && servicesIntro.cardConsultant.items.length > 0
+                          ? servicesIntro.cardConsultant.items
+                          : [
+                              "Analisis kebutuhan sistem informasi",
+                              "Perencanaan arsitektur TI enterprise",
+                              "Audit infrastruktur & keamanan teknologi",
+                              "Rekomendasi solusi & peta jalan digital",
+                              "Pendampingan implementasi kesistemanan",
+                            ]
+                        ).map((item) => (
+                          <li key={item} className="flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10">
+                      <Link
+                        href={servicesIntro.cardConsultant?.linkUrl || "/services#it-consultant"}
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-700 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 transition-colors group"
+                      >
+                        {servicesIntro.cardConsultant?.linkText || "Detail Konsultasi"}
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </Link>
+                    </div>
+                  </div>
+                </SpotlightCard>
+              </ScrollReveal>
+
+              {/* Bento Card 3: IT Supplier (Span 1) */}
+              <ScrollReveal delay={0.2}>
+                <SpotlightCard className="h-full">
+                  <div className="p-8 flex flex-col justify-between h-full">
+                    <div>
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/20">
+                          <IconPillar3 className="w-7 h-7 text-white" />
+                        </div>
+                        <span className="text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1.5 rounded-full uppercase tracking-wider">
+                          {servicesIntro.cardSupplier?.badge || "Perangkat Keras & Jaringan"}
+                        </span>
+                      </div>
+
+                      <h3 className="text-xl font-bold text-dark dark:text-white">
+                        {servicesIntro.cardSupplier?.title || "Pengadaan Perangkat TI (IT Supplier)"}
+                      </h3>
+                      <p className="mt-3 text-gray-700 dark:text-white/85 text-sm leading-relaxed">
+                        {servicesIntro.cardSupplier?.desc ||
+                          "Penyediaan perangkat keras dan perangkat lunak berkualitas tinggi dari vendor terpercaya dengan garansi resmi dan dukungan teknis terpadu."}
+                      </p>
+
+                      <ul className="mt-6 space-y-2.5 text-xs text-gray-700 dark:text-white/90">
+                        {(servicesIntro.cardSupplier?.items && servicesIntro.cardSupplier.items.length > 0
+                          ? servicesIntro.cardSupplier.items
+                          : [
+                              "Perangkat server & infrastruktur jaringan",
+                              "Komputer desktop, laptop & periferal kerja",
+                              "Lisensi & langganan software resmi",
+                              "Instalasi, konfigurasi & pengujian perangkat",
+                              "Layanan purna jual & pemeliharaan berkala",
+                            ]
+                        ).map((item) => (
+                          <li key={item} className="flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10">
+                      <Link
+                        href={servicesIntro.cardSupplier?.linkUrl || "/services#it-supplier"}
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-700 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 transition-colors group"
+                      >
+                        {servicesIntro.cardSupplier?.linkText || "Katalog Pengadaan"}
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </Link>
+                    </div>
+                  </div>
+                </SpotlightCard>
+              </ScrollReveal>
+
+              {/* Bento Card 4: Prinsip Kerja FOCUS (Span 2) */}
+              <ScrollReveal delay={0.25} className="md:col-span-2">
+                <SpotlightCard className="h-full">
+                  <div className="p-8 md:p-10 flex flex-col justify-between h-full bg-white dark:bg-[#16162c] text-dark dark:text-white">
+                    <div>
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/20">
+                          <Shield className="w-7 h-7 text-white" />
+                        </div>
+                        <span className="text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1.5 rounded-full uppercase tracking-wider">
+                          {servicesIntro.cardFocus?.badge || "Budaya Kerja & Standar SLA"}
+                        </span>
+                      </div>
+
+                      <h3 className="text-2xl font-bold text-dark dark:text-white">
+                        {servicesIntro.cardFocus?.title || "Prinsip Kerja FOCUS"}
+                      </h3>
+                      <p className="mt-2 text-gray-700 dark:text-white/85 text-sm md:text-base leading-relaxed max-w-xl">
+                        {servicesIntro.cardFocus?.desc ||
+                          "Setiap tahapan kolaborasi kami berakar pada 5 pilar keunggulan operasional:"}
+                      </p>
+
+                      {/* FOCUS Pill Row */}
+                      <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
+                        {(servicesIntro.cardFocus?.focusItems && servicesIntro.cardFocus.focusItems.length > 0
+                          ? servicesIntro.cardFocus.focusItems
+                          : [
+                              { letter: "F", word: "Focus", desc: "Kebutuhan klien" },
+                              { letter: "O", word: "On Time", desc: "Tepat waktu" },
+                              { letter: "C", word: "Customer", desc: "Kepuasan pelanggan" },
+                              { letter: "U", word: "Update", desc: "Teknologi terkini" },
+                              { letter: "S", word: "Synergy", desc: "Sinergi tim maksimal" },
+                            ]
+                        ).map((item) => (
+                          <div
+                            key={item.word}
+                            className="p-3 rounded-xl bg-orange-50/70 dark:bg-[#121222] border border-orange-200/70 dark:border-white/10 hover:border-orange-500/40 text-center transition-all"
+                          >
+                            <span className="text-xl font-black text-orange-700 dark:text-orange-400 block">
+                              {item.letter}
                             </span>
-                            {sIdx < sArr.length - 1 && (
-                              <span className="text-orange-700 dark:text-orange-400 font-bold">→</span>
-                            )}
+                            <span className="text-xs font-bold text-dark dark:text-white block mt-0.5">
+                              {item.word}
+                            </span>
+                            <span className="text-[11px] text-gray-700 dark:text-white/80 block mt-1">{item.desc}</span>
                           </div>
                         ))}
                       </div>
                     </div>
-                  </div>
 
-                  <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10 flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex flex-wrap gap-2 text-xs">
-                      {(servicesIntro.cardSoftwareHouse?.tags && servicesIntro.cardSoftwareHouse.tags.length > 0
-                        ? servicesIntro.cardSoftwareHouse.tags
-                        : ["Aplikasi Web", "Aplikasi Mobile", "Integrasi Sistem", "Pengembangan API", "Pemeliharaan Berkala"]
-                      ).map((tech) => (
-                        <span key={tech} className="px-2.5 py-1 rounded-md bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-white font-medium border border-gray-200/60 dark:border-white/10">
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                    <Link
-                      href={servicesIntro.cardSoftwareHouse?.linkUrl || "/services#software-house"}
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-700 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 transition-colors group"
-                    >
-                      {servicesIntro.cardSoftwareHouse?.linkText || "Pelajari Selengkapnya"}
-                      <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                    </Link>
-                  </div>
-                </div>
-              </SpotlightCard>
-            </ScrollReveal>
-
-            {/* Bento Card 2: IT Consultant (Span 1) */}
-            <ScrollReveal delay={0.15}>
-              <SpotlightCard className="h-full">
-                <div className="p-8 flex flex-col justify-between h-full">
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/20">
-                        <Lightbulb className="w-7 h-7 text-white" />
-                      </div>
-                      <span className="text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1.5 rounded-full uppercase tracking-wider">
-                        {servicesIntro.cardConsultant?.badge || "Konsultasi Strategis"}
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl font-bold text-dark dark:text-white">
-                      {servicesIntro.cardConsultant?.title || "Konsultan Teknologi Informasi"}
-                    </h3>
-                    <p className="mt-3 text-gray-700 dark:text-white/85 text-sm leading-relaxed">
-                      {servicesIntro.cardConsultant?.desc || "Layanan konsultasi TI strategis untuk membantu organisasi merencanakan, merancang arsitektur, dan memformulasikan cetak biru digital yang tepat guna."}
-                    </p>
-
-                    <ul className="mt-6 space-y-2.5 text-xs text-gray-700 dark:text-white/90">
-                      {(servicesIntro.cardConsultant?.items && servicesIntro.cardConsultant.items.length > 0
-                        ? servicesIntro.cardConsultant.items
-                        : [
-                            "Analisis kebutuhan sistem informasi",
-                            "Perencanaan arsitektur TI enterprise",
-                            "Audit infrastruktur & keamanan teknologi",
-                            "Rekomendasi solusi & peta jalan digital",
-                            "Pendampingan implementasi kesistemanan",
-                          ]
-                      ).map((item) => (
-                        <li key={item} className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10">
-                    <Link
-                      href={servicesIntro.cardConsultant?.linkUrl || "/services#it-consultant"}
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-700 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 transition-colors group"
-                    >
-                      {servicesIntro.cardConsultant?.linkText || "Detail Konsultasi"}
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                  </div>
-                </div>
-              </SpotlightCard>
-            </ScrollReveal>
-
-            {/* Bento Card 3: IT Supplier (Span 1) */}
-            <ScrollReveal delay={0.2}>
-              <SpotlightCard className="h-full">
-                <div className="p-8 flex flex-col justify-between h-full">
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/20">
-                        <Monitor className="w-7 h-7 text-white" />
-                      </div>
-                      <span className="text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1.5 rounded-full uppercase tracking-wider">
-                        {servicesIntro.cardSupplier?.badge || "Perangkat Keras & Jaringan"}
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl font-bold text-dark dark:text-white">
-                      {servicesIntro.cardSupplier?.title || "Pengadaan Perangkat TI (IT Supplier)"}
-                    </h3>
-                    <p className="mt-3 text-gray-700 dark:text-white/85 text-sm leading-relaxed">
-                      {servicesIntro.cardSupplier?.desc || "Penyediaan perangkat keras dan perangkat lunak berkualitas tinggi dari vendor terpercaya dengan garansi resmi dan dukungan teknis terpadu."}
-                    </p>
-
-                    <ul className="mt-6 space-y-2.5 text-xs text-gray-700 dark:text-white/90">
-                      {(servicesIntro.cardSupplier?.items && servicesIntro.cardSupplier.items.length > 0
-                        ? servicesIntro.cardSupplier.items
-                        : [
-                            "Perangkat server & infrastruktur jaringan",
-                            "Komputer desktop, laptop & periferal kerja",
-                            "Lisensi & langganan software resmi",
-                            "Instalasi, konfigurasi & pengujian perangkat",
-                            "Layanan purna jual & pemeliharaan berkala",
-                          ]
-                      ).map((item) => (
-                        <li key={item} className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10">
-                    <Link
-                      href={servicesIntro.cardSupplier?.linkUrl || "/services#it-supplier"}
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-700 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 transition-colors group"
-                    >
-                      {servicesIntro.cardSupplier?.linkText || "Katalog Pengadaan"}
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </Link>
-                  </div>
-                </div>
-              </SpotlightCard>
-            </ScrollReveal>
-
-            {/* Bento Card 4: Prinsip Kerja FOCUS (Span 2) */}
-            <ScrollReveal delay={0.25} className="md:col-span-2">
-              <SpotlightCard className="h-full">
-                <div className="p-8 md:p-10 flex flex-col justify-between h-full bg-white dark:bg-[#16162c] text-dark dark:text-white">
-                  <div>
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/20">
-                        <Shield className="w-7 h-7 text-white" />
-                      </div>
-                      <span className="text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1.5 rounded-full uppercase tracking-wider">
-                        {servicesIntro.cardFocus?.badge || "Budaya Kerja & Standar SLA"}
-                      </span>
-                    </div>
-
-                    <h3 className="text-2xl font-bold text-dark dark:text-white">
-                      {servicesIntro.cardFocus?.title || "Prinsip Kerja FOCUS"}
-                    </h3>
-                    <p className="mt-2 text-gray-700 dark:text-white/85 text-sm md:text-base leading-relaxed max-w-xl">
-                      {servicesIntro.cardFocus?.desc || "Setiap tahapan kolaborasi kami berakar pada 5 pilar keunggulan operasional:"}
-                    </p>
-
-                    {/* FOCUS Pill Row */}
-                    <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
-                      {(servicesIntro.cardFocus?.focusItems && servicesIntro.cardFocus.focusItems.length > 0
-                        ? servicesIntro.cardFocus.focusItems
-                        : [
-                            { letter: "F", word: "Focus", desc: "Kebutuhan klien" },
-                            { letter: "O", word: "On Time", desc: "Tepat waktu" },
-                            { letter: "C", word: "Customer", desc: "Kepuasan pelanggan" },
-                            { letter: "U", word: "Update", desc: "Teknologi terkini" },
-                            { letter: "S", word: "Synergy", desc: "Sinergi tim maksimal" },
-                          ]
-                      ).map((item) => (
-                        <div
-                          key={item.word}
-                          className="p-3 rounded-xl bg-orange-50/70 dark:bg-[#121222] border border-orange-200/70 dark:border-white/10 hover:border-orange-500/40 text-center transition-all"
-                        >
-                          <span className="text-xl font-black text-orange-700 dark:text-orange-400 block">{item.letter}</span>
-                          <span className="text-xs font-bold text-dark dark:text-white block mt-0.5">{item.word}</span>
-                          <span className="text-[11px] text-gray-700 dark:text-white/80 block mt-1">{item.desc}</span>
-                        </div>
-                      ))}
+                    <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10 flex items-center justify-between">
+                      <p className="text-xs text-gray-700 dark:text-white/80">
+                        {servicesIntro.cardFocus?.footerText || "Terpercaya menangani sistem kementerian sejak 2006"}
+                      </p>
+                      <Link
+                        href={servicesIntro.cardFocus?.linkUrl || "/about"}
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-700 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 transition-colors group"
+                      >
+                        {servicesIntro.cardFocus?.linkText || "Kenali CITS Lebih Dekat"}
+                        <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </Link>
                     </div>
                   </div>
+                </SpotlightCard>
+              </ScrollReveal>
+            </div>
 
-                  <div className="mt-8 pt-6 border-t border-gray-100 dark:border-white/10 flex items-center justify-between">
-                    <p className="text-xs text-gray-700 dark:text-white/80">
-                      {servicesIntro.cardFocus?.footerText || "Terpercaya menangani sistem kementerian sejak 2006"}
-                    </p>
-                    <Link
-                      href={servicesIntro.cardFocus?.linkUrl || "/about"}
-                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-700 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 transition-colors group"
-                    >
-                      {servicesIntro.cardFocus?.linkText || "Kenali CITS Lebih Dekat"}
-                      <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                    </Link>
-                  </div>
-                </div>
-              </SpotlightCard>
+            {/* Bottom Bar to Full Services Page */}
+            <ScrollReveal delay={0.25}>
+              <div className="text-center mt-12">
+                <Link
+                  href={servicesIntro.bottomCtaLink || "/services"}
+                  className="group inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white text-sm font-semibold transition-all shadow-lg shadow-orange-600/25 hover:shadow-xl hover:shadow-orange-600/35 hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  <span>{servicesIntro.bottomCtaText || "Lihat Alur Kerja & Spesifikasi Lengkap Layanan"}</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
             </ScrollReveal>
           </div>
-
-          {/* Bottom Bar to Full Services Page */}
-          <ScrollReveal delay={0.25}>
-            <div className="text-center mt-12">
-              <Link
-                href={servicesIntro.bottomCtaLink || "/services"}
-                className="group inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white text-sm font-semibold transition-all shadow-lg shadow-orange-600/25 hover:shadow-xl hover:shadow-orange-600/35 hover:-translate-y-0.5 active:translate-y-0"
-              >
-                <span>{servicesIntro.bottomCtaText || "Lihat Alur Kerja & Spesifikasi Lengkap Layanan"}</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-            </div>
-          </ScrollReveal>
-        </div>
-      </section>
+        </section>
       )}
 
       {/* Featured Products Bento Grid Section */}
@@ -478,7 +540,8 @@ export default function Home() {
                   )}
                 </h2>
                 <p className="mt-4 text-gray-700 dark:text-white/85 text-sm md:text-base leading-relaxed">
-                  {productsIntro?.subtitle || "Platform kesistemanan yang telah teruji melayani jutaan transaksi data di berbagai kementerian dan institusi nasional."}
+                  {productsIntro?.subtitle ||
+                    "Platform kesistemanan yang telah teruji melayani jutaan transaksi data di berbagai kementerian dan institusi nasional."}
                 </p>
               </div>
             </ScrollReveal>
@@ -503,7 +566,8 @@ export default function Home() {
                         {productsIntro?.card1?.title || "CITS FleetTrack™ - Manajemen Armada & Telemetri"}
                       </h3>
                       <p className="mt-3 text-gray-700 dark:text-white/85 text-sm md:text-base leading-relaxed max-w-xl">
-                        {productsIntro?.card1?.desc || "Platform pelacakan armada kendaraan waktu nyata untuk optimalisasi logistik dan pemantauan operasional. Dilengkapi monitoring lokasi presisi, efisiensi bahan bakar, dan mitigasi risiko armada."}
+                        {productsIntro?.card1?.desc ||
+                          "Platform pelacakan armada kendaraan waktu nyata untuk optimalisasi logistik dan pemantauan operasional. Dilengkapi monitoring lokasi presisi, efisiensi bahan bakar, dan mitigasi risiko armada."}
                       </p>
 
                       {/* Features Grid */}
@@ -517,9 +581,14 @@ export default function Home() {
                               { title: "Peringatan Darurat", desc: "Notifikasi insiden instan" },
                             ]
                         ).map((item) => (
-                          <div key={item.title} className="p-3 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10">
+                          <div
+                            key={item.title}
+                            className="p-3 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10"
+                          >
                             <span className="font-bold text-dark dark:text-white block">{item.title}</span>
-                            <span className="text-[11px] text-gray-700 dark:text-white/80 block mt-0.5">{item.desc}</span>
+                            <span className="text-[11px] text-gray-700 dark:text-white/80 block mt-0.5">
+                              {item.desc}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -531,7 +600,10 @@ export default function Home() {
                           ? productsIntro.card1.tags
                           : ["GPS Waktu Nyata", "Geofencing", "Riwayat Rute", "Sistem Peringatan", "Manajemen Armada"]
                         ).map((tag) => (
-                          <span key={tag} className="text-xs bg-orange-50 dark:bg-orange-950/40 text-orange-900 dark:text-orange-300 border border-orange-200/80 dark:border-orange-800/60 font-semibold px-2.5 py-1 rounded-md">
+                          <span
+                            key={tag}
+                            className="text-xs bg-orange-50 dark:bg-orange-950/40 text-orange-900 dark:text-orange-300 border border-orange-200/80 dark:border-orange-800/60 font-semibold px-2.5 py-1 rounded-md"
+                          >
                             {tag}
                           </span>
                         ))}
@@ -566,7 +638,8 @@ export default function Home() {
                         {productsIntro?.card2?.title || "CITS AssetHub™ - Tata Kelola Aset Terpadu"}
                       </h3>
                       <p className="mt-3 text-gray-700 dark:text-white/85 text-sm leading-relaxed">
-                        {productsIntro?.card2?.desc || "Sistem pengelolaan aset perusahaan secara terintegrasi dari pengadaan, penempatan, kalkulasi depresiasi nilai, hingga penghapusan aset siap audit."}
+                        {productsIntro?.card2?.desc ||
+                          "Sistem pengelolaan aset perusahaan secara terintegrasi dari pengadaan, penempatan, kalkulasi depresiasi nilai, hingga penghapusan aset siap audit."}
                       </p>
 
                       <ul className="mt-6 space-y-2.5 text-xs text-gray-700 dark:text-white/90">
@@ -618,7 +691,8 @@ export default function Home() {
                         {productsIntro?.card3?.title || "CITS DocuVault™ - Tata Kelola Arsip & EDMS"}
                       </h3>
                       <p className="mt-3 text-gray-700 dark:text-white/85 text-sm leading-relaxed">
-                        {productsIntro?.card3?.desc || "Sistem digitalisasi dan pengarsipan elektronik untuk mengorganisir, mengamankan, dan mendistribusikan dokumen resmi dengan kontrol versi dan TTE."}
+                        {productsIntro?.card3?.desc ||
+                          "Sistem digitalisasi dan pengarsipan elektronik untuk mengorganisir, mengamankan, dan mendistribusikan dokumen resmi dengan kontrol versi dan TTE."}
                       </p>
 
                       <ul className="mt-6 space-y-2.5 text-xs text-gray-700 dark:text-white/90">
@@ -670,7 +744,8 @@ export default function Home() {
                         {productsIntro?.card4?.title || "CITS GeoSpatial™ & Rangkaian Platform Enterprise"}
                       </h3>
                       <p className="mt-3 text-gray-700 dark:text-white/85 text-sm md:text-base leading-relaxed max-w-xl">
-                        {productsIntro?.card4?.desc || "Platform informasi geografis untuk pemetaan infrastruktur dan analisis spasial, dilengkapi rangkaian solusi perangkat lunak teruji CITS lainnya:"}
+                        {productsIntro?.card4?.desc ||
+                          "Platform informasi geografis untuk pemetaan infrastruktur dan analisis spasial, dilengkapi rangkaian solusi perangkat lunak teruji CITS lainnya:"}
                       </p>
 
                       {/* 4 Additional Products from products/page.tsx */}
@@ -696,7 +771,10 @@ export default function Home() {
                               },
                             ]
                         ).map((subProd) => (
-                          <div key={subProd.name} className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10">
+                          <div
+                            key={subProd.name}
+                            className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10"
+                          >
                             <div className="flex items-center gap-2">
                               <span className="w-2 h-2 rounded-full bg-orange-600 dark:bg-orange-400" />
                               <span className="font-bold text-dark dark:text-white text-sm">{subProd.name}</span>
@@ -713,9 +791,19 @@ export default function Home() {
                       <div className="flex flex-wrap gap-2 text-xs">
                         {(productsIntro?.card4?.tags && productsIntro.card4.tags.length > 0
                           ? productsIntro.card4.tags
-                          : ["CITS FleetTrack", "CITS AssetHub", "CITS DocuVault", "CITS GeoSpatial", "CITS Omnichannel", "CITS SmartGov"]
+                          : [
+                              "CITS FleetTrack",
+                              "CITS AssetHub",
+                              "CITS DocuVault",
+                              "CITS GeoSpatial",
+                              "CITS Omnichannel",
+                              "CITS SmartGov",
+                            ]
                         ).map((tag) => (
-                          <span key={tag} className="text-xs bg-orange-50 dark:bg-orange-950/40 text-orange-900 dark:text-orange-300 border border-orange-200/80 dark:border-orange-800/60 font-semibold px-2.5 py-1 rounded-md">
+                          <span
+                            key={tag}
+                            className="text-xs bg-orange-50 dark:bg-orange-950/40 text-orange-900 dark:text-orange-300 border border-orange-200/80 dark:border-orange-800/60 font-semibold px-2.5 py-1 rounded-md"
+                          >
                             {tag}
                           </span>
                         ))}

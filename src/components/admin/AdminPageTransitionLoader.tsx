@@ -56,9 +56,7 @@ export default function AdminPageTransitionLoader() {
     }
 
     const connection =
-      (navigator as any).connection ||
-      (navigator as any).mozConnection ||
-      (navigator as any).webkitConnection;
+      (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
 
     if (!connection) {
       return {
@@ -119,9 +117,7 @@ export default function AdminPageTransitionLoader() {
 
     const connection =
       typeof navigator !== "undefined" &&
-      ((navigator as any).connection ||
-        (navigator as any).mozConnection ||
-        (navigator as any).webkitConnection);
+      ((navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection);
 
     if (connection && connection.addEventListener) {
       const handleNetChange = () => {
@@ -135,10 +131,20 @@ export default function AdminPageTransitionLoader() {
   }, [detectNetwork]);
 
   // Clean intervals
-  const clearIntervals = () => {
+  const clearIntervals = useCallback(() => {
     if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
     if (safetyTimeoutRef.current) clearTimeout(safetyTimeoutRef.current);
-  };
+  }, []);
+
+  // Complete Navigation Loading
+  const completeLoading = useCallback(() => {
+    clearIntervals();
+    setProgress(100);
+    setTimeout(() => {
+      setIsLoading(false);
+      setProgress(0);
+    }, 240);
+  }, [clearIntervals]);
 
   // Start Navigation Loading with Network-adjusted pacing
   const startLoading = useCallback(
@@ -174,18 +180,8 @@ export default function AdminPageTransitionLoader() {
         completeLoading();
       }, 7000);
     },
-    [detectNetwork]
+    [detectNetwork, clearIntervals, completeLoading]
   );
-
-  // Complete Navigation Loading
-  const completeLoading = useCallback(() => {
-    clearIntervals();
-    setProgress(100);
-    setTimeout(() => {
-      setIsLoading(false);
-      setProgress(0);
-    }, 240);
-  }, []);
 
   // When pathname changes, complete loading smoothly
   useEffect(() => {

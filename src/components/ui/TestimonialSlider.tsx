@@ -71,9 +71,14 @@ export default function TestimonialSlider({ testimonials }: { testimonials: Test
           {testimonials.map((_, i) => (
             <button
               key={i}
-              onClick={() => { setDirection(i > current ? 1 : -1); setCurrent(i); }}
+              onClick={() => {
+                setDirection(i > current ? 1 : -1);
+                setCurrent(i);
+              }}
               className={`h-2.5 rounded-full transition-all cursor-pointer ${
-                i === current ? "bg-orange-600 w-6" : "bg-gray-300 dark:bg-white/30 hover:bg-gray-400 dark:hover:bg-white/50 w-2.5"
+                i === current
+                  ? "bg-orange-600 w-6"
+                  : "bg-gray-300 dark:bg-white/30 hover:bg-gray-400 dark:hover:bg-white/50 w-2.5"
               }`}
               aria-label={`Lihat testimoni ${i + 1}`}
             />

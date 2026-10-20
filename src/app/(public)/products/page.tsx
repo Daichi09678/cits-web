@@ -33,7 +33,7 @@ import GradientText from "@/components/ui/GradientText";
 import GridPattern from "@/components/ui/GridPattern";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
-import { useCitsStore } from "@/database/store";
+import { useCitsStore } from "@/stores/citsStore";
 
 const iconMap: Record<string, any> = {
   Truck,
@@ -236,7 +236,13 @@ const products: ProductItem[] = [
       "Laporan status pengiriman pesan langsung (Real-Time Delivery Report & Fallback)",
       "Manajemen template pesan dinamis, penjadwalan terotomasi, & token verifikasi OTP",
     ],
-    techStack: ["SMPP Protocol", "WhatsApp Business API", "Redis Message Queue", "RESTful Webhooks", "High-Throughput Node Engine"],
+    techStack: [
+      "SMPP Protocol",
+      "WhatsApp Business API",
+      "Redis Message Queue",
+      "RESTful Webhooks",
+      "High-Throughput Node Engine",
+    ],
     specifications: {
       deployment: "Dedicated Gateway Server / Cloud Hybrid",
       architecture: "Asynchronous Queue Worker Engine",
@@ -268,7 +274,13 @@ const products: ProductItem[] = [
       "Katalog layanan permohonan publik dengan pelacakan status berkas real-time",
       "Integrasi gerbang pembayaran resmi (Payment Gateway) untuk retribusi & PAD",
     ],
-    techStack: ["Next.js / TypeScript", "Headless CMS Architecture", "Payment Gateway Gateway", "Edge CDN", "WCAG 2.1 Standard"],
+    techStack: [
+      "Next.js / TypeScript",
+      "Headless CMS Architecture",
+      "Payment Gateway Gateway",
+      "Edge CDN",
+      "WCAG 2.1 Standard",
+    ],
     specifications: {
       deployment: "Government Cloud / Edge CDN",
       architecture: "Headless Decoupled Architecture",
@@ -300,7 +312,13 @@ const products: ProductItem[] = [
       "Pembuat formulir survei dinamis yang mudah dikonfigurasi tanpa koding ulang",
       "Sinkronisasi data terenkripsi otomatis ke server pusat saat tersambung internet",
     ],
-    techStack: ["Offline SQLite", "GPS Tagging Engine", "Data Sync Conflict Resolver", "Android Client", "Encrypted Sync"],
+    techStack: [
+      "Offline SQLite",
+      "GPS Tagging Engine",
+      "Data Sync Conflict Resolver",
+      "Android Client",
+      "Encrypted Sync",
+    ],
     specifications: {
       deployment: "Android Client & Central Cloud Dashboard",
       architecture: "Offline-First Sync Architecture",
@@ -332,7 +350,13 @@ const products: ProductItem[] = [
       "Kemampuan penelusuran data mendalam (Drill-Down Analytics) hingga level unit kerja",
       "Jadwal ekspor otomatis laporan analitik pimpinan dalam format PDF & Spreadsheet",
     ],
-    techStack: ["BI Analytics Engine", "Data Warehouse Schema", "ETL Pipeline", "Interactive Charting", "Role Dashboard"],
+    techStack: [
+      "BI Analytics Engine",
+      "Data Warehouse Schema",
+      "ETL Pipeline",
+      "Interactive Charting",
+      "Role Dashboard",
+    ],
     specifications: {
       deployment: "Private Cloud / On-Premise Server",
       architecture: "Data Warehouse & ETL Pipeline",
@@ -470,9 +494,9 @@ export default function ProductsPage() {
 
           <ScrollReveal delay={0.1}>
             <p className="mt-5 text-gray-700 dark:text-white/85 max-w-3xl mx-auto text-base md:text-lg leading-relaxed">
-              Rangkaian platform perangkat lunak siap pakai dan dapat dikustomisasi, dirancang dengan
-              arsitektur enterprise modular, kepatuhan tata kelola SPBE, dan keamanan siber tinggi untuk
-              mempercepat digitalisasi organisasi Anda.
+              Rangkaian platform perangkat lunak siap pakai dan dapat dikustomisasi, dirancang dengan arsitektur
+              enterprise modular, kepatuhan tata kelola SPBE, dan keamanan siber tinggi untuk mempercepat digitalisasi
+              organisasi Anda.
             </p>
           </ScrollReveal>
 
@@ -480,8 +504,8 @@ export default function ProductsPage() {
           <ScrollReveal delay={0.2}>
             <div className="mt-8 flex flex-wrap justify-center gap-3 text-xs">
               <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15 shadow-sm">
-                <Building2 className="w-4 h-4 text-orange-700 dark:text-orange-400" />
-                8 Rangkaian Solusi Enterprise Siap Pakai
+                <Building2 className="w-4 h-4 text-orange-700 dark:text-orange-400" />8 Rangkaian Solusi Enterprise Siap
+                Pakai
               </span>
               <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15 shadow-sm">
                 <Cpu className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
@@ -539,11 +563,7 @@ export default function ProductsPage() {
               const Icon = getProductIcon(product.icon);
 
               return (
-                <ScrollReveal
-                  key={product.id}
-                  delay={(i % 3) * 0.08}
-                  className="h-full"
-                >
+                <ScrollReveal key={product.id} delay={(i % 3) * 0.08} className="h-full">
                   <div id={product.id} className="h-full scroll-mt-28">
                     <SpotlightCard className="h-full">
                       <article className="p-6 sm:p-7 flex flex-col justify-between h-full bg-white dark:bg-[#16162c] space-y-6">
@@ -622,7 +642,9 @@ export default function ProductsPage() {
                                 Model Deployment:
                               </span>
                               <span className="block font-semibold text-dark dark:text-white mt-0.5 line-clamp-1">
-                                {product.specifications?.deployment ? product.specifications.deployment.split("/")[0] : "Enterprise Cloud"}
+                                {product.specifications?.deployment
+                                  ? product.specifications.deployment.split("/")[0]
+                                  : "Enterprise Cloud"}
                               </span>
                             </div>
                             <div className="p-2.5 rounded-lg bg-slate-100/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10">
@@ -630,7 +652,9 @@ export default function ProductsPage() {
                                 Standar Keamanan:
                               </span>
                               <span className="block font-semibold text-dark dark:text-white mt-0.5 line-clamp-1">
-                                {product.specifications?.security ? product.specifications.security.split("&")[0] : "TLS 1.3 & Auth"}
+                                {product.specifications?.security
+                                  ? product.specifications.security.split("&")[0]
+                                  : "TLS 1.3 & Auth"}
                               </span>
                             </div>
                           </div>
@@ -696,14 +720,12 @@ export default function ProductsPage() {
               <span className="inline-block text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
                 Opsi Implementasi
               </span>
-              <h2
-                id="licensing-heading"
-                className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white"
-              >
+              <h2 id="licensing-heading" className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white">
                 Model Penerapan & Lisensi <GradientText>Fleksibel</GradientText>
               </h2>
               <p className="mt-4 text-gray-700 dark:text-white/85 text-base leading-relaxed">
-                Pilih model deployment dan skema kepemilikan yang paling selaras dengan kebijakan tata kelola teknologi dan anggaran instansi Anda.
+                Pilih model deployment dan skema kepemilikan yang paling selaras dengan kebijakan tata kelola teknologi
+                dan anggaran instansi Anda.
               </p>
             </div>
           </ScrollReveal>
@@ -716,9 +738,7 @@ export default function ProductsPage() {
                     <span className="inline-block text-[11px] font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1 rounded-full uppercase tracking-wider mb-4">
                       {item.badge}
                     </span>
-                    <h3 className="text-xl font-extrabold text-dark dark:text-white">
-                      {item.title}
-                    </h3>
+                    <h3 className="text-xl font-extrabold text-dark dark:text-white">{item.title}</h3>
                     <p className="mt-3 text-xs md:text-sm text-gray-700 dark:text-white/80 leading-relaxed">
                       {item.desc}
                     </p>
@@ -765,14 +785,12 @@ export default function ProductsPage() {
               <span className="inline-block text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
                 Keunggulan Solusi
               </span>
-              <h2
-                id="advantages-heading"
-                className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white"
-              >
+              <h2 id="advantages-heading" className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white">
                 Mengapa Memilih Platform Produk <GradientText>CITS Indonesia?</GradientText>
               </h2>
               <p className="mt-4 text-gray-700 dark:text-white/85 text-base leading-relaxed">
-                Kami membangun produk perangkat lunak dengan rekayasa mandiri yang mengutamakan keberlanjutan pemakaian, kemudahan integrasi, dan kepatuhan hukum jangka panjang.
+                Kami membangun produk perangkat lunak dengan rekayasa mandiri yang mengutamakan keberlanjutan pemakaian,
+                kemudahan integrasi, dan kepatuhan hukum jangka panjang.
               </p>
             </div>
           </ScrollReveal>
@@ -787,9 +805,7 @@ export default function ProductsPage() {
                       <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 mb-4 shadow-sm">
                         <AdvIcon className="w-6 h-6" />
                       </div>
-                      <h3 className="font-bold text-dark dark:text-white text-base">
-                        {adv.title}
-                      </h3>
+                      <h3 className="font-bold text-dark dark:text-white text-base">{adv.title}</h3>
                       <p className="mt-2 text-xs md:text-sm text-gray-700 dark:text-white/80 leading-relaxed">
                         {adv.description}
                       </p>
@@ -825,7 +841,8 @@ export default function ProductsPage() {
                 Ingin Melihat Demo Langsung atau Menyesuaikan Modul Produk?
               </h2>
               <p className="mt-4 text-gray-700 dark:text-white/85 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-                Jadwalkan sesi demonstrasi langsung bersama konsultan teknis CITS Indonesia. Kami siap mempresentasikan kapabilitas platform dan mendiskusikan integrasi dengan sistem Anda.
+                Jadwalkan sesi demonstrasi langsung bersama konsultan teknis CITS Indonesia. Kami siap mempresentasikan
+                kapabilitas platform dan mendiskusikan integrasi dengan sistem Anda.
               </p>
 
               <div className="mt-8 flex flex-wrap justify-center gap-4">
@@ -987,9 +1004,7 @@ export default function ProductsPage() {
                 <span className="block text-[11px] font-bold text-dark dark:text-white uppercase tracking-wider">
                   Target Pengguna Ideal:
                 </span>
-                <p className="mt-1 text-xs text-gray-700 dark:text-white/85">
-                  {activeModalProduct.idealFor}
-                </p>
+                <p className="mt-1 text-xs text-gray-700 dark:text-white/85">{activeModalProduct.idealFor}</p>
               </div>
 
               {/* Modal Footer */}

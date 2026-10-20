@@ -19,7 +19,7 @@ export default function Counter({ value, className = "" }: CounterProps) {
   useEffect(() => {
     if (!isInView) return;
 
-    let start = 0;
+    const start = 0;
     const duration = 2000;
     const startTime = Date.now();
 
