@@ -34,8 +34,8 @@ import GridPattern from "@/components/ui/GridPattern";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import TestimonialSlider from "@/components/ui/TestimonialSlider";
-import { useCitsStore } from "@/database/store";
-import { CaseStudyItem } from "@/database/schema";
+import { useCitsStore } from "@/stores/citsStore";
+import { CaseStudyItem } from "@/types/schema";
 
 export type { CaseStudyItem };
 
@@ -368,12 +368,7 @@ const caseStudies: CaseStudyItem[] = [
       "Konfigurasi Arsitektur Cloud Pendukung Analitik",
       "Dasbor Pemantauan Utilisasi Aset Perangkat Lunak",
     ],
-    techStack: [
-      "Enterprise License Manager",
-      "Cloud Infrastructure",
-      "System Integration",
-      "Audit Trail & Compliance",
-    ],
+    techStack: ["Enterprise License Manager", "Cloud Infrastructure", "System Integration", "Audit Trail & Compliance"],
     deliverables: [
       "Laporan Rekonsiliasi Lisensi Jakarta Smart City",
       "Aktivasi Lisensi Software Analitik Terverifikasi",
@@ -582,9 +577,8 @@ export default function PortfolioPage() {
 
           <ScrollReveal delay={0.1}>
             <p className="mt-5 text-gray-700 dark:text-white/85 max-w-3xl mx-auto text-base md:text-lg leading-relaxed">
-              Dokumentasi proyek nyata bagaimana CITS Indonesia memecahkan tantangan arsitektur,
-              integrasi data, dan keandalan sistem mission-critical bersama kementerian, lembaga tinggi
-              negara, dan BUMN sejak 2006.
+              Dokumentasi proyek nyata bagaimana CITS Indonesia memecahkan tantangan arsitektur, integrasi data, dan
+              keandalan sistem mission-critical bersama kementerian, lembaga tinggi negara, dan BUMN sejak 2006.
             </p>
           </ScrollReveal>
 
@@ -618,7 +612,10 @@ export default function PortfolioPage() {
                     Membutuhkan Paket Perangkat Lunak Siap Pakai?
                   </h4>
                   <p className="text-xs text-gray-600 dark:text-white/75 mt-0.5">
-                    Halaman ini menampilkan <strong className="text-dark dark:text-white">Studi Kasus Proyek Custom & Penugasan Klien</strong>. Untuk modul perangkat lunak mandiri seperti Pelacakan Armada IoT, Manajemen Aset, atau E-Filing, silakan telusuri katalog produk kami.
+                    Halaman ini menampilkan{" "}
+                    <strong className="text-dark dark:text-white">Studi Kasus Proyek Custom & Penugasan Klien</strong>.
+                    Untuk modul perangkat lunak mandiri seperti Pelacakan Armada IoT, Manajemen Aset, atau E-Filing,
+                    silakan telusuri katalog produk kami.
                   </p>
                 </div>
               </div>
@@ -654,7 +651,8 @@ export default function PortfolioPage() {
                 </h2>
               </div>
               <p className="text-xs sm:text-sm text-gray-600 dark:text-white/75 max-w-md">
-                Dua sistem berskala masif yang dipercayakan kepada tim rekayasa CITS Indonesia untuk menjamin kelancaran layanan vital jutaan masyarakat.
+                Dua sistem berskala masif yang dipercayakan kepada tim rekayasa CITS Indonesia untuk menjamin kelancaran
+                layanan vital jutaan masyarakat.
               </p>
             </div>
           </ScrollReveal>
@@ -788,7 +786,8 @@ export default function PortfolioPage() {
                 Seluruh Portofolio <GradientText>Implementasi Klien</GradientText>
               </h2>
               <p className="mt-3 text-gray-700 dark:text-white/85 text-sm md:text-base leading-relaxed">
-                Pilih sektor instansi untuk menelusuri rincian tantangan, solusi arsitektur, dan dampak nyata yang telah kami serahkan.
+                Pilih sektor instansi untuk menelusuri rincian tantangan, solusi arsitektur, dan dampak nyata yang telah
+                kami serahkan.
               </p>
             </div>
           </ScrollReveal>
@@ -824,7 +823,8 @@ export default function PortfolioPage() {
           {/* View Mode & Count Bar */}
           <div className="flex items-center justify-between gap-4 mb-8 flex-wrap">
             <p className="text-xs text-gray-600 dark:text-white/70">
-              Menampilkan <strong className="text-dark dark:text-white font-bold">{filteredProjects.length}</strong> studi kasus terverifikasi
+              Menampilkan <strong className="text-dark dark:text-white font-bold">{filteredProjects.length}</strong>{" "}
+              studi kasus terverifikasi
             </p>
             <div className="inline-flex items-center p-1 rounded-xl bg-slate-100 dark:bg-white/10 border border-gray-200 dark:border-white/15 text-xs font-semibold">
               <button
@@ -856,11 +856,7 @@ export default function PortfolioPage() {
             /* Bento Case Study Cards Grid (100% Symmetrical) */
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-7 items-stretch">
               {filteredProjects.map((project, i) => (
-                <ScrollReveal
-                  key={project.id}
-                  delay={(i % 3) * 0.08}
-                  className="h-full"
-                >
+                <ScrollReveal key={project.id} delay={(i % 3) * 0.08} className="h-full min-w-0">
                   <div id={project.id} className="h-full scroll-mt-28">
                     <SpotlightCard className="h-full flex flex-col">
                       <article className="p-6 sm:p-7 flex flex-col justify-between h-full bg-white dark:bg-[#16162c]">
@@ -995,19 +991,26 @@ export default function PortfolioPage() {
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-[#121222] border-b border-gray-200 dark:border-white/10 text-dark dark:text-white font-bold uppercase tracking-wider text-[11px]">
-                    <th scope="col" className="py-4 px-5">Instansi Klien</th>
-                    <th scope="col" className="py-4 px-5">Judul Penugasan & Sektor</th>
-                    <th scope="col" className="py-4 px-5 hidden md:table-cell">Tantangan & Solusi</th>
-                    <th scope="col" className="py-4 px-5">Capaian Utama (KPI)</th>
-                    <th scope="col" className="py-4 px-5 text-right">Aksi</th>
+                    <th scope="col" className="py-4 px-5">
+                      Instansi Klien
+                    </th>
+                    <th scope="col" className="py-4 px-5">
+                      Judul Penugasan & Sektor
+                    </th>
+                    <th scope="col" className="py-4 px-5 hidden md:table-cell">
+                      Tantangan & Solusi
+                    </th>
+                    <th scope="col" className="py-4 px-5">
+                      Capaian Utama (KPI)
+                    </th>
+                    <th scope="col" className="py-4 px-5 text-right">
+                      Aksi
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-150 dark:divide-white/10 text-gray-700 dark:text-white/85">
                   {filteredProjects.map((project) => (
-                    <tr
-                      key={project.id}
-                      className="hover:bg-slate-50/70 dark:hover:bg-white/5 transition-colors"
-                    >
+                    <tr key={project.id} className="hover:bg-slate-50/70 dark:hover:bg-white/5 transition-colors">
                       {/* Client */}
                       <td className="py-4 px-5 align-top">
                         <div className="flex items-center gap-3">
@@ -1101,14 +1104,12 @@ export default function PortfolioPage() {
               <span className="inline-block text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
                 Capaian Nyata
               </span>
-              <h2
-                id="metrics-heading"
-                className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white"
-              >
+              <h2 id="metrics-heading" className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white">
                 Tolok Ukur Keberhasilan <GradientText>Proyek CITS</GradientText>
               </h2>
               <p className="mt-4 text-gray-700 dark:text-white/85 text-base leading-relaxed">
-                Bukti keandalan operasional dan konsistensi rekayasa sistem yang dirasakan langsung oleh puluhan institusi nasional.
+                Bukti keandalan operasional dan konsistensi rekayasa sistem yang dirasakan langsung oleh puluhan
+                institusi nasional.
               </p>
             </div>
           </ScrollReveal>
@@ -1121,9 +1122,7 @@ export default function PortfolioPage() {
                     <span className="block text-3xl md:text-4xl font-extrabold text-orange-700 dark:text-orange-400">
                       {item.value}
                     </span>
-                    <h3 className="mt-2 font-bold text-dark dark:text-white text-base">
-                      {item.label}
-                    </h3>
+                    <h3 className="mt-2 font-bold text-dark dark:text-white text-base">{item.label}</h3>
                     <p className="mt-2 text-xs md:text-sm text-gray-700 dark:text-white/80 leading-relaxed">
                       {item.description}
                     </p>
@@ -1151,14 +1150,12 @@ export default function PortfolioPage() {
               <span className="inline-block text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
                 Apresiasi Kemitraan
               </span>
-              <h2
-                id="testimonials-heading"
-                className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white"
-              >
+              <h2 id="testimonials-heading" className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white">
                 Apa Kata <GradientText>Klien Kami</GradientText>
               </h2>
               <p className="mt-4 text-gray-700 dark:text-white/85 text-base leading-relaxed">
-                Tanggapan langsung dari pejabat pengadaan dan pimpinan teknologi informasi kementerian serta BUMN atas integritas layanan CITS Indonesia.
+                Tanggapan langsung dari pejabat pengadaan dan pimpinan teknologi informasi kementerian serta BUMN atas
+                integritas layanan CITS Indonesia.
               </p>
             </div>
           </ScrollReveal>
@@ -1187,7 +1184,8 @@ export default function PortfolioPage() {
                 Siap Mengembangkan Solusi Teknologi Informasi untuk Instansi Anda?
               </h2>
               <p className="mt-4 text-gray-700 dark:text-white/85 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-                Diskusikan tantangan arsitektur sistem, integrasi antar-lembaga, atau modernisasi platform digital organisasi Anda bersama tim ahli CITS Indonesia.
+                Diskusikan tantangan arsitektur sistem, integrasi antar-lembaga, atau modernisasi platform digital
+                organisasi Anda bersama tim ahli CITS Indonesia.
               </p>
 
               <div className="mt-8 flex flex-wrap justify-center gap-4">

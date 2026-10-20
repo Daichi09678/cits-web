@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, Bell, Sun, Moon, CheckCircle2, Mail } from "lucide-react";
-import { useCitsStore } from "@/database/store";
+import { Search, Bell, Sun, Moon, CheckCircle2, Mail, Menu } from "lucide-react";
+import { useCitsStore } from "@/stores/citsStore";
+import { toggleAdminSidebar } from "@/lib/adminSidebar";
 
 interface AdminTopbarProps {
   title: string;
@@ -26,21 +27,30 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
   };
 
   return (
-    <header className="h-16 w-full shrink-0 px-6 lg:px-8 bg-white/90 dark:bg-[#151528]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-white/10 flex items-center justify-between sticky top-0 z-30 transition-colors">
-      {/* Title & Page Header */}
-      <div>
-        <h1 className="text-lg font-extrabold text-slate-900 dark:text-white leading-tight">
-          {title}
-        </h1>
-        {description && (
-          <p className="text-xs text-slate-700 dark:text-slate-300">
-            {description}
-          </p>
-        )}
+    <header className="h-16 w-full shrink-0 px-4 sm:px-6 lg:px-8 gap-3 bg-white/90 dark:bg-[#151528]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-white/10 flex items-center justify-between sticky top-0 z-30 transition-colors">
+      {/* Hamburger (mobile/tablet) + Title */}
+      <div className="flex items-center gap-2 min-w-0">
+        <button
+          type="button"
+          onClick={toggleAdminSidebar}
+          title="Buka menu"
+          aria-label="Buka menu navigasi"
+          className="lg:hidden p-2 -ml-1 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors shrink-0"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        <div className="min-w-0">
+          <h1 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-tight truncate">
+            {title}
+          </h1>
+          {description && (
+            <p className="text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 truncate">{description}</p>
+          )}
+        </div>
       </div>
 
       {/* Right Controls (Search, Dark mode, Notifications, Profile) */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {/* Search Bar - Shopeers Style */}
         <div className="relative hidden md:block w-64 lg:w-80">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -81,7 +91,7 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
 
           {/* Notifications Dropdown */}
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#1A1A2E] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 p-4 z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-2rem))] bg-white dark:bg-[#1A1A2E] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 p-4 z-50 animate-in fade-in zoom-in-95 duration-150">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
                 <span className="text-xs font-bold text-slate-900 dark:text-white">
                   Pesan Masuk ({unreadMessages.length})
@@ -109,16 +119,10 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
                       className="block p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 hover:bg-orange-50/50 dark:hover:bg-orange-950/20 transition-all border border-slate-100 dark:border-white/5"
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                          {msg.name}
-                        </span>
-                        <span className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold">
-                          Baru
-                        </span>
+                        <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{msg.name}</span>
+                        <span className="text-[10px] text-orange-600 dark:text-orange-400 font-semibold">Baru</span>
                       </div>
-                      <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-1">
-                        {msg.message}
-                      </p>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-1">{msg.message}</p>
                     </Link>
                   ))
                 )}
@@ -126,7 +130,6 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
             </div>
           )}
         </div>
-
       </div>
     </header>
   );

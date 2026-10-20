@@ -7,11 +7,7 @@ import RealtimeNotificationToast from "@/components/admin/RealtimeNotificationTo
 import AdminPageTransitionLoader from "@/components/admin/AdminPageTransitionLoader";
 import { useAdminAuth } from "@/lib/auth";
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { isAuthenticated, loading } = useAdminAuth();
@@ -38,9 +34,7 @@ export default function AdminLayout({
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0F0F1A]">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-3 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Memuat CITS Back Office...
-          </span>
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Memuat CITS Back Office...</span>
         </div>
       </div>
     );
@@ -60,10 +54,8 @@ export default function AdminLayout({
       <AdminSidebar />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <main className="flex-1 flex flex-col min-w-0">
-          {children}
-        </main>
+      <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
+        <main className="flex-1 flex flex-col min-w-0">{children}</main>
       </div>
 
       {/* Floating Realtime Consultation Notification Toast */}
