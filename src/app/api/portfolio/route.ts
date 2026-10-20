@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
+import { badRequest, readJsonBody } from "@/lib/http";
 
 export async function GET() {
   try {
@@ -12,7 +13,12 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   try {
-    const body = await req.json();
+    const parsed = await readJsonBody(req);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.body;
+    if (!Array.isArray(body) || body.length === 0) {
+      return badRequest("Data portofolio harus berupa array dan tidak boleh kosong.");
+    }
     const updated = await DbRepo.updatePortfolio(body);
     return NextResponse.json({ success: true, data: updated });
   } catch (e: any) {

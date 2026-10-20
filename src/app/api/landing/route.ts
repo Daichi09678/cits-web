@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
+import { badRequest, readJsonBody } from "@/lib/http";
 
 export async function GET() {
   try {
@@ -12,7 +13,15 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   try {
-    const body = await req.json();
+    const parsed = await readJsonBody(req);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.body;
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return badRequest("Data landing page tidak valid.");
+    }
+    if (!body.hero || typeof body.hero !== "object" || !body.cta || typeof body.cta !== "object") {
+      return badRequest("Data landing page tidak lengkap: hero dan cta wajib diisi.");
+    }
     const updated = await DbRepo.updateLandingData(body);
     return NextResponse.json({
       success: true,

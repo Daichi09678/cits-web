@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
-import { ClientPartner } from "@/database/schema";
+import { ClientPartner } from "@/types/schema";
+import { badRequest, missingStringFields, readJsonBody } from "@/lib/http";
 
 export async function GET() {
   try {
@@ -13,7 +14,13 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const parsed = await readJsonBody(req);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.body;
+    const missing = missingStringFields(body, ["name", "category"]);
+    if (missing.length > 0) {
+      return badRequest(`Data mitra tidak lengkap: ${missing.join(", ")}.`);
+    }
     const newClient: ClientPartner = {
       ...body,
       id: body.id || "client-" + Date.now(),

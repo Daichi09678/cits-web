@@ -1,23 +1,52 @@
 import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
 
-export async function PATCH(
-  req: Request,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await context.params;
-    const body = await req.json();
-    const status = body.status;
 
-    if (!["unread", "read", "replied"].includes(status)) {
-      return NextResponse.json({ success: false, message: "Invalid status" }, { status: 400 });
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, message: "Format permintaan tidak valid (JSON rusak)." },
+        { status: 400 }
+      );
     }
 
-    await DbRepo.updateMessageStatus(id, status);
+    const exists = (await DbRepo.getMessages()).some((m) => m.id === id);
+    if (!exists) {
+      return NextResponse.json({ success: false, message: "Pesan tidak ditemukan." }, { status: 404 });
+    }
+
+    const status = body?.status;
+    const dealStage = body?.dealStage;
+    const dealNotes = body?.dealNotes;
+    if (!status && !dealStage) {
+      return NextResponse.json(
+        { success: false, message: "Tidak ada perubahan: isi status atau dealStage." },
+        { status: 400 }
+      );
+    }
+
+    if (status) {
+      if (!["unread", "read", "replied"].includes(status)) {
+        return NextResponse.json({ success: false, message: "Invalid status" }, { status: 400 });
+      }
+      await DbRepo.updateMessageStatus(id, status);
+    }
+
+    if (dealStage) {
+      if (!["baru", "diskusi", "proses", "kesepakatan", "selesai", "batal"].includes(dealStage)) {
+        return NextResponse.json({ success: false, message: "Invalid deal stage" }, { status: 400 });
+      }
+      await DbRepo.updateMessageStage(id, dealStage, dealNotes);
+    }
+
     return NextResponse.json({
       success: true,
-      message: `Status pesan berhasil diperbarui menjadi ${status}`,
+      message: `Status/tahap pesan berhasil diperbarui`,
     });
   } catch (e: any) {
     return NextResponse.json({ success: false, message: e.message }, { status: 500 });

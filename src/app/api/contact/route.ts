@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
+import { badRequest, missingStringFields, readJsonBody } from "@/lib/http";
 
 export async function GET() {
   try {
@@ -12,7 +13,13 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   try {
-    const body = await req.json();
+    const parsed = await readJsonBody(req);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.body;
+    const missing = missingStringFields(body, ["address", "phone", "email"]);
+    if (missing.length > 0) {
+      return badRequest(`Data kontak tidak lengkap: ${missing.join(", ")}.`);
+    }
     const updated = await DbRepo.updateContactInfo(body);
     return NextResponse.json({
       success: true,
