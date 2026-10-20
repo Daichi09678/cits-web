@@ -36,9 +36,9 @@ import {
   Filter,
 } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
-import { useCitsStore } from "@/database/store";
-import { LandingPageData, SectionVisibility, ClientPartner } from "@/database/schema";
-import { initialLandingPageData, defaultSectionVisibility } from "@/database/initialData";
+import { useCitsStore } from "@/stores/citsStore";
+import { LandingPageData, SectionVisibility, ClientPartner } from "@/types/schema";
+import { initialLandingPageData, defaultSectionVisibility } from "@/data/initialData";
 
 export default function AdminLandingPage() {
   const { landingData, clients, actions } = useCitsStore();
@@ -163,25 +163,32 @@ export default function AdminLandingPage() {
   });
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  // Snapshot data terakhir yang sudah disinkronkan ke form (perbandingan isi).
+  const lastSyncedLandingRef = useRef<string>("");
 
-  // Sync state when store hydrates
+  // Sync state saat store terisi / berubah.
+  // PENTING: store mengirim objek baru setiap event "cits-data-updated"
+  // (termasuk polling inbox tiap 3 detik). Tanpa perbandingan isi, effect ini
+  // me-reset form terus-menerus dan menghapus edit yang belum disimpan.
   useEffect(() => {
-    if (landingData) {
-      setFormData({
-        ...initialLandingPageData,
-        ...landingData,
-        sectionVisibility: {
-          ...defaultSectionVisibility,
-          ...(landingData.sectionVisibility || {}),
-        },
-        hero: { ...initialLandingPageData.hero, ...(landingData.hero || {}) },
-        highlights: landingData.highlights || initialLandingPageData.highlights,
-        servicesIntro: { ...initialLandingPageData.servicesIntro, ...(landingData.servicesIntro || {}) },
-        productsIntro: { ...initialLandingPageData.productsIntro, ...(landingData.productsIntro || {}) },
-        clientsIntro: { ...initialLandingPageData.clientsIntro, ...(landingData.clientsIntro || {}) },
-        cta: { ...initialLandingPageData.cta, ...(landingData.cta || {}) },
-      });
-    }
+    if (!landingData) return;
+    const incoming = JSON.stringify(landingData);
+    if (incoming === lastSyncedLandingRef.current) return;
+    lastSyncedLandingRef.current = incoming;
+    setFormData({
+      ...initialLandingPageData,
+      ...landingData,
+      sectionVisibility: {
+        ...defaultSectionVisibility,
+        ...(landingData.sectionVisibility || {}),
+      },
+      hero: { ...initialLandingPageData.hero, ...(landingData.hero || {}) },
+      highlights: landingData.highlights || initialLandingPageData.highlights,
+      servicesIntro: { ...initialLandingPageData.servicesIntro, ...(landingData.servicesIntro || {}) },
+      productsIntro: { ...initialLandingPageData.productsIntro, ...(landingData.productsIntro || {}) },
+      clientsIntro: { ...initialLandingPageData.clientsIntro, ...(landingData.clientsIntro || {}) },
+      cta: { ...initialLandingPageData.cta, ...(landingData.cta || {}) },
+    });
   }, [landingData]);
 
   // Section Visibility Toggle Handler
@@ -196,65 +203,55 @@ export default function AdminLandingPage() {
     });
   };
 
-  // Handlers for Typewriter Words
+  // Handlers for Typewriter Words.
+  // Semua memakai functional update agar klik beruntun tidak memakai state basi
+  // (dua klik cepat sebelumnya hanya menambah satu item).
   const handleTypewriterChange = (index: number, val: string) => {
-    const updated = [...formData.hero.typewriterWords];
-    updated[index] = val;
-    setFormData({
-      ...formData,
-      hero: { ...formData.hero, typewriterWords: updated },
+    setFormData((prev) => {
+      const words = [...prev.hero.typewriterWords];
+      words[index] = val;
+      return { ...prev, hero: { ...prev.hero, typewriterWords: words } };
     });
   };
 
   const addTypewriterWord = () => {
-    setFormData({
-      ...formData,
-      hero: {
-        ...formData.hero,
-        typewriterWords: [...formData.hero.typewriterWords, "Solusi Unggulan Baru"],
-      },
-    });
+    setFormData((prev) => ({
+      ...prev,
+      hero: { ...prev.hero, typewriterWords: [...prev.hero.typewriterWords, "Solusi Unggulan Baru"] },
+    }));
   };
 
   const removeTypewriterWord = (index: number) => {
-    if (formData.hero.typewriterWords.length <= 1) return;
-    setFormData({
-      ...formData,
-      hero: {
-        ...formData.hero,
-        typewriterWords: formData.hero.typewriterWords.filter((_, i) => i !== index),
-      },
+    setFormData((prev) => {
+      if (prev.hero.typewriterWords.length <= 1) return prev;
+      return {
+        ...prev,
+        hero: { ...prev.hero, typewriterWords: prev.hero.typewriterWords.filter((_, i) => i !== index) },
+      };
     });
   };
 
   // Handlers for Trust Badges
   const handleTrustBadgeChange = (index: number, val: string) => {
-    const updated = [...formData.hero.trustBadges];
-    updated[index] = val;
-    setFormData({
-      ...formData,
-      hero: { ...formData.hero, trustBadges: updated },
+    setFormData((prev) => {
+      const badges = [...prev.hero.trustBadges];
+      badges[index] = val;
+      return { ...prev, hero: { ...prev.hero, trustBadges: badges } };
     });
   };
 
   const addTrustBadge = () => {
-    setFormData({
-      ...formData,
-      hero: {
-        ...formData.hero,
-        trustBadges: [...formData.hero.trustBadges, "Poin Kepercayaan Baru"],
-      },
-    });
+    setFormData((prev) => ({
+      ...prev,
+      hero: { ...prev.hero, trustBadges: [...prev.hero.trustBadges, "Poin Kepercayaan Baru"] },
+    }));
   };
 
   const removeTrustBadge = (index: number) => {
-    setFormData({
-      ...formData,
-      hero: {
-        ...formData.hero,
-        trustBadges: formData.hero.trustBadges.filter((_, i) => i !== index),
-      },
-    });
+    setFormData((prev) => ({
+      ...prev,
+      hero: { ...prev.hero, trustBadges: prev.hero.trustBadges.filter((_, i) => i !== index) },
+    }));
   };
 
   // Handlers for Highlights / Stats
@@ -265,17 +262,16 @@ export default function AdminLandingPage() {
   };
 
   const addStatItem = () => {
-    setFormData({
-      ...formData,
-      highlights: [...formData.highlights, { label: "Indikator Baru", value: "100+", isActive: true }],
-    });
+    setFormData((prev) => ({
+      ...prev,
+      highlights: [...prev.highlights, { label: "Indikator Baru", value: "100+", isActive: true }],
+    }));
   };
 
   const removeStatItem = (index: number) => {
-    if (formData.highlights.length <= 1) return;
-    setFormData({
-      ...formData,
-      highlights: formData.highlights.filter((_, i) => i !== index),
+    setFormData((prev) => {
+      if (prev.highlights.length <= 1) return prev;
+      return { ...prev, highlights: prev.highlights.filter((_, i) => i !== index) };
     });
   };
 
@@ -626,10 +622,22 @@ export default function AdminLandingPage() {
   // Product Card 4 helpers
   const handleProd4SubProductChange = (idx: number, field: "name" | "desc", val: string) => {
     const current = formData.productsIntro?.card4?.subProducts || [
-      { name: "CITS GeoSpatial™", desc: "Peta interaktif multi-layer, analisis spasial wilayah & monitoring infrastruktur utilitas." },
-      { name: "CITS Omnichannel Gateway™", desc: "Pengiriman pesan massal WhatsApp API & SMS OTP dengan throughput tinggi dan fallback otomatis." },
-      { name: "CITS SmartGov Portal™", desc: "Portal pelayanan publik satu pintu, pelacakan permohonan berkas & gerbang retribusi SPBE." },
-      { name: "CITS Executive BI™", desc: "Dasbor analitik eksekutif real-time, agregasi multi-database & perumusan keputusan pimpinan." },
+      {
+        name: "CITS GeoSpatial™",
+        desc: "Peta interaktif multi-layer, analisis spasial wilayah & monitoring infrastruktur utilitas.",
+      },
+      {
+        name: "CITS Omnichannel Gateway™",
+        desc: "Pengiriman pesan massal WhatsApp API & SMS OTP dengan throughput tinggi dan fallback otomatis.",
+      },
+      {
+        name: "CITS SmartGov Portal™",
+        desc: "Portal pelayanan publik satu pintu, pelacakan permohonan berkas & gerbang retribusi SPBE.",
+      },
+      {
+        name: "CITS Executive BI™",
+        desc: "Dasbor analitik eksekutif real-time, agregasi multi-database & perumusan keputusan pimpinan.",
+      },
     ];
     const updated = [...current];
     updated[idx] = { ...updated[idx], [field]: val };
@@ -731,7 +739,7 @@ export default function AdminLandingPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
             <Link
               href="/"
               target="_blank"
@@ -880,7 +888,9 @@ export default function AdminLandingPage() {
               {/* Section Active Status Bar */}
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full ${vis.hero ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full ${vis.hero ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}
+                  />
                   <span className="text-xs font-bold text-slate-800 dark:text-white">
                     Status Section Hero: {vis.hero ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
                   </span>
@@ -1055,9 +1065,7 @@ export default function AdminLandingPage() {
                     </span>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-[10px] font-semibold text-slate-500 mb-1">
-                          Teks Tombol
-                        </label>
+                        <label className="block text-[10px] font-semibold text-slate-500 mb-1">Teks Tombol</label>
                         <input
                           type="text"
                           value={formData.hero.primaryCtaText}
@@ -1071,9 +1079,7 @@ export default function AdminLandingPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-semibold text-slate-500 mb-1">
-                          Link Tujuan
-                        </label>
+                        <label className="block text-[10px] font-semibold text-slate-500 mb-1">Link Tujuan</label>
                         <input
                           type="text"
                           value={formData.hero.primaryCtaLink}
@@ -1095,9 +1101,7 @@ export default function AdminLandingPage() {
                     </span>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-[10px] font-semibold text-slate-500 mb-1">
-                          Teks Tombol
-                        </label>
+                        <label className="block text-[10px] font-semibold text-slate-500 mb-1">Teks Tombol</label>
                         <input
                           type="text"
                           value={formData.hero.secondaryCtaText}
@@ -1111,9 +1115,7 @@ export default function AdminLandingPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-semibold text-slate-500 mb-1">
-                          Link Tujuan
-                        </label>
+                        <label className="block text-[10px] font-semibold text-slate-500 mb-1">Link Tujuan</label>
                         <input
                           type="text"
                           value={formData.hero.secondaryCtaLink}
@@ -1247,9 +1249,12 @@ export default function AdminLandingPage() {
               {/* Section Active Status Bar */}
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full ${vis.highlights ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full ${vis.highlights ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}
+                  />
                   <span className="text-xs font-bold text-slate-800 dark:text-white">
-                    Status Section Angka Capaian: {vis.highlights ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
+                    Status Section Angka Capaian:{" "}
+                    {vis.highlights ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
                   </span>
                 </div>
                 <button
@@ -1305,7 +1310,9 @@ export default function AdminLandingPage() {
                             : "bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-400"
                         }`}
                       >
-                        <span className={`w-1.5 h-1.5 rounded-full ${stat.isActive !== false ? "bg-emerald-500" : "bg-slate-400"}`} />
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full ${stat.isActive !== false ? "bg-emerald-500" : "bg-slate-400"}`}
+                        />
                         <span>{stat.isActive !== false ? "Aktif" : "Non-aktif"}</span>
                       </button>
 
@@ -1335,9 +1342,7 @@ export default function AdminLandingPage() {
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">
-                        Label Keterangan
-                      </label>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">Label Keterangan</label>
                       <input
                         type="text"
                         value={stat.label}
@@ -1358,9 +1363,12 @@ export default function AdminLandingPage() {
               {/* Section Active Status Bar */}
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full ${vis.services ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full ${vis.services ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}
+                  />
                   <span className="text-xs font-bold text-slate-800 dark:text-white">
-                    Status Section Pilar Layanan: {vis.services ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
+                    Status Section Pilar Layanan:{" "}
+                    {vis.services ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
                   </span>
                 </div>
                 <button
@@ -1488,7 +1496,10 @@ export default function AdminLandingPage() {
                       <label className="block text-[10px] font-semibold text-slate-500 mb-1">Judul Kartu</label>
                       <input
                         type="text"
-                        value={formData.servicesIntro.cardSoftwareHouse?.title || "Pengembangan Perangkat Lunak (Software House)"}
+                        value={
+                          formData.servicesIntro.cardSoftwareHouse?.title ||
+                          "Pengembangan Perangkat Lunak (Software House)"
+                        }
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -1509,7 +1520,10 @@ export default function AdminLandingPage() {
                       <label className="block text-[10px] font-semibold text-slate-500 mb-1">Deskripsi</label>
                       <textarea
                         rows={2}
-                        value={formData.servicesIntro.cardSoftwareHouse?.desc || "Pengembangan aplikasi custom skala enterprise dari tahap perancangan arsitektur, rekayasa kode, integrasi REST API & Microservices, hingga peluncuran sistem digital yang tangguh."}
+                        value={
+                          formData.servicesIntro.cardSoftwareHouse?.desc ||
+                          "Pengembangan aplikasi custom skala enterprise dari tahap perancangan arsitektur, rekayasa kode, integrasi REST API & Microservices, hingga peluncuran sistem digital yang tangguh."
+                        }
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -1575,11 +1589,13 @@ export default function AdminLandingPage() {
                         Alur Arsitektur Rekayasa (3 Langkah Pipeline)
                       </label>
                       <div className="space-y-1.5">
-                        {(formData.servicesIntro.cardSoftwareHouse?.pipelineSteps || [
-                          "Aplikasi Web & Mobile",
-                          "REST API & Microservices",
-                          "Basis Data PostgreSQL / Oracle",
-                        ]).map((step, sIdx) => (
+                        {(
+                          formData.servicesIntro.cardSoftwareHouse?.pipelineSteps || [
+                            "Aplikasi Web & Mobile",
+                            "REST API & Microservices",
+                            "Basis Data PostgreSQL / Oracle",
+                          ]
+                        ).map((step, sIdx) => (
                           <div key={sIdx} className="flex items-center gap-2">
                             <span className="w-5 h-5 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 text-[10px] font-bold flex items-center justify-center shrink-0">
                               {sIdx + 1}
@@ -1601,13 +1617,15 @@ export default function AdminLandingPage() {
                         Tag Layanan & Spesifikasi
                       </label>
                       <div className="flex flex-wrap gap-1.5">
-                        {(formData.servicesIntro.cardSoftwareHouse?.tags || [
-                          "Aplikasi Web",
-                          "Aplikasi Mobile",
-                          "Integrasi Sistem",
-                          "Pengembangan API",
-                          "Pemeliharaan Berkala",
-                        ]).map((tag, tIdx) => (
+                        {(
+                          formData.servicesIntro.cardSoftwareHouse?.tags || [
+                            "Aplikasi Web",
+                            "Aplikasi Mobile",
+                            "Integrasi Sistem",
+                            "Pengembangan API",
+                            "Pemeliharaan Berkala",
+                          ]
+                        ).map((tag, tIdx) => (
                           <span
                             key={tIdx}
                             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-white/10 border border-slate-200 dark:border-white/15 text-[11px] font-medium text-slate-800 dark:text-white"
@@ -1701,7 +1719,10 @@ export default function AdminLandingPage() {
                       <label className="block text-[10px] font-semibold text-slate-500 mb-1">Deskripsi</label>
                       <textarea
                         rows={2}
-                        value={formData.servicesIntro.cardConsultant?.desc || "Layanan konsultasi TI strategis untuk membantu organisasi merencanakan, merancang arsitektur, dan memformulasikan cetak biru digital yang tepat guna."}
+                        value={
+                          formData.servicesIntro.cardConsultant?.desc ||
+                          "Layanan konsultasi TI strategis untuk membantu organisasi merencanakan, merancang arsitektur, dan memformulasikan cetak biru digital yang tepat guna."
+                        }
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -1776,13 +1797,15 @@ export default function AdminLandingPage() {
                         </button>
                       </div>
                       <div className="space-y-1.5">
-                        {(formData.servicesIntro.cardConsultant?.items || [
-                          "Analisis kebutuhan sistem informasi",
-                          "Perencanaan arsitektur TI enterprise",
-                          "Audit infrastruktur & keamanan teknologi",
-                          "Rekomendasi solusi & peta jalan digital",
-                          "Pendampingan implementasi kesistemanan",
-                        ]).map((item, iIdx) => (
+                        {(
+                          formData.servicesIntro.cardConsultant?.items || [
+                            "Analisis kebutuhan sistem informasi",
+                            "Perencanaan arsitektur TI enterprise",
+                            "Audit infrastruktur & keamanan teknologi",
+                            "Rekomendasi solusi & peta jalan digital",
+                            "Pendampingan implementasi kesistemanan",
+                          ]
+                        ).map((item, iIdx) => (
                           <div key={iIdx} className="flex items-center gap-1.5">
                             <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-[9px] font-bold flex items-center justify-center shrink-0">
                               {iIdx + 1}
@@ -1859,7 +1882,10 @@ export default function AdminLandingPage() {
                       <label className="block text-[10px] font-semibold text-slate-500 mb-1">Deskripsi</label>
                       <textarea
                         rows={2}
-                        value={formData.servicesIntro.cardSupplier?.desc || "Penyediaan perangkat keras dan perangkat lunak berkualitas tinggi dari vendor terpercaya dengan garansi resmi dan dukungan teknis terpadu."}
+                        value={
+                          formData.servicesIntro.cardSupplier?.desc ||
+                          "Penyediaan perangkat keras dan perangkat lunak berkualitas tinggi dari vendor terpercaya dengan garansi resmi dan dukungan teknis terpadu."
+                        }
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -1934,13 +1960,15 @@ export default function AdminLandingPage() {
                         </button>
                       </div>
                       <div className="space-y-1.5">
-                        {(formData.servicesIntro.cardSupplier?.items || [
-                          "Perangkat server & infrastruktur jaringan",
-                          "Komputer desktop, laptop & periferal kerja",
-                          "Lisensi & langganan software resmi",
-                          "Instalasi, konfigurasi & pengujian perangkat",
-                          "Layanan purna jual & pemeliharaan berkala",
-                        ]).map((item, sIdx) => (
+                        {(
+                          formData.servicesIntro.cardSupplier?.items || [
+                            "Perangkat server & infrastruktur jaringan",
+                            "Komputer desktop, laptop & periferal kerja",
+                            "Lisensi & langganan software resmi",
+                            "Instalasi, konfigurasi & pengujian perangkat",
+                            "Layanan purna jual & pemeliharaan berkala",
+                          ]
+                        ).map((item, sIdx) => (
                           <div key={sIdx} className="flex items-center gap-1.5">
                             <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-[9px] font-bold flex items-center justify-center shrink-0">
                               {sIdx + 1}
@@ -2017,7 +2045,10 @@ export default function AdminLandingPage() {
                       <label className="block text-[10px] font-semibold text-slate-500 mb-1">Deskripsi</label>
                       <textarea
                         rows={2}
-                        value={formData.servicesIntro.cardFocus?.desc || "Setiap tahapan kolaborasi kami berakar pada 5 pilar keunggulan operasional:"}
+                        value={
+                          formData.servicesIntro.cardFocus?.desc ||
+                          "Setiap tahapan kolaborasi kami berakar pada 5 pilar keunggulan operasional:"
+                        }
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -2038,7 +2069,10 @@ export default function AdminLandingPage() {
                       <label className="block text-[10px] font-semibold text-slate-500 mb-1">Teks Footer Kartu</label>
                       <input
                         type="text"
-                        value={formData.servicesIntro.cardFocus?.footerText || "Terpercaya menangani sistem kementerian sejak 2006"}
+                        value={
+                          formData.servicesIntro.cardFocus?.footerText ||
+                          "Terpercaya menangani sistem kementerian sejak 2006"
+                        }
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -2104,14 +2138,19 @@ export default function AdminLandingPage() {
                         5 Pilar Prinsip Kerja FOCUS (F - O - C - U - S)
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
-                        {(formData.servicesIntro.cardFocus?.focusItems || [
-                          { letter: "F", word: "Focus", desc: "Kebutuhan klien" },
-                          { letter: "O", word: "On Time", desc: "Tepat waktu" },
-                          { letter: "C", word: "Customer", desc: "Kepuasan pelanggan" },
-                          { letter: "U", word: "Update", desc: "Teknologi terkini" },
-                          { letter: "S", word: "Synergy", desc: "Sinergi tim maksimal" },
-                        ]).map((fItem, fIdx) => (
-                          <div key={fIdx} className="p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-1.5">
+                        {(
+                          formData.servicesIntro.cardFocus?.focusItems || [
+                            { letter: "F", word: "Focus", desc: "Kebutuhan klien" },
+                            { letter: "O", word: "On Time", desc: "Tepat waktu" },
+                            { letter: "C", word: "Customer", desc: "Kepuasan pelanggan" },
+                            { letter: "U", word: "Update", desc: "Teknologi terkini" },
+                            { letter: "S", word: "Synergy", desc: "Sinergi tim maksimal" },
+                          ]
+                        ).map((fItem, fIdx) => (
+                          <div
+                            key={fIdx}
+                            className="p-2.5 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-1.5"
+                          >
                             <div className="flex items-center gap-1.5">
                               <input
                                 type="text"
@@ -2187,9 +2226,12 @@ export default function AdminLandingPage() {
               {/* Section Active Status Bar */}
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full ${vis.products ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full ${vis.products ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}
+                  />
                   <span className="text-xs font-bold text-slate-800 dark:text-white">
-                    Status Section Produk Unggulan: {vis.products ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
+                    Status Section Produk Unggulan:{" "}
+                    {vis.products ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
                   </span>
                 </div>
                 <button
@@ -2226,7 +2268,9 @@ export default function AdminLandingPage() {
                           productsIntro: {
                             badge: e.target.value,
                             title: formData.productsIntro?.title || "Produk Unggulan CITS",
-                            subtitle: formData.productsIntro?.subtitle || "Platform kesistemanan yang telah teruji melayani jutaan transaksi data di berbagai kementerian dan institusi nasional.",
+                            subtitle:
+                              formData.productsIntro?.subtitle ||
+                              "Platform kesistemanan yang telah teruji melayani jutaan transaksi data di berbagai kementerian dan institusi nasional.",
                             ...formData.productsIntro,
                           },
                         })
@@ -2249,7 +2293,9 @@ export default function AdminLandingPage() {
                           productsIntro: {
                             badge: formData.productsIntro?.badge || "Solusi Skala Nasional",
                             title: e.target.value,
-                            subtitle: formData.productsIntro?.subtitle || "Platform kesistemanan yang telah teruji melayani jutaan transaksi data di berbagai kementerian dan institusi nasional.",
+                            subtitle:
+                              formData.productsIntro?.subtitle ||
+                              "Platform kesistemanan yang telah teruji melayani jutaan transaksi data di berbagai kementerian dan institusi nasional.",
                             ...formData.productsIntro,
                           },
                         })
@@ -2266,7 +2312,10 @@ export default function AdminLandingPage() {
                   </label>
                   <textarea
                     rows={2}
-                    value={formData.productsIntro?.subtitle || "Platform kesistemanan yang telah teruji melayani jutaan transaksi data di berbagai kementerian dan institusi nasional."}
+                    value={
+                      formData.productsIntro?.subtitle ||
+                      "Platform kesistemanan yang telah teruji melayani jutaan transaksi data di berbagai kementerian dan institusi nasional."
+                    }
                     onChange={(e) =>
                       setFormData({
                         ...formData,
@@ -2333,7 +2382,9 @@ export default function AdminLandingPage() {
                       <label className="block text-[10px] font-semibold text-slate-500 mb-1">Nama / Judul Produk</label>
                       <input
                         type="text"
-                        value={formData.productsIntro?.card1?.title || "CITS FleetTrack™ - Manajemen Armada & Telemetri"}
+                        value={
+                          formData.productsIntro?.card1?.title || "CITS FleetTrack™ - Manajemen Armada & Telemetri"
+                        }
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -2357,7 +2408,10 @@ export default function AdminLandingPage() {
                       <label className="block text-[10px] font-semibold text-slate-500 mb-1">Deskripsi Produk</label>
                       <textarea
                         rows={2}
-                        value={formData.productsIntro?.card1?.desc || "Platform pelacakan armada kendaraan waktu nyata untuk optimalisasi logistik dan pemantauan operasional. Dilengkapi monitoring lokasi presisi, efisiensi bahan bakar, dan mitigasi risiko armada."}
+                        value={
+                          formData.productsIntro?.card1?.desc ||
+                          "Platform pelacakan armada kendaraan waktu nyata untuk optimalisasi logistik dan pemantauan operasional. Dilengkapi monitoring lokasi presisi, efisiensi bahan bakar, dan mitigasi risiko armada."
+                        }
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -2407,13 +2461,18 @@ export default function AdminLandingPage() {
                         4 Fitur Unggulan Armada (Grid 2x2)
                       </label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {(formData.productsIntro?.card1?.features || [
-                          { title: "GPS Waktu Nyata", desc: "Akurasi pelacakan tinggi" },
-                          { title: "Geofencing", desc: "Batas perimeter otomatis" },
-                          { title: "Riwayat Rute", desc: "Rekam jejak perjalanan" },
-                          { title: "Peringatan Darurat", desc: "Notifikasi insiden instan" },
-                        ]).map((feat, fIdx) => (
-                          <div key={fIdx} className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-1">
+                        {(
+                          formData.productsIntro?.card1?.features || [
+                            { title: "GPS Waktu Nyata", desc: "Akurasi pelacakan tinggi" },
+                            { title: "Geofencing", desc: "Batas perimeter otomatis" },
+                            { title: "Riwayat Rute", desc: "Rekam jejak perjalanan" },
+                            { title: "Peringatan Darurat", desc: "Notifikasi insiden instan" },
+                          ]
+                        ).map((feat, fIdx) => (
+                          <div
+                            key={fIdx}
+                            className="p-2 rounded-xl bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-1"
+                          >
                             <input
                               type="text"
                               value={feat.title}
@@ -2439,13 +2498,15 @@ export default function AdminLandingPage() {
                         Tag Solusi IoT & Telemetri
                       </label>
                       <div className="flex flex-wrap gap-1.5">
-                        {(formData.productsIntro?.card1?.tags || [
-                          "GPS Waktu Nyata",
-                          "Geofencing",
-                          "Riwayat Rute",
-                          "Sistem Peringatan",
-                          "Manajemen Armada",
-                        ]).map((tag, tIdx) => (
+                        {(
+                          formData.productsIntro?.card1?.tags || [
+                            "GPS Waktu Nyata",
+                            "Geofencing",
+                            "Riwayat Rute",
+                            "Sistem Peringatan",
+                            "Manajemen Armada",
+                          ]
+                        ).map((tag, tIdx) => (
                           <span
                             key={tIdx}
                             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white dark:bg-white/10 border border-slate-200 dark:border-white/15 text-[11px] font-medium text-slate-800 dark:text-white"
@@ -2545,7 +2606,10 @@ export default function AdminLandingPage() {
                       <label className="block text-[10px] font-semibold text-slate-500 mb-1">Deskripsi Produk</label>
                       <textarea
                         rows={2}
-                        value={formData.productsIntro?.card2?.desc || "Sistem pengelolaan aset perusahaan secara terintegrasi dari pengadaan, penempatan, kalkulasi depresiasi nilai, hingga penghapusan aset siap audit."}
+                        value={
+                          formData.productsIntro?.card2?.desc ||
+                          "Sistem pengelolaan aset perusahaan secara terintegrasi dari pengadaan, penempatan, kalkulasi depresiasi nilai, hingga penghapusan aset siap audit."
+                        }
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -2604,12 +2668,14 @@ export default function AdminLandingPage() {
                         </button>
                       </div>
                       <div className="space-y-1.5">
-                        {(formData.productsIntro?.card2?.features || [
-                          "Pencatatan BMN / BMD terintegrasi",
-                          "QR code & Barcode tag fisik",
-                          "Jadwal pemeliharaan preventif",
-                          "Kalkulasi depresiasi & audit trail",
-                        ]).map((feat, fIdx) => (
+                        {(
+                          formData.productsIntro?.card2?.features || [
+                            "Pencatatan BMN / BMD terintegrasi",
+                            "QR code & Barcode tag fisik",
+                            "Jadwal pemeliharaan preventif",
+                            "Kalkulasi depresiasi & audit trail",
+                          ]
+                        ).map((feat, fIdx) => (
                           <div key={fIdx} className="flex items-center gap-1.5">
                             <input
                               type="text"
@@ -2691,7 +2757,10 @@ export default function AdminLandingPage() {
                       <label className="block text-[10px] font-semibold text-slate-500 mb-1">Deskripsi Produk</label>
                       <textarea
                         rows={2}
-                        value={formData.productsIntro?.card3?.desc || "Sistem digitalisasi dan pengarsipan elektronik untuk mengorganisir, mengamankan, dan mendistribusikan dokumen resmi dengan kontrol versi dan TTE."}
+                        value={
+                          formData.productsIntro?.card3?.desc ||
+                          "Sistem digitalisasi dan pengarsipan elektronik untuk mengorganisir, mengamankan, dan mendistribusikan dokumen resmi dengan kontrol versi dan TTE."
+                        }
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -2750,12 +2819,14 @@ export default function AdminLandingPage() {
                         </button>
                       </div>
                       <div className="space-y-1.5">
-                        {(formData.productsIntro?.card3?.features || [
-                          "OCR & Pengindeksan Full-Text Otomatis",
-                          "Integrasi Tanda Tangan Elektronik (TTE BSrE)",
-                          "Role-Based Access Control & Audit Log",
-                          "Retensi Dokumen Sesuai Jadwal ANRI",
-                        ]).map((feat, fIdx) => (
+                        {(
+                          formData.productsIntro?.card3?.features || [
+                            "OCR & Pengindeksan Full-Text Otomatis",
+                            "Integrasi Tanda Tangan Elektronik (TTE BSrE)",
+                            "Role-Based Access Control & Audit Log",
+                            "Retensi Dokumen Sesuai Jadwal ANRI",
+                          ]
+                        ).map((feat, fIdx) => (
                           <div key={fIdx} className="flex items-center gap-1.5">
                             <input
                               type="text"
@@ -2813,7 +2884,9 @@ export default function AdminLandingPage() {
                       <label className="block text-[10px] font-semibold text-slate-500 mb-1">Nama / Judul Produk</label>
                       <input
                         type="text"
-                        value={formData.productsIntro?.card4?.title || "CITS GeoSpatial™ & Rangkaian Platform Enterprise"}
+                        value={
+                          formData.productsIntro?.card4?.title || "CITS GeoSpatial™ & Rangkaian Platform Enterprise"
+                        }
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -2837,7 +2910,10 @@ export default function AdminLandingPage() {
                       <label className="block text-[10px] font-semibold text-slate-500 mb-1">Deskripsi Produk</label>
                       <textarea
                         rows={2}
-                        value={formData.productsIntro?.card4?.desc || "Platform informasi geografis untuk pemetaan infrastruktur dan analisis spasial, dilengkapi rangkaian solusi perangkat lunak teruji CITS lainnya:"}
+                        value={
+                          formData.productsIntro?.card4?.desc ||
+                          "Platform informasi geografis untuk pemetaan infrastruktur dan analisis spasial, dilengkapi rangkaian solusi perangkat lunak teruji CITS lainnya:"
+                        }
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -2858,7 +2934,9 @@ export default function AdminLandingPage() {
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">URL Link Semua Produk</label>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">
+                        URL Link Semua Produk
+                      </label>
                       <input
                         type="text"
                         value={formData.productsIntro?.card4?.linkUrl || "/products"}
@@ -2887,13 +2965,30 @@ export default function AdminLandingPage() {
                         4 Sub-Platform Ekosistem
                       </label>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                        {(formData.productsIntro?.card4?.subProducts || [
-                          { name: "CITS GeoSpatial™", desc: "Peta interaktif multi-layer, analisis spasial wilayah & monitoring infrastruktur utilitas." },
-                          { name: "CITS Omnichannel Gateway™", desc: "Pengiriman pesan massal WhatsApp API & SMS OTP dengan throughput tinggi dan fallback otomatis." },
-                          { name: "CITS SmartGov Portal™", desc: "Portal pelayanan publik satu pintu, pelacakan permohonan berkas & gerbang retribusi SPBE." },
-                          { name: "CITS Executive BI™", desc: "Dasbor analitik eksekutif real-time, agregasi multi-database & perumusan keputusan pimpinan." },
-                        ]).map((sub, sIdx) => (
-                          <div key={sIdx} className="p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 space-y-1.5">
+                        {(
+                          formData.productsIntro?.card4?.subProducts || [
+                            {
+                              name: "CITS GeoSpatial™",
+                              desc: "Peta interaktif multi-layer, analisis spasial wilayah & monitoring infrastruktur utilitas.",
+                            },
+                            {
+                              name: "CITS Omnichannel Gateway™",
+                              desc: "Pengiriman pesan massal WhatsApp API & SMS OTP dengan throughput tinggi dan fallback otomatis.",
+                            },
+                            {
+                              name: "CITS SmartGov Portal™",
+                              desc: "Portal pelayanan publik satu pintu, pelacakan permohonan berkas & gerbang retribusi SPBE.",
+                            },
+                            {
+                              name: "CITS Executive BI™",
+                              desc: "Dasbor analitik eksekutif real-time, agregasi multi-database & perumusan keputusan pimpinan.",
+                            },
+                          ]
+                        ).map((sub, sIdx) => (
+                          <div
+                            key={sIdx}
+                            className="p-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-white/5 space-y-1.5"
+                          >
                             <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400">
                               Solusi #{sIdx + 1}
                             </span>
@@ -2922,14 +3017,16 @@ export default function AdminLandingPage() {
                         Tag Badge Produk Ekosistem
                       </label>
                       <div className="flex flex-wrap gap-1.5 mb-2">
-                        {(formData.productsIntro?.card4?.tags || [
-                          "CITS FleetTrack",
-                          "CITS AssetHub",
-                          "CITS DocuVault",
-                          "CITS GeoSpatial",
-                          "CITS Omnichannel",
-                          "CITS SmartGov",
-                        ]).map((tag, tIdx) => (
+                        {(
+                          formData.productsIntro?.card4?.tags || [
+                            "CITS FleetTrack",
+                            "CITS AssetHub",
+                            "CITS DocuVault",
+                            "CITS GeoSpatial",
+                            "CITS Omnichannel",
+                            "CITS SmartGov",
+                          ]
+                        ).map((tag, tIdx) => (
                           <span
                             key={tIdx}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-300 border border-orange-200 dark:border-orange-500/30"
@@ -3028,9 +3125,12 @@ export default function AdminLandingPage() {
               {/* Section Active Status Bar */}
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full ${vis.clients ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full ${vis.clients ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}
+                  />
                   <span className="text-xs font-bold text-slate-800 dark:text-white">
-                    Status Section Mitra & Klien (Marquee): {vis.clients ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
+                    Status Section Mitra & Klien (Marquee):{" "}
+                    {vis.clients ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
                   </span>
                 </div>
                 <button
@@ -3297,10 +3397,21 @@ export default function AdminLandingPage() {
                           onChange={(e) => setClientFormCategory(e.target.value as any)}
                           className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
                         >
-                          <option value="Kementerian" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Kementerian</option>
-                          <option value="BUMN" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">BUMN</option>
-                          <option value="Lembaga" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Lembaga Tinggi Negara</option>
-                          <option value="Swasta" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Korporasi Swasta</option>
+                          <option
+                            value="Kementerian"
+                            className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                          >
+                            Kementerian
+                          </option>
+                          <option value="BUMN" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                            BUMN
+                          </option>
+                          <option value="Lembaga" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                            Lembaga Tinggi Negara
+                          </option>
+                          <option value="Swasta" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                            Korporasi Swasta
+                          </option>
                         </select>
                       </div>
 
@@ -3405,7 +3516,10 @@ export default function AdminLandingPage() {
                           onChange={(e) => setClientFormIsActive(e.target.checked)}
                           className="w-4 h-4 accent-orange-600 rounded cursor-pointer"
                         />
-                        <label htmlFor="clientActiveCheck" className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+                        <label
+                          htmlFor="clientActiveCheck"
+                          className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+                        >
                           Tampilkan kementerian ini di beranda depan
                         </label>
                       </div>
@@ -3439,9 +3553,12 @@ export default function AdminLandingPage() {
               {/* Section Active Status Bar */}
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full ${vis.cta ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+                  <span
+                    className={`w-2.5 h-2.5 rounded-full ${vis.cta ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}
+                  />
                   <span className="text-xs font-bold text-slate-800 dark:text-white">
-                    Status Section Banner CTA: {vis.cta ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
+                    Status Section Banner CTA:{" "}
+                    {vis.cta ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
                   </span>
                 </div>
                 <button
@@ -3524,14 +3641,10 @@ export default function AdminLandingPage() {
               {/* Action Buttons */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100 dark:border-white/10">
                 <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-3">
-                  <span className="block font-bold text-xs text-orange-600 dark:text-orange-400">
-                    Tombol Utama CTA
-                  </span>
+                  <span className="block font-bold text-xs text-orange-600 dark:text-orange-400">Tombol Utama CTA</span>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">
-                        Teks Tombol
-                      </label>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">Teks Tombol</label>
                       <input
                         type="text"
                         value={formData.cta.primaryText}
@@ -3545,9 +3658,7 @@ export default function AdminLandingPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">
-                        Link Tujuan
-                      </label>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">Link Tujuan</label>
                       <input
                         type="text"
                         value={formData.cta.primaryLink}
@@ -3569,9 +3680,7 @@ export default function AdminLandingPage() {
                   </span>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">
-                        Teks Tombol
-                      </label>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">Teks Tombol</label>
                       <input
                         type="text"
                         value={formData.cta.secondaryText}
@@ -3585,9 +3694,7 @@ export default function AdminLandingPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">
-                        Link Tujuan
-                      </label>
+                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">Link Tujuan</label>
                       <input
                         type="text"
                         value={formData.cta.secondaryLink}
@@ -3605,25 +3712,6 @@ export default function AdminLandingPage() {
               </div>
             </div>
           )}
-
-          {/* Floating Bottom Save Bar */}
-          <div className="sticky bottom-4 z-20 p-4 rounded-2xl bg-white/95 dark:bg-[#16162d]/95 backdrop-blur-md border border-slate-200 dark:border-white/10 shadow-2xl flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span>Perubahan otomatis tersinkron ke PostgreSQL & Redis saat disimpan.</span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="px-6 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 active:scale-98 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-orange-600/25 transition-all cursor-pointer disabled:opacity-60"
-              >
-                <Save className="w-4 h-4" />
-                <span>{isSaving ? "Menyimpan ke Database..." : "Simpan Semua Perubahan"}</span>
-              </button>
-            </div>
-          </div>
         </form>
       </div>
     </div>
