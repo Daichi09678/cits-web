@@ -5,12 +5,13 @@ import {
   ProductItem,
   ContactInfo,
   ContactMessage,
+  DealStage,
   AboutData,
   ClientPartner,
   LandingPageData,
   ServicePillar,
   CaseStudyItem,
-} from "./schema";
+} from "@/types/schema";
 import {
   initialProducts,
   initialContactInfo,
@@ -19,7 +20,7 @@ import {
   initialLandingPageData,
   initialServicePillars,
   initialCaseStudies,
-} from "./initialData";
+} from "@/data/initialData";
 import { siteConfig } from "@/config/siteConfig";
 import { citsApi } from "@/lib/api";
 import { playNewMessageSound } from "@/lib/audio";
@@ -118,17 +119,6 @@ function getOptimisticMessages(): ContactMessage[] {
   }
 }
 
-function addOptimisticMessage(msg: ContactMessage): void {
-  if (typeof window === "undefined") return;
-  try {
-    const list = getOptimisticMessages();
-    list.push(msg);
-    sessionStorage.setItem("cits_optimistic_messages", JSON.stringify(list));
-  } catch {
-    // silent
-  }
-}
-
 function removeOptimisticMessage(id: string): void {
   if (typeof window === "undefined") return;
   try {
@@ -184,9 +174,7 @@ function mergeMessagesWithOptimistic(serverMsgs: ContactMessage[]): ContactMessa
 
   // Add any optimistic messages not yet confirmed by the server
   const serverIds = new Set(merged.map((m) => m.id));
-  const optimistic = getOptimisticMessages().filter(
-    (m) => !serverIds.has(m.id) && !isMessageDeleted(m.id)
-  );
+  const optimistic = getOptimisticMessages().filter((m) => !serverIds.has(m.id) && !isMessageDeleted(m.id));
 
   // Remove optimistic messages that ARE now on the server (confirmed)
   for (const sm of merged) {
@@ -223,9 +211,7 @@ export const CitsStore = {
   },
   updateProduct(id: string, updates: Partial<ProductItem>): void {
     const current = this.getProducts();
-    const updated = current.map((p) =>
-      p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p
-    );
+    const updated = current.map((p) => (p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p));
     this.saveProducts(updated);
     citsApi.updateProduct(id, updates).catch((err) => console.warn("Sync update product error:", err));
   },
@@ -267,7 +253,9 @@ export const CitsStore = {
     const valid = msgs.filter((m) => !isMessageDeleted(m.id));
     setStorageItem(siteConfig.storageKeys.messages, valid);
   },
-  async addMessage(msg: Omit<ContactMessage, "id" | "status" | "createdAt"> & { id?: string }): Promise<ContactMessage> {
+  async addMessage(
+    msg: Omit<ContactMessage, "id" | "status" | "createdAt"> & { id?: string }
+  ): Promise<ContactMessage> {
     const result = await citsApi.sendMessage(msg);
     if (!result?.success || !result.data?.id) {
       throw new Error(result?.message || "Pesan belum tersimpan. Silakan coba lagi.");
@@ -284,12 +272,31 @@ export const CitsStore = {
     this.saveMessages(updated);
     citsApi.updateMessageStatus(id, status).catch((err) => console.warn("Sync msg status error:", err));
   },
+  updateMessageStage(id: string, dealStage: DealStage, dealNotes?: string): void {
+    const current = this.getMessages();
+    const updated = current.map((m) =>
+      m.id === id ? { ...m, dealStage, ...(dealNotes !== undefined ? { dealNotes } : {}) } : m
+    );
+    this.saveMessages(updated);
+    citsApi.updateMessageStage(id, dealStage, dealNotes).catch((err) => console.warn("Sync deal stage error:", err));
+  },
   deleteMessage(id: string): void {
     markMessageDeleted(id);
     removeOptimisticMessage(id);
     const current = this.getMessages();
     this.saveMessages(current.filter((m) => m.id !== id));
     citsApi.deleteMessage(id).catch((err) => console.warn("Sync delete message error:", err));
+  },
+  deleteMessages(ids: string[]): void {
+    if (!ids || ids.length === 0) return;
+    for (const id of ids) {
+      markMessageDeleted(id);
+      removeOptimisticMessage(id);
+    }
+    const idSet = new Set(ids);
+    const current = this.getMessages();
+    this.saveMessages(current.filter((m) => !idSet.has(m.id)));
+    citsApi.deleteMessages(ids).catch((err) => console.warn("Sync bulk delete messages error:", err));
   },
 
   // ABOUT
@@ -429,7 +436,7 @@ export function startAdminInboxSync(): () => void {
     if (disposed || inFlight) return;
     inFlight = true;
     try {
-      const latest = await citsApi.getMessages() as ContactMessage[];
+      const latest = (await citsApi.getMessages()) as ContactMessage[];
       if (disposed) return;
       const fresh = latest.filter((msg) => !observedInboxIds.has(msg.id));
       latest.forEach((msg) => observedInboxIds.add(msg.id));
@@ -472,59 +479,17 @@ export function startAdminInboxSync(): () => void {
 // React Hook — subscribe to store + background sync
 // ═══════════════════════════════════════════════════════════════════════
 export function useCitsStore() {
-  const [products, setProducts] = useState<ProductItem[]>(() => {
-    if (typeof window !== "undefined") {
-      const stored = CitsStore.getProducts();
-      if (stored && stored.length > 0) return stored;
-    }
-    return initialProducts;
-  });
-  const [contactInfo, setContactInfo] = useState<ContactInfo>(() => {
-    if (typeof window !== "undefined") {
-      return CitsStore.getContactInfo();
-    }
-    return initialContactInfo;
-  });
-  const [messages, setMessages] = useState<ContactMessage[]>(() => {
-    if (typeof window !== "undefined") {
-      const stored = CitsStore.getMessages();
-      if (stored && Array.isArray(stored)) return stored;
-    }
-    return [];
-  });
-  const [aboutData, setAboutData] = useState<AboutData>(() => {
-    if (typeof window !== "undefined") {
-      return CitsStore.getAboutData();
-    }
-    return initialAboutData;
-  });
-  const [clients, setClients] = useState<ClientPartner[]>(() => {
-    if (typeof window !== "undefined") {
-      const stored = CitsStore.getClients();
-      if (stored && stored.length > 0) return stored;
-    }
-    return initialClients;
-  });
-  const [services, setServices] = useState<ServicePillar[]>(() => {
-    if (typeof window !== "undefined") {
-      const stored = CitsStore.getServices();
-      if (stored && stored.length > 0) return stored;
-    }
-    return initialServicePillars;
-  });
-  const [caseStudies, setCaseStudies] = useState<CaseStudyItem[]>(() => {
-    if (typeof window !== "undefined") {
-      const stored = CitsStore.getCaseStudies();
-      if (stored && stored.length > 0) return stored;
-    }
-    return initialCaseStudies;
-  });
-  const [landingData, setLandingData] = useState<LandingPageData>(() => {
-    if (typeof window !== "undefined") {
-      return CitsStore.getLandingData();
-    }
-    return initialLandingPageData;
-  });
+  // PENTING (hydration): render pertama WAJIB identik di server dan browser.
+  // Jangan membaca localStorage saat inisialisasi state — cache lokal dimuat
+  // setelah mount lewat refreshFromLocal() di useEffect di bawah.
+  const [products, setProducts] = useState<ProductItem[]>(initialProducts);
+  const [contactInfo, setContactInfo] = useState<ContactInfo>(initialContactInfo);
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [aboutData, setAboutData] = useState<AboutData>(initialAboutData);
+  const [clients, setClients] = useState<ClientPartner[]>(initialClients);
+  const [services, setServices] = useState<ServicePillar[]>(initialServicePillars);
+  const [caseStudies, setCaseStudies] = useState<CaseStudyItem[]>(initialCaseStudies);
+  const [landingData, setLandingData] = useState<LandingPageData>(initialLandingPageData);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLiveConnected, setIsLiveConnected] = useState(false);
 
@@ -624,4 +589,3 @@ export function useCitsStore() {
     actions: CitsStore,
   };
 }
-
