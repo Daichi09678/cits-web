@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CITS Web — Portal Perusahaan & Back Office
 
-## Getting Started
+Aplikasi web resmi CITS Indonesia: halaman publik (profil, layanan, produk, portofolio,
+kontak) dan back office untuk mengelola konten serta kotak masuk konsultasi.
 
-First, run the development server:
+## Teknologi
+
+| Komponen  | Teknologi                           |
+| --------- | ----------------------------------- |
+| Framework | Next.js 16 (App Router) + React 19  |
+| Bahasa    | TypeScript (strict)                 |
+| Styling   | Tailwind CSS v4                     |
+| Database  | PostgreSQL (Neon) via `postgres.js` |
+| Email     | Nodemailer (SMTP)                   |
+| Animasi   | Framer Motion + Lucide Icons        |
+| Test      | `node:test`                         |
+
+## Menjalankan Lokal
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local     # lalu isi nilainya
+npm run dev                    # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Variable
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Variabel                                              | Wajib | Keterangan                                                   |
+| ----------------------------------------------------- | ----- | ------------------------------------------------------------ |
+| `DATABASE_URL`                                        | ya    | Connection string PostgreSQL (`?sslmode=require` untuk Neon) |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | tidak | Notifikasi email formulir kontak                             |
+| `NOTIFICATION_EMAIL`                                  | tidak | Penerima notifikasi (default: email kontak di database)      |
+| `MESSAGE_RETENTION_DAYS`                              | tidak | Retensi inbox, default **30** hari                           |
+| `NEXT_PUBLIC_MESSAGE_RETENTION_DAYS`                  | tidak | Teks retensi di halaman admin                                |
+| `CRON_SECRET`                                         | tidak | Proteksi endpoint `/api/messages/cleanup`                    |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+> Tanpa SMTP, pesan dari formulir tetap tersimpan di database — hanya email
+> notifikasinya yang tidak terkirim.
 
-## Learn More
+## Perintah
 
-To learn more about Next.js, take a look at the following resources:
+| Perintah            | Fungsi                                 |
+| ------------------- | -------------------------------------- |
+| `npm run dev`       | Development server (webpack)           |
+| `npm run dev:turbo` | Development server (turbopack)         |
+| `npm run build`     | Build produksi                         |
+| `npm run start`     | Jalankan hasil build                   |
+| `npm run typecheck` | Cek tipe TypeScript                    |
+| `npm run lint`      | ESLint                                 |
+| `npm run test`      | Test (`node:test`)                     |
+| `npm run format`    | Rapikan format dengan Prettier         |
+| `npm run verify`    | Typecheck + lint + test + format:check |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Struktur Singkat
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├─ app/          # routing: (public) | (admin) | api
+├─ components/   # layout, ui, animations, admin
+├─ config/       # siteConfig, kebijakan inbox
+├─ data/         # seed konten awal
+├─ lib/          # db, api client, auth, email, audio
+├─ stores/       # state global (citsStore)
+└─ types/        # tipe domain
+```
 
-## Deploy on Vercel
+Detail aturan penempatan, penamaan, dan quality gate ada di
+[`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Ringkasan API
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Endpoint                | Method            | Keterangan                             |
+| ----------------------- | ----------------- | -------------------------------------- |
+| `/api/about`            | GET, PUT          | Profil perusahaan                      |
+| `/api/contact`          | GET, PUT          | Info kontak, FAQ, pengumuman           |
+| `/api/landing`          | GET, PUT          | Konten landing page                    |
+| `/api/services`         | GET, PUT          | Pilar layanan                          |
+| `/api/portfolio`        | GET, PUT          | Studi kasus                            |
+| `/api/clients`          | GET, POST         | Mitra & klien                          |
+| `/api/products`         | GET, POST         | Produk aktif (`?all=true` untuk semua) |
+| `/api/products/[id]`    | PATCH, DELETE     | Ubah/hapus produk                      |
+| `/api/messages`         | GET, POST, DELETE | Inbox konsultasi                       |
+| `/api/messages/[id]`    | DELETE, PATCH     | Hapus/ubah satu pesan                  |
+| `/api/messages/cleanup` | GET, POST         | Pembersihan pesan kedaluwarsa (cron)   |
+| `/api/uploads`          | POST              | Unggah berkas                          |
+| `/api/auth/login`       | POST              | Login admin                            |
+| `/api/auth/me`          | GET               | Sesi admin aktif                       |
+
+## Kebijakan Retensi Inbox
+
+Pesan konsultasi yang lebih tua dari `MESSAGE_RETENTION_DAYS` (default 30 hari)
+tidak ditampilkan dan dihapus otomatis:
+
+1. **Saat inbox dibuka** — `GET /api/messages` menyaring sekaligus menjalankan
+   pembersihan (maksimal 1× per menit per proses).
+2. **Endpoint cron** — `POST/GET /api/messages/cleanup`, cocok untuk scheduler.
+   Jika `CRON_SECRET` di-set, wajib mengirim `Authorization: Bearer <CRON_SECRET>`.
+
+Contoh `vercel.json` untuk pembersihan harian:
+
+```json
+{ "crons": [{ "path": "/api/messages/cleanup", "schedule": "0 3 * * *" }] }
+```
+
+## Deploy
+
+Aplikasi dirancang untuk Vercel. Pastikan `DATABASE_URL` (dan variabel lain)
+di-set di dashboard sebelum deploy, lalu jalankan `npm run build` secara lokal
+untuk memastikan build bersih.
