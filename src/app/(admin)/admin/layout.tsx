@@ -14,12 +14,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const isLoginPage = pathname === "/admin/login";
 
   useEffect(() => {
-    if (!loading) {
-      if (!isAuthenticated && !isLoginPage) {
-        router.replace("/admin/login");
-      } else if (isAuthenticated && isLoginPage) {
-        router.replace("/admin");
-      }
+    if (!loading && !isAuthenticated && !isLoginPage) {
+      router.replace("/admin/login");
     }
   }, [isAuthenticated, loading, isLoginPage, router]);
 

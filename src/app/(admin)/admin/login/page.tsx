@@ -12,8 +12,8 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { login } = useAdminAuth();
 
-  const [email, setEmail] = useState("maswahyuganteng@cits.id");
-  const [password, setPassword] = useState("admin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
@@ -122,7 +122,9 @@ export default function AdminLoginPage() {
                 <input
                   id="admin-email-input"
                   name="email"
-                  type="text"
+                  type="email"
+                  autoComplete="username"
+                  autoFocus
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -150,6 +152,7 @@ export default function AdminLoginPage() {
                   id="admin-password-input"
                   name="password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
