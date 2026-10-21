@@ -15,6 +15,7 @@ export interface AdminSession {
     email: string;
     role: string;
     avatar: string;
+    jobTitle?: string;
     /** Halaman yang boleh diedit; kosong/undefined = Superadmin (semua). */
     pageAccess?: PageKey[];
     isInternal?: boolean;
@@ -28,6 +29,7 @@ const defaultUser = {
   email: siteConfig.admin.defaultEmail,
   role: "Super Admin",
   avatar: "/avatars/admin.webp",
+  jobTitle: "Superadmin",
 };
 
 export const AdminAuth = {
@@ -113,6 +115,19 @@ export const AdminAuth = {
     window.dispatchEvent(new Event("cits-auth-changed"));
   },
 
+  updateUser(user: Partial<AdminSession["user"]>): void {
+    if (typeof window === "undefined") return;
+    const session = AdminAuth.getSession();
+    if (!session) return;
+
+    const updated: AdminSession = {
+      ...session,
+      user: { ...session.user, ...user },
+    };
+    localStorage.setItem(siteConfig.admin.sessionKey, JSON.stringify(updated));
+    window.dispatchEvent(new Event("cits-auth-changed"));
+  },
+
   isAuthenticated(): boolean {
     const s = this.getSession();
     return !!s?.isLoggedIn;
@@ -139,5 +154,6 @@ export function useAdminAuth() {
     loading,
     login: AdminAuth.login,
     logout: AdminAuth.logout,
+    updateUser: AdminAuth.updateUser,
   };
 }

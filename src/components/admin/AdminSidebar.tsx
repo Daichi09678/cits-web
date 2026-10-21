@@ -18,6 +18,7 @@ import {
   LayoutTemplate,
   Briefcase,
   PanelLeftClose,
+  PencilLine,
   Lock,
   X,
   type LucideIcon,
@@ -25,6 +26,7 @@ import {
 import { useAdminAuth } from "@/lib/auth";
 import { useCitsStore } from "@/stores/citsStore";
 import { useAdminShell } from "@/components/admin/AdminShell";
+import UserAvatar from "@/components/admin/UserAvatar";
 import { EDITABLE_PAGES, isSuperadminRole, type PageKey } from "@/lib/internalAccess";
 
 interface NavItem {
@@ -311,28 +313,34 @@ export default function AdminSidebar() {
           </div>
 
           {/* User Info Bar */}
-          <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div
-                className="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs"
-                title={roleLabel}
-              >
-                {(session?.user.name || "Administrator").slice(0, 2).toUpperCase()}
-              </div>
+          <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200/80 bg-slate-50 p-2 dark:border-white/10 dark:bg-white/5">
+            <Link
+              href="/admin/profile"
+              title="Edit profil saya"
+              className="group flex min-w-0 flex-1 items-center gap-2.5 rounded-lg p-0.5 transition-colors hover:text-orange-600 dark:hover:text-orange-300"
+            >
+              <UserAvatar
+                src={session?.user.avatar}
+                name={session?.user.name || "Administrator"}
+                size={32}
+                className="ring-2 ring-white dark:ring-white/10"
+                textClassName="text-[10px]"
+              />
               <div className="min-w-0">
-                <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                  {session?.user.name || "Administrator"}
+                <span className="flex items-center gap-1 text-xs font-bold text-slate-800 group-hover:text-orange-600 dark:text-slate-200 dark:group-hover:text-orange-300">
+                  <span className="truncate">{session?.user.name || "Administrator"}</span>
+                  <PencilLine className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
                 </span>
-                <span className="block text-[10px] text-slate-600 dark:text-slate-200 truncate">
+                <span className="block truncate text-[10px] text-slate-600 dark:text-slate-200">
                   {session?.user.email || "admin@cits.id"}
                 </span>
               </div>
-            </div>
+            </Link>
 
             <button
               onClick={handleLogout}
               title="Keluar dari Admin"
-              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors shrink-0"
+              className="shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
               aria-label="Logout"
             >
               <LogOut className="w-4 h-4" />

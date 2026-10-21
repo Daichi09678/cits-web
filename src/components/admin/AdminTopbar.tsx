@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Search, Bell, Sun, Moon, Menu } from "lucide-react";
 import { useCitsStore } from "@/stores/citsStore";
 import { useAdminShell } from "@/components/admin/AdminShell";
+import { useAdminAuth } from "@/lib/auth";
+import UserAvatar from "@/components/admin/UserAvatar";
 
 interface AdminTopbarProps {
   title: string;
@@ -14,6 +16,7 @@ interface AdminTopbarProps {
 export default function AdminTopbar({ title, description }: AdminTopbarProps) {
   const { messages } = useCitsStore();
   const { mobileOpen, openMobile } = useAdminShell();
+  const { session } = useAdminAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const unreadMessages = messages.filter((m) => m.status === "unread");
 
@@ -135,6 +138,28 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
             </div>
           )}
         </div>
+
+        {/* Profil Saya */}
+        <Link
+          href="/admin/profile"
+          title="Buka profil saya"
+          className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-1 transition-colors hover:border-orange-300 hover:bg-orange-50/60 dark:border-white/10 dark:bg-white/5 dark:hover:border-orange-500/40 dark:hover:bg-orange-500/10 sm:pr-2.5"
+        >
+          <UserAvatar
+            src={session?.user.avatar}
+            name={session?.user.name || "Administrator"}
+            size={30}
+            textClassName="text-[10px]"
+          />
+          <span className="hidden text-left lg:block">
+            <span className="block max-w-32 truncate text-[11px] font-bold text-slate-800 dark:text-slate-100">
+              {session?.user.name || "Administrator"}
+            </span>
+            <span className="block max-w-32 truncate text-[9px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              {session?.user.jobTitle || session?.user.role || "Admin"}
+            </span>
+          </span>
+        </Link>
       </div>
     </header>
   );

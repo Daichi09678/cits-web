@@ -301,12 +301,40 @@ export async function updateInternalAccount(id: string, input: InternalAccountIn
   return { success: true, account: toPublic(updated) };
 }
 
+export async function setInternalAccountName(id: string, name: string): Promise<void> {
+  const cleanName = name.trim();
+  if (!cleanName) return;
+
+  const sql = getSql();
+  if (sql) {
+    try {
+      await ensureTable();
+      await sql`
+        UPDATE internal_accounts
+        SET name = ${cleanName}, updated_at = NOW()
+        WHERE id = ${id}
+      `;
+      return;
+    } catch (error) {
+      console.error("DB Error setInternalAccountName:", error);
+    }
+  }
+
+  const account = memoryAccounts.find((item) => item.id === id);
+  if (account) account.name = cleanName;
+}
+
 export async function deleteInternalAccount(id: string): Promise<AccountMutationResult> {
   const sql = getSql();
   if (sql) {
     try {
       await ensureTable();
       await sql`DELETE FROM internal_accounts WHERE id = ${id}`;
+      try {
+        await sql`DELETE FROM admin_profiles WHERE user_id = ${id}`;
+      } catch {
+        // Tabel profil mungkin belum pernah dibuat; abaikan.
+      }
       return { success: true };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Gagal menghapus akun.";

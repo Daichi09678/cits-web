@@ -2,15 +2,17 @@ import { NextResponse } from "next/server";
 import { siteConfig } from "@/config/siteConfig";
 import { errorResponse, requireSuperadmin } from "@/lib/apiAuth";
 import { bulkSetPageAccess, createInternalAccount, listInternalAccounts } from "@/lib/internalAccountsServer";
+import { getAdminProfile } from "@/lib/profileServer";
 import type { PageKey } from "@/lib/internalAccess";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function superadminInfo() {
+async function superadminInfo() {
+  const profile = await getAdminProfile("admin-1", { displayName: "maswahyuganteng" });
   return {
     id: "admin-1",
-    name: "maswahyuganteng",
+    name: profile.displayName || "maswahyuganteng",
     email: siteConfig.admin.defaultEmail,
     role: "Super Admin",
   };
@@ -22,7 +24,7 @@ export async function GET(request: Request) {
 
   try {
     const accounts = await listInternalAccounts();
-    return NextResponse.json({ success: true, data: accounts, superadmin: superadminInfo() });
+    return NextResponse.json({ success: true, data: accounts, superadmin: await superadminInfo() });
   } catch (error) {
     return errorResponse(error, "Gagal memuat akun internal.");
   }

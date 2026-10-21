@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { siteConfig } from "@/config/siteConfig";
 import { authenticateInternalAccount } from "@/lib/internalAccountsServer";
 import { issueAdminToken } from "@/lib/apiAuth";
+import { getAdminProfile } from "@/lib/profileServer";
+import { DEFAULT_AVATAR } from "@/lib/profile";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,21 +23,28 @@ export async function POST(req: Request) {
     }
 
     if (internalAuth?.status === "ok") {
+      const profile = await getAdminProfile(internalAuth.account.id, {
+        displayName: internalAuth.account.name,
+        avatarUrl: DEFAULT_AVATAR,
+      });
+      const displayName = profile.displayName || internalAuth.account.name;
+
       return NextResponse.json({
         success: true,
         token: issueAdminToken({
           sub: internalAuth.account.id,
           email: internalAuth.account.email,
-          name: internalAuth.account.name,
+          name: displayName,
           role: "internal",
           pageAccess: internalAuth.account.pageAccess,
         }),
         user: {
           id: internalAuth.account.id,
-          name: internalAuth.account.name,
+          name: displayName,
           email: internalAuth.account.email,
           role: "Admin Internal",
-          avatar: "/avatars/admin.webp",
+          avatar: profile.avatarUrl,
+          jobTitle: profile.jobTitle || "Admin Internal",
           pageAccess: internalAuth.account.pageAccess,
           isInternal: true,
         },
@@ -77,18 +86,25 @@ export async function POST(req: Request) {
       );
     }
 
+    const profile = await getAdminProfile("admin-1", {
+      displayName: "maswahyuganteng",
+      avatarUrl: DEFAULT_AVATAR,
+    });
+    const displayName = profile.displayName || "maswahyuganteng";
+
     const token = issueAdminToken({
       sub: "admin-1",
       email: siteConfig.admin.defaultEmail,
-      name: "maswahyuganteng",
+      name: displayName,
       role: "superadmin",
     });
     const user = {
       id: "admin-1",
-      name: "maswahyuganteng",
+      name: displayName,
       email: siteConfig.admin.defaultEmail,
       role: "Super Admin",
-      avatar: "/avatars/admin.webp",
+      avatar: profile.avatarUrl,
+      jobTitle: profile.jobTitle || "Superadmin",
     };
 
     return NextResponse.json({
