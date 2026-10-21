@@ -18,7 +18,6 @@ import {
   LayoutTemplate,
   Briefcase,
   PanelLeftClose,
-  PencilLine,
   Lock,
   X,
   type LucideIcon,
@@ -26,7 +25,6 @@ import {
 import { useAdminAuth } from "@/lib/auth";
 import { useCitsStore } from "@/stores/citsStore";
 import { useAdminShell } from "@/components/admin/AdminShell";
-import UserAvatar from "@/components/admin/UserAvatar";
 import { EDITABLE_PAGES, isSuperadminRole, type PageKey } from "@/lib/internalAccess";
 
 interface NavItem {
@@ -312,40 +310,16 @@ export default function AdminSidebar() {
             </p>
           </div>
 
-          {/* User Info Bar */}
-          <div className="flex items-center justify-between gap-2 rounded-xl border border-slate-200/80 bg-slate-50 p-2 dark:border-white/10 dark:bg-white/5">
-            <Link
-              href="/admin/profile"
-              title="Edit profil saya"
-              className="group flex min-w-0 flex-1 items-center gap-2.5 rounded-lg p-0.5 transition-colors hover:text-orange-600 dark:hover:text-orange-300"
-            >
-              <UserAvatar
-                src={session?.user.avatar}
-                name={session?.user.name || "Administrator"}
-                size={32}
-                className="ring-2 ring-white dark:ring-white/10"
-                textClassName="text-[10px]"
-              />
-              <div className="min-w-0">
-                <span className="flex items-center gap-1 text-xs font-bold text-slate-800 group-hover:text-orange-600 dark:text-slate-200 dark:group-hover:text-orange-300">
-                  <span className="truncate">{session?.user.name || "Administrator"}</span>
-                  <PencilLine className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
-                </span>
-                <span className="block truncate text-[10px] text-slate-600 dark:text-slate-200">
-                  {session?.user.email || "admin@cits.id"}
-                </span>
-              </div>
-            </Link>
-
-            <button
-              onClick={handleLogout}
-              title="Keluar dari Admin"
-              className="shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
-              aria-label="Logout"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
-          </div>
+          {/* Logout tanpa keterangan profil — profil dipindah ke header */}
+          <button
+            onClick={handleLogout}
+            title="Keluar dari Admin"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-700 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:border-rose-900/40 dark:hover:bg-rose-950/30 dark:hover:text-rose-300"
+            aria-label="Logout"
+          >
+            <LogOut className="h-4 w-4" />
+            Keluar dari Akun
+          </button>
         </div>
       </aside>
     </>

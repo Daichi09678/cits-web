@@ -88,7 +88,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             aria-label="Tampilkan sidebar"
             aria-controls="admin-sidebar"
             aria-expanded={false}
-            className="fixed left-0 top-1/2 z-40 hidden h-16 w-8 -translate-y-1/2 items-center justify-center rounded-r-xl border border-l-0 border-orange-700/20 bg-orange-600 text-white shadow-lg shadow-orange-600/25 transition-all hover:w-9 hover:bg-orange-700 lg:flex"
+            className="fixed left-0 top-4 z-40 hidden h-9 w-9 items-center justify-center rounded-r-xl border border-l-0 border-orange-700/20 bg-orange-600 text-white shadow-lg shadow-orange-600/25 transition-all hover:w-10 hover:bg-orange-700 lg:flex"
           >
             <PanelLeftOpen className="h-4 w-4" />
           </button>

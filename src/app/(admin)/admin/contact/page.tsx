@@ -133,8 +133,7 @@ export default function AdminContactPage() {
   // Jam berjalan untuk label relatif ("2 menit lalu") selama detail pesan terbuka.
   const [clock, setClock] = useState(() => Date.now());
 
-  // Selection Mode State (Hanya aktif jika user klik "Pilih Pesan")
-  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  // Multi-select state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkDeletingOpen, setBulkDeletingOpen] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
@@ -209,16 +208,6 @@ export default function AdminContactPage() {
 
   const unreadCount = messages.filter((m) => m.status === "unread").length;
 
-  // Toggle Selection Mode
-  const toggleSelectionMode = () => {
-    if (isSelectionMode) {
-      setIsSelectionMode(false);
-      setSelectedIds([]);
-    } else {
-      setIsSelectionMode(true);
-    }
-  };
-
   // Multi-Select Handlers
   const handleToggleSelectAll = () => {
     if (selectedIds.length === filteredMessages.length && filteredMessages.length > 0) {
@@ -244,7 +233,6 @@ export default function AdminContactPage() {
       setReplyFeedback(`${selectedIds.length} pesan konsultasi terpilih berhasil dihapus.`);
       setSelectedIds([]);
       setBulkDeletingOpen(false);
-      setIsSelectionMode(false);
     } catch (err) {
       console.error("Gagal menghapus pesan masal:", err);
     } finally {
@@ -722,81 +710,52 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                     ))}
                   </div>
                 </div>
+              </div>
 
-                {/* Tombol Select / Mode Seleksi (Hanya muncul jika ditekan) */}
+              {/* Selection Action Bar — selalu tampil */}
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border-t border-slate-100 bg-orange-50/50 p-3 pt-2 dark:border-white/5 dark:bg-orange-950/20">
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleToggleSelectAll}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+                  >
+                    {selectedIds.length > 0 && selectedIds.length === filteredMessages.length ? (
+                      <CheckSquare className="w-4 h-4 text-orange-600" />
+                    ) : selectedIds.length > 0 ? (
+                      <MinusSquare className="w-4 h-4 text-orange-600" />
+                    ) : (
+                      <Square className="w-4 h-4 text-slate-400" />
+                    )}
+                    <span>Pilih Semua ({filteredMessages.length})</span>
+                  </button>
+
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    <strong>{selectedIds.length}</strong> pesan dipilih
+                  </span>
+                </div>
+
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={toggleSelectionMode}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-                      isSelectionMode
-                        ? "bg-orange-50 text-orange-700 border-orange-300 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800"
-                        : "bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
-                    }`}
+                    onClick={handleBulkMarkAsRead}
+                    disabled={selectedIds.length === 0}
+                    className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/10 dark:text-slate-200"
                   >
-                    {isSelectionMode ? (
-                      <>
-                        <X className="w-3.5 h-3.5 text-orange-600" />
-                        <span>Selesai Memilih</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckSquare className="w-3.5 h-3.5 text-slate-500" />
-                        <span>Pilih Pesan</span>
-                      </>
-                    )}
+                    Tandai Dibaca
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setBulkDeletingOpen(true)}
+                    disabled={selectedIds.length === 0}
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Hapus Terpilih ({selectedIds.length})</span>
                   </button>
                 </div>
               </div>
-
-              {/* SELECTION ACTION BAR (Hanya muncul jika isSelectionMode aktif) */}
-              {isSelectionMode && (
-                <div className="pt-2 border-t border-slate-100 dark:border-white/5 flex flex-wrap items-center justify-between gap-3 bg-orange-50/50 dark:bg-orange-950/20 p-3 rounded-xl animate-in fade-in duration-150">
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={handleToggleSelectAll}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
-                    >
-                      {selectedIds.length > 0 && selectedIds.length === filteredMessages.length ? (
-                        <CheckSquare className="w-4 h-4 text-orange-600" />
-                      ) : selectedIds.length > 0 ? (
-                        <MinusSquare className="w-4 h-4 text-orange-600" />
-                      ) : (
-                        <Square className="w-4 h-4 text-slate-400" />
-                      )}
-                      <span>Pilih Semua ({filteredMessages.length})</span>
-                    </button>
-
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                      <strong>{selectedIds.length}</strong> pesan dipilih
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {selectedIds.length > 0 && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={handleBulkMarkAsRead}
-                          className="px-3 py-1.5 rounded-lg bg-white dark:bg-white/10 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-white/10 text-xs font-semibold hover:bg-slate-50 cursor-pointer"
-                        >
-                          Tandai Dibaca
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setBulkDeletingOpen(true)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs cursor-pointer"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Hapus Terpilih ({selectedIds.length})</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Messages List Container */}
@@ -829,21 +788,19 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-white/5 pb-3">
                         <div className="flex items-center gap-3 min-w-0">
-                          {/* Item Checkbox (Hanya muncul jika mode seleksi aktif) */}
-                          {isSelectionMode && (
-                            <button
-                              type="button"
-                              onClick={(e) => handleToggleSelectOne(msg.id, e)}
-                              className="p-1 text-slate-400 hover:text-orange-600 cursor-pointer shrink-0 animate-in fade-in"
-                              title={isSelected ? "Batalkan pilihan" : "Pilih pesan ini"}
-                            >
-                              {isSelected ? (
-                                <CheckSquare className="w-5 h-5 text-orange-600" />
-                              ) : (
-                                <Square className="w-5 h-5 text-slate-400 hover:text-slate-600" />
-                              )}
-                            </button>
-                          )}
+                          {/* Item Checkbox */}
+                          <button
+                            type="button"
+                            onClick={(e) => handleToggleSelectOne(msg.id, e)}
+                            className="p-1 text-slate-400 hover:text-orange-600 cursor-pointer shrink-0"
+                            title={isSelected ? "Batalkan pilihan" : "Pilih pesan ini"}
+                          >
+                            {isSelected ? (
+                              <CheckSquare className="w-5 h-5 text-orange-600" />
+                            ) : (
+                              <Square className="w-5 h-5 text-slate-400 hover:text-slate-600" />
+                            )}
+                          </button>
 
                           <div
                             className={`w-10 h-10 rounded-xl flex items-center justify-center font-extrabold text-xs shrink-0 shadow-xs ${
