@@ -39,6 +39,7 @@ import {
   Megaphone,
 } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
+import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
 import { ContactMessage, DealStage, ContactFaqItem } from "@/types/schema";
 import { playNewMessageSound } from "@/lib/audio";
@@ -119,6 +120,7 @@ const DEAL_STAGES: {
 
 export default function AdminContactPage() {
   const { contactInfo, messages, isLiveConnected, actions } = useCitsStore();
+  const dialog = useAdminDialog();
 
   // Pesan yang lebih tua dari ini dihapus otomatis oleh server (lihat /api/messages).
   const retentionDays = getMessageRetentionDays();
@@ -433,6 +435,11 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
     });
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
+    void dialog.alert({
+      title: "Informasi kontak disimpan",
+      description: "Perubahan informasi kontak berhasil disinkronkan ke halaman Hubungi Kami.",
+      variant: "success",
+    });
   };
 
   // Save FAQ & Services Settings (Tab 3)
@@ -451,6 +458,11 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
     });
     setFaqSuccessMsg("Pengaturan FAQ dan layanan berhasil disimpan.");
     setTimeout(() => setFaqSuccessMsg(""), 3500);
+    void dialog.alert({
+      title: "Pengaturan FAQ disimpan",
+      description: "Daftar FAQ dan opsi layanan berhasil diperbarui.",
+      variant: "success",
+    });
   };
 
   const openAddFaqModal = () => {
@@ -488,6 +500,13 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
       setFaqsList([...faqsList, newFaq]);
     }
     setFaqModalOpen(false);
+    void dialog.alert({
+      title: editingFaq ? "FAQ diperbarui" : "FAQ ditambahkan",
+      description: editingFaq
+        ? "Perubahan pertanyaan FAQ berhasil disimpan."
+        : "Pertanyaan FAQ baru berhasil ditambahkan.",
+      variant: "success",
+    });
   };
 
   const handleDeleteFaqItem = (id: string) => {

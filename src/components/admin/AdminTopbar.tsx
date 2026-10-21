@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, Bell, Sun, Moon, CheckCircle2, Mail, Menu } from "lucide-react";
+import { Search, Bell, Sun, Moon, Menu } from "lucide-react";
 import { useCitsStore } from "@/stores/citsStore";
-import { toggleAdminSidebar } from "@/lib/adminSidebar";
+import { useAdminShell } from "@/components/admin/AdminShell";
 
 interface AdminTopbarProps {
   title: string;
@@ -13,6 +13,7 @@ interface AdminTopbarProps {
 
 export default function AdminTopbar({ title, description }: AdminTopbarProps) {
   const { messages } = useCitsStore();
+  const { mobileOpen, openMobile } = useAdminShell();
   const [showNotifications, setShowNotifications] = useState(false);
   const unreadMessages = messages.filter((m) => m.status === "unread");
 
@@ -28,17 +29,21 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
 
   return (
     <header className="h-16 w-full shrink-0 px-4 sm:px-6 lg:px-8 gap-3 bg-white/90 dark:bg-[#151528]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-white/10 flex items-center justify-between sticky top-0 z-30 transition-colors">
-      {/* Hamburger (mobile/tablet) + Title */}
+      {/* Mobile Hamburger + Title */}
       <div className="flex items-center gap-2 min-w-0">
+        {/* Buka drawer navigasi di mobile/tablet */}
         <button
           type="button"
-          onClick={toggleAdminSidebar}
+          onClick={openMobile}
           title="Buka menu"
           aria-label="Buka menu navigasi"
+          aria-controls="admin-sidebar"
+          aria-expanded={mobileOpen}
           className="lg:hidden p-2 -ml-1 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors shrink-0"
         >
           <Menu className="w-5 h-5" />
         </button>
+
         <div className="min-w-0">
           <h1 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white leading-tight truncate">
             {title}

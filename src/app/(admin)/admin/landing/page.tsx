@@ -39,9 +39,11 @@ import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useCitsStore } from "@/stores/citsStore";
 import { LandingPageData, SectionVisibility, ClientPartner } from "@/types/schema";
 import { initialLandingPageData, defaultSectionVisibility } from "@/data/initialData";
+import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 
 export default function AdminLandingPage() {
   const { landingData, clients, actions } = useCitsStore();
+  const dialog = useAdminDialog();
 
   // Client Management States inside Landing Page
   const [clientSearch, setClientSearch] = useState("");
@@ -117,13 +119,31 @@ export default function AdminLandingPage() {
 
     setClientModalOpen(false);
     setTimeout(() => setClientSuccessMsg(""), 3500);
+    void dialog.alert({
+      title: editingClient ? "Mitra diperbarui" : "Mitra ditambahkan",
+      description: editingClient
+        ? `Perubahan mitra "${clientFormName}" berhasil disimpan.`
+        : `Mitra "${clientFormName}" berhasil ditambahkan ke Beranda.`,
+      variant: "success",
+    });
   };
 
-  const handleDeleteClient = (c: ClientPartner) => {
-    if (confirm(`Hapus kementerian / mitra "${c.name}"?`)) {
+  const handleDeleteClient = async (c: ClientPartner) => {
+    const confirmed = await dialog.confirm({
+      title: "Hapus mitra dari Beranda?",
+      description: `Mitra "${c.name}" akan dihapus dari bagian mitra di halaman Beranda.`,
+      confirmLabel: "Hapus Mitra",
+      variant: "danger",
+    });
+    if (confirmed) {
       actions.deleteClient(c.id);
       setClientSuccessMsg(`Mitra "${c.name}" berhasil dihapus.`);
       setTimeout(() => setClientSuccessMsg(""), 3500);
+      await dialog.alert({
+        title: "Mitra dihapus",
+        description: `"${c.name}" berhasil dihapus dari Beranda.`,
+        variant: "success",
+      });
     }
   };
 
@@ -698,18 +718,35 @@ export default function AdminLandingPage() {
       actions.saveLandingData(formData);
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3500);
+      void dialog.alert({
+        title: "Beranda berhasil disimpan",
+        description: "Seluruh perubahan konten landing page sudah disinkronkan ke front office.",
+        variant: "success",
+      });
     } finally {
       setIsSaving(false);
     }
   };
 
   // Reset to default
-  const handleReset = () => {
-    if (confirm("Kembalikan konten landing page ke pengaturan awal bawaan CITS?")) {
+  const handleReset = async () => {
+    const confirmed = await dialog.confirm({
+      title: "Reset konten Beranda?",
+      description:
+        "Seluruh konten landing page akan dikembalikan ke pengaturan awal bawaan CITS. Perubahan yang belum disimpan akan hilang.",
+      confirmLabel: "Ya, Reset Beranda",
+      variant: "warning",
+    });
+    if (confirmed) {
       setFormData(initialLandingPageData);
       actions.saveLandingData(initialLandingPageData);
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
+      await dialog.alert({
+        title: "Beranda direset",
+        description: "Konten landing page berhasil dikembalikan ke pengaturan awal.",
+        variant: "success",
+      });
     }
   };
 

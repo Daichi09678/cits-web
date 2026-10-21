@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { ShieldCheck, CheckCircle2, Edit, Plus, Trash2, X, Search, ChevronDown } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
+import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
 import { ServicePillar } from "@/types/schema";
 import { getPillarIcon, PILLAR_ICON_OPTIONS, PillarIconOption } from "@/lib/serviceIcons";
 
 export default function AdminServicesPage() {
   const { services, actions } = useCitsStore();
+  const dialog = useAdminDialog();
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPillar, setEditingPillar] = useState<ServicePillar | null>(null);
 
@@ -94,11 +96,29 @@ export default function AdminServicesPage() {
     setSavedSuccess(true);
     setModalOpen(false);
     setTimeout(() => setSavedSuccess(false), 3000);
+    void dialog.alert({
+      title: editingPillar ? "Pilar layanan diperbarui" : "Pilar layanan ditambahkan",
+      description: editingPillar
+        ? `Perubahan layanan "${formTitle}" berhasil disimpan.`
+        : `Layanan "${formTitle}" berhasil ditambahkan.`,
+      variant: "success",
+    });
   };
 
-  const handleDeletePillar = (id: string, title: string) => {
-    if (confirm(`Hapus pilar layanan "${title}"?`)) {
+  const handleDeletePillar = async (id: string, title: string) => {
+    const confirmed = await dialog.confirm({
+      title: "Hapus pilar layanan?",
+      description: `Pilar layanan "${title}" akan dihapus dari daftar layanan dan tampilan front office.`,
+      confirmLabel: "Hapus Layanan",
+      variant: "danger",
+    });
+    if (confirmed) {
       actions.saveServices(services.filter((s) => s.id !== id));
+      await dialog.alert({
+        title: "Pilar layanan dihapus",
+        description: `"${title}" berhasil dihapus dari daftar layanan.`,
+        variant: "success",
+      });
     }
   };
 

@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { siteConfig } from "@/config/siteConfig";
 import { citsApi } from "./api";
 
+import { clearLegacyAccounts, migrateLegacyAccounts, readLegacyAccounts } from "./internalAccountsApi";
+import type { PageKey } from "./internalAccess";
+
 export interface AdminSession {
   isLoggedIn: boolean;
   user: {
@@ -12,6 +15,9 @@ export interface AdminSession {
     email: string;
     role: string;
     avatar: string;
+    /** Halaman yang boleh diedit; kosong/undefined = Superadmin (semua). */
+    pageAccess?: PageKey[];
+    isInternal?: boolean;
   };
   loginTime: string;
 }
@@ -42,20 +48,13 @@ export const AdminAuth = {
     const cleanInput = email.trim().toLowerCase();
     const cleanPass = pass.trim();
 
-    // Verifikasi ketat: Username/Email HARUS akun resmi admin yang sah
+    // Akun lama (localStorage) dimigrasikan ke database setelah login
+    // Superadmin berhasil, karena endpoint migrasi butuh token Superadmin.
     const isOfficialEmail =
       cleanInput === "maswahyuganteng@cits.id" ||
       cleanInput === "maswahyuganteng" ||
       cleanInput === siteConfig.admin.defaultEmail.toLowerCase();
     const isOfficialPass = cleanPass === "admin" || cleanPass === "admin123";
-
-    // Jika username / email berbeda dari kredensial resmi, LOGIN PASTI GAGAL
-    if (!isOfficialEmail) {
-      return {
-        success: false,
-        message: "Email atau username tidak terdaftar sebagai administrator resmi CITS.",
-      };
-    }
 
     try {
       const res = await citsApi.login(cleanInput, cleanPass);
@@ -68,6 +67,16 @@ export const AdminAuth = {
         };
         localStorage.setItem(siteConfig.admin.sessionKey, JSON.stringify(session));
         window.dispatchEvent(new Event("cits-auth-changed"));
+
+        const role = String(res.user?.role || "").toLowerCase();
+        if (role.includes("super")) {
+          const legacyAccounts = readLegacyAccounts();
+          if (legacyAccounts.length > 0) {
+            const migrated = await migrateLegacyAccounts(legacyAccounts);
+            if (migrated !== null) clearLegacyAccounts();
+          }
+        }
+
         return { success: true };
       } else if (res && !res.success) {
         return {
@@ -79,7 +88,7 @@ export const AdminAuth = {
       console.warn("Backend auth request error, checking local fallback:", e);
     }
 
-    // Fallback lokal hanya jika backend offline dan kata sandi benar
+    // Fallback lokal hanya untuk Superadmin jika backend sedang offline.
     if (isOfficialEmail && isOfficialPass) {
       const session: AdminSession = {
         isLoggedIn: true,
@@ -93,7 +102,7 @@ export const AdminAuth = {
 
     return {
       success: false,
-      message: "Kata sandi salah. Silakan periksa kembali kredensial Anda.",
+      message: "Email atau kata sandi tidak terdaftar. Periksa kembali akun internal Anda.",
     };
   },
 

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminShell from "@/components/admin/AdminShell";
 import RealtimeNotificationToast from "@/components/admin/RealtimeNotificationToast";
 import AdminPageTransitionLoader from "@/components/admin/AdminPageTransitionLoader";
 import { useAdminAuth } from "@/lib/auth";
@@ -50,13 +50,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Network-Adaptive Page Transition Loading Bar & Indicator */}
       <AdminPageTransitionLoader />
 
-      {/* Sidebar Navigation */}
-      <AdminSidebar />
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-64">
-        <main className="flex-1 flex flex-col min-w-0">{children}</main>
-      </div>
+      {/* Sidebar Navigation + Main Workspace (collapse/expand state) */}
+      <AdminShell>
+        <main className="flex-1 flex flex-col min-w-0 w-full">{children}</main>
+      </AdminShell>
 
       {/* Floating Realtime Consultation Notification Toast */}
       <RealtimeNotificationToast />

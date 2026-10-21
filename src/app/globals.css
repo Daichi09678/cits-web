@@ -152,3 +152,39 @@ html.dark body {
   background: #1a1a2e;
   color: #ffffff;
 }
+
+/* Animasi dialog/modal back office */
+@keyframes admin-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes admin-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-admin-backdrop {
+  animation: admin-backdrop-in 0.18s ease-out both;
+}
+
+.animate-admin-dialog {
+  animation: admin-dialog-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-admin-backdrop,
+  .animate-admin-dialog {
+    animation: none;
+  }
+}

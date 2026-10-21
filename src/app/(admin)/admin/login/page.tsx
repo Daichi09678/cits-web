@@ -3,19 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import {
-  ShieldCheck,
-  Lock,
-  Mail,
-  ArrowRight,
-  Eye,
-  EyeOff,
-  AlertCircle,
-  KeyRound,
-  CheckCircle2,
-  Sparkles,
-  Building2,
-} from "lucide-react";
+import { ShieldCheck, Lock, Mail, ArrowRight, Eye, EyeOff, AlertCircle, Building2 } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 import GridPattern from "@/components/ui/GridPattern";
@@ -30,12 +18,6 @@ export default function AdminLoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const fillOfficialCredentials = () => {
-    setEmail("maswahyuganteng@cits.id");
-    setPassword("admin");
-    setError("");
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,36 +95,6 @@ export default function AdminLoginPage() {
             </p>
           </div>
 
-          {/* Quick Demo Credentials Switcher */}
-          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-2">
-            <div className="flex items-center justify-between text-[11px]">
-              <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <KeyRound className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
-                Kredensial Administrator:
-              </span>
-              <span className="text-[10px] text-slate-500 dark:text-slate-400">Klik untuk isi otomatis</span>
-            </div>
-
-            <button
-              type="button"
-              onClick={fillOfficialCredentials}
-              className="w-full p-2.5 rounded-xl border text-left transition-all cursor-pointer bg-orange-50/80 dark:bg-orange-950/40 border-orange-300 dark:border-orange-800 text-orange-900 dark:text-orange-200 shadow-2xs hover:border-orange-500"
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-xs flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
-                  Email Resmi Administrator
-                </span>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-orange-200/70 dark:bg-orange-900/60 text-orange-800 dark:text-orange-200">
-                  Password: admin
-                </span>
-              </div>
-              <div className="text-[11px] text-slate-600 dark:text-slate-300 font-mono mt-1 font-medium">
-                maswahyuganteng@cits.id
-              </div>
-            </button>
-          </div>
-
           {/* Error Message Box */}
           {error && (
             <div
@@ -161,7 +113,7 @@ export default function AdminLoginPage() {
                 htmlFor="admin-email-input"
                 className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1.5"
               >
-                Email Resmi Administrator <span className="text-red-500">*</span>
+                Email Akun <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400 pointer-events-none">

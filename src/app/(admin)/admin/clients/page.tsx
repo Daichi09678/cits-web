@@ -4,11 +4,13 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import { Handshake, Plus, CheckCircle2, Trash2, Edit, X, Search, Building2, Upload, Check } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
+import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
 import { ClientPartner } from "@/types/schema";
 
 export default function AdminClientsPage() {
   const { clients, actions } = useCitsStore();
+  const dialog = useAdminDialog();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<ClientPartner | null>(null);
@@ -90,6 +92,13 @@ export default function AdminClientsPage() {
     setSavedSuccess(true);
     setModalOpen(false);
     setTimeout(() => setSavedSuccess(false), 3000);
+    void dialog.alert({
+      title: editingClient ? "Mitra diperbarui" : "Mitra ditambahkan",
+      description: editingClient
+        ? `Perubahan mitra "${formName}" berhasil disimpan.`
+        : `Mitra "${formName}" berhasil ditambahkan.`,
+      variant: "success",
+    });
   };
 
   const filteredClients = clients.filter(
@@ -193,9 +202,20 @@ export default function AdminClientsPage() {
                   <Edit className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => {
-                    if (confirm(`Hapus logo mitra "${c.name}"?`)) {
+                  onClick={async () => {
+                    const confirmed = await dialog.confirm({
+                      title: "Hapus mitra klien?",
+                      description: `Logo mitra "${c.name}" akan dihapus dari daftar mitra dan tampilan front office.`,
+                      confirmLabel: "Hapus Mitra",
+                      variant: "danger",
+                    });
+                    if (confirmed) {
                       actions.deleteClient(c.id);
+                      await dialog.alert({
+                        title: "Mitra dihapus",
+                        description: `"${c.name}" berhasil dihapus dari daftar mitra.`,
+                        variant: "success",
+                      });
                     }
                   }}
                   className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg cursor-pointer"

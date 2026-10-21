@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { Building2, Save, CheckCircle2, Sparkles, Plus, Trash2 } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
+import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
 
 export default function AdminAboutPage() {
   const { aboutData, actions } = useCitsStore();
+  const dialog = useAdminDialog();
 
   const [title, setTitle] = useState(aboutData.title);
   const [subtitle, setSubtitle] = useState(aboutData.subtitle);
@@ -49,6 +51,11 @@ export default function AdminAboutPage() {
     });
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
+    void dialog.alert({
+      title: "Tentang Kami disimpan",
+      description: "Perubahan profil, visi, misi, dan statistik berhasil disinkronkan ke front office.",
+      variant: "success",
+    });
   };
 
   return (

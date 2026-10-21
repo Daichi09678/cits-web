@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { siteConfig } from "@/config/siteConfig";
+import { authenticateInternalAccount } from "@/lib/internalAccountsServer";
+import { issueAdminToken } from "@/lib/apiAuth";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
@@ -7,6 +12,48 @@ export async function POST(req: Request) {
     const email = (body.email || "").trim().toLowerCase();
     const password = (body.password || "").trim();
 
+    // 1. Akun staf internal (disimpan di database) dicek lebih dulu.
+    let internalAuth: Awaited<ReturnType<typeof authenticateInternalAccount>> | null = null;
+    try {
+      internalAuth = await authenticateInternalAccount(email, password);
+    } catch (error) {
+      console.error("Internal account auth error:", error);
+    }
+
+    if (internalAuth?.status === "ok") {
+      return NextResponse.json({
+        success: true,
+        token: issueAdminToken({
+          sub: internalAuth.account.id,
+          email: internalAuth.account.email,
+          name: internalAuth.account.name,
+          role: "internal",
+          pageAccess: internalAuth.account.pageAccess,
+        }),
+        user: {
+          id: internalAuth.account.id,
+          name: internalAuth.account.name,
+          email: internalAuth.account.email,
+          role: "Admin Internal",
+          avatar: "/avatars/admin.webp",
+          pageAccess: internalAuth.account.pageAccess,
+          isInternal: true,
+        },
+      });
+    }
+
+    if (internalAuth?.status === "inactive") {
+      return NextResponse.json(
+        { success: false, message: "Akun internal ini sedang dinonaktifkan. Hubungi Superadmin." },
+        { status: 403 }
+      );
+    }
+
+    if (internalAuth?.status === "invalid-password") {
+      return NextResponse.json({ success: false, message: "Kata sandi akun internal salah." }, { status: 401 });
+    }
+
+    // 2. Akun Superadmin bawaan.
     const isOfficialEmail =
       email === "maswahyuganteng@cits.id" ||
       email === "maswahyuganteng" ||
@@ -30,7 +77,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const token = `cits_admin_jwt_${Date.now()}`;
+    const token = issueAdminToken({
+      sub: "admin-1",
+      email: siteConfig.admin.defaultEmail,
+      name: "maswahyuganteng",
+      role: "superadmin",
+    });
     const user = {
       id: "admin-1",
       name: "maswahyuganteng",

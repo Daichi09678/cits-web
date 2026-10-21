@@ -22,6 +22,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
+import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
 import { CaseStudyItem } from "@/types/schema";
 
@@ -50,6 +51,7 @@ const PRESET_LOGOS = [
 
 export default function AdminPortfolioPage() {
   const { caseStudies, actions } = useCitsStore();
+  const dialog = useAdminDialog();
 
   const [search, setSearch] = useState("");
   const [sectorFilter, setSectorFilter] = useState("All");
@@ -87,7 +89,11 @@ export default function AdminPortfolioPage() {
     if (!file) return;
 
     if (file.size > 3 * 1024 * 1024) {
-      alert("Ukuran file logo maksimal 3 MB.");
+      void dialog.alert({
+        title: "Ukuran file terlalu besar",
+        description: "Ukuran file logo maksimal 3 MB. Silakan pilih file yang lebih kecil.",
+        variant: "warning",
+      });
       return;
     }
 
@@ -190,11 +196,29 @@ export default function AdminPortfolioPage() {
     setSavedSuccess(true);
     setModalOpen(false);
     setTimeout(() => setSavedSuccess(false), 3000);
+    void dialog.alert({
+      title: editingStudy ? "Studi kasus diperbarui" : "Studi kasus ditambahkan",
+      description: editingStudy
+        ? `Perubahan studi kasus "${formTitle}" berhasil disimpan.`
+        : `Studi kasus "${formTitle}" berhasil ditambahkan ke portofolio.`,
+      variant: "success",
+    });
   };
 
-  const handleDelete = (id: string, title: string) => {
-    if (confirm(`Apakah Anda yakin ingin menghapus studi kasus "${title}"?`)) {
+  const handleDelete = async (id: string, title: string) => {
+    const confirmed = await dialog.confirm({
+      title: "Hapus studi kasus?",
+      description: `Studi kasus "${title}" akan dihapus permanen dari portofolio dan tampilan front office.`,
+      confirmLabel: "Hapus Studi Kasus",
+      variant: "danger",
+    });
+    if (confirmed) {
       actions.deleteCaseStudy(id);
+      await dialog.alert({
+        title: "Studi kasus dihapus",
+        description: `"${title}" berhasil dihapus dari portofolio.`,
+        variant: "success",
+      });
     }
   };
 

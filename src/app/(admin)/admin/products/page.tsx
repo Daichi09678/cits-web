@@ -25,11 +25,13 @@ import {
   Camera,
 } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
+import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
 import { ProductItem } from "@/types/schema";
 
 export default function AdminProductsPage() {
   const { products, actions } = useCitsStore();
+  const dialog = useAdminDialog();
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
@@ -54,7 +56,11 @@ export default function AdminProductsPage() {
     if (!file) return;
 
     if (file.size > 3 * 1024 * 1024) {
-      alert("Ukuran foto maksimal 3 MB.");
+      void dialog.alert({
+        title: "Ukuran foto terlalu besar",
+        description: "Ukuran foto maksimal 3 MB. Silakan pilih file yang lebih kecil.",
+        variant: "warning",
+      });
       return;
     }
 
@@ -141,6 +147,13 @@ export default function AdminProductsPage() {
     }
 
     setModalOpen(false);
+    void dialog.alert({
+      title: editingProduct ? "Produk diperbarui" : "Produk ditambahkan",
+      description: editingProduct
+        ? `Perubahan produk "${formName}" berhasil disimpan.`
+        : `Produk "${formName}" berhasil ditambahkan ke katalog.`,
+      variant: "success",
+    });
   };
 
   // Filtered Products
@@ -303,9 +316,20 @@ export default function AdminProductsPage() {
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => {
-                              if (confirm(`Yakin ingin menghapus produk "${prod.name}"?`)) {
+                            onClick={async () => {
+                              const confirmed = await dialog.confirm({
+                                title: "Hapus produk?",
+                                description: `Produk "${prod.name}" akan dihapus permanen dari katalog dan tampilan front office.`,
+                                confirmLabel: "Hapus Produk",
+                                variant: "danger",
+                              });
+                              if (confirmed) {
                                 actions.deleteProduct(prod.id);
+                                await dialog.alert({
+                                  title: "Produk dihapus",
+                                  description: `"${prod.name}" berhasil dihapus dari katalog.`,
+                                  variant: "success",
+                                });
                               }
                             }}
                             title="Hapus Produk"
