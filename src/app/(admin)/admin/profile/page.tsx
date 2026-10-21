@@ -358,42 +358,12 @@ export default function AdminProfilePage() {
           </div>
         </div>
       ) : (
-        <div className="flex-1 bg-slate-50/70 p-4 sm:p-6 lg:p-8 dark:bg-[#0F0F1A]">
+        <div className="flex-1 bg-white p-4 sm:p-6 lg:p-8 dark:bg-[#0F0F1A]">
           <div className="mx-auto max-w-6xl space-y-6">
-            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-              <span>Pengaturan Akun</span>
-              <ChevronRight className="h-3 w-3" />
-              <span className="text-orange-600 dark:text-orange-400">Profil Saya</span>
-            </div>
-
             {/* Kartu identitas utama */}
             <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm shadow-slate-900/5 dark:border-white/10 dark:bg-[#151528]">
-              <div className="relative h-36 overflow-hidden bg-gradient-to-r from-orange-600 via-orange-500 to-amber-400 sm:h-44">
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 opacity-30"
-                  style={{
-                    backgroundImage:
-                      "radial-gradient(circle at 18% 30%, rgba(255,255,255,.8) 0, transparent 24%), radial-gradient(circle at 82% 70%, rgba(255,255,255,.55) 0, transparent 20%)",
-                  }}
-                />
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 opacity-20"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.4) 1px, transparent 1px)",
-                    backgroundSize: "28px 28px",
-                  }}
-                />
-                <div className="absolute right-4 top-4 flex items-center gap-2 rounded-full border border-white/30 bg-white/15 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  Akun terverifikasi
-                </div>
-              </div>
-
-              <div className="px-5 pb-6 sm:px-8">
-                <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end">
+              <div className="px-5 py-6 sm:px-8">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
                   <div className="relative w-fit">
                     <div className="rounded-[1.75rem] border-4 border-white bg-white p-1 shadow-xl shadow-slate-900/10 dark:border-[#151528] dark:bg-[#151528]">
                       <UserAvatar
@@ -437,6 +407,10 @@ export default function AdminProfilePage() {
                       >
                         <BadgeCheck className="h-3 w-3" />
                         {profile?.role || session?.user.role || "Admin"}
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+                        <ShieldCheck className="h-3 w-3" />
+                        Akun terverifikasi
                       </span>
                     </div>
                     <p className="mt-1 flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
