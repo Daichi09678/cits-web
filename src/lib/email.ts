@@ -10,6 +10,97 @@ interface SendContactNotificationParams {
   recipientEmail?: string;
 }
 
+export function isEmailConfigured(): boolean {
+  return !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+export async function sendPasswordResetEmail(params: {
+  to: string;
+  name: string;
+  resetUrl: string;
+  expiresMinutes: number;
+}): Promise<{ sent: boolean; reason?: string }> {
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT) || 587;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (!host || !user || !pass) {
+    console.log("ℹ️ SMTP belum dikonfigurasi; email reset kata sandi tidak dikirim.");
+    return { sent: false, reason: "SMTP not configured" };
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: { user, pass },
+    });
+
+    const safeName = escapeHtml(params.name || "Administrator");
+    const safeUrl = escapeHtml(params.resetUrl);
+
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
+        <div style="border-bottom: 2px solid #ea580c; padding-bottom: 16px; margin-bottom: 20px;">
+          <h2 style="color: #0f172a; margin: 0 0 6px 0; font-size: 20px;">Reset Kata Sandi Back Office</h2>
+          <p style="color: #64748b; margin: 0; font-size: 13px;">CITS Indonesia — Cipta Integrasi Teknologi Solusi</p>
+        </div>
+
+        <p style="color: #334155; font-size: 14px; line-height: 1.6;">Halo <strong>${safeName}</strong>,</p>
+        <p style="color: #334155; font-size: 14px; line-height: 1.6;">
+          Kami menerima permintaan untuk mengatur ulang kata sandi akun back office Anda. Klik tombol di bawah ini untuk membuat kata sandi baru.
+        </p>
+
+        <div style="text-align: center; margin: 28px 0;">
+          <a href="${safeUrl}" style="display: inline-block; background-color: #ea580c; color: #ffffff; text-decoration: none; font-weight: bold; font-size: 14px; padding: 13px 24px; border-radius: 10px;">
+            Buat Kata Sandi Baru
+          </a>
+        </div>
+
+        <div style="background-color: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; padding: 14px; margin-bottom: 20px;">
+          <p style="margin: 0; color: #9a3412; font-size: 12px; line-height: 1.6;">
+            Tautan ini hanya berlaku selama <strong>${params.expiresMinutes} menit</strong> dan hanya dapat digunakan satu kali.
+          </p>
+        </div>
+
+        <p style="color: #64748b; font-size: 12px; line-height: 1.6;">
+          Jika Anda tidak meminta reset kata sandi, abaikan email ini. Kata sandi Anda tidak akan berubah.
+        </p>
+
+        <div style="font-size: 11px; color: #94a3b8; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 16px; margin-top: 24px;">
+          Email ini dikirim otomatis oleh sistem keamanan CITS Back Office.
+        </div>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: `"CITS Back Office" <${user}>`,
+      to: params.to,
+      subject: "Reset Kata Sandi Akun Back Office CITS",
+      html: htmlContent,
+      text: `Halo ${params.name}, buka tautan berikut untuk membuat kata sandi baru: ${params.resetUrl}. Tautan berlaku ${params.expiresMinutes} menit dan hanya bisa dipakai sekali.`,
+    });
+
+    console.log(`✅ Email reset kata sandi dikirim ke ${params.to}`);
+    return { sent: true };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Gagal mengirim email.";
+    console.error("❌ Gagal mengirim email reset kata sandi:", message);
+    return { sent: false, reason: message };
+  }
+}
+
 export async function sendContactNotificationEmail(
   params: SendContactNotificationParams
 ): Promise<{ sent: boolean; reason?: string }> {

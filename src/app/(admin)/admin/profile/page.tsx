@@ -726,15 +726,13 @@ export default function AdminProfilePage() {
                     <LockKeyhole className="h-3.5 w-3.5" />
                     Sesi terlindungi token bertanda tangan
                   </div>
-                  {roleIsSuperadmin && (
-                    <Link
-                      href="/admin/settings"
-                      className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-orange-600 hover:underline dark:text-orange-400"
-                    >
-                      Buka Pengaturan Akun
-                      <ChevronRight className="h-3 w-3" />
-                    </Link>
-                  )}
+                  <Link
+                    href="/admin/settings/security"
+                    className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-orange-600 hover:underline dark:text-orange-400"
+                  >
+                    Ganti Kata Sandi
+                    <ChevronRight className="h-3 w-3" />
+                  </Link>
                 </section>
               </aside>
             </form>

@@ -1,34 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, Eye, Lock, ShieldAlert } from "lucide-react";
+import { Eye, Lock } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
 import { EDITABLE_PAGES, getPageKeyFromPathname, isSuperadminRole, type PageKey } from "@/lib/internalAccess";
-
-function AccessDeniedPanel() {
-  return (
-    <div className="flex flex-1 items-center justify-center p-6 sm:p-10">
-      <div className="w-full max-w-md rounded-3xl border border-rose-200 bg-white p-8 text-center shadow-sm dark:border-rose-500/20 dark:bg-[#151528]">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400">
-          <ShieldAlert className="h-7 w-7" />
-        </div>
-        <h1 className="mt-4 text-lg font-extrabold text-slate-900 dark:text-white">Akses Ditolak</h1>
-        <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-          Halaman <strong>Pengaturan</strong> hanya dapat dibuka oleh Superadmin. Akun internal hanya dapat mengubah
-          halaman yang sudah ditentukan oleh Superadmin.
-        </p>
-        <Link
-          href="/admin"
-          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-orange-600/20 transition-colors hover:bg-orange-700"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Kembali ke Dashboard
-        </Link>
-      </div>
-    </div>
-  );
-}
 
 export default function PageAccessGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -54,10 +29,9 @@ export default function PageAccessGate({ children }: { children: React.ReactNode
   // Superadmin bebas mengakses seluruh halaman.
   if (isSuperadminRole(role)) return <>{children}</>;
 
-  // Pengaturan/akun internal hanya untuk Superadmin.
-  if (pathname === "/admin/settings" || pathname.startsWith("/admin/settings/")) {
-    return <AccessDeniedPanel />;
-  }
+  // Halaman Pengaturan dapat dibuka semua admin, tetapi untuk Admin Internal
+  // halaman ini hanya menampilkan tab Keamanan (lihat settings/page.tsx).
+  // Pengelolaan akun tetap dijaga oleh API khusus Superadmin.
 
   const pageKey = getPageKeyFromPathname(pathname);
 

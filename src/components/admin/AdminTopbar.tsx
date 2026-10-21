@@ -143,7 +143,8 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
         <Link
           href="/admin/profile"
           title="Buka profil saya"
-          className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-1 transition-colors hover:border-orange-300 hover:bg-orange-50/60 dark:border-white/10 dark:bg-white/5 dark:hover:border-orange-500/40 dark:hover:bg-orange-500/10 sm:pr-2.5"
+          aria-label="Buka profil saya"
+          className="flex items-center justify-center rounded-full border border-slate-200 bg-white p-1 transition-colors hover:border-orange-300 hover:bg-orange-50/60 dark:border-white/10 dark:bg-white/5 dark:hover:border-orange-500/40 dark:hover:bg-orange-500/10"
         >
           <UserAvatar
             src={session?.user.avatar}
@@ -151,14 +152,6 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
             size={30}
             textClassName="text-[10px]"
           />
-          <span className="hidden text-left lg:block">
-            <span className="block max-w-32 truncate text-[11px] font-bold text-slate-800 dark:text-slate-100">
-              {session?.user.name || "Administrator"}
-            </span>
-            <span className="block max-w-32 truncate text-[9px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              {session?.user.jobTitle || session?.user.role || "Admin"}
-            </span>
-          </span>
         </Link>
       </div>
     </header>

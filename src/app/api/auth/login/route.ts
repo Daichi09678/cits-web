@@ -4,6 +4,7 @@ import { authenticateInternalAccount } from "@/lib/internalAccountsServer";
 import { issueAdminToken } from "@/lib/apiAuth";
 import { getAdminProfile } from "@/lib/profileServer";
 import { DEFAULT_AVATAR } from "@/lib/profile";
+import { verifyAdminCredential } from "@/lib/passwordServer";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -79,7 +80,10 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!isOfficialPass) {
+    const storedCredential = await verifyAdminCredential("admin-1", password);
+    const defaultPasswordOk = storedCredential === null && isOfficialPass;
+
+    if (storedCredential !== true && !defaultPasswordOk) {
       return NextResponse.json(
         { success: false, message: "Kata sandi salah. Silakan periksa kembali kredensial Anda." },
         { status: 401 }

@@ -301,6 +301,51 @@ export async function updateInternalAccount(id: string, input: InternalAccountIn
   return { success: true, account: toPublic(updated) };
 }
 
+export async function findInternalAccountByEmail(email: string): Promise<PublicInternalAccount | null> {
+  const normalized = normalizeEmail(email);
+  const records = await listRecords();
+  const account = records.find((item) => normalizeEmail(item.email) === normalized);
+  return account ? toPublic(account) : null;
+}
+
+export async function updateInternalAccountPassword(
+  id: string,
+  newPassword: string
+): Promise<{ success: boolean; message?: string }> {
+  const records = await listRecords();
+  const existing = records.find((account) => account.id === id);
+  if (!existing) return { success: false, message: "Akun internal tidak ditemukan." };
+
+  const salt = randomBytes(16).toString("hex");
+  const passwordHash = hashPassword(newPassword, salt);
+  const updatedAt = new Date().toISOString();
+
+  const sql = getSql();
+  if (sql) {
+    try {
+      await ensureTable();
+      await sql`
+        UPDATE internal_accounts
+        SET password_hash = ${passwordHash},
+            password_salt = ${salt},
+            password_algo = 'scrypt',
+            updated_at = ${updatedAt}
+        WHERE id = ${id}
+      `;
+      return { success: true };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Gagal memperbarui kata sandi.";
+      console.error("DB Error updateInternalAccountPassword:", error);
+      return { success: false, message };
+    }
+  }
+
+  memoryAccounts = memoryAccounts.map((account) =>
+    account.id === id ? { ...account, passwordHash, passwordSalt: salt, passwordAlgo: "scrypt", updatedAt } : account
+  );
+  return { success: true };
+}
+
 export async function setInternalAccountName(id: string, name: string): Promise<void> {
   const cleanName = name.trim();
   if (!cleanName) return;

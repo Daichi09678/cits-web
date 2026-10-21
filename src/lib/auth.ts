@@ -52,12 +52,6 @@ export const AdminAuth = {
 
     // Akun lama (localStorage) dimigrasikan ke database setelah login
     // Superadmin berhasil, karena endpoint migrasi butuh token Superadmin.
-    const isOfficialEmail =
-      cleanInput === "maswahyuganteng@cits.id" ||
-      cleanInput === "maswahyuganteng" ||
-      cleanInput === siteConfig.admin.defaultEmail.toLowerCase();
-    const isOfficialPass = cleanPass === "admin" || cleanPass === "admin123";
-
     try {
       const res = await citsApi.login(cleanInput, cleanPass);
       if (res && res.success && res.token) {
@@ -87,19 +81,7 @@ export const AdminAuth = {
         };
       }
     } catch (e) {
-      console.warn("Backend auth request error, checking local fallback:", e);
-    }
-
-    // Fallback lokal hanya untuk Superadmin jika backend sedang offline.
-    if (isOfficialEmail && isOfficialPass) {
-      const session: AdminSession = {
-        isLoggedIn: true,
-        user: defaultUser,
-        loginTime: new Date().toISOString(),
-      };
-      localStorage.setItem(siteConfig.admin.sessionKey, JSON.stringify(session));
-      window.dispatchEvent(new Event("cits-auth-changed"));
-      return { success: true };
+      console.warn("Backend auth request error:", e);
     }
 
     return {

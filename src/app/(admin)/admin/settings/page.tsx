@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ShieldCheck,
-  ShieldAlert,
   Users,
   UserPlus,
   UserCog,
@@ -21,6 +20,7 @@ import {
 } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import AdminModal from "@/components/admin/AdminModal";
+import SecuritySettings from "@/components/admin/SecuritySettings";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import MatrixCheckbox from "@/components/admin/MatrixCheckbox";
 import { useAdminAuth } from "@/lib/auth";
@@ -44,7 +44,7 @@ import {
 } from "@/lib/internalAccountsApi";
 import { useCitsStore } from "@/stores/citsStore";
 
-type TabKey = "accounts" | "maintenance";
+type TabKey = "accounts" | "security" | "maintenance";
 
 interface AccountFormState {
   id: string | null;
@@ -102,6 +102,7 @@ export default function AdminSettingsPage() {
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
+  const isSuperadmin = (session?.user.role || "").toLowerCase().includes("super");
 
   const loadAccounts = useCallback(async () => {
     setAccountsLoading(true);
@@ -119,6 +120,11 @@ export default function AdminSettingsPage() {
   }, []);
 
   useEffect(() => {
+    if (!isSuperadmin) {
+      setAccountsLoading(false);
+      return;
+    }
+
     // Muat akun dari database + migrasikan akun lama (localStorage) bila ada.
     let cancelled = false;
     (async () => {
@@ -132,9 +138,9 @@ export default function AdminSettingsPage() {
     return () => {
       cancelled = true;
     };
-  }, [loadAccounts]);
+  }, [isSuperadmin, loadAccounts]);
 
-  const isSuperadmin = (session?.user.role || "").toLowerCase().includes("super");
+  const activeTab: TabKey = isSuperadmin ? tab : "security";
   const activeAccounts = accounts.filter((account) => account.isActive).length;
   const isMatrixDirty = useMemo(
     () => accounts.some((account) => pageAccessChanged(matrix[account.id] ?? [], account.pageAccess)),
@@ -338,25 +344,19 @@ export default function AdminSettingsPage() {
     );
   }
 
-  if (!session || !isSuperadmin) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-6">
-        <div className="w-full max-w-md rounded-3xl border border-rose-200 bg-white p-8 text-center dark:border-rose-500/20 dark:bg-[#151528]">
-          <ShieldAlert className="mx-auto h-10 w-10 text-rose-500" />
-          <h1 className="mt-3 text-base font-extrabold text-slate-900 dark:text-white">Akses Ditolak</h1>
-          <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
-            Pengaturan hanya dapat dibuka oleh Superadmin.
-          </p>
-        </div>
-      </div>
-    );
+  if (!session) {
+    return null;
   }
 
   return (
     <div className="flex min-w-0 flex-1 flex-col">
       <AdminTopbar
         title="Pengaturan Back Office"
-        description="Kelola akun internal, hak akses per halaman, dan pemeliharaan data"
+        description={
+          isSuperadmin
+            ? "Kelola akun internal, hak akses per halaman, keamanan, dan pemeliharaan data"
+            : "Kelola keamanan akun dan kata sandi Anda"
+        }
       />
 
       <div className="mx-auto w-full max-w-[1600px] space-y-5 p-4 sm:p-6 lg:p-8">
@@ -376,42 +376,56 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
-        {/* Tabs */}
-        <div className="flex w-fit flex-wrap items-center gap-1 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xs dark:border-white/10 dark:bg-[#151528]">
-          <button
-            type="button"
-            onClick={() => setTab("accounts")}
-            className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[11px] font-bold transition-colors ${
-              tab === "accounts"
-                ? "bg-orange-600 text-white shadow-sm shadow-orange-600/20"
-                : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
-            }`}
-          >
-            <Users className="h-3.5 w-3.5" />
-            Akun & Hak Akses
-            <span
-              className={`rounded-full px-1.5 py-0.5 text-[9px] ${
-                tab === "accounts" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500 dark:bg-white/10"
+        {/* Tabs (hanya Superadmin) */}
+        {isSuperadmin && (
+          <div className="flex w-fit flex-wrap items-center gap-1 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xs dark:border-white/10 dark:bg-[#151528]">
+            <button
+              type="button"
+              onClick={() => setTab("accounts")}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[11px] font-bold transition-colors ${
+                tab === "accounts"
+                  ? "bg-orange-600 text-white shadow-sm shadow-orange-600/20"
+                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
               }`}
             >
-              {accounts.length}
-            </span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setTab("maintenance")}
-            className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[11px] font-bold transition-colors ${
-              tab === "maintenance"
-                ? "bg-orange-600 text-white shadow-sm shadow-orange-600/20"
-                : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
-            }`}
-          >
-            <Wrench className="h-3.5 w-3.5" />
-            Pemeliharaan
-          </button>
-        </div>
+              <Users className="h-3.5 w-3.5" />
+              Akun & Hak Akses
+              <span
+                className={`rounded-full px-1.5 py-0.5 text-[9px] ${
+                  tab === "accounts" ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500 dark:bg-white/10"
+                }`}
+              >
+                {accounts.length}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("security")}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[11px] font-bold transition-colors ${
+                tab === "security"
+                  ? "bg-orange-600 text-white shadow-sm shadow-orange-600/20"
+                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
+              }`}
+            >
+              <Key className="h-3.5 w-3.5" />
+              Keamanan
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("maintenance")}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-[11px] font-bold transition-colors ${
+                tab === "maintenance"
+                  ? "bg-orange-600 text-white shadow-sm shadow-orange-600/20"
+                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
+              }`}
+            >
+              <Wrench className="h-3.5 w-3.5" />
+              Pemeliharaan
+            </button>
+          </div>
+        )}
 
-        {tab === "accounts" ? (
+        {activeTab === "accounts" ? (
           <>
             {/* Banner internal */}
             <div className="flex flex-col gap-3 rounded-2xl border border-orange-200/80 bg-gradient-to-r from-orange-50 via-amber-50/60 to-transparent p-4 dark:border-orange-500/20 dark:from-orange-500/10 dark:via-amber-500/5 sm:flex-row sm:items-center sm:justify-between">
@@ -992,6 +1006,8 @@ export default function AdminSettingsPage() {
               sandi disimpan sebagai hash <strong>scrypt</strong>, bukan teks asli.
             </p>
           </>
+        ) : activeTab === "security" ? (
+          <SecuritySettings />
         ) : (
           <div className="space-y-6">
             {resetSuccess && (

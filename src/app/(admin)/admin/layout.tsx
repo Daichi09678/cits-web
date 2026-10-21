@@ -12,15 +12,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const { isAuthenticated, loading } = useAdminAuth();
   const isLoginPage = pathname === "/admin/login";
+  const isResetPage = pathname === "/admin/reset-password";
+  const isPublicPage = isLoginPage || isResetPage;
 
   useEffect(() => {
-    if (!loading && !isAuthenticated && !isLoginPage) {
+    if (!loading && !isAuthenticated && !isPublicPage) {
       router.replace("/admin/login");
     }
-  }, [isAuthenticated, loading, isLoginPage, router]);
+  }, [isAuthenticated, loading, isPublicPage, router]);
 
-  // If on login page, render plain without sidebar
-  if (isLoginPage) {
+  // Halaman login dan reset kata sandi tampil tanpa sidebar.
+  if (isPublicPage) {
     return <div className="min-h-screen bg-slate-100 dark:bg-[#0F0F1A] text-slate-900 dark:text-white">{children}</div>;
   }
 

@@ -134,7 +134,7 @@ export default function AdminSidebar() {
     },
   ];
 
-  const navItems = allNavItems.filter((item) => item.href !== "/admin/settings" || isSuperadmin);
+  const navItems = allNavItems;
 
   const handleLogout = () => {
     logout();

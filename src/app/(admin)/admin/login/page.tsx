@@ -3,10 +3,24 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ShieldCheck, Lock, Mail, ArrowRight, Eye, EyeOff, AlertCircle, Building2 } from "lucide-react";
+import {
+  ShieldCheck,
+  Lock,
+  Mail,
+  ArrowRight,
+  Eye,
+  EyeOff,
+  AlertCircle,
+  Building2,
+  CheckCircle2,
+  KeyRound,
+  Loader2,
+  Send,
+} from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 import GridPattern from "@/components/ui/GridPattern";
+import AdminModal from "@/components/admin/AdminModal";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -18,6 +32,11 @@ export default function AdminLoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
+  const [forgotError, setForgotError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +56,38 @@ export default function AdminLoginPage() {
       setLoading(false);
     }
   };
+
+  function openForgotPassword() {
+    setForgotEmail(email.trim());
+    setForgotSent(false);
+    setForgotError("");
+    setForgotOpen(true);
+  }
+
+  async function handleForgotSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    setForgotError("");
+    setForgotLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail.trim() }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as { success?: boolean; message?: string };
+      if (!response.ok || payload.success === false) {
+        throw new Error(payload.message || "Permintaan reset kata sandi gagal diproses.");
+      }
+      setForgotSent(true);
+    } catch (forgotSubmitError) {
+      setForgotError(
+        forgotSubmitError instanceof Error ? forgotSubmitError.message : "Gagal mengirim tautan reset kata sandi."
+      );
+    } finally {
+      setForgotLoading(false);
+    }
+  }
 
   return (
     <div className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 bg-slate-50 dark:bg-[#0c0c16] text-slate-900 dark:text-white transition-colors overflow-hidden">
@@ -142,7 +193,13 @@ export default function AdminLoginPage() {
                 >
                   Kata Sandi <span className="text-red-500">*</span>
                 </label>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400">Terenkripsi SHA-256</span>
+                <button
+                  type="button"
+                  onClick={openForgotPassword}
+                  className="text-[10px] font-bold text-orange-600 transition-colors hover:text-orange-700 hover:underline dark:text-orange-400 dark:hover:text-orange-300"
+                >
+                  Lupa kata sandi?
+                </button>
               </div>
               <div className="relative">
                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400 pointer-events-none">
@@ -217,6 +274,90 @@ export default function AdminLoginPage() {
           </div>
         </div>
       </div>
+
+      <AdminModal
+        open={forgotOpen}
+        onClose={() => {
+          if (!forgotLoading) setForgotOpen(false);
+        }}
+        title="Lupa Kata Sandi"
+        description="Masukkan email akun back office Anda. Kami akan mengirim tautan untuk membuat kata sandi baru."
+        icon={KeyRound}
+        size="md"
+      >
+        {forgotSent ? (
+          <div className="space-y-4 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300">
+              <CheckCircle2 className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">Periksa Kotak Masuk Email</h3>
+              <p className="mt-1 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                Jika <strong className="text-slate-700 dark:text-slate-200">{forgotEmail}</strong> terdaftar, tautan
+                reset kata sandi sudah dikirim. Periksa inbox dan folder spam.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setForgotOpen(false)}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-orange-700"
+            >
+              Kembali ke Login
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleForgotSubmit} className="space-y-4">
+            <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+              Masukkan alamat email asli yang terdaftar pada akun internal atau Superadmin.
+            </p>
+
+            {forgotError && (
+              <div
+                role="alert"
+                className="flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-[11px] leading-relaxed text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300"
+              >
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{forgotError}</span>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <label
+                htmlFor="forgot-email"
+                className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300"
+              >
+                Email Akun
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  id="forgot-email"
+                  type="email"
+                  value={forgotEmail}
+                  onChange={(event) => setForgotEmail(event.target.value)}
+                  placeholder="nama@cits.id"
+                  autoComplete="email"
+                  required
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-xs text-slate-900 shadow-sm outline-none transition-all placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={forgotLoading || forgotEmail.trim().length === 0}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 text-xs font-bold text-white shadow-sm shadow-orange-600/25 transition-colors hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {forgotLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              {forgotLoading ? "Mengirim tautan..." : "Kirim Tautan Reset"}
+            </button>
+
+            <p className="text-center text-[10px] leading-relaxed text-slate-400 dark:text-slate-500">
+              Demi keamanan, kami tidak menampilkan apakah email tersebut terdaftar atau tidak.
+            </p>
+          </form>
+        )}
+      </AdminModal>
     </div>
   );
 }
