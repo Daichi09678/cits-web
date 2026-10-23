@@ -110,7 +110,7 @@ function ResetPasswordForm() {
               </div>
               <Link
                 href="/admin/login"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 text-xs font-bold text-white transition-colors hover:bg-orange-700"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-700 px-4 py-3 text-xs font-bold text-white transition-colors hover:bg-orange-800"
               >
                 Kembali ke Login
                 <ArrowRight className="h-4 w-4" />
@@ -131,7 +131,7 @@ function ResetPasswordForm() {
               </div>
               <Link
                 href="/admin/login"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 text-xs font-bold text-white transition-colors hover:bg-orange-700"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-700 px-4 py-3 text-xs font-bold text-white transition-colors hover:bg-orange-800"
               >
                 Masuk ke Back Office
                 <ArrowRight className="h-4 w-4" />
@@ -234,7 +234,7 @@ function ResetPasswordForm() {
               <button
                 type="submit"
                 disabled={loading || !newPassword || !confirmPassword}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3.5 text-xs font-bold text-white shadow-md shadow-orange-600/20 transition-all hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-700 px-4 py-3.5 text-xs font-bold text-white shadow-md shadow-orange-600/20 transition-all hover:bg-orange-800 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
                 {loading ? "Menyimpan kata sandi..." : "Simpan Kata Sandi Baru"}

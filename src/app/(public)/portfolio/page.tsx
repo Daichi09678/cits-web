@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useModalFocus } from "@/components/ui/useModalFocus";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -538,6 +539,7 @@ export default function PortfolioPage() {
   const { caseStudies: storeCaseStudies } = useCitsStore();
   const [selectedCategory, setSelectedCategory] = useState<string>("Semua Studi Kasus");
   const [activeModalStudy, setActiveModalStudy] = useState<CaseStudyItem | null>(null);
+  const modalRef = useModalFocus(!!activeModalStudy, () => setActiveModalStudy(null));
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
 
   const studySource = storeCaseStudies && storeCaseStudies.length > 0 ? storeCaseStudies : caseStudies;
@@ -748,7 +750,7 @@ export default function PortfolioPage() {
                     <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
                       <button
                         onClick={() => setActiveModalStudy(project)}
-                        className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-md shadow-orange-600/20 cursor-pointer"
+                        className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-orange-700 hover:bg-orange-800 text-white text-xs font-bold transition-all shadow-md shadow-orange-600/20 cursor-pointer"
                       >
                         Bedah Studi Kasus Lengkap
                         <ChevronRight className="w-3.5 h-3.5" />
@@ -885,7 +887,7 @@ export default function PortfolioPage() {
                             </div>
 
                             <span
-                              className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 whitespace-nowrap ${
+                              className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider min-w-0 break-words ${
                                 categoryColors[project.sector] ||
                                 "bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white"
                               }`}
@@ -951,8 +953,8 @@ export default function PortfolioPage() {
                           </div>
 
                           {/* Tech Stack Pills (Normalized h-10) */}
-                          <div className="mt-4 pt-3 border-t border-gray-150 dark:border-white/10 h-10 flex items-center overflow-hidden">
-                            <div className="flex items-center gap-1 w-full overflow-hidden whitespace-nowrap">
+                          <div className="mt-4 pt-3 border-t border-gray-200 dark:border-white/10 min-h-10 flex items-center">
+                            <div className="flex flex-wrap items-center gap-1 w-full min-w-0">
                               {project.techStack.slice(0, 3).map((t) => (
                                 <span
                                   key={t}
@@ -1078,7 +1080,7 @@ export default function PortfolioPage() {
                       <td className="py-4 px-5 align-top text-right whitespace-nowrap">
                         <button
                           onClick={() => setActiveModalStudy(project)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-sm shadow-orange-600/20 cursor-pointer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-700 hover:bg-orange-800 text-white text-xs font-bold transition-all shadow-sm shadow-orange-600/20 cursor-pointer"
                         >
                           <span>Bedah Kasus</span>
                           <ArrowRight className="w-3 h-3" />
@@ -1212,9 +1214,13 @@ export default function PortfolioPage() {
       <AnimatePresence>
         {activeModalStudy && (
           <div
+            ref={modalRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-case-study-title"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setActiveModalStudy(null);
+            }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/60 backdrop-blur-sm"
           >
             <motion.div
@@ -1361,7 +1367,7 @@ export default function PortfolioPage() {
                   </button>
                   <Link
                     href="/contact"
-                    className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-md shadow-orange-600/20"
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-orange-700 hover:bg-orange-800 text-white text-xs font-bold transition-all shadow-md shadow-orange-600/20"
                   >
                     Konsultasikan Proyek Serupa
                     <ArrowRight className="w-3.5 h-3.5" />

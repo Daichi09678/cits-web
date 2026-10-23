@@ -24,7 +24,8 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -72,7 +73,8 @@ export default function Navbar() {
             <li key={link.href}>
               <Link
                 href={link.href}
-                className={`relative text-sm font-medium transition-colors ${
+                aria-current={isActive(link.href) ? "page" : undefined}
+                className={`group relative text-sm font-medium transition-colors ${
                   isActive(link.href)
                     ? "text-orange-700 dark:text-orange-400 font-semibold"
                     : "text-gray-700 dark:text-white hover:text-orange-700 dark:hover:text-orange-400"
@@ -105,6 +107,8 @@ export default function Navbar() {
             className="p-2 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-navigation"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -115,6 +119,7 @@ export default function Navbar() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
+            id="mobile-navigation"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -130,6 +135,7 @@ export default function Navbar() {
                 >
                   <Link
                     href={link.href}
+                    aria-current={isActive(link.href) ? "page" : undefined}
                     className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
                       isActive(link.href)
                         ? "text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 font-semibold"

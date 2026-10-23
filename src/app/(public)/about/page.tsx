@@ -811,7 +811,7 @@ export default function AboutPage() {
                             >
                               <time
                                 dateTime={m.year}
-                                className="px-2.5 py-1 rounded-md bg-orange-600 text-white font-extrabold text-xs shadow-xs"
+                                className="px-2.5 py-1 rounded-md bg-orange-700 text-white font-extrabold text-xs shadow-xs"
                               >
                                 {m.year}
                               </time>
@@ -884,7 +884,7 @@ export default function AboutPage() {
                     onClick={() => setAwardFilter(tab.key as typeof awardFilter)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${
                       isActive
-                        ? "bg-orange-600 text-white shadow-sm shadow-orange-600/30"
+                        ? "bg-orange-700 text-white shadow-sm shadow-orange-600/30"
                         : "bg-white dark:bg-white/10 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/15 border border-slate-200 dark:border-white/10"
                     }`}
                   >

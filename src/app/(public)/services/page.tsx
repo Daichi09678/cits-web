@@ -819,7 +819,7 @@ export default function ServicesPage() {
                       <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10">
                         <Link
                           href="/contact"
-                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-semibold text-xs transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-semibold text-xs transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                         >
                           <span>Diskusikan Skema Ini</span>
                           <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />

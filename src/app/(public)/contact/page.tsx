@@ -84,12 +84,14 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  const handleCopy = (text: string, key: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedKey(key);
-    setTimeout(() => {
+  const handleCopy = async (text: string, key: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2000);
+    } catch {
       setCopiedKey(null);
-    }, 2000);
+    }
   };
 
   const toggleFaq = (index: number) => {
@@ -400,6 +402,7 @@ export default function ContactPage() {
                               setFormEmail("");
                               setFormPhone("");
                               setFormMessage("");
+                              setSelectedService("");
                             } catch (err: any) {
                               setSubmitError(
                                 err?.message ||
@@ -412,7 +415,10 @@ export default function ContactPage() {
                           className="space-y-4 sm:space-y-5"
                         >
                           {submitError && (
-                            <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-xs text-red-700 dark:text-red-300">
+                            <div
+                              role="alert"
+                              className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-xs text-red-700 dark:text-red-300"
+                            >
                               {submitError}
                             </div>
                           )}
@@ -527,6 +533,7 @@ export default function ContactPage() {
                               Pilar Layanan yang Dibutuhkan
                             </label>
                             <CustomSelect
+                              labelledBy="service-select-label"
                               placeholder="Pilih jenis layanan atau produk yang dibutuhkan"
                               options={effectiveServiceOptions}
                               value={selectedService}

@@ -33,6 +33,7 @@ import GradientText from "@/components/ui/GradientText";
 import GridPattern from "@/components/ui/GridPattern";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
+import { useModalFocus } from "@/components/ui/useModalFocus";
 import { useCitsStore } from "@/stores/citsStore";
 
 const iconMap: Record<string, any> = {
@@ -457,6 +458,7 @@ export default function ProductsPage() {
   const { products: storeProducts } = useCitsStore();
   const [selectedCategory, setSelectedCategory] = useState<string>("Semua Produk");
   const [activeModalProduct, setActiveModalProduct] = useState<any | null>(null);
+  const modalRef = useModalFocus(!!activeModalProduct, () => setActiveModalProduct(null));
 
   // Fallback to static products list if store is still loading or empty, and filter out inactive items
   const productSource = storeProducts && storeProducts.length > 0 ? storeProducts : products;
@@ -589,7 +591,7 @@ export default function ProductsPage() {
                             >
                               {product.badgeCategory}
                             </span>
-                            <span className="text-[10px] font-mono font-bold text-gray-500 dark:text-white/60 bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded border border-gray-200 dark:border-white/10">
+                            <span className="text-[10px] font-mono font-bold text-gray-600 dark:text-white/60 bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded border border-gray-200 dark:border-white/10">
                               {product.version}
                             </span>
                           </div>
@@ -638,7 +640,7 @@ export default function ProductsPage() {
                           {/* Technical Specifications Mini Bento */}
                           <div className="mt-4 grid grid-cols-2 gap-2 text-[11px]">
                             <div className="p-2.5 rounded-lg bg-slate-100/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10">
-                              <span className="block text-[10px] text-gray-500 dark:text-white/60 font-medium">
+                              <span className="block text-[10px] text-gray-600 dark:text-white/60 font-medium">
                                 Model Deployment:
                               </span>
                               <span className="block font-semibold text-dark dark:text-white mt-0.5 line-clamp-1">
@@ -648,7 +650,7 @@ export default function ProductsPage() {
                               </span>
                             </div>
                             <div className="p-2.5 rounded-lg bg-slate-100/80 dark:bg-white/5 border border-gray-200/80 dark:border-white/10">
-                              <span className="block text-[10px] text-gray-500 dark:text-white/60 font-medium">
+                              <span className="block text-[10px] text-gray-600 dark:text-white/60 font-medium">
                                 Standar Keamanan:
                               </span>
                               <span className="block font-semibold text-dark dark:text-white mt-0.5 line-clamp-1">
@@ -869,9 +871,13 @@ export default function ProductsPage() {
       <AnimatePresence>
         {activeModalProduct && (
           <div
+            ref={modalRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-product-title"
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setActiveModalProduct(null);
+            }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/60 backdrop-blur-sm"
           >
             <motion.div
@@ -947,35 +953,35 @@ export default function ProductsPage() {
                 </span>
                 <div className="grid sm:grid-cols-2 gap-3 text-xs">
                   <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200/80 dark:border-white/10">
-                    <span className="block text-[10px] text-gray-500 dark:text-white/60 font-medium">
+                    <span className="block text-[10px] text-gray-600 dark:text-white/60 font-medium">
                       Model Penerapan (Deployment):
                     </span>
                     <span className="block font-bold text-dark dark:text-white mt-0.5">
-                      {activeModalProduct.specifications.deployment}
+                      {activeModalProduct.specifications?.deployment || "Sesuai kebutuhan proyek"}
                     </span>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200/80 dark:border-white/10">
-                    <span className="block text-[10px] text-gray-500 dark:text-white/60 font-medium">
+                    <span className="block text-[10px] text-gray-600 dark:text-white/60 font-medium">
                       Pola Arsitektur:
                     </span>
                     <span className="block font-bold text-dark dark:text-white mt-0.5">
-                      {activeModalProduct.specifications.architecture}
+                      {activeModalProduct.specifications?.architecture || "Sesuai kebutuhan proyek"}
                     </span>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200/80 dark:border-white/10">
-                    <span className="block text-[10px] text-gray-500 dark:text-white/60 font-medium">
+                    <span className="block text-[10px] text-gray-600 dark:text-white/60 font-medium">
                       Standar Keamanan Siber:
                     </span>
                     <span className="block font-bold text-dark dark:text-white mt-0.5">
-                      {activeModalProduct.specifications.security}
+                      {activeModalProduct.specifications?.security || "Sesuai kebutuhan proyek"}
                     </span>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200/80 dark:border-white/10">
-                    <span className="block text-[10px] text-gray-500 dark:text-white/60 font-medium">
+                    <span className="block text-[10px] text-gray-600 dark:text-white/60 font-medium">
                       Protokol & Integrasi:
                     </span>
                     <span className="block font-bold text-dark dark:text-white mt-0.5">
-                      {activeModalProduct.specifications.integration}
+                      {activeModalProduct.specifications?.integration || "Sesuai kebutuhan proyek"}
                     </span>
                   </div>
                 </div>
@@ -1022,7 +1028,7 @@ export default function ProductsPage() {
                   </button>
                   <Link
                     href="/contact"
-                    className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-md shadow-orange-600/20"
+                    className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-orange-700 hover:bg-orange-800 text-white text-xs font-bold transition-all shadow-md shadow-orange-600/20"
                   >
                     Minta Penawaran Resmi
                     <ArrowRight className="w-3.5 h-3.5" />
