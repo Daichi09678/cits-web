@@ -1,31 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const vm = require("node:vm");
-const ts = require("typescript");
-const path = require("node:path");
-
-function load(relative, overrides = {}, globals = {}) {
-  const filename = path.resolve(__dirname, "../src", relative);
-  const code = ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
-  }).outputText;
-  const exports = {};
-  vm.runInNewContext(
-    code,
-    {
-      exports,
-      require: (id) => {
-        if (id in overrides) return overrides[id];
-        throw new Error(`Unexpected import: ${id}`);
-      },
-      console,
-      ...globals,
-    },
-    { filename }
-  );
-  return exports;
-}
+const { load } = require("./helpers/load.cjs");
 
 test("failed inbox requests must not masquerade as a successfully empty inbox", async () => {
   const { citsApi } = load(
@@ -283,5 +258,3 @@ test("updating message deal stage updates store with stage and notes", async () 
   assert.equal(updated.dealStage, "kesepakatan");
   assert.equal(updated.dealNotes, "Sepakat kontrak pengadaan server");
 });
-
-module.exports = { load };
