@@ -342,14 +342,14 @@ export const CitsStore = {
   getServices(): ServicePillar[] {
     return getStorageItem<ServicePillar[]>(siteConfig.storageKeys.services, initialServicePillars);
   },
-  saveServices(services: ServicePillar[]): void {
-    setStorageItem(siteConfig.storageKeys.services, services);
-    citsApi.updateServices(services).catch((err) => console.warn("Sync services error:", err));
+  async saveServices(services: ServicePillar[]): Promise<void> {
+    const result = await citsApi.updateServices(services);
+    setStorageItem(siteConfig.storageKeys.services, result.data);
   },
-  updateService(id: string, updates: Partial<ServicePillar>): void {
+  async updateService(id: string, updates: Partial<ServicePillar>): Promise<void> {
     const current = this.getServices();
     const updated = current.map((s) => (s.id === id ? { ...s, ...updates } : s));
-    this.saveServices(updated);
+    await this.saveServices(updated);
   },
 
   // LANDING PAGE (HERO, HIGHLIGHTS, SERVICES INTRO, CTA)
@@ -529,7 +529,7 @@ export function useCitsStore() {
           citsApi.getPortfolio(),
         ]);
 
-        if (prodRes.status === "fulfilled" && Array.isArray(prodRes.value) && prodRes.value.length > 0) {
+        if (prodRes.status === "fulfilled" && Array.isArray(prodRes.value)) {
           setProducts(prodRes.value);
           setStorageItem(siteConfig.storageKeys.products, prodRes.value);
         }

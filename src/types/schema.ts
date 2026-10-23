@@ -47,11 +47,51 @@ export interface ContactMessage {
   phone: string;
   company: string;
   serviceRequested: string;
+  productId?: string;
+  productRequested?: string;
+  consultation?: ConsultationDetails;
   message: string;
   status: "unread" | "read" | "replied";
   dealStage?: DealStage;
   dealNotes?: string;
   createdAt: string;
+}
+
+export type ConsultationPurpose = "discussion" | "demo" | "quotation" | "customization" | "support";
+export type ConsultationSource = "home" | "products" | "services" | "portfolio" | "about" | "contact";
+
+export interface ConsultationRequest {
+  purpose?: ConsultationPurpose;
+  source?: ConsultationSource;
+  referenceId?: string;
+  requestedFeatures?: string[];
+  expectedOutcome?: string;
+  currentSystem?: string;
+  timeline?: string;
+  usageEstimate?: string;
+}
+
+export interface ConsultationDetails extends ConsultationRequest {
+  service?: {
+    id: string;
+    title: string;
+    description: string;
+    features: string[];
+    sla: string;
+    details?: string;
+    techStack?: string[];
+    deliverables?: { label: string; description: string }[];
+  };
+  product?: { id: string; name: string; description: string; features: string[]; tags: string[] };
+  portfolio?: {
+    id: string;
+    title: string;
+    client: string;
+    servicePillar: string;
+    challenge: string;
+    solution: string;
+    scopeOfWork: string[];
+  };
 }
 
 export interface AboutStat {
@@ -81,6 +121,11 @@ export interface ServicePillar {
   desc: string;
   sla: string;
   features?: string[];
+  image?: string;
+  details?: string;
+  techStack?: string[];
+  caseStudies?: string[];
+  deliverables?: { label: string; description: string }[];
   isActive?: boolean;
 }
 
@@ -163,10 +208,11 @@ export interface LandingServicesIntro {
     badge?: string;
     title?: string;
     desc?: string;
+    explanation?: string;
     footerText?: string;
     linkText?: string;
     linkUrl?: string;
-    focusItems?: { letter: string; word: string; desc: string }[];
+    focusItems?: { letter: string; word: string; desc: string; detail?: string }[];
   };
   bottomCtaText?: string;
   bottomCtaLink?: string;

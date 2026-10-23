@@ -4,6 +4,8 @@ import { DbRepo } from "@/lib/db";
 import { getMessageRetentionDays } from "@/config/inbox";
 import { sendContactNotificationEmail } from "@/lib/email";
 import { badRequest, missingStringFields, readJsonBody } from "@/lib/http";
+import { parseConsultationRequest } from "@/lib/consultation";
+import { resolveServiceCatalog } from "@/lib/serviceCatalog";
 
 export async function GET(req: Request) {
   const denied = requireAdmin(req);
@@ -47,6 +49,68 @@ export async function POST(req: Request) {
     if (body.serviceRequested !== undefined && typeof body.serviceRequested !== "string") {
       return badRequest("Layanan yang diminta harus berupa teks.");
     }
+    if (body.productId !== undefined && (typeof body.productId !== "string" || body.productId.length > 200)) {
+      return badRequest("Pilihan produk tidak valid.");
+    }
+    if (body.serviceRequested?.trim().length > 150) {
+      return badRequest("Nama layanan maksimal 150 karakter.");
+    }
+    const parsedConsultation = parseConsultationRequest(body.consultation);
+    if (!parsedConsultation.ok) return badRequest(parsedConsultation.message);
+    const productId = body.productId?.trim();
+    const product = productId ? await DbRepo.getProductById(productId) : null;
+    if (productId && (!product || !product.isActive)) {
+      return badRequest("Produk yang dipilih sudah tidak tersedia. Silakan pilih produk lain.");
+    }
+    const referenceId = parsedConsultation.value.referenceId;
+    const portfolio = referenceId
+      ? (await DbRepo.getPortfolio()).find((item) => item.id === referenceId && item.isActive !== false)
+      : undefined;
+    if (referenceId && !portfolio)
+      return badRequest("Referensi portofolio sudah tidak tersedia. Silakan pilih ulang referensi konsultasi.");
+    const serviceName = body.serviceRequested?.trim() || "";
+    const service = serviceName
+      ? resolveServiceCatalog(await DbRepo.getServices()).find((item) => item.title === serviceName)
+      : undefined;
+    const availableFeatures = new Set([...(service?.features || []), ...(product?.features || [])]);
+    if (parsedConsultation.value.requestedFeatures?.some((feature) => !availableFeatures.has(feature))) {
+      return badRequest("Pilihan fitur telah berubah. Periksa kembali layanan atau produk yang dipilih.");
+    }
+    const consultation = {
+      ...parsedConsultation.value,
+      portfolio: portfolio
+        ? {
+            id: portfolio.id,
+            title: portfolio.title,
+            client: portfolio.client,
+            servicePillar: portfolio.servicePillar,
+            challenge: portfolio.challenge,
+            solution: portfolio.solution,
+            scopeOfWork: portfolio.scopeOfWork,
+          }
+        : undefined,
+      service: service
+        ? {
+            id: service.id,
+            title: service.title,
+            description: service.description,
+            details: service.details,
+            techStack: service.techStack,
+            deliverables: service.deliverables,
+            features: service.features,
+            sla: service.slaNote,
+          }
+        : undefined,
+      product: product
+        ? {
+            id: product.id,
+            name: product.name,
+            description: product.description,
+            features: product.features,
+            tags: product.tags,
+          }
+        : undefined,
+    };
 
     // 1. Simpan pesan ke Cloud Database / Persistent Repo
     const savedMsg = await DbRepo.addMessage({
@@ -54,7 +118,10 @@ export async function POST(req: Request) {
       email: body.email.trim(),
       phone: body.phone.trim(),
       company: body.company.trim(),
-      serviceRequested: body.serviceRequested || "General Inquiry",
+      serviceRequested: body.serviceRequested?.trim() || (product ? "Konsultasi Produk" : "Konsultasi Umum"),
+      productId: product?.id,
+      productRequested: product?.name,
+      consultation,
       message: body.message.trim(),
     });
 
@@ -68,6 +135,8 @@ export async function POST(req: Request) {
           phone: savedMsg.phone,
           company: savedMsg.company,
           serviceRequested: savedMsg.serviceRequested,
+          productRequested: savedMsg.productRequested,
+          consultation: savedMsg.consultation,
           message: savedMsg.message,
           recipientEmail: contactInfo.email || "info@citsindonesia.co.id",
         })

@@ -15,6 +15,7 @@ import {
   ProductItem,
   ContactInfo,
   ContactMessage,
+  ConsultationDetails,
   DealStage,
   AboutData,
   ClientPartner,
@@ -40,6 +41,7 @@ declare global {
     | undefined;
   var _citsSqlInstance: postgres.Sql | undefined;
   var _citsDbInitialized: boolean | undefined;
+  var _citsDbSchemaVersion: number | undefined;
   var _citsDbInitPromise: Promise<void> | undefined;
   // Waktu purge retensi inbox terakhir (ms) — mencegah DELETE berulang tiap request.
   var _citsLastInboxPurge: number | undefined;
@@ -113,7 +115,8 @@ function asJson<T>(value: unknown, fallback: T): T {
 export async function ensureDbReady(): Promise<void> {
   const sql = getSql();
   if (!sql) return;
-  if (globalThis._citsDbInitialized) return;
+  const schemaVersion = 3;
+  if (globalThis._citsDbInitialized && globalThis._citsDbSchemaVersion === schemaVersion) return;
   if (globalThis._citsDbInitPromise) return globalThis._citsDbInitPromise;
 
   globalThis._citsDbInitPromise = (async () => {
@@ -122,6 +125,9 @@ export async function ensureDbReady(): Promise<void> {
     // (error 42601: "cannot insert multiple commands into a prepared statement").
     // Karena itu setiap DDL WAJIB dijalankan sebagai query terpisah.
     const migrations: string[] = [
+      `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS consultation_details JSONB DEFAULT '{}'::jsonb`,
+      `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS product_id TEXT`,
+      `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS product_requested TEXT`,
       `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS deal_stage VARCHAR(50) DEFAULT 'baru'`,
       `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS deal_notes TEXT DEFAULT ''`,
       `ALTER TABLE contact_info ADD COLUMN IF NOT EXISTS faqs JSONB DEFAULT '[]'::jsonb`,
@@ -174,7 +180,10 @@ export async function ensureDbReady(): Promise<void> {
       console.warn("DB migration created_at notice:", e?.message || e);
     }
 
-    if (allApplied) globalThis._citsDbInitialized = true;
+    if (allApplied) {
+      globalThis._citsDbInitialized = true;
+      globalThis._citsDbSchemaVersion = schemaVersion;
+    }
   })()
     .catch((e) => {
       // Inisialisasi DB tidak boleh menjatuhkan request: repo akan fallback ke memory.
@@ -310,7 +319,7 @@ export const DbRepo = {
       try {
         const retentionDays = getMessageRetentionDays();
         const rows = await sql`
-          SELECT id, name, email, phone, company, service_requested, message, status,
+          SELECT id, name, email, phone, company, service_requested, product_id, product_requested, consultation_details, message, status,
                  deal_stage, deal_notes, created_at
           FROM contact_messages
           WHERE created_at >= NOW() - make_interval(days => ${retentionDays})
@@ -323,6 +332,9 @@ export const DbRepo = {
           phone: r.phone,
           company: r.company,
           serviceRequested: r.service_requested,
+          productId: r.product_id || undefined,
+          productRequested: r.product_requested || undefined,
+          consultation: asJson<ConsultationDetails | undefined>(r.consultation_details, undefined),
           message: r.message,
           status: r.status,
           dealStage: (r.deal_stage as any) || "baru",
@@ -359,10 +371,10 @@ export const DbRepo = {
       await ensureDbReady();
       try {
         await sql`
-          INSERT INTO contact_messages (id, name, company, email, phone, service_requested, message, status, deal_stage, deal_notes, created_at)
+          INSERT INTO contact_messages (id, name, company, email, phone, service_requested, product_id, product_requested, consultation_details, message, status, deal_stage, deal_notes, created_at)
           VALUES (
             ${newMsg.id}, ${newMsg.name}, ${newMsg.company}, ${newMsg.email},
-            ${newMsg.phone}, ${newMsg.serviceRequested}, ${newMsg.message},
+            ${newMsg.phone}, ${newMsg.serviceRequested}, ${newMsg.productId || null}, ${newMsg.productRequested || null}, ${jsonb(sql, newMsg.consultation || {})}, ${newMsg.message},
             ${newMsg.status}, ${newMsg.dealStage || "baru"}, ${newMsg.dealNotes || ""}, ${newMsg.createdAt}
           )
           ON CONFLICT (id) DO UPDATE SET
@@ -371,6 +383,9 @@ export const DbRepo = {
             email = EXCLUDED.email,
             phone = EXCLUDED.phone,
             service_requested = EXCLUDED.service_requested,
+            product_id = EXCLUDED.product_id,
+            product_requested = EXCLUDED.product_requested,
+            consultation_details = EXCLUDED.consultation_details,
             message = EXCLUDED.message;
         `;
       } catch (e) {
@@ -806,6 +821,7 @@ export const DbRepo = {
 
   async updateServices(data: ServicePillar[]): Promise<ServicePillar[]> {
     const sql = getSql();
+    if (!sql) throw new Error("Database belum dikonfigurasi. Layanan belum dapat disimpan.");
     if (sql) {
       await ensureDbReady();
       try {
@@ -816,6 +832,7 @@ export const DbRepo = {
         `;
       } catch (e) {
         console.error("DB Error updateServices:", e);
+        throw e;
       }
     }
     memoryDb.services = data;

@@ -1,3 +1,5 @@
+import type { ConsultationRequest, ServicePillar } from "@/types/schema";
+
 const API_URL = "/api";
 
 function getHeaders(token?: string): HeadersInit {
@@ -90,6 +92,8 @@ export const citsApi = {
     phone: string;
     company: string;
     serviceRequested?: string;
+    productId?: string;
+    consultation?: ConsultationRequest;
     message: string;
   }) {
     const res = await fetch(`${API_URL}/messages`, {
@@ -250,13 +254,16 @@ export const citsApi = {
     return json.data || [];
   },
 
-  async updateServices(data: any) {
+  async updateServices(data: ServicePillar[]) {
     const res = await fetch(`${API_URL}/services`, {
       method: "PUT",
       headers: getHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    const result = await res.json();
+    if (!res.ok || !result?.success || !Array.isArray(result.data))
+      throw new Error(result?.message || "Layanan gagal disimpan ke server.");
+    return result as { success: true; data: ServicePillar[] };
   },
 
   // 10. Portfolio / Case Studies

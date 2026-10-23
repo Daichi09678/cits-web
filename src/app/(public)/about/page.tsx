@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { consultationHref } from "@/lib/consultation";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -513,7 +514,7 @@ export default function AboutPage() {
                     {/* Symmetrical Action Buttons */}
                     <div className="pt-2 space-y-2.5">
                       <Link
-                        href="/contact"
+                        href={consultationHref({ source: "about", service: "Kemitraan Strategis / Kebutuhan Lainnya" })}
                         className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-md shadow-orange-600/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                       >
                         <span>Konsultasi Kemitraan Bersama Tim CITS</span>
@@ -1049,7 +1050,7 @@ export default function AboutPage() {
 
               <div className="mt-8 flex flex-wrap justify-center gap-3.5">
                 <Link
-                  href="/contact"
+                  href={consultationHref({ source: "about" })}
                   className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-md shadow-orange-600/20 hover:shadow-lg hover:shadow-orange-600/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                 >
                   <span>Hubungi Tim Ahli Kami</span>

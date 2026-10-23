@@ -1,4 +1,6 @@
 import nodemailer from "nodemailer";
+import { CONSULTATION_PURPOSES, CONSULTATION_SOURCES } from "@/lib/consultation";
+import type { ConsultationDetails } from "@/types/schema";
 
 interface SendContactNotificationParams {
   name: string;
@@ -6,6 +8,8 @@ interface SendContactNotificationParams {
   phone: string;
   company: string;
   serviceRequested?: string;
+  productRequested?: string;
+  consultation?: ConsultationDetails;
   message: string;
   recipientEmail?: string;
 }
@@ -133,33 +137,36 @@ export async function sendContactNotificationEmail(
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 24px;">
           <tr>
             <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #64748b; width: 140px; font-weight: bold;">Nama Pengirim:</td>
-            <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: bold;">${params.name}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a; font-weight: bold;">${escapeHtml(params.name)}</td>
           </tr>
           <tr>
             <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #64748b; font-weight: bold;">Instansi / Perusahaan:</td>
-            <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a;">${params.company}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a;">${escapeHtml(params.company)}</td>
           </tr>
           <tr>
             <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #64748b; font-weight: bold;">Email Pengirim:</td>
-            <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #ea580c; font-weight: bold;"><a href="mailto:${params.email}" style="color: #ea580c; text-decoration: none;">${params.email}</a></td>
+            <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #ea580c; font-weight: bold;"><a href="mailto:${escapeHtml(params.email)}" style="color: #ea580c; text-decoration: none;">${escapeHtml(params.email)}</a></td>
           </tr>
           <tr>
             <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #64748b; font-weight: bold;">Telepon / WhatsApp:</td>
-            <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a;">${params.phone}</td>
+            <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a;">${escapeHtml(params.phone)}</td>
           </tr>
           <tr>
             <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #64748b; font-weight: bold;">Layanan Diminta:</td>
-            <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a;"><span style="background-color: #fff7ed; color: #c2410c; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">${params.serviceRequested || "Konsultasi Umum"}</span></td>
+            <td style="padding: 10px; border-bottom: 1px solid #f1f5f9; color: #0f172a;"><span style="background-color: #fff7ed; color: #c2410c; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: bold;">${escapeHtml(params.serviceRequested || "Konsultasi Umum")}</span></td>
           </tr>
+          ${params.productRequested ? `<tr><td style="padding: 10px; color: #64748b; font-weight: bold;">Produk Diminta:</td><td style="padding: 10px; color: #0f172a;">${escapeHtml(params.productRequested)}</td></tr>` : ""}
         </table>
+
+        ${params.consultation ? `<div style="padding:16px; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:20px;"><h4 style="margin:0 0 10px;">Rincian Kebutuhan Pengunjung</h4><p>Tujuan: ${escapeHtml(CONSULTATION_PURPOSES[params.consultation.purpose || "discussion"])}</p>${params.consultation.source ? `<p>Asal konsultasi: ${escapeHtml(CONSULTATION_SOURCES[params.consultation.source])}</p>` : ""}${params.consultation.portfolio ? `<p>Referensi proyek: ${escapeHtml(params.consultation.portfolio.title)}</p><p>Lingkup referensi: ${escapeHtml(params.consultation.portfolio.scopeOfWork.join(", "))}</p>` : ""}<p>Fitur diminati: ${escapeHtml(params.consultation.requestedFeatures?.join(", ") || "Belum ditentukan")}</p><p>Hasil yang diharapkan: ${escapeHtml(params.consultation.expectedOutcome || "Belum disampaikan")}</p><p>Sistem saat ini: ${escapeHtml(params.consultation.currentSystem || "Belum disampaikan")}</p><p>Target waktu: ${escapeHtml(params.consultation.timeline || "Belum disampaikan")}</p><p>Perkiraan penggunaan: ${escapeHtml(params.consultation.usageEstimate || "Belum disampaikan")}</p></div>` : ""}
 
         <div style="background-color: #f8fafc; border-radius: 12px; padding: 16px; border: 1px solid #e2e8f0; margin-bottom: 24px;">
           <h4 style="margin: 0 0 10px 0; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Uraian Kebutuhan / Pesan:</h4>
-          <p style="margin: 0; color: #1e293b; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${params.message}</p>
+          <p style="margin: 0; color: #1e293b; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">${escapeHtml(params.message)}</p>
         </div>
 
         <div style="font-size: 12px; color: #94a3b8; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 16px;">
-          Anda dapat langsung membalas email ini untuk merespons <strong>${params.name}</strong> secara langsung.
+          Anda dapat langsung membalas email ini untuk merespons <strong>${escapeHtml(params.name)}</strong> secara langsung.
         </div>
       </div>
     `;

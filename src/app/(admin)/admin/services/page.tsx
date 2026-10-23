@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import ServiceDetailsFields, { type ServiceDetailsForm } from "@/components/admin/ServiceDetailsFields";
+import ServicePhoto from "@/components/ui/ServicePhoto";
+import { resolveServiceCatalog } from "@/lib/serviceCatalog";
+import { useModalFocus } from "@/components/ui/useModalFocus";
 import { ShieldCheck, CheckCircle2, Edit, Plus, Trash2, X, Search, ChevronDown } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
@@ -23,6 +27,33 @@ export default function AdminServicesPage() {
   const [formFeatures, setFormFeatures] = useState("");
   const [formIsActive, setFormIsActive] = useState(true);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [formDetails, setFormDetails] = useState<ServiceDetailsForm>({
+    image: "",
+    details: "",
+    techStack: "",
+    caseStudies: "",
+    deliverables: [],
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const modalRef = useModalFocus(modalOpen, () => {
+    if (!isSaving) setModalOpen(false);
+  });
+  const fallbackImage = resolveServiceCatalog([
+    {
+      ...(editingPillar || { id: "new", title: "", badge: "", icon: "", desc: "", sla: "" }),
+      image: undefined,
+      isActive: true,
+    },
+  ])[0].image;
+  const lines = (text: string) => [
+    ...new Set(
+      text
+        .split(/\r?\n/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+    ),
+  ];
 
   // Icon Picker Filter State
   const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
@@ -37,7 +68,16 @@ export default function AdminServicesPage() {
     setFormIcon(pillar.icon || "Code2");
     setFormDesc(pillar.desc);
     setFormSla(pillar.sla);
-    setFormFeatures(pillar.features ? pillar.features.join(", ") : "");
+    setFormFeatures(pillar.features ? pillar.features.join("\n") : "");
+    const resolved = resolveServiceCatalog([{ ...pillar, isActive: true }])[0];
+    setFormDetails({
+      image: pillar.image || "",
+      details: resolved.details || "",
+      techStack: resolved.techStack.join("\n"),
+      caseStudies: resolved.caseStudies.join("\n"),
+      deliverables: resolved.deliverables.map((item) => ({ ...item })),
+    });
+    setSaveError("");
     setFormIsActive(pillar.isActive !== false);
     setIsIconPickerOpen(false);
     setIconCategoryFilter("Semua");
@@ -53,7 +93,9 @@ export default function AdminServicesPage() {
     setFormIcon("Code2");
     setFormDesc("");
     setFormSla("SLA Terjamin & Bergaransi");
-    setFormFeatures("Arsitektur Andal, Pengujian Ketat, Dukungan 24/7");
+    setFormFeatures("Arsitektur Andal\nPengujian Ketat\nDukungan 24/7");
+    setFormDetails({ image: "", details: "", techStack: "", caseStudies: "", deliverables: [] });
+    setSaveError("");
     setFormIsActive(true);
     setIsIconPickerOpen(false);
     setIconCategoryFilter("Semua");
@@ -62,47 +104,58 @@ export default function AdminServicesPage() {
     setModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    const featArr = formFeatures
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-
-    if (editingPillar) {
-      actions.updateService(editingPillar.id, {
-        title: formTitle,
-        badge: formBadge,
-        icon: formIcon,
-        desc: formDesc,
-        sla: formSla,
-        features: featArr,
-        isActive: formIsActive,
+    setIsSaving(true);
+    setSaveError("");
+    const next: ServicePillar = {
+      ...editingPillar,
+      id: editingPillar?.id || "pillar-" + crypto.randomUUID(),
+      title: formTitle.trim(),
+      badge: formBadge.trim(),
+      icon: formIcon,
+      desc: formDesc.trim(),
+      sla: formSla.trim(),
+      features: lines(formFeatures),
+      isActive: formIsActive,
+      image: formDetails.image.trim() || undefined,
+      details: formDetails.details.trim(),
+      techStack: lines(formDetails.techStack),
+      caseStudies: lines(formDetails.caseStudies),
+      deliverables: formDetails.deliverables.map((item) => ({
+        label: item.label.trim(),
+        description: item.description.trim(),
+      })),
+    };
+    try {
+      await actions.saveServices(
+        editingPillar ? services.map((item) => (item.id === editingPillar.id ? next : item)) : [...services, next]
+      );
+      setSavedSuccess(true);
+      setModalOpen(false);
+      setTimeout(() => setSavedSuccess(false), 3000);
+      void dialog.alert({
+        title: editingPillar ? "Pilar layanan diperbarui" : "Pilar layanan ditambahkan",
+        description: "Foto dan rincian layanan berhasil disimpan.",
+        variant: "success",
       });
-    } else {
-      const newPillar: ServicePillar = {
-        id: "pillar-" + Date.now(),
-        title: formTitle,
-        badge: formBadge,
-        icon: formIcon,
-        desc: formDesc,
-        sla: formSla,
-        features: featArr,
-        isActive: formIsActive,
-      };
-      actions.saveServices([...services, newPillar]);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Layanan gagal disimpan. Silakan coba kembali.");
+    } finally {
+      setIsSaving(false);
     }
+  };
 
-    setSavedSuccess(true);
-    setModalOpen(false);
-    setTimeout(() => setSavedSuccess(false), 3000);
-    void dialog.alert({
-      title: editingPillar ? "Pilar layanan diperbarui" : "Pilar layanan ditambahkan",
-      description: editingPillar
-        ? `Perubahan layanan "${formTitle}" berhasil disimpan.`
-        : `Layanan "${formTitle}" berhasil ditambahkan.`,
-      variant: "success",
-    });
+  const handleTogglePillar = async (pillar: ServicePillar) => {
+    try {
+      await actions.updateService(pillar.id, { isActive: pillar.isActive === false });
+    } catch (error) {
+      void dialog.alert({
+        title: "Status belum tersimpan",
+        description: error instanceof Error ? error.message : "Coba kembali.",
+        variant: "danger",
+      });
+    }
   };
 
   const handleDeletePillar = async (id: string, title: string) => {
@@ -113,7 +166,16 @@ export default function AdminServicesPage() {
       variant: "danger",
     });
     if (confirmed) {
-      actions.saveServices(services.filter((s) => s.id !== id));
+      try {
+        await actions.saveServices(services.filter((s) => s.id !== id));
+      } catch (error) {
+        await dialog.alert({
+          title: "Layanan belum terhapus",
+          description: error instanceof Error ? error.message : "Coba kembali.",
+          variant: "danger",
+        });
+        return;
+      }
       await dialog.alert({
         title: "Pilar layanan dihapus",
         description: `"${title}" berhasil dihapus dari daftar layanan.`,
@@ -126,7 +188,7 @@ export default function AdminServicesPage() {
     <div className="flex-1 flex flex-col min-w-0">
       <AdminTopbar
         title="Manajemen Layanan CITS"
-        description="Kelola 3 pilar layanan utama, target SLA, dan ruang lingkup rekayasa teknologi CITS Indonesia"
+        description={`Kelola ${services.length} pilar layanan, target SLA, dan ruang lingkup rekayasa teknologi CITS Indonesia`}
       />
       <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
         {savedSuccess && (
@@ -159,6 +221,11 @@ export default function AdminServicesPage() {
                 className="p-6 rounded-3xl bg-white dark:bg-[#151528] border border-slate-200/90 dark:border-white/10 shadow-xs flex flex-col justify-between space-y-4 hover:border-orange-500/50 transition-all"
               >
                 <div>
+                  <ServicePhoto
+                    image={resolveServiceCatalog([{ ...p, isActive: true }])[0].image}
+                    name={p.title}
+                    className="h-40 rounded-xl mb-4"
+                  />
                   <div className="flex items-center justify-between mb-4">
                     <div className="w-11 h-11 rounded-2xl bg-orange-600 text-white flex items-center justify-center font-bold shadow-md shadow-orange-600/25">
                       <Icon className="w-5 h-5" />
@@ -166,7 +233,7 @@ export default function AdminServicesPage() {
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => actions.updateService(p.id, { isActive: p.isActive === false ? true : false })}
+                        onClick={() => void handleTogglePillar(p)}
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold cursor-pointer transition-all ${
                           p.isActive !== false
                             ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30"
@@ -235,27 +302,53 @@ export default function AdminServicesPage() {
 
         {/* Modal Edit / Add Pillar */}
         {modalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-            <div className="w-full max-w-xl bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col max-h-[92vh]">
+          <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="service-editor-title"
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/50 backdrop-blur-xs animate-in fade-in"
+          >
+            <div className="w-full min-w-0 max-w-3xl bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col max-h-[92dvh]">
               <div className="px-6 py-4.5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between shrink-0">
                 <div>
-                  <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
+                  <h3 id="service-editor-title" className="font-extrabold text-base text-slate-900 dark:text-white">
                     {editingPillar ? "Edit Pilar Layanan CITS" : "Tambah Pilar Layanan Baru"}
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Perubahan akan langsung tampil di halaman /services dan beranda
+                    Kelola gambaran, ruang lingkup, dan hasil layanan untuk pengunjung.
                   </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setModalOpen(false)}
+                  aria-label="Tutup editor layanan"
+                  onClick={() => {
+                    if (!isSaving) setModalOpen(false);
+                  }}
                   className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <form onSubmit={handleSave} className="overflow-y-auto p-6 space-y-4 text-xs">
+              <form
+                onSubmit={handleSave}
+                className="min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4 text-xs [overflow-wrap:anywhere]"
+              >
+                {saveError && (
+                  <p
+                    role="alert"
+                    className="rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 p-3 text-sm text-red-800 dark:text-red-200"
+                  >
+                    {saveError}
+                  </p>
+                )}
+                <ServiceDetailsFields
+                  value={formDetails}
+                  name={formTitle}
+                  fallbackImage={fallbackImage}
+                  onChange={setFormDetails}
+                />
                 {/* Baris 1: Ikon Layanan + Nama Layanan + Label Badge */}
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
                   {/* Ikon Layanan Trigger Button */}
@@ -265,6 +358,7 @@ export default function AdminServicesPage() {
                     </label>
                     <button
                       type="button"
+                      aria-label="Pilih ikon layanan"
                       onClick={() => setIsIconPickerOpen(!isIconPickerOpen)}
                       className={`w-full h-10 px-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer ${
                         isIconPickerOpen
@@ -295,12 +389,17 @@ export default function AdminServicesPage() {
 
                   {/* Nama Layanan */}
                   <div className="sm:col-span-5">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                    <label
+                      htmlFor="service-title"
+                      className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5"
+                    >
                       Nama Layanan
                     </label>
                     <input
                       type="text"
                       required
+                      maxLength={150}
+                      id="service-title"
                       value={formTitle}
                       onChange={(e) => setFormTitle(e.target.value)}
                       placeholder="cth. Software House"
@@ -310,12 +409,16 @@ export default function AdminServicesPage() {
 
                   {/* Label Badge */}
                   <div className="sm:col-span-3">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                    <label
+                      htmlFor="service-badge"
+                      className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5"
+                    >
                       Label Badge
                     </label>
                     <input
                       type="text"
                       required
+                      id="service-badge"
                       value={formBadge}
                       onChange={(e) => setFormBadge(e.target.value)}
                       placeholder="cth. Pilar 01"
@@ -442,12 +545,16 @@ export default function AdminServicesPage() {
                 )}
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                  <label
+                    htmlFor="service-description"
+                    className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
+                  >
                     Deskripsi Ringkas
                   </label>
                   <textarea
                     rows={3}
                     required
+                    id="service-description"
                     value={formDesc}
                     onChange={(e) => setFormDesc(e.target.value)}
                     placeholder="Jelaskan ruang lingkup dan spesialisasi layanan ini..."
@@ -456,12 +563,16 @@ export default function AdminServicesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                  <label
+                    htmlFor="service-sla"
+                    className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
+                  >
                     Jaminan SLA / Metodologi
                   </label>
                   <input
                     type="text"
                     required
+                    id="service-sla"
                     value={formSla}
                     onChange={(e) => setFormSla(e.target.value)}
                     placeholder="cth. Target Ketersediaan 99.9% / TOGAF & LKPP"
@@ -470,14 +581,18 @@ export default function AdminServicesPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Poin Fitur Unggulan (Pisahkan dengan koma)
+                  <label
+                    htmlFor="service-features"
+                    className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
+                  >
+                    Poin Fitur Unggulan (Satu per Baris)
                   </label>
-                  <input
-                    type="text"
+                  <textarea
+                    rows={4}
+                    id="service-features"
                     value={formFeatures}
                     onChange={(e) => setFormFeatures(e.target.value)}
-                    placeholder="cth. Microservices, Clean Code, Dukungan SLA 24/7"
+                    placeholder="Satu fitur atau ruang lingkup per baris"
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
@@ -492,6 +607,7 @@ export default function AdminServicesPage() {
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
+                      aria-label="Tampilkan layanan di website"
                       checked={formIsActive}
                       onChange={(e) => setFormIsActive(e.target.checked)}
                       className="sr-only peer"
@@ -510,9 +626,10 @@ export default function AdminServicesPage() {
                   </button>
                   <button
                     type="submit"
+                    disabled={isSaving}
                     className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 cursor-pointer"
                   >
-                    {editingPillar ? "Simpan Perubahan" : "Tambahkan Layanan"}
+                    {isSaving ? "Menyimpan..." : editingPillar ? "Simpan Perubahan" : "Tambahkan Layanan"}
                   </button>
                 </div>
               </form>

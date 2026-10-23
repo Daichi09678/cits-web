@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { consultationHref } from "@/lib/consultation";
 import { useModalFocus } from "@/components/ui/useModalFocus";
 import Image from "next/image";
 import Link from "next/link";
@@ -756,7 +757,7 @@ export default function PortfolioPage() {
                         <ChevronRight className="w-3.5 h-3.5" />
                       </button>
                       <Link
-                        href="/contact"
+                        href={consultationHref({ source: "portfolio", referenceId: project.id })}
                         className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-gray-800 dark:text-white text-xs font-semibold border border-gray-200 dark:border-white/15 transition-all"
                       >
                         Konsultasi Kebutuhan Serupa
@@ -1192,7 +1193,7 @@ export default function PortfolioPage() {
 
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Link
-                  href="/contact"
+                  href={consultationHref({ source: "portfolio" })}
                   className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-md shadow-orange-600/20 hover:shadow-lg hover:shadow-orange-600/30 text-sm"
                 >
                   Konsultasikan Kebutuhan Proyek
@@ -1366,7 +1367,7 @@ export default function PortfolioPage() {
                     Tutup
                   </button>
                   <Link
-                    href="/contact"
+                    href={consultationHref({ source: "portfolio", referenceId: activeModalStudy.id })}
                     className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-orange-700 hover:bg-orange-800 text-white text-xs font-bold transition-all shadow-md shadow-orange-600/20"
                   >
                     Konsultasikan Proyek Serupa

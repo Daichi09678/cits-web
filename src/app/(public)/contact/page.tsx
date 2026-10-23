@@ -1,6 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import ConsultationSelection from "@/components/ui/ConsultationSelection";
+import ConsultationRequirementsFields, {
+  type RequirementsFormValue,
+} from "@/components/ui/ConsultationRequirementsFields";
+import { consultationPurpose, consultationSource, CONSULTATION_SOURCES } from "@/lib/consultation";
+import { resolveServiceCatalog } from "@/lib/serviceCatalog";
+import type { ConsultationPurpose, ConsultationSource } from "@/types/schema";
 import {
   MapPin,
   Phone,
@@ -60,15 +68,56 @@ const faqs = [
   },
 ];
 
-export default function ContactPage() {
-  const { contactInfo, actions } = useCitsStore();
+const emptyRequirements = (purpose: ConsultationPurpose = "discussion"): RequirementsFormValue => ({
+  purpose,
+  expectedOutcome: "",
+  currentSystem: "",
+  timeline: "",
+  usageEstimate: "",
+});
+
+function ContactPageContent({
+  initialService,
+  initialProduct,
+  initialPurpose,
+  initialFeatures,
+  initialSource,
+  initialReference,
+}: {
+  initialService: string;
+  initialProduct: string;
+  initialPurpose: ConsultationPurpose;
+  initialFeatures: string[];
+  initialSource: ConsultationSource;
+  initialReference: string;
+}) {
+  const { contactInfo, actions, services, activeProducts, activeCaseStudies } = useCitsStore();
+  const [referenceId, setReferenceId] = useState(initialReference);
+  const selectedPortfolio = activeCaseStudies.find((item) => item.id === referenceId);
   const [submitted, setSubmitted] = useState(false);
-  const [selectedService, setSelectedService] = useState("");
+  const [selectedService, setSelectedService] = useState(initialService);
+  const [selectedProductId, setSelectedProductId] = useState(initialProduct);
+  const selectedProduct = activeProducts.find((product) => product.id === selectedProductId);
+  const selectedServiceDetails = resolveServiceCatalog(services).find((service) => service.title === selectedService);
+  const [requirements, setRequirements] = useState(() =>
+    emptyRequirements(initialPurpose === "demo" ? "demo" : "discussion")
+  );
+  const [requestedFeatures, setRequestedFeatures] = useState(initialFeatures);
+  const availableFeatures = new Set([
+    ...(selectedProduct?.features || []),
+    ...(selectedServiceDetails?.features || []),
+  ]);
+  const selectedFeatures = requestedFeatures.filter((feature) => availableFeatures.has(feature));
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
-  const effectiveServiceOptions =
-    contactInfo.customServices && contactInfo.customServices.length > 0 ? contactInfo.customServices : serviceOptions;
+  const effectiveServiceOptions = [
+    ...new Set([
+      ...services.filter((service) => service.isActive !== false).map((service) => service.title),
+      ...(contactInfo.customServices?.length ? contactInfo.customServices : serviceOptions),
+      ...(selectedService ? [selectedService] : []),
+    ]),
+  ];
 
   const effectiveFaqs =
     contactInfo.faqs && contactInfo.faqs.length > 0 ? contactInfo.faqs.filter((f) => f.isActive !== false) : faqs;
@@ -177,17 +226,18 @@ export default function ContactPage() {
 
       {/* 2. CONTACT DETAILS & FORM BENTO (Perfect Symmetry & Visual Polish) */}
       <section
+        id="consultation-form"
         aria-labelledby="contact-form-heading"
-        className="py-16 md:py-24 bg-white dark:bg-[#1A1A2E] transition-colors"
+        className="scroll-mt-20 py-16 md:py-24 bg-white dark:bg-[#1A1A2E] transition-colors"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 id="contact-form-heading" className="sr-only">
             Formulir Kontak dan Lokasi Kantor CITS Indonesia
           </h2>
 
-          <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-start">
             {/* Left Column: Office Info & Direct Channels (Span 5) */}
-            <div className="lg:col-span-5 flex flex-col justify-between space-y-6">
+            <div className="lg:col-span-5 space-y-6">
               <ScrollReveal>
                 <div>
                   <span className="text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1 rounded-full uppercase tracking-wider">
@@ -203,7 +253,7 @@ export default function ContactPage() {
                 </div>
               </ScrollReveal>
 
-              <div className="space-y-3.5 flex-1 flex flex-col justify-between">
+              <div className="space-y-3.5">
                 {/* Address Card */}
                 <ScrollReveal delay={0.1}>
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-gray-200 dark:border-white/10 flex items-start gap-4 hover:border-orange-500/40 transition-all shadow-sm">
@@ -385,6 +435,18 @@ export default function ContactPage() {
                         <form
                           onSubmit={async (e) => {
                             e.preventDefault();
+                            if (selectedProductId && !selectedProduct) {
+                              setSubmitError(
+                                "Produk yang dipilih tidak tersedia. Pilih produk lain atau kosongkan pilihan produk."
+                              );
+                              return;
+                            }
+                            if (referenceId && !selectedPortfolio) {
+                              setSubmitError(
+                                "Referensi portofolio sudah tidak tersedia. Hapus referensi atau pilih proyek lain."
+                              );
+                              return;
+                            }
                             setSubmitError("");
                             setIsSubmitting(true);
                             try {
@@ -393,7 +455,15 @@ export default function ContactPage() {
                                 company: formCompany,
                                 email: formEmail,
                                 phone: formPhone,
-                                serviceRequested: selectedService || "Umum / Konsultasi TI",
+                                serviceRequested:
+                                  selectedService || (selectedProduct ? "Konsultasi Produk" : "Umum / Konsultasi TI"),
+                                productId: selectedProduct?.id,
+                                consultation: {
+                                  ...requirements,
+                                  requestedFeatures: selectedFeatures,
+                                  source: initialSource,
+                                  referenceId: referenceId || undefined,
+                                },
                                 message: formMessage,
                               });
                               setSubmitted(true);
@@ -403,6 +473,10 @@ export default function ContactPage() {
                               setFormPhone("");
                               setFormMessage("");
                               setSelectedService("");
+                              setSelectedProductId("");
+                              setRequirements(emptyRequirements());
+                              setRequestedFeatures([]);
+                              setReferenceId("");
                             } catch (err: any) {
                               setSubmitError(
                                 err?.message ||
@@ -534,12 +608,84 @@ export default function ContactPage() {
                             </label>
                             <CustomSelect
                               labelledBy="service-select-label"
-                              placeholder="Pilih jenis layanan atau produk yang dibutuhkan"
+                              placeholder="Pilih layanan yang dibutuhkan (opsional)"
                               options={effectiveServiceOptions}
                               value={selectedService}
                               onChange={(val) => setSelectedService(val)}
                             />
                           </div>
+
+                          <div>
+                            <label
+                              id="product-select-label"
+                              className="block text-xs font-bold text-gray-800 dark:text-white/90 mb-1.5"
+                            >
+                              Produk yang Ingin Dikonsultasikan
+                            </label>
+                            <CustomSelect
+                              labelledBy="product-select-label"
+                              placeholder="Pilih produk (opsional)"
+                              options={[
+                                ...(selectedProductId && !selectedProduct
+                                  ? [{ value: selectedProductId, label: "Produk tidak tersedia (pilih ulang)" }]
+                                  : []),
+                                ...activeProducts.map((product) => ({ value: product.id, label: product.name })),
+                              ]}
+                              value={selectedProductId}
+                              onChange={setSelectedProductId}
+                            />
+                            <p className="mt-2 text-xs text-gray-600 dark:text-white/70">
+                              Anda dapat memilih layanan, produk, atau keduanya sesuai kebutuhan.
+                            </p>
+                          </div>
+
+                          <ConsultationSelection
+                            service={selectedServiceDetails}
+                            product={selectedProduct}
+                            selectedFeatures={selectedFeatures}
+                            onFeaturesChange={setRequestedFeatures}
+                          />
+                          {initialSource !== "contact" && (
+                            <p className="text-xs text-slate-600 dark:text-slate-300">
+                              Konsultasi dari halaman {CONSULTATION_SOURCES[initialSource]}.
+                            </p>
+                          )}
+                          {referenceId && (
+                            <section
+                              data-testid="consultation-reference"
+                              className="rounded-xl border border-orange-200 dark:border-orange-800/60 bg-orange-50/60 dark:bg-orange-950/20 p-4 space-y-2 [overflow-wrap:anywhere]"
+                            >
+                              <p className="text-xs font-semibold text-orange-800 dark:text-orange-300">
+                                Referensi Proyek untuk Kebutuhan Serupa
+                              </p>
+                              {selectedPortfolio ? (
+                                <>
+                                  <h4 className="font-bold text-slate-900 dark:text-white">
+                                    {selectedPortfolio.title}
+                                  </h4>
+                                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                                    {selectedPortfolio.client} · {selectedPortfolio.servicePillar}
+                                  </p>
+                                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                                    {selectedPortfolio.tagline}
+                                  </p>
+                                </>
+                              ) : (
+                                <p className="text-sm text-slate-700 dark:text-slate-200">
+                                  Referensi tidak tersedia. Anda tetap dapat berkonsultasi setelah menghapus referensi
+                                  ini.
+                                </p>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => setReferenceId("")}
+                                className="text-xs font-semibold text-orange-800 dark:text-orange-300 underline"
+                              >
+                                Hapus Referensi Proyek
+                              </button>
+                            </section>
+                          )}
+                          <ConsultationRequirementsFields value={requirements} onChange={setRequirements} />
 
                           {/* Uraian Pesan */}
                           <div>
@@ -547,7 +693,7 @@ export default function ContactPage() {
                               htmlFor="contact-pesan"
                               className="block text-xs font-bold text-gray-800 dark:text-white/90 mb-1.5"
                             >
-                              Uraian Singkat Kebutuhan / Kerangka Kerja <span className="text-red-600">*</span>
+                              Detail Masalah & Kebutuhan Anda <span className="text-red-600">*</span>
                             </label>
                             <textarea
                               id="contact-pesan"
@@ -557,7 +703,7 @@ export default function ContactPage() {
                               value={formMessage}
                               onChange={(e) => setFormMessage(e.target.value)}
                               className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all resize-none text-sm"
-                              placeholder="Jelaskan gambaran inisiatif sistem, sasaran instansi, atau jadwal target yang ingin dicapai..."
+                              placeholder="Jelaskan kendala, alur kerja yang perlu dibantu, integrasi yang dibutuhkan, dan pertanyaan yang ingin dibahas dengan tim CITS..."
                             />
                           </div>
 
@@ -672,5 +818,37 @@ export default function ContactPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+function ContactPageWithSelection() {
+  const searchParams = useSearchParams();
+  return (
+    <ContactPageContent
+      key={searchParams.toString()}
+      initialService={(searchParams.get("service") || "").trim().slice(0, 150)}
+      initialProduct={(searchParams.get("product") || "").trim().slice(0, 200)}
+      initialPurpose={consultationPurpose(searchParams.get("purpose"))}
+      initialSource={consultationSource(searchParams.get("source"))}
+      initialReference={(searchParams.get("reference") || "").trim().slice(0, 200)}
+      initialFeatures={searchParams
+        .getAll("feature")
+        .slice(0, 20)
+        .map((feature) => feature.trim().slice(0, 500))}
+    />
+  );
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen flex items-center justify-center" aria-busy="true">
+          Memuat formulir konsultasi...
+        </main>
+      }
+    >
+      <ContactPageWithSelection />
+    </Suspense>
   );
 }

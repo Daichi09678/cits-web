@@ -3,7 +3,7 @@
 import { ChevronDown } from "lucide-react";
 
 interface CustomSelectProps {
-  options: string[];
+  options: (string | { value: string; label: string })[];
   placeholder?: string;
   value?: string;
   onChange?: (value: string) => void;
@@ -29,8 +29,11 @@ export default function CustomSelect({
       >
         <option value="">{placeholder}</option>
         {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
+          <option
+            key={typeof option === "string" ? option : option.value}
+            value={typeof option === "string" ? option : option.value}
+          >
+            {typeof option === "string" ? option : option.label}
           </option>
         ))}
       </select>

@@ -176,9 +176,13 @@ test("database failures must reject writes and reads instead of using per-instan
     "lib/db.ts",
     {
       postgres: {
-        default: () => async () => {
-          throw new Error("database offline");
-        },
+        default: () =>
+          Object.assign(
+            async () => {
+              throw new Error("database offline");
+            },
+            { json: (value) => value }
+          ),
       },
       "@/data/initialData": new Proxy({}, { get: () => [] }),
       "@/config/inbox": { getMessageRetentionDays: () => 30, DEFAULT_MESSAGE_RETENTION_DAYS: 30 },

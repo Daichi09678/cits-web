@@ -1,11 +1,10 @@
 "use client";
 
-import Image from "next/image";
+import ServicePhoto from "@/components/ui/ServicePhoto";
 import Link from "next/link";
+import { consultationHref } from "@/lib/consultation";
 import {
   Code2,
-  Cpu,
-  Server,
   ShieldCheck,
   CheckCircle2,
   ArrowRight,
@@ -19,9 +18,7 @@ import {
   Briefcase,
   FileText,
   Clock,
-  Lock,
   FileCheck,
-  Database,
   Boxes,
 } from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
@@ -31,158 +28,7 @@ import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import { useCitsStore } from "@/stores/citsStore";
 import { getPillarIcon } from "@/lib/serviceIcons";
-
-interface ServiceItem {
-  id: string;
-  badge: string;
-  category: string;
-  title: string;
-  description: string;
-  icon: any;
-  gradient: string;
-  image: string;
-  features: string[];
-  techStack: string[];
-  caseStudies: string[];
-  deliverables: {
-    label: string;
-    description: string;
-  }[];
-  slaNote: string;
-}
-
-const defaultServices: ServiceItem[] = [
-  {
-    id: "software-house",
-    badge: "Pilar Layanan 01",
-    category: "Software House",
-    title: "Pengembangan Perangkat Lunak (Software House)",
-    description:
-      "Rekayasa sistem informasi dan aplikasi perangkat lunak kustom berstandar enterprise yang dirancang presisi sesuai proses bisnis instansi Anda. Mulai dari formulasi arsitektur, rekayasa kode, audit keamanan, hingga peluncuran sistem digital yang tangguh, aman, dan adaptif.",
-    icon: Code2,
-    gradient: "from-orange-600 to-amber-500",
-    image: "/services/software-house.webp",
-    features: [
-      "Pengembangan aplikasi web modern, portal terpadu, & Satu Data",
-      "Pengembangan aplikasi mobile lintas platform (Android & iOS)",
-      "Integrasi sistem enterprise, interoperabilitas data, & antar-lembaga",
-      "Perancangan arsitektur REST API, GraphQL, & Microservices",
-      "Pengujian otomatis, audit keamanan kode (SAST), & optimasi performa",
-      "Pemeliharaan berkala, perbaikan bug, & penyempurnaan fungsi sistem",
-    ],
-    techStack: ["Next.js / React", "TypeScript", "Golang", "PostgreSQL", "Docker / K8s", "REST & Microservices"],
-    caseStudies: ["BI & EIS SPIPISE BKPM RI", "SIMLALA Kemenhub RI", "Portal Satu Data Kelautan BPPT/BRIN"],
-    deliverables: [
-      {
-        label: "Deliverable Utama",
-        description: "Full Source Code, Dokumen Arsitektur (SAD), & Manual Book Pengguna",
-      },
-      {
-        label: "Jaminan Mutu",
-        description: "Garansi Pemeliharaan Pasca-BAST (12 Bulan) & Uji Kerentanan Siber",
-      },
-      {
-        label: "Alih Pengetahuan",
-        description: "Pelatihan Intensif dan Transfer Knowledge Lengkap untuk Tim Teknis Internal",
-      },
-    ],
-    slaNote: "Target Ketersediaan Sistem 99.9% High Availability",
-  },
-  {
-    id: "it-consultant",
-    badge: "Pilar Layanan 02",
-    category: "IT Consultant",
-    title: "Konsultasi Teknologi Informasi & SPBE",
-    description:
-      "Layanan konsultansi strategis untuk mendampingi pimpinan instansi dan korporasi dalam merencanakan, merumuskan peta jalan (roadmap), serta mengevaluasi implementasi teknologi informasi yang tepat guna, efisien anggaran, dan patuh terhadap regulasi SPBE nasional.",
-    icon: Cpu,
-    gradient: "from-blue-600 to-cyan-500",
-    image: "/services/it-consultant.webp",
-    features: [
-      "Analisis kebutuhan bisnis & penyusunan IT Master Plan (Rencana Induk TI)",
-      "Perancangan Enterprise Architecture & keselarasan arsitektur SPBE",
-      "Audit kesiapan infrastruktur, kapasitas server, & tata kelola TI",
-      "Penilaian risiko siber (cybersecurity assessment) & tata kelola data",
-      "Pendampingan teknis (supervisi kesistemanan) & evaluasi berkala",
-      "Penyusunan kerangka acuan kerja (KAK/TOR) & estimasi kelayakan biaya",
-    ],
-    techStack: [
-      "TOGAF Framework",
-      "Standar SPBE (Perpres 95/2018)",
-      "COBIT Governance",
-      "ISO 27001 Security",
-      "Data Governance",
-      "Kepatuhan UU PDP",
-    ],
-    caseStudies: [
-      "Sistem Informasi Diklat BPSDM ESDM",
-      "Modernisasi SIMKEP Mahkamah Agung",
-      "Perencanaan DRC Kominfo RI",
-    ],
-    deliverables: [
-      {
-        label: "Deliverable Utama",
-        description: "Dokumen IT Master Plan, Blueprint Arsitektur SPBE, & Dokumen KAK Definitif",
-      },
-      {
-        label: "Kepatuhan Regulasi",
-        description: "Penyelarasan Regulasi Perpres No. 95/2018 & Kebijakan Satu Data Indonesia",
-      },
-      {
-        label: "Supervisi Proyek",
-        description: "Pendampingan Teknis Berkala & Supervisi Pengadaan Barang/Jasa TI",
-      },
-    ],
-    slaNote: "Metodologi Terstandar TOGAF & Standar Pengadaan LKPP",
-  },
-  {
-    id: "it-supplier",
-    badge: "Pilar Layanan 03",
-    category: "IT Supplier",
-    title: "Pengadaan Perangkat TI & Infrastruktur (IT Supplier)",
-    description:
-      "Penyediaan perangkat keras, infrastruktur jaringan, dan lisensi perangkat lunak resmi bergaransi prinsipal dari vendor global terpercaya. Didukung pengujian menyeluruh, instalasi di lokasi (on-site configuration), dan layanan purna jual resmi.",
-    icon: Server,
-    gradient: "from-emerald-600 to-teal-500",
-    image: "/services/it-supplier.webp",
-    features: [
-      "Server enterprise, rak data center, & perangkat storage penyimpanan",
-      "Peralatan jaringan (Router, Core Switch, Firewall, & Access Point)",
-      "Workstation, PC desktop, laptop bisnis, & periferal perkantoran",
-      "Lisensi sistem operasi resmi, database enterprise, & tool produktivitas",
-      "Jasa instalasi, pengkabelan terstruktur (structured cabling), & konfigurasi",
-      "Dukungan purna jual, suku cadang resmi, & kontrak pemeliharaan berkala",
-    ],
-    techStack: [
-      "Enterprise Servers",
-      "Cisco & Mikrotik",
-      "Next-Gen Firewall",
-      "Storage Area Network",
-      "Enterprise OS License",
-      "UPS & Power Backup",
-    ],
-    caseStudies: [
-      "Infrastruktur Simbakar PT Indonesia Power",
-      "Pengadaan DRC Kementerian Kominfo",
-      "Infrastruktur KTP-el Kemendagri",
-    ],
-    deliverables: [
-      {
-        label: "Deliverable Utama",
-        description: "Perangkat Keras Enterprise Orisinal, Sertifikat Keaslian Lisensi (CoA), & BAST",
-      },
-      {
-        label: "Jaminan Garansi",
-        description: "Garansi Resmi Prinsipal 1-3 Tahun & Ketersediaan Suku Cadang Asli",
-      },
-      {
-        label: "Layanan Lapangan",
-        description: "On-Site Installation, Pengkabelan Terstruktur, & Berita Acara Uji Fungsi (FAT/SAT)",
-      },
-    ],
-    slaNote: "Legalitas Faktur Pajak Resmi & Terdaftar SIKaP LKPP",
-  },
-];
+import { resolveServiceCatalog } from "@/lib/serviceCatalog";
 
 const workProcess = [
   {
@@ -308,33 +154,7 @@ const engagementModels: EngagementModel[] = [
 export default function ServicesPage() {
   const { services: storeServices } = useCitsStore();
 
-  const displayServices: ServiceItem[] =
-    storeServices && storeServices.length > 0
-      ? storeServices
-          .filter((s) => s.isActive !== false)
-          .map((s, idx) => {
-            const fallback = defaultServices[idx] || defaultServices[0];
-            const IconComp = getPillarIcon(s.icon);
-            return {
-              ...fallback,
-              id:
-                s.id === "pillar-1"
-                  ? "software-house"
-                  : s.id === "pillar-2"
-                    ? "it-consultant"
-                    : s.id === "pillar-3"
-                      ? "it-supplier"
-                      : s.id,
-              badge: s.badge || fallback.badge,
-              category: s.title || fallback.category,
-              title: s.title ? `${s.title}${s.title.includes("(") ? "" : ` (${s.title})`}` : fallback.title,
-              description: s.desc || fallback.description,
-              icon: IconComp,
-              features: s.features && s.features.length > 0 ? s.features : fallback.features,
-              slaNote: s.sla || fallback.slaNote,
-            };
-          })
-      : defaultServices;
+  const displayServices = resolveServiceCatalog(storeServices);
 
   return (
     <main
@@ -365,16 +185,16 @@ export default function ServicesPage() {
 
             <ScrollReveal delay={0.1}>
               <p className="mt-5 text-slate-700 dark:text-slate-200 text-base md:text-lg leading-relaxed">
-                Menghadirkan tiga pilar layanan terintegrasi untuk mendukung efisiensi proses bisnis, tata kelola
-                pemerintahan digital, dan keandalan operasional kementerian, BUMN, serta korporasi terkemuka.
+                Layanan pengembangan perangkat lunak, konsultasi TI, dan pengadaan infrastruktur untuk mendampingi
+                kebutuhan teknologi instansi serta perusahaan Anda.
               </p>
             </ScrollReveal>
 
             {/* Quick Service Anchor Navigation (High-Contrast & Focus-Visible) */}
             <ScrollReveal delay={0.2}>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
-                {displayServices.slice(0, 3).map((item) => {
-                  const NavIcon = item.icon;
+                {displayServices.map((item) => {
+                  const NavIcon = getPillarIcon(item.icon);
                   return (
                     <a
                       key={item.id}
@@ -408,6 +228,7 @@ export default function ServicesPage() {
 
       {/* 2. DETAIL TIGA PILAR LAYANAN UTAMA (Symmetrical Bento Layout) */}
       <section
+        data-testid="service-details"
         aria-labelledby="services-detail-heading"
         className="py-16 md:py-24 bg-white dark:bg-[#1A1A2E] transition-colors border-b border-slate-200/80 dark:border-white/10"
       >
@@ -417,24 +238,24 @@ export default function ServicesPage() {
           </h2>
 
           {displayServices.map((service, i) => {
-            const Icon = service.icon;
+            const Icon = getPillarIcon(service.icon);
             const isReverse = i % 2 === 1;
 
             return (
               <div
                 key={service.id}
                 id={service.id}
-                className="scroll-mt-28 grid lg:grid-cols-12 gap-10 lg:gap-12 items-stretch"
+                className="scroll-mt-28 grid lg:grid-cols-12 gap-10 lg:gap-12 items-stretch min-w-0 [overflow-wrap:anywhere]"
               >
                 {/* Content Column (Span 7) */}
                 <ScrollReveal
                   direction={isReverse ? "right" : "left"}
-                  className={`lg:col-span-7 flex flex-col justify-between order-2 ${
+                  className={`min-w-0 lg:col-span-7 flex flex-col justify-between order-2 ${
                     isReverse ? "lg:order-2" : "lg:order-1"
                   }`}
                 >
                   <div className="space-y-6">
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex flex-wrap items-center gap-2.5">
                       <span className="text-xs font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/90 dark:border-orange-500/30 px-3 py-1 rounded-full uppercase tracking-wider">
                         {service.badge}
                       </span>
@@ -451,66 +272,81 @@ export default function ServicesPage() {
                       {service.description}
                     </p>
 
+                    {service.details && service.details !== service.description && (
+                      <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#151528] p-5">
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">Tentang Layanan Ini</h4>
+                        <p className="mt-2 text-sm leading-relaxed whitespace-pre-line text-slate-700 dark:text-slate-200">
+                          {service.details}
+                        </p>
+                      </div>
+                    )}
+
                     {/* Features list */}
-                    <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#151528] border border-slate-200 dark:border-white/10 space-y-3">
-                      <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2">
-                        Cakupan Solusi & Kemampuan Rekayasa
-                      </h4>
-                      <ul className="grid sm:grid-cols-2 gap-3 list-none p-0 m-0">
-                        {service.features.map((feature) => (
-                          <li
-                            key={feature}
-                            className="flex items-start gap-2.5 text-xs text-slate-800 dark:text-slate-200 leading-normal"
-                          >
-                            <CheckCircle2
-                              className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5"
-                              aria-hidden="true"
-                            />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                    {service.features.length > 0 && (
+                      <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#151528] border border-slate-200 dark:border-white/10 space-y-3">
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2">
+                          Cakupan Solusi & Kemampuan Rekayasa
+                        </h4>
+                        <ul className="grid sm:grid-cols-2 gap-3 list-none p-0 m-0">
+                          {service.features.map((feature) => (
+                            <li
+                              key={feature}
+                              className="flex items-start gap-2.5 text-xs text-slate-800 dark:text-slate-200 leading-normal"
+                            >
+                              <CheckCircle2
+                                className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5"
+                                aria-hidden="true"
+                              />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
 
                     {/* Tech Stacks / Competency Badges */}
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2.5">
-                        Standar Teknologi & Kerangka Kerja
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {service.techStack.map((tech) => (
-                          <span
-                            key={tech}
-                            className="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white border border-slate-200 dark:border-white/15"
-                          >
-                            {tech}
-                          </span>
-                        ))}
+                    {service.techStack.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2.5">
+                          Standar Teknologi & Kerangka Kerja
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {service.techStack.map((tech) => (
+                            <span
+                              key={tech}
+                              className="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white border border-slate-200 dark:border-white/15"
+                            >
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Case Studies / Implementasi Riil */}
-                    <div>
-                      <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                        Contoh Implementasi Riil:
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        {service.caseStudies.map((cs) => (
-                          <span
-                            key={cs}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/80 dark:border-orange-500/30 px-2.5 py-1 rounded-md"
-                          >
-                            <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" aria-hidden="true" />
-                            <span>{cs}</span>
-                          </span>
-                        ))}
+                    {service.caseStudies.length > 0 && (
+                      <div>
+                        <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                          Contoh Implementasi Riil:
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          {service.caseStudies.map((cs) => (
+                            <span
+                              key={cs}
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/80 dark:border-orange-500/30 px-2.5 py-1 rounded-md"
+                            >
+                              <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" aria-hidden="true" />
+                              <span>{cs}</span>
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* CTA Buttons */}
                     <div className="pt-2 flex flex-wrap gap-3">
                       <Link
-                        href="/contact"
+                        href={consultationHref({ service: service.title, source: "services" })}
                         className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-md shadow-orange-600/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                       >
                         <span>Konsultasikan Kebutuhan Ini</span>
@@ -530,44 +366,46 @@ export default function ServicesPage() {
                 {/* Visual & Deliverables Column (Span 5 - Perfectly Balanced) */}
                 <ScrollReveal
                   direction={isReverse ? "left" : "right"}
-                  className={`lg:col-span-5 h-full order-1 ${isReverse ? "lg:order-1" : "lg:order-2"}`}
+                  className={`min-w-0 lg:col-span-5 h-full order-1 ${isReverse ? "lg:order-1" : "lg:order-2"}`}
                 >
                   <SpotlightCard className="h-full">
                     <div className="p-5 md:p-6 flex flex-col justify-between h-full space-y-5">
                       {/* Image container */}
                       <div className="relative rounded-2xl overflow-hidden shadow-md border border-slate-200 dark:border-white/10 aspect-[16/10] bg-slate-100 dark:bg-slate-900">
-                        <Image
-                          src={service.image}
-                          alt={`Ilustrasi layanan ${service.title}`}
-                          width={600}
-                          height={375}
-                          className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-500"
+                        <ServicePhoto
+                          image={service.image}
+                          name={service.title}
+                          className="h-full transform hover:scale-105 transition-transform duration-500"
                         />
                       </div>
 
                       {/* Deliverables & SLA Bento Card (Resolves the vertical void) */}
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 space-y-3">
-                        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2.5">
-                          <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                            <Icon className="w-4 h-4 text-orange-600 dark:text-orange-400" aria-hidden="true" />
-                            <span>Deliverable & Jaminan Kualitas</span>
-                          </span>
-                          <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 rounded">
-                            Resmi & Sah
-                          </span>
-                        </div>
+                      {service.deliverables.length > 0 && (
+                        <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 space-y-3">
+                          <div className="flex flex-wrap gap-2 items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2.5">
+                            <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                              <Icon className="w-4 h-4 text-orange-600 dark:text-orange-400" aria-hidden="true" />
+                              <span>Deliverable & Jaminan Kualitas</span>
+                            </span>
+                            <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 rounded">
+                              Resmi & Sah
+                            </span>
+                          </div>
 
-                        <div className="space-y-2.5">
-                          {service.deliverables.map((item) => (
-                            <div key={item.label} className="text-xs">
-                              <span className="font-bold text-slate-800 dark:text-slate-200 block">{item.label}:</span>
-                              <span className="text-slate-600 dark:text-slate-400 leading-relaxed block mt-0.5">
-                                {item.description}
-                              </span>
-                            </div>
-                          ))}
+                          <div className="space-y-2.5">
+                            {service.deliverables.map((item) => (
+                              <div key={item.label} className="text-xs">
+                                <span className="font-bold text-slate-800 dark:text-slate-200 block">
+                                  {item.label}:
+                                </span>
+                                <span className="text-slate-600 dark:text-slate-400 leading-relaxed block mt-0.5">
+                                  {item.description}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Service SLA Chip */}
                       <div className="p-3.5 rounded-xl bg-orange-50/80 dark:bg-orange-500/10 border border-orange-200/80 dark:border-orange-500/30 flex items-center gap-3">
@@ -818,7 +656,7 @@ export default function ServicesPage() {
                       {/* Action Link */}
                       <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10">
                         <Link
-                          href="/contact"
+                          href={consultationHref({ service: model.title, source: "services" })}
                           className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-semibold text-xs transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                         >
                           <span>Diskusikan Skema Ini</span>
@@ -858,7 +696,7 @@ export default function ServicesPage() {
 
               <div className="mt-8 flex flex-wrap justify-center gap-3.5">
                 <Link
-                  href="/contact"
+                  href={consultationHref({ source: "services" })}
                   className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-md shadow-orange-600/20 hover:shadow-lg hover:shadow-orange-600/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                 >
                   <span>Ajukan Diskusi Kebutuhan</span>

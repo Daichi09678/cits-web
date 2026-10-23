@@ -72,6 +72,9 @@ CREATE TABLE IF NOT EXISTS contact_messages (
     email VARCHAR(150) NOT NULL,
     phone VARCHAR(50) NOT NULL,
     service_requested VARCHAR(150),
+    product_id TEXT,
+    product_requested TEXT,
+    consultation_details JSONB DEFAULT '{}'::jsonb,
     message TEXT NOT NULL,
     status VARCHAR(50) DEFAULT 'Baru', -- 'Baru', 'Diproses', 'Selesai', 'Arsip'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

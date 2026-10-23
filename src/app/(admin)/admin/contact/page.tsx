@@ -1,4 +1,6 @@
 "use client";
+import MessageConsultationDetails from "@/components/admin/MessageConsultationDetails";
+import { consultationSummary } from "@/lib/consultation";
 
 import { useEffect, useState } from "react";
 import {
@@ -199,7 +201,12 @@ export default function AdminContactPage() {
       (m.company || "").toLowerCase().includes(s) ||
       (m.email || "").toLowerCase().includes(s) ||
       (m.message || "").toLowerCase().includes(s) ||
-      (Boolean(m.serviceRequested) && (m.serviceRequested || "").toLowerCase().includes(s));
+      consultationSummary(m).toLowerCase().includes(s) ||
+      [
+        m.consultation?.expectedOutcome,
+        m.consultation?.currentSystem,
+        ...(m.consultation?.requestedFeatures || []),
+      ].some((value) => value?.toLowerCase().includes(s));
     const matchStatus = filterStatus === "All" || m.status === filterStatus;
     const stageKey = m.dealStage || "baru";
     const matchStage = filterStage === "All" || stageKey === filterStage;
@@ -309,7 +316,7 @@ export default function AdminContactPage() {
 
     if (templateType === "penawaran") {
       return `${greeting}
-Terima kasih atas ketertarikan Anda terhadap portofolio dan layanan CITS Indonesia terkait kebutuhan "${msg.serviceRequested || "Solusi TI"}".
+Terima kasih atas ketertarikan Anda terhadap portofolio dan layanan CITS Indonesia terkait kebutuhan "${consultationSummary(msg)}".
 
 Menindaklanjuti pesan konsultasi Anda:
 "${msg.message}"
@@ -337,7 +344,7 @@ Kami siap mendiskusikan hal ini lebih lanjut melalui pertemuan daring (Google Me
     }
 
     return `${greeting}
-Terima kasih telah menghubungi PT Cipta Integrasi Teknologi Solusi (CITS). Kami telah menerima permohonan konsultasi Anda mengenai "${msg.serviceRequested || "Solusi TI"}".
+Terima kasih telah menghubungi PT Cipta Integrasi Teknologi Solusi (CITS). Kami telah menerima permohonan konsultasi Anda mengenai "${consultationSummary(msg)}".
 
 Pesan Anda:
 "${msg.message}"
@@ -542,7 +549,7 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
         title="Kotak Masuk Pesan & Konsultasi"
         description="Kelola pesan masuk dari formulir website, pantau tahapan calon klien, dan kelola FAQ"
       />
-      <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
+      <div className="p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
         {/* Action Feedback Alert */}
         {replyFeedback && (
           <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-2.5 text-xs text-emerald-800 dark:text-emerald-300 shadow-xs animate-in fade-in">
@@ -600,7 +607,7 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
               onClick={() => playNewMessageSound()}
@@ -676,8 +683,8 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
 
               {/* Row 2: Search Input, Status Filter, and Select Mode Toggle */}
               <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                <div className="flex items-center gap-2.5 flex-1 min-w-[260px]">
-                  <div className="relative flex-1 max-w-sm">
+                <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-0">
+                  <div className="relative w-full sm:flex-1 sm:min-w-40 max-w-sm">
                     <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
@@ -689,7 +696,7 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                   </div>
 
                   {/* Keterbacaan filter pill */}
-                  <div className="flex items-center gap-1 bg-slate-50 dark:bg-white/5 p-1 rounded-xl border border-slate-200 dark:border-white/10 text-xs">
+                  <div className="flex flex-wrap items-center gap-1 bg-slate-50 dark:bg-white/5 p-1 rounded-xl border border-slate-200 dark:border-white/10 text-xs">
                     {[
                       { key: "All", label: "Semua" },
                       { key: "unread", label: "Belum Dibaca" },
@@ -924,7 +931,7 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                       <div className="mt-3 cursor-pointer" onClick={() => handleOpenDetail(msg)}>
                         <div className="flex items-center justify-between gap-2 mb-1.5">
                           <span className="text-[11px] font-bold text-orange-700 dark:text-orange-400">
-                            Kebutuhan Konsultasi: {msg.serviceRequested || "Solusi TI"}
+                            Kebutuhan Konsultasi: {consultationSummary(msg)}
                           </span>
                           {msg.dealNotes && (
                             <span className="text-[10px] font-medium text-slate-500 dark:text-slate-400 italic flex items-center gap-1">
@@ -1384,14 +1391,24 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
         {/* MODAL DETAIL PESAN & DEAL STAGE PIPELINE */}
         {selectedMessage && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-            <div className="w-full max-w-2xl bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center font-bold text-sm">
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="consultation-detail-title"
+              className="w-full min-w-0 max-w-2xl max-h-[92dvh] flex flex-col bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden"
+            >
+              <div className="shrink-0 px-4 sm:px-6 py-5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between gap-3">
+                <div className="min-w-0 flex items-center gap-3">
+                  <div className="shrink-0 w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center font-bold text-sm">
                     {selectedMessage.name.slice(0, 2).toUpperCase()}
                   </div>
-                  <div>
-                    <h3 className="font-extrabold text-base text-slate-900 dark:text-white">{selectedMessage.name}</h3>
+                  <div className="min-w-0 break-words">
+                    <h3
+                      id="consultation-detail-title"
+                      className="font-extrabold text-base text-slate-900 dark:text-white"
+                    >
+                      {selectedMessage.name}
+                    </h3>
                     <span className="text-xs text-orange-600 dark:text-orange-400 font-semibold">
                       {selectedMessage.company}
                     </span>
@@ -1400,13 +1417,14 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
 
                 <button
                   onClick={() => setSelectedMessage(null)}
+                  aria-label="Tutup detail konsultasi"
                   className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
+              <div className="min-h-0 p-4 sm:p-6 space-y-4 overflow-y-auto text-xs">
                 {/* Meta details */}
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
@@ -1450,6 +1468,8 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                     </p>
                   </div>
                 </div>
+
+                <MessageConsultationDetails message={selectedMessage} />
 
                 {/* DEAL STAGE PIPELINE (Tanpa slash) */}
                 <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
@@ -1507,30 +1527,10 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                   </div>
                 </div>
 
-                {/* Kebutuhan */}
-                <div className="p-3.5 rounded-xl bg-orange-50 dark:bg-orange-500/10 border border-orange-200/80 dark:border-orange-500/20">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-orange-800 dark:text-orange-300 block mb-0.5">
-                    Kebutuhan Solusi:
-                  </span>
-                  <span className="font-extrabold text-sm text-slate-900 dark:text-white">
-                    {selectedMessage.serviceRequested || "Solusi TI"}
-                  </span>
-                </div>
-
-                {/* Full Message */}
-                <div>
-                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
-                    Uraian Pesan:
-                  </span>
-                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-wrap text-sm">
-                    {selectedMessage.message}
-                  </div>
-                </div>
-
                 {/* Status Switcher in Modal */}
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 flex items-center justify-between">
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 flex flex-wrap gap-3 items-center justify-between">
                   <span className="font-bold text-slate-700 dark:text-slate-300">Status Keterbacaan:</span>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     {(["unread", "read", "replied"] as const).map((st) => (
                       <button
                         key={st}
@@ -1560,7 +1560,7 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                     <span>Hapus Pesan</span>
                   </button>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <a
                       href={`https://wa.me/${getCleanPhone(selectedMessage.phone)}?text=Halo%20${encodeURIComponent(
                         selectedMessage.name

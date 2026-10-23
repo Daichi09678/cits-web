@@ -10,6 +10,8 @@ const auth = load(
   { Buffer, process: { env: { ADMIN_AUTH_SECRET: "qa-secret" } } }
 );
 const http = load("lib/http.ts", { "next/server": { NextResponse } });
+const consultation = load("lib/consultation.ts", {}, { URLSearchParams });
+const serviceCatalog = load("lib/serviceCatalog.ts", { "@/data/serviceDetails": load("data/serviceDetails.ts") });
 const request = (body, token, method = "POST") =>
   new Request("http://localhost/api/test", {
     method,
@@ -68,6 +70,8 @@ test("private reads and content mutations refuse anonymous callers before access
         "next/server": { NextResponse },
         "@/lib/apiAuth": auth,
         "@/lib/http": http,
+        "@/lib/consultation": consultation,
+        "@/lib/serviceCatalog": serviceCatalog,
         "@/lib/db": {
           DbRepo: new Proxy(
             {},
@@ -97,6 +101,8 @@ function messagesRoute(db) {
       "next/server": { NextResponse },
       "@/lib/apiAuth": auth,
       "@/lib/http": http,
+      "@/lib/consultation": consultation,
+      "@/lib/serviceCatalog": serviceCatalog,
       "@/lib/db": { DbRepo: db },
       "@/config/inbox": {},
       "@/lib/email": { sendContactNotificationEmail: async () => {} },
@@ -195,6 +201,8 @@ test("public product listings do not expose inactive products, while authenticat
     "next/server": { NextResponse },
     "@/lib/apiAuth": auth,
     "@/lib/http": http,
+    "@/lib/consultation": consultation,
+    "@/lib/serviceCatalog": serviceCatalog,
     "@/lib/db": {
       DbRepo: { getActiveProducts: async () => [{ id: "active" }], getAllProducts: async () => [{ id: "inactive" }] },
     },
@@ -213,6 +221,8 @@ test("login rejects invalid JSON and wrong field types before credential lookup"
     "next/server": { NextResponse },
     "@/lib/apiAuth": auth,
     "@/lib/http": http,
+    "@/lib/consultation": consultation,
+    "@/lib/serviceCatalog": serviceCatalog,
     "@/config/siteConfig": {},
     "@/lib/internalAccountsServer": {},
     "@/lib/profileServer": {},
@@ -255,6 +265,8 @@ test("failed legacy migrations cannot report success and trigger deletion of the
       "next/server": { NextResponse },
       "@/lib/apiAuth": auth,
       "@/lib/http": http,
+      "@/lib/consultation": consultation,
+      "@/lib/serviceCatalog": serviceCatalog,
       "@/lib/internalAccountsServer": {
         migrateLegacyAccounts: async () => {
           throw new Error("Database offline");
