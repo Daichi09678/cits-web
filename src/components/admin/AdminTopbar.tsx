@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Search, Bell, Sun, Moon, Menu, UserRound, KeyRound, LogOut } from "lucide-react";
+import { Search, Bell, Sun, Moon, Menu, UserRound } from "lucide-react";
 import { useCitsStore } from "@/stores/citsStore";
 import { useAdminShell } from "@/components/admin/AdminShell";
 import { useAdminAuth } from "@/lib/auth";
@@ -17,8 +16,7 @@ interface AdminTopbarProps {
 export default function AdminTopbar({ title, description }: AdminTopbarProps) {
   const { messages } = useCitsStore();
   const { mobileOpen, openMobile } = useAdminShell();
-  const { session, logout } = useAdminAuth();
-  const router = useRouter();
+  const { session } = useAdminAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -33,12 +31,6 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
     document.addEventListener("mousedown", onPointerDown);
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, []);
-
-  function handleLogout() {
-    setShowProfile(false);
-    logout();
-    router.push("/admin/login");
-  }
 
   // Toggle Dark Mode
   const toggleDarkMode = () => {
@@ -219,22 +211,6 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
                   <UserRound className="h-4 w-4 text-orange-500" />
                   Profil Saya
                 </Link>
-                <Link
-                  href="/admin/settings/security"
-                  onClick={() => setShowProfile(false)}
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-white/5 dark:hover:text-white"
-                >
-                  <KeyRound className="h-4 w-4 text-orange-500" />
-                  Keamanan Akun
-                </Link>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="mt-0.5 flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/30"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Keluar dari Akun
-                </button>
               </div>
             </div>
           )}
