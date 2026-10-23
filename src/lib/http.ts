@@ -10,7 +10,11 @@ type ParsedBody<T> = { ok: true; body: T } | { ok: false; response: NextResponse
  */
 export async function readJsonBody<T = any>(req: Request): Promise<ParsedBody<T>> {
   try {
-    return { ok: true, body: (await req.json()) as T };
+    const body: unknown = await req.json();
+    if (!body || typeof body !== "object") {
+      return { ok: false, response: badRequest("Body permintaan harus berupa objek atau array JSON.") };
+    }
+    return { ok: true, body: body as T };
   } catch {
     return {
       ok: false,

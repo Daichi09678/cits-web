@@ -41,9 +41,13 @@ export const citsApi = {
   },
 
   async getAllProducts() {
-    const res = await fetch(`${API_URL}/products?all=true`, { cache: "no-store" });
+    const headers = getHeaders();
+    const authenticated = "Authorization" in headers;
+    const res = await fetch(`${API_URL}/products${authenticated ? "?all=true" : ""}`, { headers, cache: "no-store" });
+    if (!res.ok) throw new Error(`API getAllProducts failed: ${res.status}`);
     const json = await res.json();
-    return json.data || [];
+    if (!json?.success || !Array.isArray(json.data)) throw new Error("Invalid products response");
+    return json.data;
   },
 
   async getProductById(id: string) {
@@ -217,6 +221,7 @@ export const citsApi = {
     formData.append("file", file);
     const res = await fetch(`${API_URL}/uploads`, {
       method: "POST",
+      headers: Object.fromEntries(Object.entries(getHeaders()).filter(([key]) => key !== "Content-Type")),
       body: formData,
     });
     return res.json();

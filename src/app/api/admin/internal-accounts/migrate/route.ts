@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http";
 import { NextResponse } from "next/server";
 import { errorResponse, requireSuperadmin } from "@/lib/apiAuth";
 import { migrateLegacyAccounts } from "@/lib/internalAccountsServer";
@@ -10,7 +11,9 @@ export async function POST(request: Request) {
   if (denied) return denied;
 
   try {
-    const body = await request.json();
+    const parsedBody = await readJsonBody(request);
+    if (!parsedBody.ok) return parsedBody.response;
+    const body = parsedBody.body;
     const result = await migrateLegacyAccounts(body.accounts);
     return NextResponse.json({ success: true, migrated: result.migrated });
   } catch (error) {

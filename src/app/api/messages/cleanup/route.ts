@@ -1,24 +1,20 @@
 import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
 import { getMessageRetentionDays } from "@/config/inbox";
+import { requireAdmin } from "@/lib/apiAuth";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Endpoint pembersihan manual / untuk cron eksternal.
  *
- * Default (tanpa CRON_SECRET): boleh dipanggil siapa saja, karena hanya
- * menghapus pesan yang memang sudah melewati batas retensi.
- * Jika CRON_SECRET di-set, pemanggil wajib mengirim
- *   Authorization: Bearer <CRON_SECRET>
+ * Pemanggil wajib memakai CRON_SECRET atau sesi admin dengan izin kontak.
  */
 async function runPurge(req: Request) {
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = req.headers.get("authorization") || "";
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
+  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
+    const denied = requireAdmin(req, "contact");
+    if (denied) return denied;
   }
 
   const retentionDays = getMessageRetentionDays();

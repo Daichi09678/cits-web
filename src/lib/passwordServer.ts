@@ -126,7 +126,7 @@ export async function verifyAdminCredential(userId: string, password: string): P
     return safeEqualHex(candidate, row.password_hash);
   } catch (error) {
     console.error("DB Error verifyAdminCredential:", error);
-    return null;
+    throw new Error("Verifikasi kata sandi belum tersedia. Silakan coba lagi.");
   }
 }
 

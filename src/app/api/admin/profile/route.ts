@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http";
 import { NextResponse } from "next/server";
 import { errorResponse, unauthorizedResponse, verifyAdminToken } from "@/lib/apiAuth";
 import { DEFAULT_AVATAR, normalizeProfileInput, type AdminProfile } from "@/lib/profile";
@@ -52,7 +53,9 @@ export async function PUT(request: Request) {
   if (!session) return unauthorizedResponse();
 
   try {
-    const body = await request.json();
+    const parsedBody = await readJsonBody(request);
+    if (!parsedBody.ok) return parsedBody.response;
+    const body = parsedBody.body;
     const parsed = normalizeProfileInput(body);
     if (!parsed.ok) {
       return NextResponse.json({ success: false, message: parsed.message }, { status: 400 });

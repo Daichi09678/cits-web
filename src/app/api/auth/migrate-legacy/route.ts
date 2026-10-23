@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http";
 import { NextResponse } from "next/server";
 import { migrateLegacyAccounts } from "@/lib/internalAccountsServer";
 import { requireSuperadmin } from "@/lib/apiAuth";
@@ -14,10 +15,16 @@ export async function POST(request: Request) {
   if (denied) return denied;
 
   try {
-    const body = await request.json();
+    const parsedBody = await readJsonBody(request);
+    if (!parsedBody.ok) return parsedBody.response;
+    const body = parsedBody.body;
     const result = await migrateLegacyAccounts(body.accounts);
     return NextResponse.json({ success: true, migrated: result.migrated });
-  } catch {
-    return NextResponse.json({ success: true, migrated: 0 });
+  } catch (error) {
+    console.error("Legacy account migration failed:", error);
+    return NextResponse.json(
+      { success: false, message: "Migrasi akun gagal. Data lama tetap disimpan." },
+      { status: 500 }
+    );
   }
 }

@@ -65,6 +65,19 @@ export function hasSuperadminToken(request: Request): boolean {
   return verifyAdminToken(request)?.role === "superadmin";
 }
 
+/** Enforce the same edit permissions as the back-office UI, before accessing data. */
+export function requireAdmin(request: Request, page?: PageKey): NextResponse | null {
+  const session = verifyAdminToken(request);
+  if (!session) return unauthorizedResponse();
+  if (page && session.role !== "superadmin" && !session.pageAccess?.includes(page)) {
+    return NextResponse.json(
+      { success: false, message: "Anda tidak memiliki izin mengubah halaman ini." },
+      { status: 403 }
+    );
+  }
+  return null;
+}
+
 export function requireSuperadmin(request: Request): NextResponse | null {
   const session = verifyAdminToken(request);
   if (!session) return unauthorizedResponse();

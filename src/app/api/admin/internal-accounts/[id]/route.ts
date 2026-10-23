@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http";
 import { NextResponse } from "next/server";
 import { errorResponse, requireSuperadmin } from "@/lib/apiAuth";
 import { deleteInternalAccount, updateInternalAccount } from "@/lib/internalAccountsServer";
@@ -16,7 +17,9 @@ export async function PUT(request: Request, context: RouteContext) {
 
   try {
     const { id } = await context.params;
-    const body = await request.json();
+    const parsedBody = await readJsonBody(request);
+    if (!parsedBody.ok) return parsedBody.response;
+    const body = parsedBody.body;
     const result = await updateInternalAccount(id, {
       name: typeof body.name === "string" ? body.name : "",
       email: typeof body.email === "string" ? body.email : "",

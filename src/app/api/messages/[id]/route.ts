@@ -1,7 +1,10 @@
+import { requireAdmin } from "@/lib/apiAuth";
 import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
 
-export async function DELETE(_req: Request, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
+  const denied = requireAdmin(req, "contact");
+  if (denied) return denied;
   try {
     const { id } = await context.params;
     const exists = (await DbRepo.getMessages()).some((m) => m.id === id);

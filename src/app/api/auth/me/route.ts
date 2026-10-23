@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
-import { siteConfig } from "@/config/siteConfig";
+import { unauthorizedResponse, verifyAdminToken } from "@/lib/apiAuth";
 
 export async function GET(req: Request) {
-  const authHeader = req.headers.get("authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-  }
+  const session = verifyAdminToken(req);
+  if (!session) return unauthorizedResponse();
 
   return NextResponse.json({
     success: true,
     user: {
-      id: "admin-1",
-      name: "maswahyuganteng",
-      email: siteConfig.admin.defaultEmail,
-      role: "Super Admin",
+      id: session.sub,
+      name: session.name,
+      email: session.email,
+      role: session.role === "superadmin" ? "Super Admin" : "Admin Internal",
+      pageAccess: session.pageAccess,
+      isInternal: session.role === "internal",
       avatar: "/avatars/admin.webp",
     },
   });

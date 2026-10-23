@@ -5,15 +5,21 @@ import { issueAdminToken } from "@/lib/apiAuth";
 import { getAdminProfile } from "@/lib/profileServer";
 import { DEFAULT_AVATAR } from "@/lib/profile";
 import { verifyAdminCredential } from "@/lib/passwordServer";
+import { badRequest, missingStringFields, readJsonBody } from "@/lib/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const email = (body.email || "").trim().toLowerCase();
-    const password = (body.password || "").trim();
+    const parsed = await readJsonBody(req);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.body;
+    if (missingStringFields(body, ["email", "password"]).length > 0) {
+      return badRequest("Email dan kata sandi wajib diisi.");
+    }
+    const email = body.email.trim().toLowerCase();
+    const password = body.password;
 
     // 1. Akun staf internal (disimpan di database) dicek lebih dulu.
     let internalAuth: Awaited<ReturnType<typeof authenticateInternalAccount>> | null = null;

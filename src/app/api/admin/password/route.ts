@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http";
 import { NextResponse } from "next/server";
 import { errorResponse, unauthorizedResponse, verifyAdminToken } from "@/lib/apiAuth";
 import { siteConfig } from "@/config/siteConfig";
@@ -17,7 +18,9 @@ export async function PUT(request: Request) {
   if (!session) return unauthorizedResponse();
 
   try {
-    const body = await request.json();
+    const parsedBody = await readJsonBody(request);
+    if (!parsedBody.ok) return parsedBody.response;
+    const body = parsedBody.body;
     const currentPassword = typeof body.currentPassword === "string" ? body.currentPassword : "";
     const newPassword = typeof body.newPassword === "string" ? body.newPassword : "";
 

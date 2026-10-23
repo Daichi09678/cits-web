@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http";
 import { NextResponse } from "next/server";
 import { siteConfig } from "@/config/siteConfig";
 import { errorResponse, requireSuperadmin } from "@/lib/apiAuth";
@@ -35,7 +36,9 @@ export async function POST(request: Request) {
   if (denied) return denied;
 
   try {
-    const body = await request.json();
+    const parsedBody = await readJsonBody(request);
+    if (!parsedBody.ok) return parsedBody.response;
+    const body = parsedBody.body;
     const result = await createInternalAccount({
       name: typeof body.name === "string" ? body.name : "",
       email: typeof body.email === "string" ? body.email : "",
@@ -59,7 +62,9 @@ export async function PATCH(request: Request) {
   if (denied) return denied;
 
   try {
-    const body = await request.json();
+    const parsedBody = await readJsonBody(request);
+    if (!parsedBody.ok) return parsedBody.response;
+    const body = parsedBody.body;
     const updates = Array.isArray(body.updates)
       ? body.updates
           .filter((item: unknown): item is { id: string; pageAccess: PageKey[] } => {

@@ -1,12 +1,24 @@
+import { requireAdmin } from "@/lib/apiAuth";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
   try {
     const formData = await req.formData();
-    const file = formData.get("file") as File | null;
+    const file = formData.get("file");
 
-    if (!file) {
+    if (!(file instanceof File) || file.size === 0) {
       return NextResponse.json({ success: false, message: "Berkas tidak ditemukan" }, { status: 400 });
+    }
+    if (!new Set(["image/png", "image/jpeg", "image/webp", "image/gif", "image/avif"]).has(file.type)) {
+      return NextResponse.json(
+        { success: false, message: "Gunakan gambar PNG, JPEG, WebP, GIF, atau AVIF." },
+        { status: 400 }
+      );
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json({ success: false, message: "Ukuran gambar maksimal 5 MB." }, { status: 413 });
     }
 
     const bytes = await file.arrayBuffer();

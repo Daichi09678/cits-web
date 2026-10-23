@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/apiAuth";
 import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
 import { ClientPartner } from "@/types/schema";
@@ -13,6 +14,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const denied = requireAdmin(req, "clients");
+  if (denied) return denied;
   try {
     const parsed = await readJsonBody(req);
     if (!parsed.ok) return parsed.response;

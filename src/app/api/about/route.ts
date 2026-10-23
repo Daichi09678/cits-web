@@ -1,5 +1,7 @@
+import { requireAdmin } from "@/lib/apiAuth";
 import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
+import { readJsonBody } from "@/lib/http";
 
 export async function GET() {
   try {
@@ -11,8 +13,12 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
+  const denied = requireAdmin(req, "about");
+  if (denied) return denied;
   try {
-    const body = await req.json();
+    const parsed = await readJsonBody(req);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.body;
 
     // Tolak payload tidak lengkap: mencegah "sukses palsu" saat insert gagal
     // (kolom title/subtitle/story/vision bersifat NOT NULL di database).

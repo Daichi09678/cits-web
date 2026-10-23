@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http";
 import { NextResponse } from "next/server";
 import { consumePasswordResetToken, setAdminCredential } from "@/lib/passwordServer";
 import { updateInternalAccountPassword } from "@/lib/internalAccountsServer";
@@ -8,7 +9,9 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json().catch(() => ({}));
+    const parsedBody = await readJsonBody(request);
+    if (!parsedBody.ok) return parsedBody.response;
+    const body = parsedBody.body;
     const token = typeof (body as { token?: unknown }).token === "string" ? (body as { token: string }).token : "";
     const newPassword =
       typeof (body as { newPassword?: unknown }).newPassword === "string"

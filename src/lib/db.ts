@@ -1,4 +1,5 @@
 import postgres from "postgres";
+import { randomUUID } from "node:crypto";
 import {
   initialProducts,
   initialContactInfo,
@@ -340,10 +341,12 @@ export const DbRepo = {
     return memoryDb.messages;
   },
 
-  async addMessage(msg: Omit<ContactMessage, "status" | "createdAt"> & { id?: string }): Promise<ContactMessage> {
+  async addMessage(
+    msg: Omit<ContactMessage, "id" | "status" | "createdAt"> & { id?: string }
+  ): Promise<ContactMessage> {
     const newMsg: ContactMessage = {
       ...msg,
-      id: msg.id || "msg-" + Date.now(),
+      id: msg.id || "msg-" + randomUUID(),
       status: "unread",
       dealStage: msg.dealStage || "baru",
       dealNotes: msg.dealNotes || "",

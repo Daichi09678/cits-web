@@ -1,7 +1,10 @@
+import { requireAdmin } from "@/lib/apiAuth";
 import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
 
 export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
+  const denied = requireAdmin(req, "contact");
+  if (denied) return denied;
   try {
     const { id } = await context.params;
 
@@ -15,11 +18,6 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       );
     }
 
-    const exists = (await DbRepo.getMessages()).some((m) => m.id === id);
-    if (!exists) {
-      return NextResponse.json({ success: false, message: "Pesan tidak ditemukan." }, { status: 404 });
-    }
-
     const status = body?.status;
     const dealStage = body?.dealStage;
     const dealNotes = body?.dealNotes;
@@ -30,17 +28,30 @@ export async function PATCH(req: Request, context: { params: Promise<{ id: strin
       );
     }
 
+    // Validate the whole change before writing either field.
+    if (status !== undefined && !["unread", "read", "replied"].includes(status)) {
+      return NextResponse.json({ success: false, message: "Invalid status" }, { status: 400 });
+    }
+    if (
+      dealStage !== undefined &&
+      !["baru", "diskusi", "proses", "kesepakatan", "selesai", "batal"].includes(dealStage)
+    ) {
+      return NextResponse.json({ success: false, message: "Invalid deal stage" }, { status: 400 });
+    }
+    if (dealNotes !== undefined && typeof dealNotes !== "string") {
+      return NextResponse.json({ success: false, message: "Catatan harus berupa teks." }, { status: 400 });
+    }
+
+    const exists = (await DbRepo.getMessages()).some((m) => m.id === id);
+    if (!exists) {
+      return NextResponse.json({ success: false, message: "Pesan tidak ditemukan." }, { status: 404 });
+    }
+
     if (status) {
-      if (!["unread", "read", "replied"].includes(status)) {
-        return NextResponse.json({ success: false, message: "Invalid status" }, { status: 400 });
-      }
       await DbRepo.updateMessageStatus(id, status);
     }
 
     if (dealStage) {
-      if (!["baru", "diskusi", "proses", "kesepakatan", "selesai", "batal"].includes(dealStage)) {
-        return NextResponse.json({ success: false, message: "Invalid deal stage" }, { status: 400 });
-      }
       await DbRepo.updateMessageStage(id, dealStage, dealNotes);
     }
 

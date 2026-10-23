@@ -48,7 +48,7 @@ export const AdminAuth = {
     if (typeof window === "undefined") return { success: false, message: "Window not available" };
 
     const cleanInput = email.trim().toLowerCase();
-    const cleanPass = pass.trim();
+    const cleanPass = pass;
 
     // Akun lama (localStorage) dimigrasikan ke database setelah login
     // Superadmin berhasil, karena endpoint migrasi butuh token Superadmin.

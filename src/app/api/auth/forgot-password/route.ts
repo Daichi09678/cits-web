@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http";
 import { NextResponse } from "next/server";
 import { isEmailConfigured } from "@/lib/email";
 import { getRequestOrigin, normalizeResetEmail, requestPasswordResetForEmail } from "@/lib/passwordReset";
@@ -30,7 +31,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json().catch(() => ({}));
+    const parsedBody = await readJsonBody(request);
+    if (!parsedBody.ok) return parsedBody.response;
+    const body = parsedBody.body;
     const email = normalizeResetEmail((body as { email?: unknown }).email);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ success: false, message: "Format email tidak valid." }, { status: 400 });
