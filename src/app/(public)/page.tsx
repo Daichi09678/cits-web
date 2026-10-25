@@ -1,24 +1,22 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import ProductPhoto from "@/components/ui/ProductPhoto";
 import { consultationHref } from "@/lib/consultation";
-import { ArrowRight, Shield, CheckCircle2, Activity, ArrowUpRight, Sparkles } from "lucide-react";
+import { ArrowRight, Shield, CheckCircle2, Activity, ArrowUpRight } from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import Counter from "@/components/animations/Counter";
 import ParticleNetwork from "@/components/animations/ParticleNetwork";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import TypewriterText from "@/components/animations/TypewriterText";
-import SpotlightCard from "@/components/ui/SpotlightCard";
 import HeroMockup from "@/components/ui/HeroMockup";
 import GridPattern from "@/components/ui/GridPattern";
 import GradientText from "@/components/ui/GradientText";
 import Marquee from "@/components/ui/Marquee";
+import SpotlightCard from "@/components/ui/SpotlightCard";
 import { useCitsStore } from "@/stores/citsStore";
 import { initialLandingPageData, defaultSectionVisibility } from "@/data/initialData";
-import HomeServiceCard from "@/components/ui/HomeServiceCard";
-import HomeFocusCard from "@/components/ui/HomeFocusCard";
-import { resolveServiceCatalog } from "@/lib/serviceCatalog";
+import FeaturedCatalog from "@/components/ui/FeaturedCatalog";
 
 const clients = [
   { name: "Kementerian Dalam Negeri RI", logo: "/clients/kemendagri.svg", showLabel: true },
@@ -45,13 +43,7 @@ export default function Home() {
   const highlights = currentLanding.highlights || initialLandingPageData.highlights;
   const activeHighlights = highlights.filter((h) => h.isActive !== false);
   const servicesIntro = currentLanding.servicesIntro || initialLandingPageData.servicesIntro;
-  const featuredProducts = activeProducts.slice(0, 5);
   const productsIntro = currentLanding.productsIntro || initialLandingPageData.productsIntro;
-
-  const serviceByAnchor = new Map(resolveServiceCatalog(storeServices).map((service) => [service.id, service]));
-  const softwareService = serviceByAnchor.get("software-house");
-  const consultantService = serviceByAnchor.get("it-consultant");
-  const supplierService = serviceByAnchor.get("it-supplier");
   const clientsIntro = currentLanding.clientsIntro || initialLandingPageData.clientsIntro;
   const cta = currentLanding.cta || initialLandingPageData.cta;
 
@@ -201,157 +193,58 @@ export default function Home() {
         </section>
       )}
 
-      {/* Services Bento Grid Section */}
-      {visibility.services !== false && (
-        <section className="relative py-24 bg-white dark:bg-[#1A1A2E] overflow-hidden transition-colors">
-          <ParticleNetwork className="opacity-35" />
-          <FloatingShapes />
-          <GridPattern className="opacity-50" />
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <ScrollReveal>
-              <div className="text-center max-w-3xl mx-auto mb-16">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 text-orange-800 dark:text-orange-300 text-xs font-semibold mb-4">
-                  <Sparkles className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
-                  <span>{servicesIntro.badge || "Pilar Layanan Utama"}</span>
-                </div>
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-dark dark:text-white">
-                  {servicesIntro.title ? (
-                    servicesIntro.title
-                  ) : (
-                    <>
-                      Layanan <GradientText>Unggulan Kami</GradientText>
-                    </>
-                  )}
-                </h2>
-                <p className="mt-4 text-gray-600 dark:text-white/85 text-sm md:text-base leading-relaxed">
-                  {servicesIntro.subtitle}
-                </p>
-              </div>
-            </ScrollReveal>
-
-            {/* Bento Grid Layanan */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-              {softwareService && (
-                <ScrollReveal className="md:col-span-2">
-                  <HomeServiceCard service={softwareService} wide={true} />
-                </ScrollReveal>
-              )}
-
-              {consultantService && (
-                <ScrollReveal>
-                  <HomeServiceCard service={consultantService} wide={false} />
-                </ScrollReveal>
-              )}
-
-              {supplierService && (
-                <ScrollReveal>
-                  <HomeServiceCard service={supplierService} wide={false} />
-                </ScrollReveal>
-              )}
-
-              {/* Bento Card 4: Prinsip Kerja FOCUS (Span 2) */}
-              <ScrollReveal delay={0.25} className="md:col-span-2">
-                <HomeFocusCard content={servicesIntro.cardFocus} />
-              </ScrollReveal>
-            </div>
-
-            {/* Bottom Bar to Full Services Page */}
-            <ScrollReveal delay={0.25}>
-              <div className="text-center mt-12">
-                <Link
-                  href={servicesIntro.bottomCtaLink || "/services"}
-                  className="group inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white text-sm font-semibold transition-all shadow-lg shadow-orange-600/25 hover:shadow-xl hover:shadow-orange-600/35 hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  <span>{servicesIntro.bottomCtaText || "Lihat Alur Kerja & Spesifikasi Lengkap Layanan"}</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-            </ScrollReveal>
-          </div>
-        </section>
+      {/* Interactive featured services and products */}
+      {(visibility.services !== false || visibility.products !== false) && (
+        <FeaturedCatalog
+          services={visibility.services !== false ? storeServices : []}
+          products={[]}
+          title={servicesIntro.title}
+          subtitle={servicesIntro.subtitle}
+        />
       )}
 
-      {/* Featured Products Bento Grid Section */}
+      {/* Featured Products Bento Grid Section (unchanged product presentation) */}
       {visibility.products !== false && (
-        <section className="py-24 bg-slate-50/70 dark:bg-[#151528]/80 relative overflow-hidden transition-colors">
+        <section className="relative overflow-hidden bg-slate-50/70 py-24 transition-colors dark:bg-[#151528]/80">
           <ParticleNetwork className="opacity-35" />
           <FloatingShapes />
           <GridPattern className="opacity-50" />
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <ScrollReveal>
-              <div className="text-center max-w-3xl mx-auto mb-16">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 text-orange-800 dark:text-orange-300 text-xs font-semibold mb-4">
-                  <Shield className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
+              <div className="mx-auto mb-16 max-w-3xl text-center">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3.5 py-1.5 text-xs font-semibold text-orange-800 dark:border-orange-800/50 dark:bg-orange-950/40 dark:text-orange-300">
+                  <Shield className="h-3.5 w-3.5 text-orange-600 dark:text-orange-400" />
                   <span>{productsIntro?.badge || "Solusi Skala Nasional"}</span>
                 </div>
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-dark dark:text-white">
-                  {productsIntro?.title ? (
-                    productsIntro.title
-                  ) : (
-                    <>
-                      Produk <GradientText>Unggulan CITS</GradientText>
-                    </>
-                  )}
+                <h2 className="text-3xl font-bold text-dark dark:text-white md:text-4xl lg:text-5xl">
+                  {productsIntro?.title ? productsIntro.title : <>Produk <GradientText>Unggulan CITS</GradientText></>}
                 </h2>
-                <p className="mt-4 text-gray-700 dark:text-white/85 text-sm md:text-base leading-relaxed">
-                  {productsIntro?.subtitle ||
-                    "Platform kesistemanan yang telah teruji melayani jutaan transaksi data di berbagai kementerian dan institusi nasional."}
+                <p className="mt-4 text-sm leading-relaxed text-gray-700 dark:text-white/85 md:text-base">
+                  {productsIntro?.subtitle || "Platform kesistemanan yang telah teruji melayani jutaan transaksi data di berbagai kementerian dan institusi nasional."}
                 </p>
               </div>
             </ScrollReveal>
 
-            <div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch"
-              data-testid="featured-products"
-            >
-              {featuredProducts.map((product, index) => (
-                <ScrollReveal
-                  key={product.id}
-                  delay={index * 0.08}
-                  className={`h-full ${index === 0 ? "md:col-span-2" : ""}`}
-                >
+            <div className="grid grid-cols-1 items-stretch gap-6 md:grid-cols-2 lg:grid-cols-3" data-testid="featured-products">
+              {activeProducts.filter((product) => product.showOnHome !== false).slice(0, 5).map((product, index) => (
+                <ScrollReveal key={product.id} delay={index * 0.08} className={`h-full ${index === 0 ? "md:col-span-2" : ""}`}>
                   <SpotlightCard className="h-full">
-                    <article className="h-full flex flex-col" data-product-id={product.id}>
-                      <Link
-                        href={`/products#${encodeURIComponent(product.id)}`}
-                        aria-label={`Lihat produk ${product.name}`}
-                        className="block overflow-hidden bg-slate-100 dark:bg-white/5"
-                      >
-                        <ProductPhoto
-                          image={product.image}
-                          name={product.name}
-                          className="h-52 sm:h-64 hover:scale-105 transition-transform duration-300"
-                        />
+                    <article className="flex h-full flex-col" data-product-id={product.id}>
+                      <Link href={`/products#${encodeURIComponent(product.id)}`} aria-label={`Lihat produk ${product.name}`} className="block overflow-hidden bg-slate-100 dark:bg-white/5">
+                        <ProductPhoto image={product.image} name={product.name} className="h-52 transition-transform duration-300 hover:scale-105 sm:h-64" />
                       </Link>
                       <div className="flex flex-1 flex-col p-6 sm:p-8">
-                        <span className="text-xs font-semibold text-orange-800 dark:text-orange-300">
-                          {product.category}
-                        </span>
-                        <h3 className="mt-2 text-xl sm:text-2xl font-bold text-dark dark:text-white">{product.name}</h3>
-                        <p className="mt-3 text-sm text-gray-700 dark:text-white/85 leading-relaxed">
-                          {product.description}
-                        </p>
+                        <span className="text-xs font-semibold text-orange-800 dark:text-orange-300">{product.category}</span>
+                        <h3 className="mt-2 text-xl font-bold text-dark dark:text-white sm:text-2xl">{product.name}</h3>
+                        <p className="mt-3 text-sm leading-relaxed text-gray-700 dark:text-white/85">{product.description}</p>
                         <ul className="mt-5 space-y-2 text-sm text-gray-700 dark:text-white/85">
                           {product.features.slice(0, 4).map((feature) => (
-                            <li key={feature} className="flex items-start gap-2">
-                              <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0 text-orange-700 dark:text-orange-400" />
-                              <span>{feature}</span>
-                            </li>
+                            <li key={feature} className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-orange-700 dark:text-orange-400" /><span>{feature}</span></li>
                           ))}
                         </ul>
-                        <div className="mt-auto pt-6 flex flex-wrap gap-3">
-                          <Link
-                            href={`/products#${encodeURIComponent(product.id)}`}
-                            className="inline-flex items-center gap-2 text-sm font-semibold text-orange-800 dark:text-orange-300 hover:underline"
-                          >
-                            Lihat Detail Produk <ArrowUpRight className="w-4 h-4" />
-                          </Link>
-                          <Link
-                            href={consultationHref({ productId: product.id, source: "home" })}
-                            className="inline-flex items-center gap-2 rounded-xl bg-orange-700 hover:bg-orange-800 px-4 py-2.5 text-sm font-semibold text-white"
-                          >
-                            Konsultasikan Produk <ArrowRight className="w-4 h-4" />
-                          </Link>
+                        <div className="mt-auto flex flex-wrap gap-3 pt-6">
+                          <Link href={`/products#${encodeURIComponent(product.id)}`} className="inline-flex items-center gap-2 text-sm font-semibold text-orange-800 hover:underline dark:text-orange-300">Lihat Detail Produk <ArrowUpRight className="h-4 w-4" /></Link>
+                          <Link href={consultationHref({ productId: product.id, source: "home" })} className="inline-flex items-center gap-2 rounded-xl bg-orange-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-orange-800">Konsultasikan Produk <ArrowRight className="h-4 w-4" /></Link>
                         </div>
                       </div>
                     </article>
@@ -361,20 +254,11 @@ export default function Home() {
             </div>
 
             <ScrollReveal delay={0.35}>
-              <div className="text-center mt-14">
-                <Link
-                  href="/products"
-                  className="group inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white text-sm font-semibold transition-all shadow-lg shadow-orange-600/25 hover:shadow-xl hover:shadow-orange-600/35 hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  <span>Lihat Semua Produk</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
+              <div className="mt-14 text-center"><Link href="/products" className="inline-flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-orange-700 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-orange-600/25 transition-all hover:-translate-y-0.5 hover:from-orange-700 hover:to-orange-800"><span>Lihat Semua Produk</span><ArrowRight className="h-4 w-4" /></Link></div>
             </ScrollReveal>
           </div>
         </section>
       )}
-
       {/* Client Logos Marquee */}
       {visibility.clients !== false && (
         <section className="py-16 bg-white dark:bg-[#1A1A2E] border-t border-gray-100 dark:border-white/10 relative overflow-hidden transition-colors">
@@ -430,3 +314,4 @@ export default function Home() {
     </>
   );
 }
+
