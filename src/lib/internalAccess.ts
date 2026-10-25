@@ -21,13 +21,6 @@ export interface EditablePage {
 
 export const EDITABLE_PAGES: EditablePage[] = [
   {
-    key: "landing",
-    label: "Beranda",
-    shortLabel: "Beranda",
-    href: "/admin/landing",
-    description: "Hero, highlight, intro layanan, dan CTA halaman depan",
-  },
-  {
     key: "products",
     label: "Produk Kami",
     shortLabel: "Produk",

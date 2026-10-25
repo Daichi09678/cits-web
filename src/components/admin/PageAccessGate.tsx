@@ -33,7 +33,8 @@ export default function PageAccessGate({ children }: { children: React.ReactNode
   // halaman ini hanya menampilkan tab Keamanan (lihat settings/page.tsx).
   // Pengelolaan akun tetap dijaga oleh API khusus Superadmin.
 
-  const pageKey = getPageKeyFromPathname(pathname);
+  const isLandingAdmin = pathname === "/admin/landing" || pathname.startsWith("/admin/landing/");
+  const pageKey = isLandingAdmin ? ("landing" as PageKey) : getPageKeyFromPathname(pathname);
 
   // Dashboard dan halaman non-konten tidak memerlukan izin edit.
   if (!pageKey) return <>{children}</>;

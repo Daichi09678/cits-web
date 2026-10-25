@@ -15,7 +15,6 @@ import {
   LogOut,
   ExternalLink,
   ChevronRight,
-  LayoutTemplate,
   Briefcase,
   PanelLeftClose,
   Lock,
@@ -76,12 +75,6 @@ export default function AdminSidebar() {
       href: "/admin",
       icon: LayoutDashboard,
       exact: true,
-    },
-    {
-      title: "Beranda",
-      href: "/admin/landing",
-      icon: LayoutTemplate,
-      pageKey: "landing",
     },
     {
       title: "Produk Kami",

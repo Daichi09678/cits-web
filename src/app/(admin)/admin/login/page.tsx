@@ -254,7 +254,7 @@ export default function AdminLoginPage() {
                   </>
                 ) : (
                   <>
-                    <span>Masuk ke Dashboard Back Office</span>
+                    <span>Masuk</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                   </>
                 )}
