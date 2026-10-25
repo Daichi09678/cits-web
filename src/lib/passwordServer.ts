@@ -126,6 +126,21 @@ export async function verifyAdminCredential(userId: string, password: string): P
     return safeEqualHex(candidate, row.password_hash);
   } catch (error) {
     console.error("DB Error verifyAdminCredential:", error);
+
+    // Fail-closed adalah perilaku default (dan diuji di tests/qa.test.cjs).
+    // Untuk pengembangan tanpa database, login dengan kata sandi bawaan bisa
+    // diaktifkan eksplisit lewat ALLOW_DEFAULT_ADMIN_FALLBACK=1 di .env lokal.
+    const allowDefaultFallback =
+      typeof process !== "undefined" && process.env?.ALLOW_DEFAULT_ADMIN_FALLBACK === "1";
+
+    if (allowDefaultFallback) {
+      console.warn(
+        "verifyAdminCredential: database tidak tersedia — memakai kata sandi bawaan " +
+          "(ALLOW_DEFAULT_ADMIN_FALLBACK=1, hanya untuk pengembangan)."
+      );
+      return null;
+    }
+
     throw new Error("Verifikasi kata sandi belum tersedia. Silakan coba lagi.");
   }
 }
