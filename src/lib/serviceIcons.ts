@@ -22,7 +22,6 @@ import {
   BarChart3,
   Truck,
   Radio,
-  Settings,
   FileCheck,
   HardDrive,
   LucideIcon,
@@ -66,7 +65,6 @@ export const PILLAR_ICON_OPTIONS: PillarIconOption[] = [
   { name: "FileCheck", label: "Audit & Kepatuhan", category: "Keamanan & Dukungan", icon: FileCheck },
   { name: "Headphones", label: "Helpdesk & SLA", category: "Keamanan & Dukungan", icon: Headphones },
   { name: "Zap", label: "Performa Tinggi", category: "Keamanan & Dukungan", icon: Zap },
-  { name: "Settings", label: "Pemeliharaan", category: "Keamanan & Dukungan", icon: Settings },
   { name: "Truck", label: "Armada & IoT", category: "Infrastruktur & Cloud", icon: Truck },
   { name: "Radio", label: "Telemetri / Nirkabel", category: "Infrastruktur & Cloud", icon: Radio },
 ];

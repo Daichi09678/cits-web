@@ -8,6 +8,7 @@ export interface ProductItem {
   icon: string; // nama icon lucide: MessageSquare, Smartphone, FileText, Vote, Globe, Archive, Server, Database, Shield
   image?: string; // foto / gambar produk (URL atau Base64 data URL)
   isActive: boolean; // toggle aktif / non-aktif
+  showOnHome?: boolean; // tampilkan di section unggulan beranda
   updatedAt: string;
 }
 
@@ -115,18 +116,21 @@ export interface AboutData {
 
 export interface ServicePillar {
   id: string;
+  category?: string;
   title: string;
   badge: string;
   icon: string;
   desc: string;
   sla: string;
   features?: string[];
+  tags?: string[];
   image?: string;
   details?: string;
   techStack?: string[];
   caseStudies?: string[];
   deliverables?: { label: string; description: string }[];
   isActive?: boolean;
+  showOnHome?: boolean;
 }
 
 export interface ClientPartner {

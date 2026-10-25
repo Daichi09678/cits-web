@@ -348,17 +348,17 @@ export const initialLandingPageData: LandingPageData = {
     cta: true,
   },
   hero: {
-    badgeText: "Penyedia Solusi Teknologi Informasi Sejak 2006",
-    headlinePrefix: "Ciptakan Solusi",
+    badgeText: "Mitra Transformasi Digital Terpercaya Sejak 2006",
+    headlinePrefix: "Bangun Sistem",
     typewriterWords: [
-      "Sepenuh Hati",
-      "Tingkat Enterprise",
-      "Skala Nasional",
-      "Berbasis Inovasi",
-      "Terpercaya Sejak 2006",
+      "Yang Siap Bertumbuh",
+      "Untuk Operasi Lebih Efisien",
+      "Dengan Standar Enterprise",
+      "Berbasis Data",
+      "Untuk Dampak Nyata",
     ],
     subheadline:
-      "CITS Indonesia hadir sebagai mitra bisnis terpercaya dalam menyediakan solusi integral kesistemanan berbasis teknologi informasi untuk instansi pemerintah, BUMN, dan korporasi.",
+      "Kami merancang, membangun, dan menjaga solusi digital yang membuat layanan publik dan bisnis berjalan lebih cepat, aman, serta mudah dikembangkan.",
     primaryCtaText: "Konsultasi Sekarang",
     primaryCtaLink: "/contact",
     secondaryCtaText: "Eksplorasi Produk",
@@ -376,8 +376,8 @@ export const initialLandingPageData: LandingPageData = {
   ],
   servicesIntro: {
     badge: "Pilar Layanan Utama",
-    title: "Layanan Unggulan Kami",
-    subtitle: "Kombinasi keahlian teknis tingkat enterprise dan tata kelola berstandar industri dengan prinsip FOCUS.",
+    title: "Solusi yang Siap Dipakai dan Dikembangkan",
+    subtitle: "Pilih kapabilitas yang sesuai kebutuhan Anda—mulai dari rekayasa perangkat lunak, konsultasi strategis, hingga infrastruktur TI.",
     cardSoftwareHouse: {
       badge: "Pilar Utama Pengembangan",
       title: "Pengembangan Perangkat Lunak (Software House)",

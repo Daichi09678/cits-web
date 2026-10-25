@@ -25,6 +25,16 @@ export default function HomeServiceCard({ service, wide = false }: { service: Se
           </span>
         </div>
         <h3 className="text-2xl font-bold leading-snug break-words text-dark dark:text-white">{service.title}</h3>
+        <div className="mt-3 flex flex-wrap gap-1.5" aria-label={`Kategori ${service.category}`}>
+          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:bg-white/10 dark:text-slate-200">
+            {service.category}
+          </span>
+          {service.tags.slice(0, 4).map((tag) => (
+            <span key={tag} className="rounded-full border border-orange-200 px-2.5 py-1 text-[11px] font-medium text-orange-800 dark:border-orange-800/60 dark:text-orange-300">
+              {tag}
+            </span>
+          ))}
+        </div>
         <p className="mt-3 text-sm leading-relaxed break-words text-gray-700 dark:text-white/85">
           {service.description}
         </p>

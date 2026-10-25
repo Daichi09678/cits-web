@@ -9,6 +9,7 @@ export interface ServicePresentation {
   gradient: string;
   image: string;
   features: string[];
+  tags: string[];
   techStack: string[];
   caseStudies: string[];
   deliverables: {
@@ -37,6 +38,7 @@ export const defaultServicePresentations: ServicePresentation[] = [
       "Pengujian otomatis, audit keamanan kode (SAST), & optimasi performa",
       "Pemeliharaan berkala, perbaikan bug, & penyempurnaan fungsi sistem",
     ],
+    tags: ["Software House", "Custom Development", "Integrasi Sistem"],
     techStack: ["Next.js / React", "TypeScript", "Golang", "PostgreSQL", "Docker / K8s", "REST & Microservices"],
     caseStudies: ["BI & EIS SPIPISE BKPM RI", "SIMLALA Kemenhub RI", "Portal Satu Data Kelautan BPPT/BRIN"],
     deliverables: [
@@ -73,6 +75,7 @@ export const defaultServicePresentations: ServicePresentation[] = [
       "Pendampingan teknis (supervisi kesistemanan) & evaluasi berkala",
       "Penyusunan kerangka acuan kerja (KAK/TOR) & estimasi kelayakan biaya",
     ],
+    tags: ["SPBE", "IT Master Plan", "Cybersecurity"],
     techStack: [
       "TOGAF Framework",
       "Standar SPBE (Perpres 95/2018)",
@@ -120,6 +123,7 @@ export const defaultServicePresentations: ServicePresentation[] = [
       "Jasa instalasi, pengkabelan terstruktur (structured cabling), & konfigurasi",
       "Dukungan purna jual, suku cadang resmi, & kontrak pemeliharaan berkala",
     ],
+    tags: ["Infrastruktur", "Pengadaan Resmi", "Dukungan Purna Jual"],
     techStack: [
       "Enterprise Servers",
       "Cisco & Mikrotik",

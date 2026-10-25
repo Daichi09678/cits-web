@@ -22,12 +22,13 @@ export function resolveServiceCatalog(services: ServicePillar[]): ServicePresent
       return {
         id,
         title: service.title || fallback?.title || "Layanan CITS",
-        category: service.title || fallback?.category || "Layanan CITS",
+        category: service.category || fallback?.category || "Layanan CITS",
         badge: service.badge || fallback?.badge || "Layanan",
         description: service.desc || fallback?.description || "",
         details: service.details ?? (service.desc !== fallback?.description ? fallback?.description : ""),
         icon: service.icon || fallback?.icon || "Briefcase",
         features: service.features ?? fallback?.features ?? [],
+        tags: service.tags ?? [],
         slaNote: service.sla || fallback?.slaNote || "Dukungan disesuaikan dengan kebutuhan proyek.",
         image: service.image || fallback?.image || "/services/software-house.webp",
         gradient: fallback?.gradient || "from-orange-600 to-amber-500",
@@ -53,7 +54,12 @@ export function parseServiceCatalog(
       if (typeof raw[field] !== "string" || !raw[field].trim() || raw[field].length > (field === "desc" ? 2000 : 150))
         return invalid("Judul, label, ikon, deskripsi, dan SLA wajib diisi sesuai batas panjangnya.");
     }
+    if (raw.category !== undefined && (typeof raw.category !== "string" || !raw.category.trim() || raw.category.length > 100))
+      return invalid("Kategori layanan tidak valid.");
+    if (raw.tags !== undefined && (!Array.isArray(raw.tags) || raw.tags.length > 20 || raw.tags.some((value) => typeof value !== "string" || !value.trim() || value.length > 80)))
+      return invalid("Tag layanan harus berupa teks, maksimal 20 tag.");
     if (raw.isActive !== undefined && typeof raw.isActive !== "boolean") return invalid("Status layanan tidak valid.");
+    if (raw.showOnHome !== undefined && typeof raw.showOnHome !== "boolean") return invalid("Status tampil di beranda tidak valid.");
     if (raw.details !== undefined && (typeof raw.details !== "string" || raw.details.length > 8000))
       return invalid("Penjelasan lengkap maksimal 8.000 karakter.");
     for (const field of ["features", "techStack", "caseStudies"] as const) {
@@ -103,14 +109,16 @@ export function parseServiceCatalog(
     }
     const service = {
       id: String(raw.id).trim(),
+      category: typeof raw.category === "string" && raw.category.trim() ? raw.category.trim() : "Layanan CITS",
       title: String(raw.title).trim(),
       badge: String(raw.badge).trim(),
       icon: String(raw.icon).trim(),
       desc: String(raw.desc).trim(),
       sla: String(raw.sla).trim(),
       isActive: raw.isActive !== false,
+      showOnHome: raw.showOnHome !== false,
     } as ServicePillar;
-    for (const key of ["image", "details", "features", "techStack", "caseStudies", "deliverables"] as const) {
+    for (const key of ["image", "details", "features", "tags", "techStack", "caseStudies", "deliverables"] as const) {
       if (raw[key] !== undefined) Object.assign(service, { [key]: raw[key] });
     }
     result.push(service);
