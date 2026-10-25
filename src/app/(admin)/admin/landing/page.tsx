@@ -135,10 +135,6 @@ export default function AdminLandingPage() {
     }
   };
 
-  const handleToggleClientActive = (c: ClientPartner) => {
-    actions.updateClient(c.id, { isActive: !c.isActive });
-  };
-
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -444,7 +440,8 @@ export default function AdminLandingPage() {
               <button
                 key={s.id}
                 type="button"
-                onClick={() => toggleSection(s.id as keyof SectionVisibility)}
+                onClick={() => setActiveTab((s.id === "highlights" ? "stats" : s.id) as any)}
+                title={`Buka pengaturan section ${s.label}`}
                 className={`p-3 rounded-xl border flex flex-col items-center justify-between gap-2 text-center transition-all cursor-pointer ${
                   s.active
                     ? "bg-emerald-50/70 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-300 shadow-xs"
@@ -522,17 +519,16 @@ export default function AdminLandingPage() {
                     Status Section Hero: {vis.hero ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => toggleSection("hero")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    vis.hero
-                      ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300"
-                      : "bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300"
-                  }`}
-                >
-                  {vis.hero ? "Nonaktifkan Section Ini" : "Aktifkan Section Ini"}
-                </button>
+                <label className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-white/15 bg-white dark:bg-white/10 px-3 py-1.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={vis.hero}
+                    onChange={() => toggleSection("hero")}
+                    aria-label="Tampilkan section ini di beranda"
+                    className="h-4 w-4 rounded accent-orange-600 cursor-pointer"
+                  />
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Tampilkan di beranda</span>
+                </label>
               </div>
 
               {/* Live Preview Card */}
@@ -884,17 +880,16 @@ export default function AdminLandingPage() {
                     {vis.highlights ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => toggleSection("highlights")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    vis.highlights
-                      ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300"
-                      : "bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300"
-                  }`}
-                >
-                  {vis.highlights ? "Nonaktifkan Section Ini" : "Aktifkan Section Ini"}
-                </button>
+                <label className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-white/15 bg-white dark:bg-white/10 px-3 py-1.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={vis.highlights}
+                    onChange={() => toggleSection("highlights")}
+                    aria-label="Tampilkan section ini di beranda"
+                    className="h-4 w-4 rounded accent-orange-600 cursor-pointer"
+                  />
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Tampilkan di beranda</span>
+                </label>
               </div>
 
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
@@ -998,17 +993,16 @@ export default function AdminLandingPage() {
                     {vis.services ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => toggleSection("services")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    vis.services
-                      ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300"
-                      : "bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300"
-                  }`}
-                >
-                  {vis.services ? "Nonaktifkan Section Ini" : "Aktifkan Section Ini"}
-                </button>
+                <label className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-white/15 bg-white dark:bg-white/10 px-3 py-1.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={vis.services}
+                    onChange={() => toggleSection("services")}
+                    aria-label="Tampilkan section ini di beranda"
+                    className="h-4 w-4 rounded accent-orange-600 cursor-pointer"
+                  />
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Tampilkan di beranda</span>
+                </label>
               </div>
 
               {/* Section Header */}
@@ -1379,17 +1373,16 @@ export default function AdminLandingPage() {
                     {vis.products ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => toggleSection("products")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    vis.products
-                      ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300"
-                      : "bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300"
-                  }`}
-                >
-                  {vis.products ? "Nonaktifkan Section Ini" : "Aktifkan Section Ini"}
-                </button>
+                <label className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-white/15 bg-white dark:bg-white/10 px-3 py-1.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={vis.products}
+                    onChange={() => toggleSection("products")}
+                    aria-label="Tampilkan section ini di beranda"
+                    className="h-4 w-4 rounded accent-orange-600 cursor-pointer"
+                  />
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Tampilkan di beranda</span>
+                </label>
               </div>
 
               {/* Section Header */}
@@ -1507,17 +1500,16 @@ export default function AdminLandingPage() {
                     {vis.clients ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => toggleSection("clients")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    vis.clients
-                      ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300"
-                      : "bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300"
-                  }`}
-                >
-                  {vis.clients ? "Nonaktifkan Section Ini" : "Aktifkan Section Ini"}
-                </button>
+                <label className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-white/15 bg-white dark:bg-white/10 px-3 py-1.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={vis.clients}
+                    onChange={() => toggleSection("clients")}
+                    aria-label="Tampilkan section ini di beranda"
+                    className="h-4 w-4 rounded accent-orange-600 cursor-pointer"
+                  />
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Tampilkan di beranda</span>
+                </label>
               </div>
 
               <div>
@@ -1689,18 +1681,21 @@ export default function AdminLandingPage() {
                         </div>
 
                         <div className="flex items-center gap-1 shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => handleToggleClientActive(c)}
-                            title={c.isActive ? "Sembunyikan dari beranda" : "Tampilkan di beranda"}
-                            className={`p-1.5 rounded-lg text-xs transition-colors cursor-pointer ${
+                          <span
+                            title={
                               c.isActive
-                                ? "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
-                                : "text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10"
+                                ? "Sedang tampil di beranda (ubah lewat tombol Edit)"
+                                : "Disembunyikan dari beranda (ubah lewat tombol Edit)"
+                            }
+                            aria-label={c.isActive ? "Status: tampil di beranda" : "Status: disembunyikan"}
+                            className={`p-1.5 rounded-lg ${
+                              c.isActive
+                                ? "text-emerald-600 dark:text-emerald-400"
+                                : "text-slate-400 dark:text-slate-500"
                             }`}
                           >
                             {c.isActive ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
-                          </button>
+                          </span>
                           <button
                             type="button"
                             onClick={() => openEditClientModal(c)}
@@ -1935,17 +1930,16 @@ export default function AdminLandingPage() {
                     {vis.cta ? "Sedang Aktif Ditampilkan" : "Disembunyikan dari Halaman Depan"}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => toggleSection("cta")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                    vis.cta
-                      ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300"
-                      : "bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300"
-                  }`}
-                >
-                  {vis.cta ? "Nonaktifkan Section Ini" : "Aktifkan Section Ini"}
-                </button>
+                <label className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-white/15 bg-white dark:bg-white/10 px-3 py-1.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={vis.cta}
+                    onChange={() => toggleSection("cta")}
+                    aria-label="Tampilkan section ini di beranda"
+                    className="h-4 w-4 rounded accent-orange-600 cursor-pointer"
+                  />
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Tampilkan di beranda</span>
+                </label>
               </div>
 
               <div>
