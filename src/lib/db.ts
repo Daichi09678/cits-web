@@ -43,6 +43,15 @@ declare global {
   var _citsDbInitialized: boolean | undefined;
   var _citsDbSchemaVersion: number | undefined;
   var _citsDbInitPromise: Promise<void> | undefined;
+  // Circuit breaker DB: kalau database tidak bisa dihubungi, jangan ulangi
+  // percobaan koneksi di setiap request (penyebab halaman terasa "loading lama").
+  var _citsDbDownUntil: number | undefined;
+  var _citsDbDownReason: string | undefined;
+  var _citsDbDownWarnedAt: number | undefined;
+  var _citsDbFailCount: number | undefined;
+  // Versi pembungkus client (guard circuit breaker). Saat modul ini di-reload
+  // HMR, singleton lama harus dibuat ulang supaya pembungkus baru terpasang.
+  var _citsSqlClientVersion: number | undefined;
   // Waktu purge retensi inbox terakhir (ms) — mencegah DELETE berulang tiap request.
   var _citsLastInboxPurge: number | undefined;
 }
@@ -63,29 +72,163 @@ if (!globalThis._citsMemoryDb) {
 
 const memoryDb = globalThis._citsMemoryDb;
 
+// Naikkan nilai ini setiap kali pembungkus client berubah, agar singleton lama
+// (tanpa circuit breaker) tidak dipakai ulang setelah HMR.
+const DB_CLIENT_VERSION = 2;
+
 export function getSql(): postgres.Sql | null {
   const dbUrl = process.env.DATABASE_URL;
   if (!dbUrl) return null;
 
+  if (globalThis._citsSqlInstance && globalThis._citsSqlClientVersion !== DB_CLIENT_VERSION) {
+    globalThis._citsSqlInstance = undefined;
+  }
+
   if (!globalThis._citsSqlInstance) {
     try {
-      globalThis._citsSqlInstance = postgres(dbUrl, {
-        max: 5,
-        idle_timeout: 30,
-        connect_timeout: 10,
-        ssl: dbUrl.includes("localhost") ? false : "require",
-        // Aplikasi ini menjalankan migrasi DDL saat start (mis. perubahan tipe
-        // created_at). Prepared statement yang di-cache per koneksi akan gagal
-        // ("cached plan must not change result type") setelah tipe kolom berubah,
-        // jadi prepared statement dimatikan. Beban query kecil (CMS internal).
-        prepare: false,
-      });
+      globalThis._citsSqlInstance = guardSqlClient(
+        postgres(dbUrl, {
+          max: 5,
+          idle_timeout: 30,
+          connect_timeout: 5,
+          ssl: dbUrl.includes("localhost") ? false : "require",
+          // Aplikasi ini menjalankan migrasi DDL saat start (mis. perubahan tipe
+          // created_at). Prepared statement yang di-cache per koneksi akan gagal
+          // ("cached plan must not change result type") setelah tipe kolom berubah,
+          // jadi prepared statement dimatikan. Beban query kecil (CMS internal).
+          prepare: false,
+        })
+      );
+      globalThis._citsSqlClientVersion = DB_CLIENT_VERSION;
     } catch (e) {
       console.error("Failed to initialize postgres client:", e);
       return null;
     }
   }
   return globalThis._citsSqlInstance;
+}
+
+// ----------------------------------------------------
+// Circuit breaker koneksi database
+// ----------------------------------------------------
+// Masalah yang dicegah: bila DATABASE_URL salah / database mati, setiap request
+// (termasuk 11 statement migrasi di ensureDbReady) mencoba koneksi ulang dan
+// menggantung. Akibatnya perpindahan halaman terasa lambat sekali padahal
+// kompilasi Turbopack hanya puluhan milidetik. Setelah satu kegagalan koneksi,
+// query berikutnya langsung gagal cepat (fallback ke penyimpanan memori) sampai
+// masa tenggang habis.
+
+const DB_RETRY_BASE_COOLDOWN_MS = 30_000;
+const DB_RETRY_MAX_COOLDOWN_MS = 300_000;
+
+const DB_DOWN_ERROR_CODES = new Set([
+  "ECONNREFUSED",
+  "ECONNRESET",
+  "ENOTFOUND",
+  "EAI_AGAIN",
+  "ETIMEDOUT",
+  "EHOSTUNREACH",
+  "ENETUNREACH",
+  "28P01", // invalid_password
+  "28000", // invalid_authorization_specification
+  "3D000", // invalid_catalog_name (database tidak ada)
+  "57P03", // cannot_connect_now
+  "53300", // too_many_connections
+  "08000",
+  "08003",
+  "08006",
+]);
+
+function looksLikeConnectionError(error: unknown): boolean {
+  const code = String((error as { code?: unknown } | null)?.code ?? "");
+  if (DB_DOWN_ERROR_CODES.has(code)) return true;
+  const message = String((error as { message?: unknown } | null)?.message ?? "");
+  return /password authentication failed|does not exist|Connection terminated|ECONNREFUSED|ENOTFOUND|getaddrinfo|timeout exceeded|connect ETIMEDOUT|Connection refused/i.test(
+    message
+  );
+}
+
+function dbIsDown(): boolean {
+  return Date.now() < (globalThis._citsDbDownUntil ?? 0);
+}
+
+function markDbDown(error: unknown): void {
+  const previousFails = globalThis._citsDbFailCount ?? 0;
+  const fails = previousFails + 1;
+  const cooldown = Math.min(DB_RETRY_BASE_COOLDOWN_MS * 2 ** (fails - 1), DB_RETRY_MAX_COOLDOWN_MS);
+
+  globalThis._citsDbFailCount = fails;
+  globalThis._citsDbDownUntil = Date.now() + cooldown;
+  globalThis._citsDbDownReason = String((error as { message?: unknown } | null)?.message ?? error).slice(0, 200);
+
+  const warnedAt = globalThis._citsDbDownWarnedAt ?? 0;
+  if (Date.now() - warnedAt > cooldown) {
+    globalThis._citsDbDownWarnedAt = Date.now();
+    console.warn(
+      `[db] Database tidak tersedia (${globalThis._citsDbDownReason}). ` +
+        `Percobaan koneksi dihentikan ${Math.round(cooldown / 1000)}s; aplikasi memakai penyimpanan memori.`
+    );
+  }
+}
+
+function markDbUp(): void {
+  if (globalThis._citsDbDownUntil || globalThis._citsDbFailCount) {
+    globalThis._citsDbDownUntil = undefined;
+    globalThis._citsDbFailCount = undefined;
+    globalThis._citsDbDownReason = undefined;
+    console.log("[db] Koneksi database pulih.");
+  }
+}
+
+function dbDownError(): Error {
+  const error = new Error(
+    `Database tidak tersedia (${globalThis._citsDbDownReason ?? "tidak diketahui"}). Permintaan DB dilewati sementara.`
+  );
+  (error as Error & { code?: string }).code = "CITS_DB_UNAVAILABLE";
+  return error;
+}
+
+// Method postgres.js yang sinkron (tidak menyentuh jaringan) harus tetap
+// diteruskan apa adanya, mis. sql.json() yang dipakai untuk kolom jsonb.
+const PASSTHROUGH_SQL_METHODS = new Set(["json", "array", "options", "end", "listen", "notify"]);
+
+function guardSqlClient(raw: postgres.Sql): postgres.Sql {
+  const run = (call: () => unknown): unknown => {
+    if (dbIsDown()) return Promise.reject(dbDownError());
+
+    let result: unknown;
+    try {
+      result = call();
+    } catch (error) {
+      if (looksLikeConnectionError(error)) markDbDown(error);
+      throw error;
+    }
+
+    if (result && typeof (result as PromiseLike<unknown>).then === "function") {
+      return Promise.resolve(result as PromiseLike<unknown>).then(
+        (value) => {
+          markDbUp();
+          return value;
+        },
+        (error) => {
+          if (looksLikeConnectionError(error)) markDbDown(error);
+          throw error;
+        }
+      );
+    }
+
+    return result;
+  };
+
+  return new Proxy(raw, {
+    apply: (target, thisArg, args) => run(() => Reflect.apply(target, thisArg, args)),
+    get: (target, prop, receiver) => {
+      const value = Reflect.get(target, prop, receiver);
+      if (typeof value !== "function") return value;
+      if (typeof prop === "string" && PASSTHROUGH_SQL_METHODS.has(prop)) return value.bind(target);
+      return (...args: unknown[]) => run(() => Reflect.apply(value, target, args));
+    },
+  }) as postgres.Sql;
 }
 
 // postgres.js menuntut parameter bertipe JSONValue (punya index signature) agar
@@ -115,6 +258,9 @@ function asJson<T>(value: unknown, fallback: T): T {
 export async function ensureDbReady(): Promise<void> {
   const sql = getSql();
   if (!sql) return;
+  // Saat circuit breaker terbuka (database mati/salah kredensial), jangan ulangi
+  // 11 statement migrasi di setiap request — itu sumber utama halaman terasa lama.
+  if (dbIsDown()) return;
   const schemaVersion = 3;
   if (globalThis._citsDbInitialized && globalThis._citsDbSchemaVersion === schemaVersion) return;
   if (globalThis._citsDbInitPromise) return globalThis._citsDbInitPromise;
@@ -136,6 +282,7 @@ export async function ensureDbReady(): Promise<void> {
       `ALTER TABLE landing_page_data ADD COLUMN IF NOT EXISTS section_visibility JSONB DEFAULT '{}'::jsonb`,
       `ALTER TABLE landing_page_data ADD COLUMN IF NOT EXISTS products_intro JSONB DEFAULT '{}'::jsonb`,
       `ALTER TABLE landing_page_data ADD COLUMN IF NOT EXISTS clients_intro JSONB DEFAULT '{}'::jsonb`,
+      `ALTER TABLE products ADD COLUMN IF NOT EXISTS show_on_home BOOLEAN DEFAULT TRUE`,
     ];
 
     let allApplied = true;
@@ -209,7 +356,7 @@ export const DbRepo = {
       await ensureDbReady();
       try {
         const rows = await sql`
-          SELECT id, name, category, description, features, tags, icon, image, is_active, updated_at
+          SELECT id, name, category, description, features, tags, icon, image, is_active, show_on_home, updated_at
           FROM products ORDER BY created_at DESC;
         `;
         return rows.map((r: any) => ({
@@ -222,6 +369,7 @@ export const DbRepo = {
           icon: r.icon,
           image: r.image,
           isActive: r.is_active,
+          showOnHome: r.show_on_home !== false,
           updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
         }));
       } catch (e) {
@@ -247,11 +395,11 @@ export const DbRepo = {
       await ensureDbReady();
       try {
         await sql`
-          INSERT INTO products (id, name, category, description, features, tags, icon, image, is_active, updated_at)
+          INSERT INTO products (id, name, category, description, features, tags, icon, image, is_active, show_on_home, updated_at)
           VALUES (
             ${p.id}, ${p.name}, ${p.category}, ${p.description},
             ${jsonb(sql, p.features || [])}, ${jsonb(sql, p.tags || [])},
-            ${p.icon}, ${p.image || null}, ${p.isActive}, ${p.updatedAt}
+            ${p.icon}, ${p.image || null}, ${p.isActive}, ${p.showOnHome !== false}, ${p.updatedAt}
           );
         `;
       } catch (e) {
@@ -285,6 +433,7 @@ export const DbRepo = {
               icon = ${merged.icon},
               image = ${merged.image || null},
               is_active = ${merged.isActive},
+              show_on_home = ${merged.showOnHome !== false},
               updated_at = ${merged.updatedAt}
           WHERE id = ${id};
         `;
