@@ -7,6 +7,7 @@ import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
 import { ClientPartner } from "@/types/schema";
+import Pagination from "@/components/admin/Pagination";
 
 export default function AdminClientsPage() {
   const { clients, actions } = useCitsStore();
@@ -15,6 +16,7 @@ export default function AdminClientsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<ClientPartner | null>(null);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -105,6 +107,8 @@ export default function AdminClientsPage() {
     (c) =>
       c.name.toLowerCase().includes(search.toLowerCase()) || c.category.toLowerCase().includes(search.toLowerCase())
   );
+  const pageSize = 9;
+  const paginatedClients = filteredClients.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="flex-1 flex flex-col min-w-0">
@@ -127,7 +131,7 @@ export default function AdminClientsPage() {
             <input
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               placeholder="Cari nama kementerian / instansi..."
               className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
@@ -144,7 +148,7 @@ export default function AdminClientsPage() {
 
         {/* Clients Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredClients.map((c) => (
+          {paginatedClients.map((c) => (
             <div
               key={c.id}
               className="p-5 rounded-2xl bg-white dark:bg-[#151528] border border-slate-200/90 dark:border-white/10 shadow-xs flex items-center justify-between gap-4 hover:border-orange-500/40 transition-all"
@@ -227,6 +231,7 @@ export default function AdminClientsPage() {
             </div>
           ))}
         </div>
+        <Pagination page={page} pageSize={pageSize} total={filteredClients.length} onPageChange={setPage} />
 
         {/* Modal Add / Edit Client */}
         {modalOpen && (

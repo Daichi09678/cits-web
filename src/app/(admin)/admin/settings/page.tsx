@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ShieldCheck,
   Users,
@@ -24,14 +24,7 @@ import SecuritySettings from "@/components/admin/SecuritySettings";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import MatrixCheckbox from "@/components/admin/MatrixCheckbox";
 import { useAdminAuth } from "@/lib/auth";
-import {
-  EDITABLE_PAGES,
-  buildPageMatrix,
-  sortPageKeys,
-  type PageKey,
-  type PublicInternalAccount,
-  type SuperadminInfo,
-} from "@/lib/internalAccess";
+import { EDITABLE_PAGES, sortPageKeys, type PageKey, type PublicInternalAccount, type SuperadminInfo } from "@/lib/internalAccess";
 import {
   clearLegacyAccounts,
   createInternalAccount,
@@ -39,10 +32,10 @@ import {
   fetchInternalAccounts,
   migrateLegacyAccounts,
   readLegacyAccounts,
-  savePageAccess,
   updateInternalAccount,
 } from "@/lib/internalAccountsApi";
 import { useCitsStore } from "@/stores/citsStore";
+import Pagination from "@/components/admin/Pagination";
 
 type TabKey = "accounts" | "security" | "maintenance";
 
@@ -83,10 +76,6 @@ function getPageLabels(keys: PageKey[]): string[] {
   return EDITABLE_PAGES.filter((page) => keys.includes(page.key)).map((page) => page.label);
 }
 
-function pageAccessChanged(a: PageKey[], b: PageKey[]): boolean {
-  return a.length !== b.length || a.some((key) => !b.includes(key));
-}
-
 export default function AdminSettingsPage() {
   const { session, loading } = useAdminAuth();
   const { actions } = useCitsStore();
@@ -94,9 +83,9 @@ export default function AdminSettingsPage() {
 
   const [tab, setTab] = useState<TabKey>("accounts");
   const [accounts, setAccounts] = useState<PublicInternalAccount[]>([]);
-  const [matrix, setMatrix] = useState<Record<string, PageKey[]>>({});
   const [superadminInfo, setSuperadminInfo] = useState<SuperadminInfo>(DEFAULT_SUPERADMIN);
   const [accountsLoading, setAccountsLoading] = useState(true);
+  const [accountPage, setAccountPage] = useState(1);
   const [loadError, setLoadError] = useState("");
   const [form, setForm] = useState<AccountFormState | null>(null);
   const [formError, setFormError] = useState("");
@@ -109,7 +98,7 @@ export default function AdminSettingsPage() {
     try {
       const data = await fetchInternalAccounts();
       setAccounts(data.accounts);
-      setMatrix(buildPageMatrix(data.accounts));
+      setAccountPage((previous) => Math.min(previous, Math.max(1, Math.ceil(data.accounts.length / 10))));
       setSuperadminInfo(data.superadmin || DEFAULT_SUPERADMIN);
       setLoadError("");
     } catch (error) {
@@ -142,89 +131,25 @@ export default function AdminSettingsPage() {
 
   const activeTab: TabKey = isSuperadmin ? tab : "security";
   const activeAccounts = accounts.filter((account) => account.isActive).length;
-  const isMatrixDirty = useMemo(
-    () => accounts.some((account) => pageAccessChanged(matrix[account.id] ?? [], account.pageAccess)),
-    [accounts, matrix]
+  const accountPageSize = 10;
+  const accountPageCount = Math.max(1, Math.ceil(accounts.length / accountPageSize));
+  const currentAccountPage = Math.min(accountPage, accountPageCount);
+  const paginatedAccounts = accounts.slice(
+    (currentAccountPage - 1) * accountPageSize,
+    currentAccountPage * accountPageSize
   );
-
-  const commitMatrixDraft = async () => {
-    const updates = accounts
-      .filter((account) => pageAccessChanged(matrix[account.id] ?? [], account.pageAccess))
-      .map((account) => ({
-        id: account.id,
-        pageAccess: sortPageKeys(matrix[account.id] ?? account.pageAccess),
-      }));
-
-    if (updates.length === 0) return;
-
-    const updated = await savePageAccess(updates);
-    setAccounts(updated);
-    setMatrix(buildPageMatrix(updated));
-  };
-
-  const handleSaveMatrix = async () => {
-    if (!isMatrixDirty) return;
-    try {
-      await commitMatrixDraft();
-      setLoadError("");
-      await dialog.alert({
-        title: "Matriks hak akses disimpan",
-        description: "Perubahan hak akses halaman sudah diterapkan ke semua akun internal.",
-        variant: "success",
-      });
-    } catch (error) {
-      setLoadError(error instanceof Error ? error.message : "Gagal menyimpan matriks hak akses.");
-    }
-  };
-
-  const handleDiscardMatrix = () => {
-    setMatrix(buildPageMatrix(accounts));
-  };
-
-  const toggleMatrixPage = (accountId: string, page: PageKey, checked: boolean) => {
-    setMatrix((previous) => {
-      const current = previous[accountId] ?? [];
-      const next = checked ? [...current, page] : current.filter((key) => key !== page);
-      return { ...previous, [accountId]: sortPageKeys(next) };
-    });
-  };
-
-  const toggleMatrixAll = (accountId: string, checked: boolean) => {
-    setMatrix((previous) => ({
-      ...previous,
-      [accountId]: checked ? EDITABLE_PAGES.map((page) => page.key) : [],
-    }));
-  };
-
   const openCreateForm = async () => {
-    if (isMatrixDirty) {
-      try {
-        await commitMatrixDraft();
-      } catch (error) {
-        setLoadError(error instanceof Error ? error.message : "Gagal menyimpan matriks hak akses.");
-        return;
-      }
-    }
     setForm({ ...EMPTY_FORM });
     setFormError("");
   };
 
   const openEditForm = async (account: PublicInternalAccount) => {
-    const draftAccess = sortPageKeys(matrix[account.id] ?? account.pageAccess);
-    if (isMatrixDirty) {
-      try {
-        await commitMatrixDraft();
-      } catch (error) {
-        setLoadError(error instanceof Error ? error.message : "Gagal menyimpan matriks hak akses.");
-        return;
-      }
-    }
     setForm({
       id: account.id,
       name: account.name,
       email: account.email,
       password: "",
-      pageAccess: draftAccess,
+      pageAccess: sortPageKeys(account.pageAccess),
       isActive: account.isActive,
     });
     setFormError("");
@@ -252,9 +177,6 @@ export default function AdminSettingsPage() {
     setFormError("");
 
     try {
-      // Jangan buang perubahan matriks yang belum disimpan.
-      if (isMatrixDirty) await commitMatrixDraft();
-
       const payload = {
         name: form.name,
         email: form.email,
@@ -295,7 +217,6 @@ export default function AdminSettingsPage() {
     if (!confirmed) return;
 
     try {
-      if (isMatrixDirty) await commitMatrixDraft();
       await deleteInternalAccount(account.id);
       await loadAccounts();
       if (form?.id === account.id) setForm(null);
@@ -781,7 +702,7 @@ export default function AdminSettingsPage() {
                         </td>
                       </tr>
                     ) : (
-                      accounts.map((account) => {
+                      paginatedAccounts.map((account) => {
                         const labels = getPageLabels(account.pageAccess);
                         return (
                           <tr
@@ -874,131 +795,13 @@ export default function AdminSettingsPage() {
                   </tbody>
                 </table>
               </div>
+              <Pagination
+                page={currentAccountPage}
+                pageSize={accountPageSize}
+                total={accounts.length}
+                onPageChange={setAccountPage}
+              />
             </section>
-
-            {/* Matriks akses halaman */}
-            {accounts.length > 0 && (
-              <section className="overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-xs dark:border-white/10 dark:bg-[#151528]">
-                <div className="flex flex-col gap-3 border-b border-slate-100 p-5 dark:border-white/5 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-sm font-extrabold text-slate-900 dark:text-white">Matriks Akses Halaman</h2>
-                      {isMatrixDirty && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-bold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
-                          <span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> Belum disimpan
-                        </span>
-                      )}
-                    </div>
-                    <p className="mt-1 max-w-2xl text-[11px] text-slate-500 dark:text-slate-400">
-                      Centang halaman yang boleh diedit oleh masing-masing akun. Checkbox tampil langsung di sel tabel;
-                      gunakan “Pilih Semua” per akun untuk menyalakan seluruh halaman.
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handleDiscardMatrix}
-                      disabled={!isMatrixDirty}
-                      className="rounded-xl border border-slate-200 px-3 py-2 text-[11px] font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5"
-                    >
-                      Batalkan
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void handleSaveMatrix()}
-                      disabled={!isMatrixDirty}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-orange-600 px-4 py-2 text-[11px] font-bold text-white shadow-md shadow-orange-600/20 transition-colors hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
-                    >
-                      <Save className="h-3.5 w-3.5" />
-                      Simpan Perubahan
-                    </button>
-                  </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[900px] border-collapse text-xs">
-                    <thead>
-                      <tr className="border-b border-slate-200 bg-slate-50/90 dark:border-white/10 dark:bg-white/[0.03]">
-                        <th className="px-5 py-3.5 text-left text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-300">
-                          Akun
-                        </th>
-                        {EDITABLE_PAGES.map((page) => (
-                          <th
-                            key={page.key}
-                            title={page.description}
-                            className="w-20 px-2 py-3.5 text-center text-[10px] font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-200"
-                          >
-                            {page.shortLabel}
-                          </th>
-                        ))}
-                        <th className="w-28 px-4 py-3.5 text-center text-[10px] font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-200">
-                          Pilih Semua
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {accounts.map((account) => {
-                        const row = matrix[account.id] ?? [];
-                        const granted = EDITABLE_PAGES.filter((page) => row.includes(page.key)).length;
-                        const allGranted = granted === EDITABLE_PAGES.length;
-                        const partial = granted > 0 && !allGranted;
-
-                        return (
-                          <tr
-                            key={account.id}
-                            className="border-b border-slate-100 transition-colors last:border-0 hover:bg-orange-50/40 dark:border-white/5 dark:hover:bg-orange-500/[0.04]"
-                          >
-                            <td className="px-5 py-3.5">
-                              <span className="block text-xs font-bold text-slate-900 dark:text-white">
-                                {account.name}
-                              </span>
-                              <span className="block text-[10px] text-slate-500 dark:text-slate-400">
-                                {account.email}
-                                {!account.isActive && " · nonaktif"}
-                              </span>
-                            </td>
-
-                            {EDITABLE_PAGES.map((page) => (
-                              <td key={page.key} className="px-2 py-3.5 text-center">
-                                <MatrixCheckbox
-                                  checked={row.includes(page.key)}
-                                  onChange={(checked) => toggleMatrixPage(account.id, page.key, checked)}
-                                  label={`${page.label} untuk ${account.name}`}
-                                />
-                              </td>
-                            ))}
-
-                            <td className="px-4 py-3.5">
-                              <div className="flex items-center justify-center gap-1.5">
-                                <MatrixCheckbox
-                                  checked={allGranted}
-                                  indeterminate={partial}
-                                  onChange={(checked) => toggleMatrixAll(account.id, checked)}
-                                  label={`Pilih semua halaman untuk ${account.name}`}
-                                />
-                                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-                                  Semua
-                                </span>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="flex flex-col gap-2 border-t border-slate-200 px-5 py-3 text-[10px] text-slate-500 dark:border-white/10 dark:text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Info className="h-3 w-3" />
-                    Perubahan matriks baru berlaku setelah menekan “Simpan Perubahan”.
-                  </span>
-                  <span>
-                    {accounts.length} akun · {EDITABLE_PAGES.length} halaman
-                  </span>
-                </div>
-              </section>
-            )}
 
             <p className="flex items-start gap-1.5 text-[10px] leading-relaxed text-slate-400 dark:text-slate-500">
               <Info className="mt-0.5 h-3 w-3 shrink-0" />
