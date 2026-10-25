@@ -28,6 +28,44 @@ import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
 import { ProductItem } from "@/types/schema";
+import Pagination from "@/components/admin/Pagination";
+import ChipField from "@/components/admin/ChipField";
+
+// Pilihan cepat fitur/kapabilitas — dicentang saja, tidak perlu ditulis manual.
+const FEATURE_PRESETS = [
+  "Laporan Real-Time",
+  "Dashboard Analitik",
+  "REST API",
+  "Multi-User",
+  "Role & Hak Akses",
+  "Audit Log",
+  "Enkripsi Data",
+  "Single Sign-On (SSO)",
+  "Notifikasi Email",
+  "Tanda Tangan Digital",
+  "Impor / Ekspor Excel",
+  "Mobile Friendly",
+  "Backup Otomatis",
+];
+
+const TAG_PRESETS = [
+  "SPBE",
+  "GovTech",
+  "ISO 27001",
+  "SaaS",
+  "On-Premise",
+  "Cloud",
+  "Open Source",
+  "Custom Development",
+];
+
+// State form menyimpan string berkoma (kompatibel dengan kode lama + API).
+const csvToList = (value: string): string[] =>
+  value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+const listToCsv = (list: string[]): string => list.join(", ");
 
 export default function AdminProductsPage() {
   const { products, actions } = useCitsStore();
@@ -35,6 +73,7 @@ export default function AdminProductsPage() {
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
+  const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
 
@@ -47,6 +86,7 @@ export default function AdminProductsPage() {
   const [formIcon, setFormIcon] = useState("Package");
   const [formImage, setFormImage] = useState("");
   const [formIsActive, setFormIsActive] = useState(true);
+  const [formShowOnHome, setFormShowOnHome] = useState(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -91,6 +131,7 @@ export default function AdminProductsPage() {
     setFormIcon("Package");
     setFormImage("");
     setFormIsActive(true);
+    setFormShowOnHome(true);
     if (fileInputRef.current) fileInputRef.current.value = "";
     setModalOpen(true);
   };
@@ -106,6 +147,7 @@ export default function AdminProductsPage() {
     setFormIcon(prod.icon || "Package");
     setFormImage(prod.image || "");
     setFormIsActive(prod.isActive);
+    setFormShowOnHome(prod.showOnHome !== false);
     if (fileInputRef.current) fileInputRef.current.value = "";
     setModalOpen(true);
   };
@@ -132,6 +174,7 @@ export default function AdminProductsPage() {
         icon: formIcon,
         image: formImage.trim() || undefined,
         isActive: formIsActive,
+        showOnHome: formShowOnHome,
       });
     } else {
       actions.addProduct({
@@ -143,6 +186,7 @@ export default function AdminProductsPage() {
         icon: formIcon,
         image: formImage.trim() || undefined,
         isActive: formIsActive,
+        showOnHome: formShowOnHome,
       });
     }
 
@@ -165,6 +209,8 @@ export default function AdminProductsPage() {
   });
 
   const categories = ["All", "Enterprise", "Government", "Mobile", "Web", "Communication"];
+  const pageSize = 8;
+  const paginatedProducts = filteredProducts.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="flex-1 flex flex-col min-w-0">
@@ -182,7 +228,7 @@ export default function AdminProductsPage() {
               <input
                 type="text"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                 placeholder="Cari nama atau deskripsi produk..."
                 className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
@@ -193,7 +239,7 @@ export default function AdminProductsPage() {
               {categories.map((cat) => (
                 <button
                   key={cat}
-                  onClick={() => setCategoryFilter(cat)}
+                  onClick={() => { setCategoryFilter(cat); setPage(1); }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
                     categoryFilter === cat
                       ? "bg-orange-600 text-white shadow-xs"
@@ -237,7 +283,7 @@ export default function AdminProductsPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredProducts.map((prod) => (
+                  paginatedProducts.map((prod) => (
                     <tr key={prod.id} className="hover:bg-slate-50/60 dark:hover:bg-white/5 transition-colors">
                       {/* Product Name & Description */}
                       <td className="py-4 px-5 max-w-sm">
@@ -290,8 +336,7 @@ export default function AdminProductsPage() {
 
                       {/* Status Toggle Switch */}
                       <td className="py-4 px-4 text-center">
-                        <button
-                          onClick={() => actions.toggleProductStatus(prod.id)}
+                        <span
                           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${
                             prod.isActive
                               ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30"
@@ -302,7 +347,7 @@ export default function AdminProductsPage() {
                             className={`w-2 h-2 rounded-full ${prod.isActive ? "bg-emerald-500" : "bg-slate-400"}`}
                           ></span>
                           <span>{prod.isActive ? "Aktif" : "Non-Aktif"}</span>
-                        </button>
+                        </span>
                       </td>
 
                       {/* Actions */}
@@ -345,6 +390,7 @@ export default function AdminProductsPage() {
               </tbody>
             </table>
           </div>
+          <Pagination page={page} pageSize={pageSize} total={filteredProducts.length} onPageChange={setPage} />
         </div>
 
         {/* Add / Edit Product Modal */}
@@ -522,28 +568,25 @@ export default function AdminProductsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Fitur-Fitur Utama (Pisahkan dengan koma)
-                  </label>
-                  <input
-                    type="text"
-                    value={formFeatures}
-                    onChange={(e) => setFormFeatures(e.target.value)}
-                    placeholder="Contoh: Laporan Real-Time, REST API, Multi-User, Enkripsi"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  <ChipField
+                    label="Fitur & Kapabilitas Produk"
+                    hint="Centang kapabilitas yang tersedia, atau tulis sendiri lalu tekan Enter."
+                    value={csvToList(formFeatures)}
+                    onChange={(list) => setFormFeatures(listToCsv(list))}
+                    presets={FEATURE_PRESETS}
+                    placeholder="cth: Laporan Real-Time, REST API"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Tag Kata Kunci (Pisahkan dengan koma)
-                  </label>
-                  <input
-                    type="text"
-                    value={formTags}
-                    onChange={(e) => setFormTags(e.target.value)}
-                    placeholder="Contoh: SPBE, GovTech, Kemenhub, ISO 27001"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  <ChipField
+                    label="Tag / Kata Kunci"
+                    hint="Dipakai untuk pencarian dan pengelompokan produk."
+                    value={csvToList(formTags)}
+                    onChange={(list) => setFormTags(listToCsv(list))}
+                    presets={TAG_PRESETS}
+                    placeholder="cth: SPBE, GovTech, ISO 27001"
+                    accent="emerald"
                   />
                 </div>
 
@@ -564,6 +607,14 @@ export default function AdminProductsPage() {
                     className="w-5 h-5 accent-orange-600 rounded cursor-pointer"
                   />
                 </div>
+
+                <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
+                  <span>
+                    <span className="block text-xs font-bold text-slate-900 dark:text-white">Tampilkan di Beranda Utama</span>
+                    <span className="block text-[11px] text-slate-500 dark:text-slate-300">Centang agar produk muncul pada section produk unggulan di halaman utama.</span>
+                  </span>
+                  <input type="checkbox" checked={formShowOnHome} onChange={(e) => setFormShowOnHome(e.target.checked)} className="mt-0.5 h-5 w-5 cursor-pointer accent-orange-600" />
+                </label>
 
                 {/* Modal Buttons */}
                 <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-white/10">

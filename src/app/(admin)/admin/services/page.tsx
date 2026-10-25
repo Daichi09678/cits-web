@@ -11,6 +11,45 @@ import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
 import { ServicePillar } from "@/types/schema";
 import { getPillarIcon, PILLAR_ICON_OPTIONS, PillarIconOption } from "@/lib/serviceIcons";
+import ChipField from "@/components/admin/ChipField";
+
+// Pilihan cepat kapabilitas layanan — cukup dicentang.
+const SERVICE_FEATURE_PRESETS = [
+  "Analisis & Desain Sistem",
+  "Pengembangan Aplikasi Web",
+  "Aplikasi Mobile",
+  "Integrasi API / Interoperabilitas",
+  "Migrasi Data",
+  "Pelatihan Pengguna",
+  "Pendampingan Go-Live",
+  "Pemeliharaan & Dukungan",
+  "Audit Keamanan",
+  "Dokumentasi Teknis",
+];
+
+const SERVICE_TAG_PRESETS = [
+  "Custom Development",
+  "Integrasi Sistem",
+  "GovTech",
+  "SPBE",
+  "Cloud",
+  "On-Premise",
+  "Konsultasi",
+  "Managed Service",
+];
+
+const newlineToList = (value: string): string[] =>
+  value
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
+const listToNewline = (list: string[]): string => list.join("\n");
+const csvToList = (value: string): string[] =>
+  value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+const listToCsv = (list: string[]): string => list.join(", ");
 
 export default function AdminServicesPage() {
   const { services, actions } = useCitsStore();
@@ -20,12 +59,15 @@ export default function AdminServicesPage() {
 
   // Form State
   const [formTitle, setFormTitle] = useState("");
+  const [formCategory, setFormCategory] = useState("Software House");
   const [formBadge, setFormBadge] = useState("");
   const [formIcon, setFormIcon] = useState("Code2");
   const [formDesc, setFormDesc] = useState("");
   const [formSla, setFormSla] = useState("");
   const [formFeatures, setFormFeatures] = useState("");
+  const [formTags, setFormTags] = useState("");
   const [formIsActive, setFormIsActive] = useState(true);
+  const [formShowOnHome, setFormShowOnHome] = useState(true);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [formDetails, setFormDetails] = useState<ServiceDetailsForm>({
     image: "",
@@ -70,6 +112,8 @@ export default function AdminServicesPage() {
     setFormSla(pillar.sla);
     setFormFeatures(pillar.features ? pillar.features.join("\n") : "");
     const resolved = resolveServiceCatalog([{ ...pillar, isActive: true }])[0];
+    setFormCategory(pillar.category || resolved.category || "Layanan CITS");
+    setFormTags((pillar.tags || resolved.tags || []).join(", "));
     setFormDetails({
       image: pillar.image || "",
       details: resolved.details || "",
@@ -79,6 +123,7 @@ export default function AdminServicesPage() {
     });
     setSaveError("");
     setFormIsActive(pillar.isActive !== false);
+    setFormShowOnHome(pillar.showOnHome !== false);
     setIsIconPickerOpen(false);
     setIconCategoryFilter("Semua");
     setIconSearch("");
@@ -89,14 +134,17 @@ export default function AdminServicesPage() {
   const openAddModal = () => {
     setEditingPillar(null);
     setFormTitle("");
+    setFormCategory("Software House");
     setFormBadge(`Pilar 0${services.length + 1}`);
     setFormIcon("Code2");
     setFormDesc("");
     setFormSla("SLA Terjamin & Bergaransi");
     setFormFeatures("Arsitektur Andal\nPengujian Ketat\nDukungan 24/7");
+    setFormTags("Software House, Custom Development, Integrasi Sistem");
     setFormDetails({ image: "", details: "", techStack: "", caseStudies: "", deliverables: [] });
     setSaveError("");
     setFormIsActive(true);
+    setFormShowOnHome(true);
     setIsIconPickerOpen(false);
     setIconCategoryFilter("Semua");
     setIconSearch("");
@@ -111,13 +159,16 @@ export default function AdminServicesPage() {
     const next: ServicePillar = {
       ...editingPillar,
       id: editingPillar?.id || "pillar-" + crypto.randomUUID(),
+      category: formCategory.trim(),
       title: formTitle.trim(),
       badge: formBadge.trim(),
       icon: formIcon,
       desc: formDesc.trim(),
       sla: formSla.trim(),
       features: lines(formFeatures),
+      tags: formTags.split(",").map((item) => item.trim()).filter(Boolean),
       isActive: formIsActive,
+      showOnHome: formShowOnHome,
       image: formDetails.image.trim() || undefined,
       details: formDetails.details.trim(),
       techStack: lines(formDetails.techStack),
@@ -231,9 +282,7 @@ export default function AdminServicesPage() {
                       <Icon className="w-5 h-5" />
                     </div>
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void handleTogglePillar(p)}
+                      <span
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold cursor-pointer transition-all ${
                           p.isActive !== false
                             ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30"
@@ -245,7 +294,7 @@ export default function AdminServicesPage() {
                           className={`w-1.5 h-1.5 rounded-full ${p.isActive !== false ? "bg-emerald-500" : "bg-slate-400"}`}
                         />
                         <span>{p.isActive !== false ? "Aktif" : "Non-aktif"}</span>
-                      </button>
+                      </span>
                       <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-500/30">
                         {p.badge}
                       </span>
@@ -253,6 +302,10 @@ export default function AdminServicesPage() {
                   </div>
 
                   <h4 className="font-extrabold text-base text-slate-900 dark:text-white">{p.title}</h4>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 dark:bg-white/10 dark:text-slate-300">{p.category || "Layanan CITS"}</span>
+                    {(p.tags || []).slice(0, 3).map((tag) => <span key={tag} className="rounded-full border border-orange-200 px-2 py-0.5 text-[10px] text-orange-700 dark:border-orange-800/60 dark:text-orange-300">{tag}</span>)}
+                  </div>
                   <p className="text-xs text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">{p.desc}</p>
 
                   {p.features && p.features.length > 0 && (
@@ -427,6 +480,32 @@ export default function AdminServicesPage() {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                    Kategori
+                    <input
+                      type="text"
+                      required
+                      maxLength={100}
+                      value={formCategory}
+                      onChange={(event) => setFormCategory(event.target.value)}
+                      placeholder="cth. Software House"
+                      className="mt-1.5 w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-normal text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                  </label>
+                  <div>
+                    <ChipField
+                      label="Tags / Label"
+                      hint="Untuk pencarian dan pengelompokan layanan."
+                      value={csvToList(formTags)}
+                      onChange={(list) => setFormTags(listToCsv(list))}
+                      presets={SERVICE_TAG_PRESETS}
+                      placeholder="cth: Custom Development, Integrasi Sistem"
+                      accent="emerald"
+                    />
+                  </div>
+                </div>
+
                 {/* PEMILIH IKON TERPADU (Hanya terbuka saat diklik, tanpa scrollbar ganda & tanpa teks terpotong) */}
                 {isIconPickerOpen && (
                   <div className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-[#121226] border border-orange-200/80 dark:border-orange-500/30 space-y-2.5 animate-in fade-in zoom-in-98 duration-150">
@@ -581,19 +660,13 @@ export default function AdminServicesPage() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="service-features"
-                    className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
-                  >
-                    Poin Fitur Unggulan (Satu per Baris)
-                  </label>
-                  <textarea
-                    rows={4}
-                    id="service-features"
-                    value={formFeatures}
-                    onChange={(e) => setFormFeatures(e.target.value)}
-                    placeholder="Satu fitur atau ruang lingkup per baris"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  <ChipField
+                    label="Fitur & Kapabilitas Layanan"
+                    hint="Centang poin yang termasuk dalam layanan ini, atau tulis sendiri."
+                    value={newlineToList(formFeatures)}
+                    onChange={(list) => setFormFeatures(listToNewline(list))}
+                    presets={SERVICE_FEATURE_PRESETS}
+                    placeholder="cth: Integrasi API / Interoperabilitas"
                   />
                 </div>
 
@@ -602,7 +675,7 @@ export default function AdminServicesPage() {
                     <span className="block text-xs font-bold text-slate-800 dark:text-white">
                       Status Tayang Layanan
                     </span>
-                    <span className="block text-[11px] text-slate-500">Tampilkan layanan ini di website utama</span>
+                        <span className="block text-[11px] text-slate-500">Tampilkan layanan ini di beranda dan katalog layanan</span>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -615,6 +688,14 @@ export default function AdminServicesPage() {
                     <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-white/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-600"></div>
                   </label>
                 </div>
+
+                <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3 dark:border-orange-500/20 dark:bg-orange-500/10">
+                  <span>
+                    <span className="block text-xs font-bold text-slate-900 dark:text-white">Tampilkan di Beranda Utama</span>
+                    <span className="block text-[11px] text-slate-500 dark:text-slate-300">Centang agar layanan masuk ke section layanan unggulan di halaman utama.</span>
+                  </span>
+                  <input type="checkbox" checked={formShowOnHome} onChange={(event) => setFormShowOnHome(event.target.checked)} className="mt-0.5 h-5 w-5 cursor-pointer accent-orange-600" />
+                </label>
 
                 <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-end gap-2.5">
                   <button
