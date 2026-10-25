@@ -15,7 +15,18 @@ interface SendContactNotificationParams {
 }
 
 export function isEmailConfigured(): boolean {
-  return !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+  const config = getSmtpConfig();
+  return Boolean(config.host && config.user && config.pass);
+}
+
+function getSmtpConfig(): { host: string; port: number; user: string; pass: string } {
+  const host = (process.env.SMTP_HOST || "").trim();
+  const user = (process.env.SMTP_USER || "").trim();
+  const rawPass = (process.env.SMTP_PASS || "").trim();
+  // App Password Gmail sering ditempel dalam empat grup yang dipisahkan spasi.
+  const normalizedPass = host.toLowerCase().includes("gmail") ? rawPass.replace(/\s+/g, "") : rawPass;
+  const isPlaceholder = ["your-app-password", "your_password", "changeme", "change-me"].includes(normalizedPass.toLowerCase());
+  return { host, port: Number(process.env.SMTP_PORT) || 587, user, pass: isPlaceholder ? "" : normalizedPass };
 }
 
 function escapeHtml(value: string): string {
@@ -33,10 +44,7 @@ export async function sendPasswordResetEmail(params: {
   resetUrl: string;
   expiresMinutes: number;
 }): Promise<{ sent: boolean; reason?: string }> {
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT) || 587;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const { host, port, user, pass } = getSmtpConfig();
 
   if (!host || !user || !pass) {
     console.log("ℹ️ SMTP belum dikonfigurasi; email reset kata sandi tidak dikirim.");
@@ -99,7 +107,10 @@ export async function sendPasswordResetEmail(params: {
     console.log(`✅ Email reset kata sandi dikirim ke ${params.to}`);
     return { sent: true };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Gagal mengirim email.";
+    const smtpError = error as { code?: string; responseCode?: number; message?: string };
+    const message = smtpError.code === "EAUTH" || smtpError.responseCode === 535
+      ? "Login SMTP ditolak Gmail (535). Gunakan Google App Password 16 karakter untuk akun SMTP_USER, bukan kata sandi Gmail biasa, lalu restart server."
+      : smtpError.message || "Gagal mengirim email.";
     console.error("❌ Gagal mengirim email reset kata sandi:", message);
     return { sent: false, reason: message };
   }
@@ -108,10 +119,7 @@ export async function sendPasswordResetEmail(params: {
 export async function sendContactNotificationEmail(
   params: SendContactNotificationParams
 ): Promise<{ sent: boolean; reason?: string }> {
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT) || 587;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const { host, port, user, pass } = getSmtpConfig();
   const toEmail = params.recipientEmail || process.env.NOTIFICATION_EMAIL || "info@citsindonesia.co.id";
 
   if (!host || !user || !pass) {
@@ -182,7 +190,10 @@ export async function sendContactNotificationEmail(
     console.log(`✅ Notifikasi email berhasil dikirim ke ${toEmail}`);
     return { sent: true };
   } catch (error: any) {
-    console.error("❌ Gagal mengirim notifikasi email:", error.message);
-    return { sent: false, reason: error.message };
+    const reason = error?.code === "EAUTH" || error?.responseCode === 535
+      ? "Login SMTP ditolak Gmail (535). Periksa SMTP_USER dan gunakan Google App Password 16 karakter."
+      : error?.message || "Gagal mengirim notifikasi email.";
+    console.error("❌ Gagal mengirim notifikasi email:", reason);
+    return { sent: false, reason };
   }
 }
