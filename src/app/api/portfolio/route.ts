@@ -22,6 +22,13 @@ export async function PUT(req: Request) {
     if (!Array.isArray(body) || body.length === 0) {
       return badRequest("Data portofolio harus berupa array dan tidak boleh kosong.");
     }
+    if (
+      body.some(
+        (item) =>
+          !item || typeof item !== "object" || (item.showOnHome !== undefined && typeof item.showOnHome !== "boolean")
+      )
+    )
+      return badRequest("Status tampil portofolio di beranda tidak valid.");
     const updated = await DbRepo.updatePortfolio(body);
     return NextResponse.json({ success: true, data: updated });
   } catch (e: any) {

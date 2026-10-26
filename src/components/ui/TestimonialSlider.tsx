@@ -13,8 +13,10 @@ interface Testimonial {
 export default function TestimonialSlider({ testimonials }: { testimonials: Testimonial[] }) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
+  const activeTestimonial = testimonials[Math.min(current, Math.max(0, testimonials.length - 1))];
 
   useEffect(() => {
+    if (!testimonials.length) return;
     const timer = setInterval(() => {
       setDirection(1);
       setCurrent((prev) => (prev + 1) % testimonials.length);
@@ -32,6 +34,8 @@ export default function TestimonialSlider({ testimonials }: { testimonials: Test
     setCurrent((c) => (c + 1) % testimonials.length);
   };
 
+  if (!activeTestimonial) return null;
+
   return (
     <div className="relative max-w-3xl mx-auto">
       <div className="overflow-hidden rounded-2xl bg-white dark:bg-[#1A1A2E] border border-gray-200 dark:border-white/10 p-8 md:p-12 min-h-[220px] flex items-center shadow-sm">
@@ -47,11 +51,11 @@ export default function TestimonialSlider({ testimonials }: { testimonials: Test
           >
             <Quote className="w-10 h-10 text-orange-500/30 dark:text-orange-400/30 mx-auto mb-4" />
             <p className="text-gray-800 dark:text-white/90 text-lg italic leading-relaxed">
-              &ldquo;{testimonials[current].quote}&rdquo;
+              &ldquo;{activeTestimonial.quote}&rdquo;
             </p>
             <div className="mt-6">
-              <p className="font-semibold text-dark dark:text-white">{testimonials[current].name}</p>
-              <p className="text-sm text-gray-700 dark:text-white/80">{testimonials[current].company}</p>
+              <p className="font-semibold text-dark dark:text-white">{activeTestimonial.name}</p>
+              <p className="text-sm text-gray-700 dark:text-white/80">{activeTestimonial.company}</p>
             </div>
           </motion.div>
         </AnimatePresence>

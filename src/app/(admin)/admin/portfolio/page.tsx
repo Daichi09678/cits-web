@@ -22,6 +22,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
+import PublicPageContentEditor from "@/components/admin/PublicPageContentEditor";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
 import { CaseStudyItem } from "@/types/schema";
@@ -82,6 +83,7 @@ export default function AdminPortfolioPage() {
   const [formTechStack, setFormTechStack] = useState("");
   const [formDeliverables, setFormDeliverables] = useState("");
   const [formIsActive, setFormIsActive] = useState(true);
+  const [formShowOnHome, setFormShowOnHome] = useState(true);
 
   // Handle Logo Upload from Local File
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,6 +129,7 @@ export default function AdminPortfolioPage() {
     setFormTechStack("Next.js, TypeScript, PostgreSQL, REST API");
     setFormDeliverables("Aplikasi Web Enterprise, Dokumentasi SAD, Manual Book Pengguna");
     setFormIsActive(true);
+    setFormShowOnHome(true);
     setModalOpen(true);
   };
 
@@ -151,6 +154,7 @@ export default function AdminPortfolioPage() {
     setFormTechStack(study.techStack ? study.techStack.join(", ") : "");
     setFormDeliverables(study.deliverables ? study.deliverables.join(", ") : "");
     setFormIsActive(study.isActive !== false);
+    setFormShowOnHome(study.showOnHome !== false);
     setModalOpen(true);
   };
 
@@ -185,6 +189,7 @@ export default function AdminPortfolioPage() {
       techStack: parseList(formTechStack),
       deliverables: parseList(formDeliverables),
       isActive: formIsActive,
+      showOnHome: formShowOnHome,
     };
 
     if (editingStudy) {
@@ -255,6 +260,7 @@ export default function AdminPortfolioPage() {
       />
 
       <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
+        <PublicPageContentEditor page="portfolio" />
         {savedSuccess && (
           <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-2.5 text-xs text-emerald-800 dark:text-emerald-300 animate-in fade-in">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -843,6 +849,24 @@ export default function AdminPortfolioPage() {
                 </div>
 
                 {/* Footer Buttons */}
+                <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
+                  <span>
+                    <span className="block text-xs font-bold text-slate-900 dark:text-white">
+                      Tampilkan di Beranda Utama
+                    </span>
+                    <span className="block text-[11px] text-slate-500 dark:text-slate-300">
+                      Centang agar proyek masuk ke panel ilustrasi pembuka beranda. Maksimal 3 proyek terpilih
+                      ditampilkan.
+                    </span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={formShowOnHome}
+                    onChange={(event) => setFormShowOnHome(event.target.checked)}
+                    className="mt-0.5 h-5 w-5 shrink-0 accent-orange-600"
+                  />
+                </label>
+
                 <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-end gap-2.5">
                   <button
                     type="button"

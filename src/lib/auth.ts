@@ -16,7 +16,7 @@ export interface AdminSession {
     role: string;
     avatar: string;
     jobTitle?: string;
-    /** Halaman yang boleh diedit; kosong/undefined = Superadmin (semua). */
+    /** Halaman yang boleh diakses dan diedit. Hanya role Superadmin yang memiliki akses penuh. */
     pageAccess?: PageKey[];
     isInternal?: boolean;
   };

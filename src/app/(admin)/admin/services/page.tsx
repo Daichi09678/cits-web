@@ -1,17 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import ServiceDetailsFields, { type ServiceDetailsForm } from "@/components/admin/ServiceDetailsFields";
+import ServiceDetailsFields, {
+  ServiceImageField,
+  type ServiceDetailsForm,
+} from "@/components/admin/ServiceDetailsFields";
 import ServicePhoto from "@/components/ui/ServicePhoto";
 import { resolveServiceCatalog } from "@/lib/serviceCatalog";
 import { useModalFocus } from "@/components/ui/useModalFocus";
-import { ShieldCheck, CheckCircle2, Edit, Plus, Trash2, X, Search, ChevronDown } from "lucide-react";
+import { Edit, Plus, Trash2, X, Search, ChevronDown } from "lucide-react";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
 import { ServicePillar } from "@/types/schema";
 import { getPillarIcon, PILLAR_ICON_OPTIONS, PillarIconOption } from "@/lib/serviceIcons";
 import ChipField from "@/components/admin/ChipField";
+import Pagination from "@/components/admin/Pagination";
 
 // Pilihan cepat kapabilitas layanan — cukup dicentang.
 const SERVICE_FEATURE_PRESETS = [
@@ -54,6 +58,9 @@ const listToCsv = (list: string[]): string => list.join(", ");
 export default function AdminServicesPage() {
   const { services, actions } = useCitsStore();
   const dialog = useAdminDialog();
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPillar, setEditingPillar] = useState<ServicePillar | null>(null);
 
@@ -68,7 +75,6 @@ export default function AdminServicesPage() {
   const [formTags, setFormTags] = useState("");
   const [formIsActive, setFormIsActive] = useState(true);
   const [formShowOnHome, setFormShowOnHome] = useState(true);
-  const [savedSuccess, setSavedSuccess] = useState(false);
   const [formDetails, setFormDetails] = useState<ServiceDetailsForm>({
     image: "",
     details: "",
@@ -110,8 +116,8 @@ export default function AdminServicesPage() {
     setFormIcon(pillar.icon || "Code2");
     setFormDesc(pillar.desc);
     setFormSla(pillar.sla);
-    setFormFeatures(pillar.features ? pillar.features.join("\n") : "");
     const resolved = resolveServiceCatalog([{ ...pillar, isActive: true }])[0];
+    setFormFeatures(resolved.features.join("\n"));
     setFormCategory(pillar.category || resolved.category || "Layanan CITS");
     setFormTags((pillar.tags || resolved.tags || []).join(", "));
     setFormDetails({
@@ -154,6 +160,7 @@ export default function AdminServicesPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSaving) return;
     setIsSaving(true);
     setSaveError("");
     const next: ServicePillar = {
@@ -166,7 +173,10 @@ export default function AdminServicesPage() {
       desc: formDesc.trim(),
       sla: formSla.trim(),
       features: lines(formFeatures),
-      tags: formTags.split(",").map((item) => item.trim()).filter(Boolean),
+      tags: formTags
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
       isActive: formIsActive,
       showOnHome: formShowOnHome,
       image: formDetails.image.trim() || undefined,
@@ -182,11 +192,9 @@ export default function AdminServicesPage() {
       await actions.saveServices(
         editingPillar ? services.map((item) => (item.id === editingPillar.id ? next : item)) : [...services, next]
       );
-      setSavedSuccess(true);
       setModalOpen(false);
-      setTimeout(() => setSavedSuccess(false), 3000);
       void dialog.alert({
-        title: editingPillar ? "Pilar layanan diperbarui" : "Pilar layanan ditambahkan",
+        title: editingPillar ? "Layanan diperbarui" : "Layanan ditambahkan",
         description: "Foto dan rincian layanan berhasil disimpan.",
         variant: "success",
       });
@@ -194,18 +202,6 @@ export default function AdminServicesPage() {
       setSaveError(error instanceof Error ? error.message : "Layanan gagal disimpan. Silakan coba kembali.");
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const handleTogglePillar = async (pillar: ServicePillar) => {
-    try {
-      await actions.updateService(pillar.id, { isActive: pillar.isActive === false });
-    } catch (error) {
-      void dialog.alert({
-        title: "Status belum tersimpan",
-        description: error instanceof Error ? error.message : "Coba kembali.",
-        variant: "danger",
-      });
     }
   };
 
@@ -235,6 +231,27 @@ export default function AdminServicesPage() {
     }
   };
 
+  const catalog = services.map((service) => {
+    const resolved = resolveServiceCatalog([{ ...service, isActive: true }])[0];
+    return {
+      ...service,
+      category: resolved.category,
+      features: resolved.features,
+      image: resolved.image,
+      source: service,
+    };
+  });
+  const categories = ["All", ...new Set(catalog.map((service) => service.category))];
+  const query = search.trim().toLowerCase();
+  const filteredServices = catalog.filter(
+    (service) =>
+      [service.title, service.desc, ...(service.tags || [])].some((value) => value.toLowerCase().includes(query)) &&
+      (categoryFilter === "All" || service.category === categoryFilter)
+  );
+  const pageSize = 8;
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(filteredServices.length / pageSize)));
+  const paginatedServices = filteredServices.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   return (
     <div className="flex-1 flex flex-col min-w-0">
       <AdminTopbar
@@ -242,115 +259,169 @@ export default function AdminServicesPage() {
         description={`Kelola ${services.length} pilar layanan, target SLA, dan ruang lingkup rekayasa teknologi CITS Indonesia`}
       />
       <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
-        {savedSuccess && (
-          <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-2.5 text-xs text-emerald-800 dark:text-emerald-300">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span>Pengaturan layanan berhasil disimpan dan disinkronkan ke Front Office!</span>
+        {/* Top Controls & Action Bar */}
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#151528] border border-slate-200/90 dark:border-white/10 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+          {/* Search & Filter */}
+          <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-0">
+            <div className="relative w-full sm:min-w-[240px] flex-1 max-w-sm">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                aria-label="Cari layanan"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Cari nama atau deskripsi layanan..."
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+
+            {/* Category Filter Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  aria-pressed={categoryFilter === cat}
+                  onClick={() => {
+                    setCategoryFilter(cat);
+                    setPage(1);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
+                    categoryFilter === cat
+                      ? "bg-orange-600 text-white shadow-xs"
+                      : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
-        )}
 
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-slate-600 dark:text-slate-400">
-            Klik tombol Edit pada kartu layanan untuk mengubah judul, deskripsi, atau SLA yang tampil di website.
-          </p>
-
+          {/* Add Service Button */}
           <button
             onClick={openAddModal}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition-all cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25 transition-all shrink-0"
           >
             <Plus className="w-4 h-4" />
-            <span>Tambah Pilar Layanan</span>
+            <span>Tambah Layanan Baru</span>
           </button>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {services.map((p) => {
-            const Icon = getPillarIcon(p.icon);
-            return (
-              <div
-                key={p.id}
-                className="p-6 rounded-3xl bg-white dark:bg-[#151528] border border-slate-200/90 dark:border-white/10 shadow-xs flex flex-col justify-between space-y-4 hover:border-orange-500/50 transition-all"
-              >
-                <div>
-                  <ServicePhoto
-                    image={resolveServiceCatalog([{ ...p, isActive: true }])[0].image}
-                    name={p.title}
-                    className="h-40 rounded-xl mb-4"
-                  />
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-11 h-11 rounded-2xl bg-orange-600 text-white flex items-center justify-center font-bold shadow-md shadow-orange-600/25">
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold cursor-pointer transition-all ${
-                          p.isActive !== false
-                            ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30"
-                            : "bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/15 opacity-70"
-                        }`}
-                        title="Klik untuk mengubah status aktif/non-aktif"
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${p.isActive !== false ? "bg-emerald-500" : "bg-slate-400"}`}
-                        />
-                        <span>{p.isActive !== false ? "Aktif" : "Non-aktif"}</span>
-                      </span>
-                      <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-500/30">
-                        {p.badge}
-                      </span>
-                    </div>
-                  </div>
-
-                  <h4 className="font-extrabold text-base text-slate-900 dark:text-white">{p.title}</h4>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 dark:bg-white/10 dark:text-slate-300">{p.category || "Layanan CITS"}</span>
-                    {(p.tags || []).slice(0, 3).map((tag) => <span key={tag} className="rounded-full border border-orange-200 px-2 py-0.5 text-[10px] text-orange-700 dark:border-orange-800/60 dark:text-orange-300">{tag}</span>)}
-                  </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">{p.desc}</p>
-
-                  {p.features && p.features.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-slate-100 dark:border-white/5 space-y-1">
-                      {p.features.map((f, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-300"
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
-                          <span>{f}</span>
+        {/* Table Data Container */}
+        <div className="rounded-3xl bg-white dark:bg-[#151528] border border-slate-200/90 dark:border-white/10 shadow-xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-50/80 dark:bg-white/5 border-b border-slate-200/80 dark:border-white/10 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px]">
+                  <th className="py-4 px-5">Nama Layanan & Deskripsi</th>
+                  <th className="py-4 px-4">Kategori</th>
+                  <th className="py-4 px-4">Fitur Utama</th>
+                  <th className="py-4 px-4 text-center">Status di Web</th>
+                  <th className="py-4 px-5 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                {filteredServices.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center text-slate-500">
+                      Tidak ada layanan yang cocok dengan pencarian Anda.
+                    </td>
+                  </tr>
+                ) : (
+                  paginatedServices.map((prod) => (
+                    <tr key={prod.id} className="hover:bg-slate-50/60 dark:hover:bg-white/5 transition-colors">
+                      {/* Service Name & Description */}
+                      <td className="py-4 px-5 max-w-sm">
+                        <div className="flex items-center gap-3">
+                          <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 shrink-0 shadow-2xs">
+                            <ServicePhoto image={prod.image} name={prod.title} className="h-full" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-extrabold text-slate-900 dark:text-white text-sm mb-0.5 truncate">
+                              {prod.title}
+                            </div>
+                            <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                              {prod.desc}
+                            </p>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                      </td>
 
-                <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span className="truncate max-w-[150px]">{p.sla}</span>
-                  </div>
+                      {/* Category */}
+                      <td className="py-4 px-4 shrink-0">
+                        <span className="inline-block px-2.5 py-1 rounded-md bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-200/80 dark:border-orange-500/30 font-bold text-[11px]">
+                          {prod.category}
+                        </span>
+                      </td>
 
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => openEditModal(p)}
-                      className="p-1.5 text-slate-600 dark:text-slate-300 hover:text-orange-600 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-colors cursor-pointer"
-                      title="Edit Layanan"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    {services.length > 3 && (
-                      <button
-                        onClick={() => handleDeletePillar(p.id, p.title)}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer"
-                        title="Hapus Layanan"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                      {/* Features Tags */}
+                      <td className="py-4 px-4 max-w-xs">
+                        <div className="flex flex-wrap gap-1">
+                          {prod.features.slice(0, 3).map((feat, idx) => (
+                            <span
+                              key={idx}
+                              className="text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300"
+                            >
+                              {feat}
+                            </span>
+                          ))}
+                          {prod.features.length > 3 && (
+                            <span className="text-[10px] px-1.5 py-0.5 text-slate-400 font-semibold">
+                              +{prod.features.length - 3} lainnya
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Status Toggle Switch */}
+                      <td className="py-4 px-4 text-center">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${
+                            prod.isActive !== false
+                              ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30"
+                              : "bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-white/15 opacity-70"
+                          }`}
+                        >
+                          <span
+                            className={`w-2 h-2 rounded-full ${prod.isActive !== false ? "bg-emerald-500" : "bg-slate-400"}`}
+                          ></span>
+                          <span>{prod.isActive !== false ? "Aktif" : "Non-Aktif"}</span>
+                        </span>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-4 px-5 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => openEditModal(prod.source)}
+                            title="Edit Layanan"
+                            aria-label={`Edit layanan ${prod.title}`}
+                            className="p-2 rounded-xl text-slate-600 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-colors"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          {services.length > 3 && (
+                            <button
+                              onClick={() => handleDeletePillar(prod.id, prod.title)}
+                              title="Hapus Layanan"
+                              aria-label={`Hapus layanan ${prod.title}`}
+                              className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+          <Pagination page={currentPage} pageSize={pageSize} total={filteredServices.length} onPageChange={setPage} />
         </div>
 
         {/* Modal Edit / Add Pillar */}
@@ -360,16 +431,16 @@ export default function AdminServicesPage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="service-editor-title"
-            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/50 backdrop-blur-xs animate-in fade-in"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in"
           >
-            <div className="w-full min-w-0 max-w-3xl bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col max-h-[92dvh]">
-              <div className="px-6 py-4.5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between shrink-0">
+            <div className="w-full min-w-0 max-w-xl bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col max-h-[90vh]">
+              <div className="px-6 py-5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between shrink-0">
                 <div>
                   <h3 id="service-editor-title" className="font-extrabold text-base text-slate-900 dark:text-white">
-                    {editingPillar ? "Edit Pilar Layanan CITS" : "Tambah Pilar Layanan Baru"}
+                    {editingPillar ? "Edit Informasi Layanan" : "Tambah Layanan Baru"}
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Kelola gambaran, ruang lingkup, dan hasil layanan untuk pengunjung.
+                    Data yang disimpan akan langsung tampil di halaman Front Office CITS
                   </p>
                 </div>
                 <button
@@ -396,16 +467,92 @@ export default function AdminServicesPage() {
                     {saveError}
                   </p>
                 )}
-                <ServiceDetailsFields
-                  value={formDetails}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {/* Nama Layanan */}
+                  <div>
+                    <label
+                      htmlFor="service-title"
+                      className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5"
+                    >
+                      Nama Layanan
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={150}
+                      id="service-title"
+                      value={formTitle}
+                      onChange={(e) => setFormTitle(e.target.value)}
+                      placeholder="cth. Software House"
+                      className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                  </div>
+
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                    Kategori
+                    <input
+                      type="text"
+                      required
+                      maxLength={100}
+                      value={formCategory}
+                      onChange={(event) => setFormCategory(event.target.value)}
+                      placeholder="cth. Software House"
+                      className="mt-1.5 w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-normal text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                  </label>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="service-description"
+                    className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
+                  >
+                    Deskripsi Ringkas
+                  </label>
+                  <textarea
+                    rows={3}
+                    required
+                    id="service-description"
+                    value={formDesc}
+                    onChange={(e) => setFormDesc(e.target.value)}
+                    placeholder="Jelaskan ruang lingkup dan spesialisasi layanan ini..."
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+
+                <ServiceImageField
+                  image={formDetails.image}
                   name={formTitle}
                   fallbackImage={fallbackImage}
-                  onChange={setFormDetails}
+                  onChange={(image) => setFormDetails((current) => ({ ...current, image }))}
                 />
+                <div>
+                  <ChipField
+                    label="Fitur & Kapabilitas Layanan"
+                    hint="Centang poin yang termasuk dalam layanan ini, atau tulis sendiri."
+                    value={newlineToList(formFeatures)}
+                    onChange={(list) => setFormFeatures(listToNewline(list))}
+                    presets={SERVICE_FEATURE_PRESETS}
+                    placeholder="cth: Integrasi API / Interoperabilitas"
+                  />
+                </div>
+
+                <div>
+                  <ChipField
+                    label="Tags / Label"
+                    hint="Untuk pencarian dan pengelompokan layanan."
+                    value={csvToList(formTags)}
+                    onChange={(list) => setFormTags(listToCsv(list))}
+                    presets={SERVICE_TAG_PRESETS}
+                    placeholder="cth: Custom Development, Integrasi Sistem"
+                    accent="emerald"
+                  />
+                </div>
+
                 {/* Baris 1: Ikon Layanan + Nama Layanan + Label Badge */}
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                   {/* Ikon Layanan Trigger Button */}
-                  <div className="sm:col-span-4">
+                  <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
                       Ikon Layanan
                     </label>
@@ -440,28 +587,8 @@ export default function AdminServicesPage() {
                     </button>
                   </div>
 
-                  {/* Nama Layanan */}
-                  <div className="sm:col-span-5">
-                    <label
-                      htmlFor="service-title"
-                      className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5"
-                    >
-                      Nama Layanan
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      maxLength={150}
-                      id="service-title"
-                      value={formTitle}
-                      onChange={(e) => setFormTitle(e.target.value)}
-                      placeholder="cth. Software House"
-                      className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    />
-                  </div>
-
                   {/* Label Badge */}
-                  <div className="sm:col-span-3">
+                  <div>
                     <label
                       htmlFor="service-badge"
                       className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5"
@@ -476,32 +603,6 @@ export default function AdminServicesPage() {
                       onChange={(e) => setFormBadge(e.target.value)}
                       placeholder="cth. Pilar 01"
                       className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                    Kategori
-                    <input
-                      type="text"
-                      required
-                      maxLength={100}
-                      value={formCategory}
-                      onChange={(event) => setFormCategory(event.target.value)}
-                      placeholder="cth. Software House"
-                      className="mt-1.5 w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-normal text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    />
-                  </label>
-                  <div>
-                    <ChipField
-                      label="Tags / Label"
-                      hint="Untuk pencarian dan pengelompokan layanan."
-                      value={csvToList(formTags)}
-                      onChange={(list) => setFormTags(listToCsv(list))}
-                      presets={SERVICE_TAG_PRESETS}
-                      placeholder="cth: Custom Development, Integrasi Sistem"
-                      accent="emerald"
                     />
                   </div>
                 </div>
@@ -625,24 +726,6 @@ export default function AdminServicesPage() {
 
                 <div>
                   <label
-                    htmlFor="service-description"
-                    className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
-                  >
-                    Deskripsi Ringkas
-                  </label>
-                  <textarea
-                    rows={3}
-                    required
-                    id="service-description"
-                    value={formDesc}
-                    onChange={(e) => setFormDesc(e.target.value)}
-                    placeholder="Jelaskan ruang lingkup dan spesialisasi layanan ini..."
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  />
-                </div>
-
-                <div>
-                  <label
                     htmlFor="service-sla"
                     className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
                   >
@@ -659,48 +742,47 @@ export default function AdminServicesPage() {
                   />
                 </div>
 
-                <div>
-                  <ChipField
-                    label="Fitur & Kapabilitas Layanan"
-                    hint="Centang poin yang termasuk dalam layanan ini, atau tulis sendiri."
-                    value={newlineToList(formFeatures)}
-                    onChange={(list) => setFormFeatures(listToNewline(list))}
-                    presets={SERVICE_FEATURE_PRESETS}
-                    placeholder="cth: Integrasi API / Interoperabilitas"
-                  />
-                </div>
+                <ServiceDetailsFields value={formDetails} onChange={setFormDetails} />
 
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-between">
-                  <div>
-                    <span className="block text-xs font-bold text-slate-800 dark:text-white">
-                      Status Tayang Layanan
-                    </span>
-                        <span className="block text-[11px] text-slate-500">Tampilkan layanan ini di beranda dan katalog layanan</span>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      aria-label="Tampilkan layanan di website"
-                      checked={formIsActive}
-                      onChange={(e) => setFormIsActive(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-white/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-600"></div>
-                  </label>
-                </div>
-
-                <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3 dark:border-orange-500/20 dark:bg-orange-500/10">
+                <label className="p-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 flex items-center justify-between gap-4 cursor-pointer">
                   <span>
-                    <span className="block text-xs font-bold text-slate-900 dark:text-white">Tampilkan di Beranda Utama</span>
-                    <span className="block text-[11px] text-slate-500 dark:text-slate-300">Centang agar layanan masuk ke section layanan unggulan di halaman utama.</span>
+                    <span className="block text-xs font-bold text-slate-900 dark:text-white">
+                      Tampilkan di Website Front Office
+                    </span>
+                    <span className="block text-[11px] text-slate-500">
+                      Jika tidak dicentang, layanan akan berstatus Non-Aktif (disembunyikan)
+                    </span>
                   </span>
-                  <input type="checkbox" checked={formShowOnHome} onChange={(event) => setFormShowOnHome(event.target.checked)} className="mt-0.5 h-5 w-5 cursor-pointer accent-orange-600" />
+                  <input
+                    type="checkbox"
+                    checked={formIsActive}
+                    onChange={(event) => setFormIsActive(event.target.checked)}
+                    className="w-5 h-5 accent-orange-600 rounded cursor-pointer shrink-0"
+                  />
                 </label>
 
-                <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-end gap-2.5">
+                <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
+                  <span>
+                    <span className="block text-xs font-bold text-slate-900 dark:text-white">
+                      Tampilkan di Beranda Utama
+                    </span>
+                    <span className="block text-[11px] text-slate-500 dark:text-slate-300">
+                      Centang agar layanan masuk ke section layanan unggulan di halaman utama.
+                    </span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={formShowOnHome}
+                    onChange={(event) => setFormShowOnHome(event.target.checked)}
+                    className="mt-0.5 h-5 w-5 cursor-pointer accent-orange-600"
+                  />
+                </label>
+
+                <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-end gap-3">
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
+                    disabled={isSaving}
                     className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
                   >
                     Batal
@@ -708,9 +790,9 @@ export default function AdminServicesPage() {
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 cursor-pointer"
+                    className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/25 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                   >
-                    {isSaving ? "Menyimpan..." : editingPillar ? "Simpan Perubahan" : "Tambahkan Layanan"}
+                    {isSaving ? "Menyimpan..." : editingPillar ? "Simpan Perubahan" : "Tambahkan ke Katalog"}
                   </button>
                 </div>
               </form>

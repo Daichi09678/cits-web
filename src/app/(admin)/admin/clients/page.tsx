@@ -25,6 +25,7 @@ export default function AdminClientsPage() {
   const [formLogo, setFormLogo] = useState("/clients/kemenhub.webp");
   const [formCategory, setFormCategory] = useState<ClientPartner["category"]>("Kementerian");
   const [formIsActive, setFormIsActive] = useState(true);
+  const [formShowOnHome, setFormShowOnHome] = useState(true);
 
   const PRESET_CLIENT_LOGOS = [
     { name: "Kementerian Perhubungan RI", logo: "/clients/kemenhub.webp" },
@@ -61,6 +62,7 @@ export default function AdminClientsPage() {
     setFormLogo("/clients/kemendagri.svg");
     setFormCategory("Kementerian");
     setFormIsActive(true);
+    setFormShowOnHome(true);
     setModalOpen(true);
   };
 
@@ -70,6 +72,7 @@ export default function AdminClientsPage() {
     setFormLogo(client.logo);
     setFormCategory(client.category);
     setFormIsActive(client.isActive);
+    setFormShowOnHome(client.showOnHome !== false);
     setModalOpen(true);
   };
 
@@ -81,6 +84,7 @@ export default function AdminClientsPage() {
         logo: formLogo,
         category: formCategory,
         isActive: formIsActive,
+        showOnHome: formShowOnHome,
       });
     } else {
       actions.addClient({
@@ -88,6 +92,7 @@ export default function AdminClientsPage() {
         logo: formLogo,
         category: formCategory,
         isActive: formIsActive,
+        showOnHome: formShowOnHome,
       });
     }
 
@@ -131,7 +136,10 @@ export default function AdminClientsPage() {
             <input
               type="text"
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               placeholder="Cari nama kementerian / instansi..."
               className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
@@ -402,6 +410,23 @@ export default function AdminClientsPage() {
                     Tampilkan mitra ini di slider beranda & portofolio
                   </label>
                 </div>
+
+                <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
+                  <span>
+                    <span className="block text-xs font-bold text-slate-900 dark:text-white">
+                      Tampilkan di Beranda Utama
+                    </span>
+                    <span className="block text-[11px] text-slate-500 dark:text-slate-300">
+                      Centang agar logo mitra tampil pada deretan mitra di beranda.
+                    </span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={formShowOnHome}
+                    onChange={(event) => setFormShowOnHome(event.target.checked)}
+                    className="mt-0.5 h-5 w-5 shrink-0 accent-orange-600"
+                  />
+                </label>
 
                 <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-end gap-2.5">
                   <button

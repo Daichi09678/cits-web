@@ -20,6 +20,8 @@ export async function POST(req: Request) {
     const parsed = await readJsonBody(req);
     if (!parsed.ok) return parsed.response;
     const body = parsed.body;
+    if (body.showOnHome !== undefined && typeof body.showOnHome !== "boolean")
+      return badRequest("Status tampil di beranda tidak valid.");
     const missing = missingStringFields(body, ["name", "category"]);
     if (missing.length > 0) {
       return badRequest(`Data mitra tidak lengkap: ${missing.join(", ")}.`);

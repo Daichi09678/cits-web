@@ -11,6 +11,8 @@ import {
   initialCaseStudies,
 } from "@/data/initialData";
 import { getMessageRetentionDays } from "@/config/inbox";
+import type { HomeSectionPatch } from "@/lib/homeSections";
+import type { PublicContentPage, PublicPageContent } from "@/lib/publicPageContent";
 import {
   ProductItem,
   ContactInfo,
@@ -261,7 +263,7 @@ export async function ensureDbReady(): Promise<void> {
   // Saat circuit breaker terbuka (database mati/salah kredensial), jangan ulangi
   // 11 statement migrasi di setiap request — itu sumber utama halaman terasa lama.
   if (dbIsDown()) return;
-  const schemaVersion = 3;
+  const schemaVersion = 5;
   if (globalThis._citsDbInitialized && globalThis._citsDbSchemaVersion === schemaVersion) return;
   if (globalThis._citsDbInitPromise) return globalThis._citsDbInitPromise;
 
@@ -271,6 +273,7 @@ export async function ensureDbReady(): Promise<void> {
     // (error 42601: "cannot insert multiple commands into a prepared statement").
     // Karena itu setiap DDL WAJIB dijalankan sebagai query terpisah.
     const migrations: string[] = [
+      `CREATE TABLE IF NOT EXISTS public_page_content (page TEXT PRIMARY KEY CHECK (page IN ('about', 'portfolio')), data JSONB NOT NULL DEFAULT '{}'::jsonb, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
       `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS consultation_details JSONB DEFAULT '{}'::jsonb`,
       `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS product_id TEXT`,
       `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS product_requested TEXT`,
@@ -283,6 +286,7 @@ export async function ensureDbReady(): Promise<void> {
       `ALTER TABLE landing_page_data ADD COLUMN IF NOT EXISTS products_intro JSONB DEFAULT '{}'::jsonb`,
       `ALTER TABLE landing_page_data ADD COLUMN IF NOT EXISTS clients_intro JSONB DEFAULT '{}'::jsonb`,
       `ALTER TABLE products ADD COLUMN IF NOT EXISTS show_on_home BOOLEAN DEFAULT TRUE`,
+      `ALTER TABLE clients ADD COLUMN IF NOT EXISTS show_on_home BOOLEAN DEFAULT TRUE`,
     ];
 
     let allApplied = true;
@@ -349,6 +353,24 @@ export async function ensureDbReady(): Promise<void> {
 // ----------------------------------------------------
 
 export const DbRepo = {
+  async getPublicPageContent(page: PublicContentPage): Promise<Partial<PublicPageContent> | null> {
+    const sql = getSql();
+    if (!sql) return null;
+    await ensureDbReady();
+    const [row] = await sql`SELECT data FROM public_page_content WHERE page = ${page} LIMIT 1;`;
+    return row ? asJson(row.data, null) : null;
+  },
+  async updatePublicPageContent(page: PublicContentPage, data: PublicPageContent): Promise<PublicPageContent> {
+    const sql = getSql();
+    if (!sql) throw new Error("Database belum dikonfigurasi.");
+    await ensureDbReady();
+    const [row] = await sql`
+      INSERT INTO public_page_content (page, data, updated_at) VALUES (${page}, ${jsonb(sql, data)}, NOW())
+      ON CONFLICT (page) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW() RETURNING data;
+    `;
+    if (!row) throw new Error("Konten halaman belum tersimpan.");
+    return asJson(row.data, data);
+  },
   // PRODUCTS
   async getAllProducts(): Promise<ProductItem[]> {
     const sql = getSql();
@@ -770,6 +792,7 @@ export const DbRepo = {
 
   async updateAboutData(data: AboutData): Promise<AboutData> {
     const sql = getSql();
+    if (!sql) throw new Error("Database belum dikonfigurasi. Profil perusahaan belum dapat disimpan.");
     if (sql) {
       await ensureDbReady();
       try {
@@ -793,6 +816,7 @@ export const DbRepo = {
         `;
       } catch (e) {
         console.error("DB Error updateAboutData:", e);
+        throw e;
       }
     }
     memoryDb.aboutData = { ...data };
@@ -806,7 +830,7 @@ export const DbRepo = {
       await ensureDbReady();
       try {
         const rows = await sql`
-          SELECT id, name, logo, category, is_active
+          SELECT id, name, logo, category, is_active, show_on_home
           FROM clients ORDER BY created_at ASC;
         `;
         return rows.map((r: any) => ({
@@ -815,6 +839,7 @@ export const DbRepo = {
           logo: r.logo,
           category: r.category,
           isActive: r.is_active,
+          showOnHome: r.show_on_home !== false,
         }));
       } catch (e) {
         console.error("DB Error getClients:", e);
@@ -829,8 +854,8 @@ export const DbRepo = {
       await ensureDbReady();
       try {
         await sql`
-          INSERT INTO clients (id, name, logo, category, is_active)
-          VALUES (${c.id}, ${c.name}, ${c.logo}, ${c.category}, ${c.isActive});
+          INSERT INTO clients (id, name, logo, category, is_active, show_on_home)
+          VALUES (${c.id}, ${c.name}, ${c.logo}, ${c.category}, ${c.isActive}, ${c.showOnHome !== false});
         `;
       } catch (e) {
         console.error("DB Error createClient:", e);
@@ -852,7 +877,8 @@ export const DbRepo = {
       try {
         await sql`
           UPDATE clients
-          SET name = ${merged.name}, logo = ${merged.logo}, category = ${merged.category}, is_active = ${merged.isActive}
+          SET name = ${merged.name}, logo = ${merged.logo}, category = ${merged.category}, is_active = ${merged.isActive},
+              show_on_home = ${merged.showOnHome !== false}
           WHERE id = ${id};
         `;
       } catch (e) {
@@ -878,6 +904,47 @@ export const DbRepo = {
   },
 
   // LANDING PAGE DATA (HERO, HIGHLIGHTS, SERVICES, CTA & SECTION VISIBILITY)
+  async patchLandingData(patch: HomeSectionPatch): Promise<LandingPageData> {
+    const sql = getSql();
+    if (!sql) throw new Error("Database belum dikonfigurasi. Isi beranda belum dapat disimpan.");
+    await ensureDbReady();
+    const base = initialLandingPageData;
+    // Merge only the submitted fields in PostgreSQL so independent editors cannot overwrite each other.
+    const [row] = await sql`
+      INSERT INTO landing_page_data (id, hero, highlights, services_intro, products_intro, clients_intro, section_visibility, cta, updated_at)
+      VALUES ('default',
+        ${jsonb(sql, { ...base.hero, ...patch.hero })}, ${jsonb(sql, patch.highlights ?? base.highlights)},
+        ${jsonb(sql, { ...base.servicesIntro, ...patch.servicesIntro })},
+        ${jsonb(sql, { ...base.productsIntro, ...patch.productsIntro })},
+        ${jsonb(sql, { ...base.clientsIntro, ...patch.clientsIntro })},
+        ${jsonb(sql, { ...base.sectionVisibility, ...patch.sectionVisibility })},
+        ${jsonb(sql, { ...base.cta, ...patch.cta })}, NOW())
+      ON CONFLICT (id) DO UPDATE SET
+        hero = COALESCE(landing_page_data.hero, '{}'::jsonb) || ${jsonb(sql, patch.hero || {})},
+        highlights = CASE WHEN ${patch.highlights !== undefined} THEN EXCLUDED.highlights ELSE landing_page_data.highlights END,
+        services_intro = COALESCE(landing_page_data.services_intro, '{}'::jsonb) || ${jsonb(sql, patch.servicesIntro || {})},
+        products_intro = COALESCE(landing_page_data.products_intro, '{}'::jsonb) || ${jsonb(sql, patch.productsIntro || {})},
+        clients_intro = COALESCE(landing_page_data.clients_intro, '{}'::jsonb) || ${jsonb(sql, patch.clientsIntro || {})},
+        section_visibility = COALESCE(landing_page_data.section_visibility, '{}'::jsonb) || ${jsonb(sql, patch.sectionVisibility || {})},
+        cta = COALESCE(landing_page_data.cta, '{}'::jsonb) || ${jsonb(sql, patch.cta || {})}, updated_at = NOW()
+      RETURNING hero, highlights, services_intro, products_intro, clients_intro, section_visibility, cta;
+    `;
+    if (!row) throw new Error("Isi beranda belum tersimpan. Silakan coba kembali.");
+    const updated: LandingPageData = {
+      ...base,
+      hero: { ...base.hero, ...asJson(row.hero, {}) },
+      highlights: asJson(row.highlights, base.highlights),
+      servicesIntro: { ...base.servicesIntro, ...asJson(row.services_intro, {}) },
+      productsIntro: { ...base.productsIntro, ...asJson(row.products_intro, {}) },
+      clientsIntro: { ...base.clientsIntro, ...asJson(row.clients_intro, {}) },
+      sectionVisibility: { ...base.sectionVisibility!, ...asJson(row.section_visibility, {}) },
+      cta: { ...base.cta, ...asJson(row.cta, {}) },
+      updatedAt: new Date().toISOString(),
+    };
+    memoryDb.landingData = updated;
+    return updated;
+  },
+
   async getLandingData(): Promise<LandingPageData> {
     const sql = getSql();
     if (sql) {

@@ -14,6 +14,8 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     if (!body || typeof body !== "object" || Array.isArray(body)) {
       return badRequest("Data mitra tidak valid.");
     }
+    if (body.showOnHome !== undefined && typeof body.showOnHome !== "boolean")
+      return badRequest("Status tampil di beranda tidak valid.");
     const updated = await DbRepo.updateClient(id, body);
     if (!updated) {
       return NextResponse.json({ success: false, message: "Mitra tidak ditemukan." }, { status: 404 });

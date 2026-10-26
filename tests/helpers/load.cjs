@@ -6,7 +6,7 @@ const path = require("node:path");
 function load(relative, overrides = {}, globals = {}) {
   const filename = path.resolve(__dirname, "../../src", relative);
   const code = ts.transpileModule(fs.readFileSync(filename, "utf8"), {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020, jsx: ts.JsxEmit.ReactJSX },
   }).outputText;
   const exports = {};
   vm.runInNewContext(

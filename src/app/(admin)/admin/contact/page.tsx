@@ -666,7 +666,10 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                   return (
                     <button
                       key={st.key}
-                      onClick={() => { setFilterStage(st.key); setMessagePage(1); }}
+                      onClick={() => {
+                        setFilterStage(st.key);
+                        setMessagePage(1);
+                      }}
                       className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                         isActive
                           ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-xs"
@@ -693,7 +696,10 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                     <input
                       type="text"
                       value={search}
-                      onChange={(e) => { setSearch(e.target.value); setMessagePage(1); }}
+                      onChange={(e) => {
+                        setSearch(e.target.value);
+                        setMessagePage(1);
+                      }}
                       placeholder="Cari nama, instansi, atau pesan..."
                       className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
@@ -709,7 +715,10 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                     ].map((st) => (
                       <button
                         key={st.key}
-                        onClick={() => { setFilterStatus(st.key); setMessagePage(1); }}
+                        onClick={() => {
+                          setFilterStatus(st.key);
+                          setMessagePage(1);
+                        }}
                         className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors cursor-pointer ${
                           filterStatus === st.key
                             ? "bg-white dark:bg-[#1a1a2e] text-slate-900 dark:text-white shadow-xs font-semibold"
@@ -953,7 +962,12 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                 })
               )}
             </div>
-            <Pagination page={messagePage} pageSize={messagePageSize} total={filteredMessages.length} onPageChange={setMessagePage} />
+            <Pagination
+              page={messagePage}
+              pageSize={messagePageSize}
+              total={filteredMessages.length}
+              onPageChange={setMessagePage}
+            />
           </div>
         )}
 

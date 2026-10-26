@@ -24,7 +24,13 @@ import SecuritySettings from "@/components/admin/SecuritySettings";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import MatrixCheckbox from "@/components/admin/MatrixCheckbox";
 import { useAdminAuth } from "@/lib/auth";
-import { EDITABLE_PAGES, sortPageKeys, type PageKey, type PublicInternalAccount, type SuperadminInfo } from "@/lib/internalAccess";
+import {
+  EDITABLE_PAGES,
+  sortPageKeys,
+  type PageKey,
+  type PublicInternalAccount,
+  type SuperadminInfo,
+} from "@/lib/internalAccess";
 import {
   clearLegacyAccounts,
   createInternalAccount,
@@ -359,8 +365,8 @@ export default function AdminSettingsPage() {
                     Manajemen Role &amp; Hak Akses Internal
                   </p>
                   <p className="mt-0.5 text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
-                    Superadmin membuat akun staf dan menentukan halaman mana yang boleh diedit. Halaman lain tetap bisa
-                    dibuka, tetapi hanya dalam mode lihat.
+                    Superadmin membuat akun staf dan menentukan halaman yang boleh diakses dan diedit. Halaman yang
+                    tidak dipilih disembunyikan dari sidebar dan tidak dapat dibuka.
                   </p>
                 </div>
               </div>
@@ -424,10 +430,11 @@ export default function AdminSettingsPage() {
                     <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Edit halaman yang diizinkan
                   </li>
                   <li className="flex items-center gap-1.5">
-                    <Eye className="h-3 w-3 text-slate-500" /> Halaman lain hanya bisa dilihat
+                    <Eye className="h-3 w-3 text-slate-500" /> Halaman tanpa izin disembunyikan
                   </li>
                   <li className="flex items-center gap-1.5">
-                    <Lock className="h-3 w-3 text-slate-500" /> Tidak bisa membuka Pengaturan & akun
+                    <Lock className="h-3 w-3 text-slate-500" /> Pengaturan keamanan tersedia; pengelolaan akun khusus
+                    Superadmin
                   </li>
                 </ul>
               </div>

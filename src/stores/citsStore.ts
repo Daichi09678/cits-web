@@ -303,9 +303,9 @@ export const CitsStore = {
   getAboutData(): AboutData {
     return getStorageItem<AboutData>(siteConfig.storageKeys.about, initialAboutData);
   },
-  saveAboutData(data: AboutData): void {
-    setStorageItem(siteConfig.storageKeys.about, data);
-    citsApi.updateAboutData(data).catch((err) => console.warn("Sync about error:", err));
+  async saveAboutData(data: AboutData): Promise<void> {
+    const result = await citsApi.updateAboutData(data);
+    setStorageItem(siteConfig.storageKeys.about, result.data);
   },
 
   // CLIENTS
@@ -353,6 +353,13 @@ export const CitsStore = {
   },
 
   // LANDING PAGE (HERO, HIGHLIGHTS, SERVICES INTRO, CTA)
+  async saveHomeSection(
+    page: import("@/lib/homeSections").HomeEditorPage,
+    patch: import("@/lib/homeSections").HomeSectionPatch
+  ): Promise<void> {
+    const result = await citsApi.updateHomeSection(page, patch);
+    setStorageItem(siteConfig.storageKeys.landing, result.data);
+  },
   getLandingData(): LandingPageData {
     return getStorageItem<LandingPageData>(siteConfig.storageKeys.landing, initialLandingPageData);
   },

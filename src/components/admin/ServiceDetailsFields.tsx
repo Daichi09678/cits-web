@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { CheckCircle2, Image as ImageIcon, Trash2, Upload } from "lucide-react";
 import ServicePhoto from "@/components/ui/ServicePhoto";
 import type { ServicePillar } from "@/types/schema";
 
@@ -13,96 +14,137 @@ export interface ServiceDetailsForm {
 }
 
 const fieldClass =
-  "mt-1.5 w-full rounded-xl border border-slate-300 dark:border-white/15 bg-white dark:bg-[#121222] px-3 py-2.5 text-sm font-normal text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30";
+  "mt-1.5 w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-3.5 py-2.5 text-xs font-normal text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500";
 
-export default function ServiceDetailsFields({
-  value,
+export function ServiceImageField({
+  image,
   name,
   fallbackImage,
   onChange,
 }: {
-  value: ServiceDetailsForm;
+  image: string;
   name: string;
   fallbackImage: string;
-  onChange: (value: ServiceDetailsForm) => void;
+  onChange: (image: string) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [imageError, setImageError] = useState("");
   const [readingImage, setReadingImage] = useState(false);
   const changeImage = (image: string) => {
     setImageError("");
-    onChange({ ...value, image });
+    onChange(image);
   };
   return (
-    <fieldset className="space-y-4 rounded-2xl border border-slate-200 dark:border-white/10 p-4 min-w-0">
-      <legend className="px-1 text-sm font-bold text-slate-900 dark:text-white">Foto & Detail Pilar Layanan</legend>
-      <ServicePhoto
-        image={value.image || fallbackImage}
-        name={name || "Pilar Layanan"}
-        className="h-40 sm:h-52 rounded-xl"
-      />
-      <div className="flex flex-wrap items-center gap-3">
-        <label className="inline-flex cursor-pointer rounded-lg bg-orange-700 hover:bg-orange-800 px-3 py-2.5 text-xs font-bold text-white">
-          {readingImage ? "Membaca Foto..." : "Unggah Foto Layanan"}
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            disabled={readingImage}
-            className="sr-only"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (!file) return;
-              if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 2 * 1024 * 1024) {
-                setImageError("Gunakan JPG, PNG, atau WebP dengan ukuran maksimal 2 MB.");
-                event.target.value = "";
-                return;
-              }
-              setReadingImage(true);
-              setImageError("");
-              const reader = new FileReader();
-              reader.onload = () => {
-                if (typeof reader.result === "string") onChange({ ...value, image: reader.result });
-                setReadingImage(false);
-              };
-              reader.onerror = () => {
-                setImageError("Foto tidak dapat dibaca. Silakan pilih ulang.");
-                setReadingImage(false);
-              };
-              reader.readAsDataURL(file);
-            }}
-          />
-        </label>
-        {value.image && (
+    <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5">
+          <ImageIcon className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+            Foto / Gambar Layanan
+          </span>
+        </div>
+        {image && (
           <button
             type="button"
+            disabled={readingImage}
             onClick={() => {
               changeImage("");
               if (inputRef.current) inputRef.current.value = "";
             }}
-            className="text-xs font-semibold text-orange-800 dark:text-orange-300 underline"
+            className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 disabled:opacity-50"
           >
-            Gunakan Foto Bawaan
+            <Trash2 className="w-3.5 h-3.5" />
+            Hapus Foto
           </button>
         )}
       </div>
-      <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-        JPG, PNG, atau WebP, maksimal 2 MB. Foto ini digunakan di halaman Layanan dan beranda.
+      <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#121224] p-3 flex items-center gap-3.5 shadow-2xs">
+        <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/20 shrink-0">
+          <ServicePhoto image={image || fallbackImage} name={name || "Layanan"} className="h-full" />
+        </div>
+        <div className="flex-1 min-w-0 space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{image ? "Foto Layanan Berhasil Dipilih" : "Foto Bawaan Layanan"}</span>
+          </div>
+          {image && (
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+              {image.startsWith("data:") ? "Foto diunggah dari perangkat" : image}
+            </p>
+          )}
+          <button
+            type="button"
+            disabled={readingImage}
+            onClick={() => inputRef.current?.click()}
+            className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-[11px] font-bold text-slate-700 dark:text-white transition-colors inline-flex items-center gap-1.5 disabled:opacity-50"
+          >
+            <Upload className="w-3 h-3" />
+            {readingImage ? "Membaca Foto..." : image ? "Ganti Foto" : "Unggah Foto Layanan"}
+          </button>
+        </div>
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        disabled={readingImage}
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (!file) return;
+          if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 2 * 1024 * 1024) {
+            setImageError("Gunakan JPG, PNG, atau WebP dengan ukuran maksimal 2 MB.");
+            event.target.value = "";
+            return;
+          }
+          setReadingImage(true);
+          setImageError("");
+          const reader = new FileReader();
+          reader.onload = () => {
+            if (typeof reader.result === "string") onChange(reader.result);
+            setReadingImage(false);
+          };
+          reader.onerror = () => {
+            setImageError("Foto tidak dapat dibaca. Silakan pilih ulang.");
+            setReadingImage(false);
+          };
+          reader.readAsDataURL(file);
+        }}
+      />
+      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+        Mendukung format PNG, JPG, atau WebP (maksimal 2 MB). Hapus foto untuk menggunakan foto bawaan.
       </p>
       {imageError && (
         <p role="alert" className="text-xs font-semibold text-red-700 dark:text-red-300">
           {imageError}
         </p>
       )}
-      <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200">
-        Alamat Foto (opsional)
+      <label className="block text-[11px] text-slate-500 dark:text-slate-400">
+        Atau masukkan Path / URL Gambar:
         <input
-          value={value.image.startsWith("data:") ? "" : value.image}
+          value={image.startsWith("data:") ? "" : image}
+          disabled={readingImage}
           onChange={(event) => changeImage(event.target.value)}
           placeholder="https://... atau /services/foto-layanan.webp"
           className={fieldClass}
         />
       </label>
+    </div>
+  );
+}
+
+export default function ServiceDetailsFields({
+  value,
+  onChange,
+}: {
+  value: ServiceDetailsForm;
+  onChange: (value: ServiceDetailsForm) => void;
+}) {
+  return (
+    <fieldset className="space-y-4 rounded-2xl border border-slate-200 dark:border-white/10 p-4 min-w-0">
+      <legend className="px-1 text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+        Detail Layanan
+      </legend>
       <div>
         <label htmlFor="service-details" className="block text-xs font-semibold text-slate-700 dark:text-slate-200">
           Penjelasan Lengkap

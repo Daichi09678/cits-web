@@ -1,4 +1,6 @@
 import type { ConsultationRequest, ServicePillar } from "@/types/schema";
+import type { HomeEditorPage, HomeSectionPatch } from "@/lib/homeSections";
+import type { PublicContentPage, PublicPageContent } from "@/lib/publicPageContent";
 
 const API_URL = "/api";
 
@@ -18,6 +20,24 @@ function getHeaders(token?: string): HeadersInit {
 }
 
 export const citsApi = {
+  async getPublicPageContent(page: PublicContentPage): Promise<PublicPageContent> {
+    const response = await fetch(`${API_URL}/page-content/${page}`, { cache: "no-store" });
+    const result = await response.json();
+    if (!response.ok || !result.success || !result.data)
+      throw new Error(result.message || "Konten halaman gagal dimuat.");
+    return result.data;
+  },
+  async updatePublicPageContent(page: PublicContentPage, data: PublicPageContent): Promise<PublicPageContent> {
+    const response = await fetch(`${API_URL}/page-content/${page}`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify(data),
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success || !result.data)
+      throw new Error(result.message || "Konten halaman gagal disimpan.");
+    return result.data;
+  },
   // 1. Authentication
   async login(email: string, pass: string) {
     const res = await fetch(`${API_URL}/auth/login`, {
@@ -167,7 +187,10 @@ export const citsApi = {
       headers: getHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    const result = await res.json();
+    if (!res.ok || !result.success || !result.data)
+      throw new Error(result.message || "Profil perusahaan gagal disimpan.");
+    return result;
   },
 
   // 5. Contact Info
@@ -232,6 +255,18 @@ export const citsApi = {
   },
 
   // 8. Landing Page Data
+  async updateHomeSection(page: HomeEditorPage, patch: HomeSectionPatch) {
+    const response = await fetch(`${API_URL}/landing/${page}`, {
+      method: "PATCH",
+      headers: getHeaders(),
+      body: JSON.stringify(patch),
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success || !result.data)
+      throw new Error(result.message || "Isi beranda gagal disimpan.");
+    return result;
+  },
+
   async getLandingData() {
     const res = await fetch(`${API_URL}/landing`, { cache: "no-store" });
     const json = await res.json();

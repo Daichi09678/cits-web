@@ -2,8 +2,8 @@
  * Model akses internal back office berbasis halaman.
  *
  * Superadmin membuat akun staf internal dan memilih halaman mana saja yang
- * boleh diubah. Akun internal tetap bisa membuka halaman lain, tetapi halaman
- * tersebut berada dalam mode hanya-lihat.
+ * boleh diakses dan diubah. Halaman lain disembunyikan dari akun internal.
+ * Dashboard, profil, dan pengaturan tetap tersedia bagi semua admin.
  *
  * Data akun disimpan di database melalui API (`/api/admin/internal-accounts`),
  * bukan di localStorage, agar akun bisa dipakai lintas browser/perangkat.
@@ -109,12 +109,22 @@ export function isSuperadminRole(role: string | undefined | null): boolean {
   return (role || "").toLowerCase().includes("super");
 }
 
+/** Akses menu dan halaman memakai izin yang sama; izin kosong menolak semua halaman konten. */
+export function canAccessPage(
+  user: { role: string; pageAccess?: PageKey[] } | null | undefined,
+  page?: PageKey | null
+): boolean {
+  if (!user) return false;
+  return isSuperadminRole(user.role) || !page || user.pageAccess?.includes(page) === true;
+}
+
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
 /** Cocokkan pathname dengan halaman yang bisa diedit; null untuk dashboard. */
 export function getPageKeyFromPathname(pathname: string): PageKey | null {
+  if (pathname === "/admin/landing" || pathname.startsWith("/admin/landing/")) return "landing";
   const match = [...EDITABLE_PAGES]
     .sort((a, b) => b.href.length - a.href.length)
     .find((page) => pathname === page.href || pathname.startsWith(`${page.href}/`));

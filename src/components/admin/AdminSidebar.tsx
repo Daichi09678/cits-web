@@ -17,14 +17,13 @@ import {
   ChevronRight,
   Briefcase,
   PanelLeftClose,
-  Lock,
   X,
   type LucideIcon,
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
 import { useCitsStore } from "@/stores/citsStore";
 import { useAdminShell } from "@/components/admin/AdminShell";
-import { EDITABLE_PAGES, isSuperadminRole, type PageKey } from "@/lib/internalAccess";
+import { canAccessPage, type PageKey } from "@/lib/internalAccess";
 
 interface NavItem {
   title: string;
@@ -34,6 +33,11 @@ interface NavItem {
   pageKey?: PageKey;
   badge?: string;
   badgeColor?: string;
+}
+
+interface NavGroup {
+  title: string;
+  items: NavItem[];
 }
 
 export default function AdminSidebar() {
@@ -63,69 +67,89 @@ export default function AdminSidebar() {
   const activeCaseStudiesCount = caseStudies.filter((c) => c.isActive !== false).length;
 
   const roleLabel = (session?.user.role || "").toLowerCase().includes("super") ? "Superadmin" : "Admin Internal";
-  const isSuperadmin = isSuperadminRole(session?.user.role);
-  const allowedPages = new Set<PageKey>(session?.user.pageAccess || []);
-  const lockedPageKeys = new Set<PageKey>(
-    isSuperadmin ? [] : EDITABLE_PAGES.filter((page) => !allowedPages.has(page.key)).map((page) => page.key)
-  );
 
-  const allNavItems: NavItem[] = [
+  const navGroups: NavGroup[] = [
     {
-      title: "Dashboard",
-      href: "/admin",
-      icon: LayoutDashboard,
-      exact: true,
+      title: "Menu Utama",
+      items: [
+        {
+          title: "Dashboard",
+          href: "/admin",
+          icon: LayoutDashboard,
+          exact: true,
+        },
+      ],
     },
     {
-      title: "Produk Kami",
-      href: "/admin/products",
-      icon: Package,
-      pageKey: "products",
-      badge: `${activeProductsCount} Aktif`,
-      badgeColor: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+      title: "Produk & Layanan",
+      items: [
+        {
+          title: "Produk Kami",
+          href: "/admin/products",
+          icon: Package,
+          pageKey: "products",
+          badge: `${activeProductsCount} Aktif`,
+          badgeColor: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+        },
+        {
+          title: "Layanan CITS",
+          href: "/admin/services",
+          icon: Cpu,
+          pageKey: "services",
+        },
+        {
+          title: "Portofolio Kami",
+          href: "/admin/portfolio",
+          icon: Briefcase,
+          pageKey: "portfolio",
+          badge: `${activeCaseStudiesCount} Kasus`,
+          badgeColor: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 font-semibold",
+        },
+      ],
     },
     {
-      title: "Portofolio Kami",
-      href: "/admin/portfolio",
-      icon: Briefcase,
-      pageKey: "portfolio",
-      badge: `${activeCaseStudiesCount} Kasus`,
-      badgeColor: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 font-semibold",
+      title: "Informasi Perusahaan",
+      items: [
+        {
+          title: "Tentang Kami",
+          href: "/admin/about",
+          icon: Building2,
+          pageKey: "about",
+        },
+        {
+          title: "Mitra Klien",
+          href: "/admin/clients",
+          icon: Handshake,
+          pageKey: "clients",
+        },
+        {
+          title: "Hubungi Kami",
+          href: "/admin/contact",
+          icon: Mail,
+          pageKey: "contact",
+          badge: unreadMessagesCount > 0 ? `${unreadMessagesCount} Baru` : undefined,
+          badgeColor: "bg-orange-500 text-white font-bold animate-pulse",
+        },
+      ],
     },
     {
-      title: "Tentang Kami",
-      href: "/admin/about",
-      icon: Building2,
-      pageKey: "about",
-    },
-    {
-      title: "Hubungi Kami",
-      href: "/admin/contact",
-      icon: Mail,
-      pageKey: "contact",
-      badge: unreadMessagesCount > 0 ? `${unreadMessagesCount} Baru` : undefined,
-      badgeColor: "bg-orange-500 text-white font-bold animate-pulse",
-    },
-    {
-      title: "Layanan CITS",
-      href: "/admin/services",
-      icon: Cpu,
-      pageKey: "services",
-    },
-    {
-      title: "Mitra Klien",
-      href: "/admin/clients",
-      icon: Handshake,
-      pageKey: "clients",
-    },
-    {
-      title: "Pengaturan",
-      href: "/admin/settings",
-      icon: Settings,
+      title: "Sistem",
+      items: [
+        {
+          title: "Pengaturan",
+          href: "/admin/settings",
+          icon: Settings,
+        },
+      ],
     },
   ];
 
-  const navItems = allNavItems;
+  const visibleNavGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => canAccessPage(session?.user, item.pageKey)),
+    }))
+    .filter((group) => group.items.length > 0);
 
   const handleLogout = () => {
     logout();
@@ -225,68 +249,55 @@ export default function AdminSidebar() {
           </div>
 
           {/* Navigation Section */}
-          <div className="px-3 py-2">
-            <span className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-200 block mb-1">
-              Menu Utama
-            </span>
-            <nav className="space-y-1">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
-                const isLocked = item.pageKey ? lockedPageKeys.has(item.pageKey) : false;
+          <div className="px-3 py-2 space-y-4">
+            {visibleNavGroups.map((group) => (
+              <section key={group.title}>
+                <h2 className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-200 block mb-1">
+                  {group.title}
+                </h2>
+                <nav aria-label={group.title} className="space-y-1">
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
 
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    title={isLocked ? "Hanya dapat dilihat — tidak ada izin edit" : undefined}
-                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group ${
-                      isActive
-                        ? "bg-orange-600 text-white shadow-sm shadow-orange-600/25 font-bold"
-                        : "text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Icon
-                        className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group ${
                           isActive
-                            ? "text-white"
-                            : isLocked
-                              ? "text-slate-400 dark:text-slate-500"
-                              : "text-slate-600 dark:text-slate-200 group-hover:text-orange-600 dark:group-hover:text-orange-400"
-                        }`}
-                      />
-                      <span className={`truncate ${isLocked && !isActive ? "text-slate-500 dark:text-slate-400" : ""}`}>
-                        {item.title}
-                      </span>
-                    </div>
-
-                    {isLocked ? (
-                      <span
-                        className={`flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold ${
-                          isActive
-                            ? "bg-white/20 text-white"
-                            : "bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400"
+                            ? "bg-orange-600 text-white shadow-sm shadow-orange-600/25 font-bold"
+                            : "text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
                         }`}
                       >
-                        <Lock className="h-2.5 w-2.5" />
-                        Lihat
-                      </span>
-                    ) : item.badge ? (
-                      <span
-                        className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
-                          isActive
-                            ? "bg-white/20 text-white"
-                            : item.badgeColor || "bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300"
-                        }`}
-                      >
-                        {item.badge}
-                      </span>
-                    ) : null}
-                  </Link>
-                );
-              })}
-            </nav>
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Icon
+                            className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${
+                              isActive
+                                ? "text-white"
+                                : "text-slate-600 dark:text-slate-200 group-hover:text-orange-600 dark:group-hover:text-orange-400"
+                            }`}
+                          />
+                          <span className="truncate">{item.title}</span>
+                        </div>
+
+                        {item.badge ? (
+                          <span
+                            className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
+                              isActive
+                                ? "bg-white/20 text-white"
+                                : item.badgeColor || "bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300"
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        ) : null}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </section>
+            ))}
           </div>
         </div>
 

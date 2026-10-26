@@ -1,14 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ShieldCheck, Zap, Building2, Ship, TrendingUp } from "lucide-react";
+import { ShieldCheck, Zap, Building2 } from "lucide-react";
+import Link from "next/link";
+import type { CaseStudyItem } from "@/types/schema";
 
 interface HeroMockupProps {
   title?: string;
   status?: string;
+  projects?: CaseStudyItem[];
 }
 
-export default function HeroMockup({ title, status }: HeroMockupProps) {
+export default function HeroMockup({ title, status, projects = [] }: HeroMockupProps) {
   return (
     <div className="relative w-full max-w-xl mx-auto">
       {/* Ambient subtle shadow */}
@@ -29,7 +32,7 @@ export default function HeroMockup({ title, status }: HeroMockupProps) {
               <span className="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block" />
             </div>
             <span className="text-slate-800 dark:text-white text-xs font-bold whitespace-nowrap ml-1">
-              {title || "CITS Enterprise System Portal"}
+              {title ?? "CITS Enterprise System Portal"}
             </span>
           </div>
 
@@ -39,7 +42,7 @@ export default function HeroMockup({ title, status }: HeroMockupProps) {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
             <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold whitespace-nowrap">
-              {status || "Sistem Aktif"}
+              {status ?? "Sistem Aktif"}
             </span>
           </div>
         </div>
@@ -60,70 +63,37 @@ export default function HeroMockup({ title, status }: HeroMockupProps) {
               </span>
             </div>
 
-            {/* 3 Layanan Unggulan CITS */}
             <div className="space-y-2 text-xs">
-              {/* 1. Kemendagri */}
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-[#1a1a32] border border-slate-200/70 dark:border-white/5">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-7 h-7 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                    <Building2 className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-slate-900 dark:text-white text-xs truncate">
-                      Kemendagri RI{" "}
-                      <span className="font-normal text-slate-600 dark:text-slate-300">· Layanan Data e-KTP</span>
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right shrink-0 ml-2 font-medium flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800/60">
-                    200 OK
-                  </span>
-                  <span className="text-[11px] text-slate-600 dark:text-slate-300 font-medium">12ms</span>
-                </div>
-              </div>
-
-              {/* 2. Kemenhub */}
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-[#1a1a32] border border-slate-200/70 dark:border-white/5">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-7 h-7 rounded-md bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400 flex items-center justify-center shrink-0">
-                    <Ship className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-slate-900 dark:text-white text-xs truncate">
-                      Kemenhub RI{" "}
-                      <span className="font-normal text-slate-600 dark:text-slate-300">· SIMLALA & Pelabuhan</span>
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right shrink-0 ml-2 font-medium flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-orange-100 text-orange-900 dark:bg-orange-950/80 dark:text-orange-200 border border-orange-300 dark:border-orange-800/60">
-                    SINKRON
-                  </span>
-                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold">Terhubung</span>
-                </div>
-              </div>
-
-              {/* 3. Kementerian Investasi */}
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-[#1a1a32] border border-slate-200/70 dark:border-white/5">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-7 h-7 rounded-md bg-blue-100 dark:bg-cyan-950/60 text-blue-700 dark:text-cyan-400 flex items-center justify-center shrink-0">
-                    <TrendingUp className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-slate-900 dark:text-white text-xs truncate">
-                      Kementerian Investasi{" "}
-                      <span className="font-normal text-slate-600 dark:text-slate-300">· Satu Data BKPM</span>
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right shrink-0 ml-2 font-medium flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-800 dark:bg-cyan-950/80 dark:text-cyan-400 border border-blue-200 dark:border-cyan-800/60">
-                    STREAM
-                  </span>
-                  <span className="text-[11px] text-slate-600 dark:text-slate-300 font-medium">1.2 GB/s</span>
-                </div>
-              </div>
+              {projects
+                .filter((project) => project.isActive !== false && project.showOnHome !== false)
+                .slice(0, 3)
+                .map((project) => (
+                  <Link
+                    key={project.id}
+                    href="/portfolio"
+                    className="flex items-center justify-between gap-3 rounded-lg border border-slate-200/70 bg-white p-2.5 transition hover:border-orange-400 dark:border-white/5 dark:bg-[#1a1a32]"
+                  >
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300">
+                        <Building2 className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-semibold text-slate-900 dark:text-white">
+                          {project.clientShort || project.client}
+                        </p>
+                        <p className="truncate text-[11px] text-slate-600 dark:text-slate-300">{project.title}</p>
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                        {project.measurableImpact.highlightValue}
+                      </p>
+                      <p className="max-w-28 truncate text-[10px] text-slate-500 dark:text-slate-400">
+                        {project.measurableImpact.highlightLabel}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
             </div>
           </div>
 

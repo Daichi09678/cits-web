@@ -228,7 +228,10 @@ export default function AdminProductsPage() {
               <input
                 type="text"
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
                 placeholder="Cari nama atau deskripsi produk..."
                 className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
@@ -239,7 +242,10 @@ export default function AdminProductsPage() {
               {categories.map((cat) => (
                 <button
                   key={cat}
-                  onClick={() => { setCategoryFilter(cat); setPage(1); }}
+                  onClick={() => {
+                    setCategoryFilter(cat);
+                    setPage(1);
+                  }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
                     categoryFilter === cat
                       ? "bg-orange-600 text-white shadow-xs"
@@ -610,10 +616,19 @@ export default function AdminProductsPage() {
 
                 <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
                   <span>
-                    <span className="block text-xs font-bold text-slate-900 dark:text-white">Tampilkan di Beranda Utama</span>
-                    <span className="block text-[11px] text-slate-500 dark:text-slate-300">Centang agar produk muncul pada section produk unggulan di halaman utama.</span>
+                    <span className="block text-xs font-bold text-slate-900 dark:text-white">
+                      Tampilkan di Beranda Utama
+                    </span>
+                    <span className="block text-[11px] text-slate-500 dark:text-slate-300">
+                      Centang agar produk muncul pada section produk unggulan di halaman utama.
+                    </span>
                   </span>
-                  <input type="checkbox" checked={formShowOnHome} onChange={(e) => setFormShowOnHome(e.target.checked)} className="mt-0.5 h-5 w-5 cursor-pointer accent-orange-600" />
+                  <input
+                    type="checkbox"
+                    checked={formShowOnHome}
+                    onChange={(e) => setFormShowOnHome(e.target.checked)}
+                    className="mt-0.5 h-5 w-5 cursor-pointer accent-orange-600"
+                  />
                 </label>
 
                 {/* Modal Buttons */}

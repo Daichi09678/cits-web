@@ -139,6 +139,7 @@ export interface ClientPartner {
   logo: string;
   category: "Kementerian" | "BUMN" | "Lembaga" | "Swasta";
   isActive: boolean;
+  showOnHome?: boolean;
 }
 
 export interface AdminUser {
@@ -309,4 +310,5 @@ export interface CaseStudyItem {
   techStack: string[];
   deliverables: string[];
   isActive?: boolean;
+  showOnHome?: boolean;
 }

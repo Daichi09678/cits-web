@@ -6,12 +6,17 @@ import { Mail, X, ArrowRight, Volume2 } from "lucide-react";
 import { ContactMessage } from "@/types/schema";
 import { playNewMessageSound } from "@/lib/audio";
 import { startAdminInboxSync } from "@/stores/citsStore";
+import { useAdminAuth } from "@/lib/auth";
+import { canAccessPage } from "@/lib/internalAccess";
 
 export default function RealtimeNotificationToast() {
+  const { session } = useAdminAuth();
+  const canSeeInbox = canAccessPage(session?.user, "contact");
   const [activeMessage, setActiveMessage] = useState<ContactMessage | null>(null);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    if (!canSeeInbox) return;
     function handleRealtimeMessage(event: Event) {
       const customEvent = event as CustomEvent<ContactMessage>;
       if (customEvent.detail) {
@@ -27,7 +32,7 @@ export default function RealtimeNotificationToast() {
       stopSync();
       window.removeEventListener("cits-realtime-message", handleRealtimeMessage);
     };
-  }, []);
+  }, [canSeeInbox]);
 
   // Auto-dismiss after 10 seconds
   useEffect(() => {
@@ -39,7 +44,7 @@ export default function RealtimeNotificationToast() {
     }
   }, [visible, activeMessage?.id]);
 
-  if (!visible || !activeMessage) return null;
+  if (!canSeeInbox || !visible || !activeMessage) return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 max-w-sm w-full animate-in slide-in-from-bottom-5 duration-300">
