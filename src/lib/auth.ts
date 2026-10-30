@@ -5,7 +5,7 @@ import { siteConfig } from "@/config/siteConfig";
 import { citsApi } from "./api";
 
 import { clearLegacyAccounts, migrateLegacyAccounts, readLegacyAccounts } from "./internalAccountsApi";
-import type { PageKey } from "./internalAccess";
+import type { PageKey, PagePermissions } from "./internalAccess";
 
 export interface AdminSession {
   isLoggedIn: boolean;
@@ -18,6 +18,7 @@ export interface AdminSession {
     jobTitle?: string;
     /** Halaman yang boleh diakses dan diedit. Hanya role Superadmin yang memiliki akses penuh. */
     pageAccess?: PageKey[];
+    permissions?: PagePermissions;
     isInternal?: boolean;
   };
   loginTime: string;

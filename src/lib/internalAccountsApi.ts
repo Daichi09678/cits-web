@@ -50,7 +50,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
     success?: boolean;
     message?: string;
   };
-  if (!response.ok || payload.success === false) {
+  if (!response.ok || payload.success !== true) {
     throw new Error(payload.message || "Permintaan ke server gagal.");
   }
   return payload as T;
@@ -155,8 +155,8 @@ export async function migrateLegacyAccounts(accounts: LegacyInternalAccount[]): 
       body: JSON.stringify({ accounts }),
     });
     if (!response.ok) return null;
-    const payload = (await response.json().catch(() => ({}))) as { migrated?: number };
-    return typeof payload.migrated === "number" ? payload.migrated : 0;
+    const payload = (await response.json().catch(() => ({}))) as { success?: boolean; migrated?: number };
+    return payload.success === true && typeof payload.migrated === "number" ? payload.migrated : null;
   } catch {
     return null;
   }

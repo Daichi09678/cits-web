@@ -1,3 +1,4 @@
+import { assertPageAction } from "./actionAccessClient";
 import type { ConsultationRequest, ServicePillar } from "@/types/schema";
 import type { HomeEditorPage, HomeSectionPatch } from "@/lib/homeSections";
 import type { PublicContentPage, PublicPageContent } from "@/lib/publicPageContent";
@@ -28,6 +29,7 @@ export const citsApi = {
     return result.data;
   },
   async updatePublicPageContent(page: PublicContentPage, data: PublicPageContent): Promise<PublicPageContent> {
+    assertPageAction(page, "edit");
     const response = await fetch(`${API_URL}/page-content/${page}`, {
       method: "PUT",
       headers: getHeaders(),
@@ -52,7 +54,7 @@ export const citsApi = {
     const res = await fetch(`${API_URL}/auth/me`, {
       headers: getHeaders(token),
     });
-    return res.json();
+    return { ...(await res.json()), status: res.status };
   },
 
   // 2. Products

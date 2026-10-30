@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
-import type { PageKey } from "./internalAccess";
+import { canPerformAction, type PageKey, type PagePermissions, type PermissionAction } from "./internalAccess";
+import { findInternalAccountById } from "./internalAccountsServer";
 
 /**
  * Token admin bertanda tangan HMAC. Payload memuat role agar route server
@@ -13,6 +14,7 @@ export interface AdminTokenPayload {
   name: string;
   role: "superadmin" | "internal";
   pageAccess?: PageKey[];
+  permissions?: PagePermissions;
   exp: number;
 }
 
@@ -65,13 +67,49 @@ export function hasSuperadminToken(request: Request): boolean {
   return verifyAdminToken(request)?.role === "superadmin";
 }
 
-/** Enforce the same edit permissions as the back-office UI, before accessing data. */
-export function requireAdmin(request: Request, page?: PageKey): NextResponse | null {
+/** Reload internal accounts so revocation/deactivation applies to already-issued tokens. */
+export async function resolveAdminSession(request: Request): Promise<AdminTokenPayload | null> {
   const session = verifyAdminToken(request);
-  if (!session) return unauthorizedResponse();
-  if (page && session.role !== "superadmin" && !session.pageAccess?.includes(page)) {
+  if (!session || session.role === "superadmin") return session;
+  const account = await findInternalAccountById(session.sub);
+  if (!account?.isActive) return null;
+  return {
+    ...session,
+    name: account.name,
+    email: account.email,
+    pageAccess: account.pageAccess,
+    permissions: account.permissions,
+  };
+}
+
+/** Enforce module + action permissions against current server state. */
+export async function requireAdmin(
+  request: Request,
+  page?: PageKey,
+  action?: PermissionAction
+): Promise<NextResponse | null> {
+  let session: AdminTokenPayload | null;
+  try {
+    session = await resolveAdminSession(request);
+  } catch {
     return NextResponse.json(
-      { success: false, message: "Anda tidak memiliki izin mengubah halaman ini." },
+      { success: false, message: "Pemeriksaan izin tidak tersedia. Coba lagi." },
+      { status: 503 }
+    );
+  }
+  if (!session) return unauthorizedResponse();
+  const operation =
+    action ||
+    (request.method === "GET" || request.method === "HEAD"
+      ? "view"
+      : request.method === "POST"
+        ? "create"
+        : request.method === "DELETE"
+          ? "delete"
+          : "edit");
+  if (page && !canPerformAction(session, page, operation)) {
+    return NextResponse.json(
+      { success: false, message: "Anda tidak memiliki izin untuk tindakan pada modul ini." },
       { status: 403 }
     );
   }

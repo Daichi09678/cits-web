@@ -5,11 +5,11 @@ import { badRequest, readJsonBody } from "@/lib/http";
 import { isHomeEditorPage, parseHomeSectionPatch } from "@/lib/homeSections";
 
 export async function PATCH(request: Request, context: { params: Promise<{ page: string }> }) {
-  const authDenied = requireAdmin(request);
+  const authDenied = await requireAdmin(request);
   if (authDenied) return authDenied;
   const { page } = await context.params;
   if (!isHomeEditorPage(page)) return badRequest("Bagian beranda tidak ditemukan.");
-  const denied = requireAdmin(request, page);
+  const denied = await requireAdmin(request, page);
   if (denied) return denied;
   const parsed = await readJsonBody<unknown>(request);
   if (!parsed.ok) return parsed.response;

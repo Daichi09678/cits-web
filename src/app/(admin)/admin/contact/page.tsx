@@ -40,6 +40,8 @@ import {
   ChevronDown,
   Megaphone,
 } from "lucide-react";
+import { useAdminAuth } from "@/lib/auth";
+import { canPerformAction } from "@/lib/internalAccess";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
@@ -122,6 +124,9 @@ const DEAL_STAGES: {
 ];
 
 export default function AdminContactPage() {
+  const { session } = useAdminAuth();
+  const canEdit = canPerformAction(session?.user, "contact", "edit");
+  const canDelete = canPerformAction(session?.user, "contact", "delete");
   const { contactInfo, messages, isLiveConnected, actions } = useCitsStore();
   const dialog = useAdminDialog();
 
@@ -234,6 +239,14 @@ export default function AdminContactPage() {
   };
 
   const handleConfirmBulkDelete = async () => {
+    if (!canDelete) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     if (selectedIds.length === 0) return;
     setIsBulkDeleting(true);
     try {
@@ -253,6 +266,14 @@ export default function AdminContactPage() {
   };
 
   const handleBulkMarkAsRead = () => {
+    if (!canEdit) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     if (selectedIds.length === 0) return;
     for (const id of selectedIds) {
       actions.updateMessageStatus(id, "read");
@@ -264,6 +285,14 @@ export default function AdminContactPage() {
 
   // Single Delete Handler
   const handleConfirmDelete = async () => {
+    if (!canDelete) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     if (!deletingMessage) return;
     setIsDeleting(true);
     try {
@@ -284,6 +313,14 @@ export default function AdminContactPage() {
 
   // Update Deal Stage
   const handleUpdateStage = (msgId: string, stage: DealStage) => {
+    if (!canEdit) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     actions.updateMessageStage(msgId, stage);
     if (selectedMessage && selectedMessage.id === msgId) {
       setSelectedMessage({ ...selectedMessage, dealStage: stage });
@@ -295,6 +332,14 @@ export default function AdminContactPage() {
 
   // Save Deal Notes
   const handleSaveDealNotes = () => {
+    if (!canEdit) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     if (!selectedMessage) return;
     setIsSavingNotes(true);
     try {
@@ -361,13 +406,21 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
   };
 
   const openReplyModal = (msg: ContactMessage, templateType: "diskusi" | "penawaran" | "spesifikasi" = "diskusi") => {
+    if (!canEdit) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     setReplyingMessage(msg);
     setReplyTo(msg.email);
     setReplySubject(`Tanggapan Konsultasi CITS Indonesia - ${msg.company || msg.name}`);
     setActiveTemplate(templateType);
     setReplyBody(generateEmailDraft(msg, templateType));
     setReplyModalOpen(true);
-    if (msg.status === "unread") {
+    if (canEdit && msg.status === "unread") {
       actions.updateMessageStatus(msg.id, "read");
     }
   };
@@ -379,6 +432,14 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
   };
 
   const handleLaunchEmail = (provider: "gmail" | "outlook" | "default") => {
+    if (!canEdit) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     if (!replyingMessage) return;
 
     actions.updateMessageStatus(replyingMessage.id, "replied");
@@ -411,6 +472,14 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
   };
 
   const handleMarkAsRepliedOnly = () => {
+    if (!canEdit) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     if (!replyingMessage) return;
     actions.updateMessageStatus(replyingMessage.id, "replied");
     if (selectedMessage && selectedMessage.id === replyingMessage.id) {
@@ -424,6 +493,14 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
   // Save Contact Info (Tab 2)
   const handleSaveInfo = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     actions.saveContactInfo({
       ...contactInfo,
       address,
@@ -443,6 +520,14 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
 
   // Save FAQ & Services Settings (Tab 3)
   const handleSaveFaqSettings = () => {
+    if (!canEdit) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     actions.saveContactInfo({
       ...contactInfo,
       faqs: faqsList,
@@ -482,6 +567,14 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
 
   const handleSaveFaqItem = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     if (!faqQuestion.trim() || !faqAnswer.trim()) return;
 
     if (editingFaq) {
@@ -509,15 +602,39 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
   };
 
   const handleDeleteFaqItem = (id: string) => {
+    if (!canEdit) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     setFaqsList(faqsList.filter((f) => f.id !== id));
   };
 
   const handleToggleFaqActive = (id: string) => {
+    if (!canEdit) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     setFaqsList(faqsList.map((f) => (f.id === id ? { ...f, isActive: !f.isActive } : f)));
   };
 
   const handleAddServiceOption = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!canEdit) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     if (!newServiceText.trim()) return;
     if (servicesList.includes(newServiceText.trim())) return;
     setServicesList([...servicesList, newServiceText.trim()]);
@@ -525,15 +642,23 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
   };
 
   const handleDeleteServiceOption = (index: number) => {
+    if (!canEdit) {
+      void dialog.alert({
+        title: "Akses terbatas",
+        description: "Anda tidak memiliki izin untuk tindakan ini.",
+        variant: "warning",
+      });
+      return;
+    }
     setServicesList(servicesList.filter((_, i) => i !== index));
   };
 
   // Open Message Detail & mark as read if unread
   const handleOpenDetail = (msg: ContactMessage) => {
-    const readMsg: ContactMessage = msg.status === "unread" ? { ...msg, status: "read" } : msg;
+    const readMsg: ContactMessage = canEdit && msg.status === "unread" ? { ...msg, status: "read" } : msg;
     setSelectedMessage(readMsg);
     setDealNotesInput(readMsg.dealNotes || "");
-    if (msg.status === "unread") {
+    if (canEdit && msg.status === "unread") {
       actions.updateMessageStatus(msg.id, "read");
     }
   };
@@ -758,8 +883,8 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
+                    disabled={!canEdit || selectedIds.length === 0}
                     onClick={handleBulkMarkAsRead}
-                    disabled={selectedIds.length === 0}
                     className="cursor-pointer rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-white/10 dark:text-slate-200"
                   >
                     Tandai Dibaca
@@ -767,8 +892,8 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
 
                   <button
                     type="button"
+                    disabled={!canDelete || selectedIds.length === 0}
                     onClick={() => setBulkDeletingOpen(true)}
-                    disabled={selectedIds.length === 0}
                     className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -931,6 +1056,7 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                           </button>
 
                           <button
+                            disabled={!canDelete}
                             onClick={() => setDeletingMessage(msg)}
                             className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors cursor-pointer"
                             title="Hapus Pesan"
@@ -1237,6 +1363,7 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
 
                 <button
                   type="button"
+                  disabled={!canEdit}
                   onClick={openAddFaqModal}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
                 >
@@ -1315,6 +1442,7 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
               <div className="mt-6 pt-4 border-t border-slate-100 dark:border-white/5 flex justify-end">
                 <button
                   type="button"
+                  disabled={!canEdit}
                   onClick={handleSaveFaqSettings}
                   className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/25 transition-all cursor-pointer"
                 >
@@ -1537,7 +1665,7 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                   <div className="mt-2 flex justify-end">
                     <button
                       type="button"
-                      disabled={isSavingNotes}
+                      disabled={isSavingNotes || !canEdit}
                       onClick={handleSaveDealNotes}
                       className="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] shadow-xs cursor-pointer"
                     >
@@ -1572,6 +1700,7 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
                 {/* Fast Response Action Buttons */}
                 <div className="pt-2 border-t border-slate-100 dark:border-white/10 flex flex-wrap items-center justify-between gap-3">
                   <button
+                    disabled={!canDelete}
                     onClick={() => setDeletingMessage(selectedMessage)}
                     className="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
                   >
@@ -1751,6 +1880,7 @@ Terima kasih atas kepercayaan Anda kepada CITS Indonesia.${closing}`;
               <div className="p-4 px-6 border-t border-slate-100 dark:border-white/10 bg-slate-50/80 dark:bg-white/5 flex flex-wrap items-center justify-between gap-3">
                 <button
                   type="button"
+                  disabled={!canEdit}
                   onClick={handleMarkAsRepliedOnly}
                   className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 cursor-pointer"
                 >

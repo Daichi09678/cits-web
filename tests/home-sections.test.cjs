@@ -7,11 +7,7 @@ const { load } = require("./helpers/load.cjs");
 const config = load("lib/homeSections.ts");
 const initial = load("data/initialData.ts");
 const http = load("lib/http.ts", { "next/server": { NextResponse } });
-const auth = load(
-  "lib/apiAuth.ts",
-  { "next/server": { NextResponse } },
-  { Buffer, process: { env: { ADMIN_AUTH_SECRET: "home-test" } } }
-);
+const auth = require("./helpers/auth.cjs").createTestAuth("home-test");
 const token = (pageAccess) =>
   auth.issueAdminToken({ sub: "staff", email: "staff@example.test", name: "Staff", role: "internal", pageAccess });
 const request = (body, credential) =>
@@ -117,6 +113,7 @@ test("failed homepage saves cannot update local cache or emit a success event", 
           },
         },
       },
+      "@/lib/actionAccessClient": { assertPageAction: () => {} },
       "@/lib/audio": {},
     },
     {
@@ -138,7 +135,7 @@ test("failed homepage saves cannot update local cache or emit a success event", 
 test("homepage client rejects unsuccessful responses even when they contain data", async () => {
   const { citsApi } = load(
     "lib/api.ts",
-    {},
+    { "./actionAccessClient": { assertPageAction: () => {} } },
     { fetch: async () => ({ ok: false, json: async () => ({ success: false, data: {}, message: "Denied" }) }) }
   );
   await assert.rejects(citsApi.updateHomeSection("products", {}), /Denied/);
@@ -223,6 +220,8 @@ function renderHome(landingData, overrides = {}) {
     "@/components/ui/GridPattern": { default: () => null },
     "@/components/ui/GradientText": { default: wrap },
     "@/components/ui/FeaturedCatalog": { default: FeaturedCatalog },
+    "@/components/ui/AboutHomeHighlights": { default: () => null },
+    "@/lib/publicPageContentClient": { usePublicPageContent: () => ({ content: {} }) },
     "@/components/ui/Marquee": {
       default: ({ items }) => React.createElement("div", null, items.map((item) => item.name).join(", ")),
     },
@@ -241,7 +240,6 @@ test("public homepage displays edited hero, introduction and CTA text and only c
   for (const text of [
     "Judul baru admin",
     "Katalog pilihan admin",
-    "Label layanan admin",
     "Hubungi tim kami",
     "Jadwalkan diskusi",
     "produk-terpilih",
@@ -250,6 +248,9 @@ test("public homepage displays edited hero, introduction and CTA text and only c
     "Mitra terpilih",
   ])
     assert.ok(html.includes(text), text);
+  // Tag/label pil di atas judul section sudah dihapus dari beranda.
+  for (const text of ["Label layanan admin", initial.initialLandingPageData.hero.badgeText, "Solusi Skala Nasional"])
+    assert.ok(!html.includes(text), text);
   for (const text of ["produk-tersembunyi", "layanan-tersembunyi", "proyek-tersembunyi", "Mitra tersembunyi"])
     assert.ok(!html.includes(text), text);
 });

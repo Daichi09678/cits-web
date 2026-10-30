@@ -13,7 +13,7 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
-  const denied = requireAdmin(req, "landing");
+  const denied = await requireAdmin(req, "landing");
   if (denied) return denied;
   try {
     const parsed = await readJsonBody(req);

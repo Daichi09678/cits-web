@@ -9,6 +9,8 @@ import ServicePhoto from "@/components/ui/ServicePhoto";
 import { resolveServiceCatalog } from "@/lib/serviceCatalog";
 import { useModalFocus } from "@/components/ui/useModalFocus";
 import { Edit, Plus, Trash2, X, Search, ChevronDown } from "lucide-react";
+import { useAdminAuth } from "@/lib/auth";
+import { canPerformAction } from "@/lib/internalAccess";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
@@ -56,6 +58,8 @@ const csvToList = (value: string): string[] =>
 const listToCsv = (list: string[]): string => list.join(", ");
 
 export default function AdminServicesPage() {
+  const { session } = useAdminAuth();
+  const canEdit = canPerformAction(session?.user, "services", "edit");
   const { services, actions } = useCitsStore();
   const dialog = useAdminDialog();
   const [search, setSearch] = useState("");
@@ -302,6 +306,7 @@ export default function AdminServicesPage() {
 
           {/* Add Service Button */}
           <button
+            disabled={!canEdit}
             onClick={openAddModal}
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25 transition-all shrink-0"
           >
@@ -396,6 +401,7 @@ export default function AdminServicesPage() {
                       <td className="py-4 px-5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
+                            disabled={!canEdit}
                             onClick={() => openEditModal(prod.source)}
                             title="Edit Layanan"
                             aria-label={`Edit layanan ${prod.title}`}
@@ -405,6 +411,7 @@ export default function AdminServicesPage() {
                           </button>
                           {services.length > 3 && (
                             <button
+                              disabled={!canEdit}
                               onClick={() => handleDeletePillar(prod.id, prod.title)}
                               title="Hapus Layanan"
                               aria-label={`Hapus layanan ${prod.title}`}

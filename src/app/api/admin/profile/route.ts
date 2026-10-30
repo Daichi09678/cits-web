@@ -1,6 +1,6 @@
 import { readJsonBody } from "@/lib/http";
 import { NextResponse } from "next/server";
-import { errorResponse, unauthorizedResponse, verifyAdminToken } from "@/lib/apiAuth";
+import { errorResponse, requireAdmin, unauthorizedResponse, verifyAdminToken } from "@/lib/apiAuth";
 import { DEFAULT_AVATAR, normalizeProfileInput, type AdminProfile } from "@/lib/profile";
 import { getAdminProfile, saveAdminProfile, type StoredAdminProfile } from "@/lib/profileServer";
 import { setInternalAccountName } from "@/lib/internalAccountsServer";
@@ -34,6 +34,8 @@ function toProfileResponse(
 }
 
 export async function GET(request: Request) {
+  const denied = await requireAdmin(request);
+  if (denied) return denied;
   const session = verifyAdminToken(request);
   if (!session) return unauthorizedResponse();
 
@@ -49,6 +51,8 @@ export async function GET(request: Request) {
 }
 
 export async function PUT(request: Request) {
+  const denied = await requireAdmin(request);
+  if (denied) return denied;
   const session = verifyAdminToken(request);
   if (!session) return unauthorizedResponse();
 

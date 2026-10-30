@@ -23,7 +23,7 @@ async function request<T>(url: string, init: RequestInit): Promise<T> {
     message?: string;
   };
 
-  if (!response.ok || payload.success === false) {
+  if (!response.ok || payload.success !== true) {
     throw new Error(payload.message || "Permintaan gagal diproses.");
   }
 

@@ -44,6 +44,7 @@ export async function POST(req: Request) {
           name: displayName,
           role: "internal",
           pageAccess: internalAuth.account.pageAccess,
+          permissions: internalAuth.account.permissions,
         }),
         user: {
           id: internalAuth.account.id,
@@ -53,6 +54,7 @@ export async function POST(req: Request) {
           avatar: profile.avatarUrl,
           jobTitle: profile.jobTitle || "Admin Internal",
           pageAccess: internalAuth.account.pageAccess,
+          permissions: internalAuth.account.permissions,
           isInternal: true,
         },
       });

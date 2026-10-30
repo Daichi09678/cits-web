@@ -91,6 +91,7 @@ test("failed service saves cannot replace cached content or report success", asy
       "@/data/initialData": new Proxy({}, { get: () => [] }),
       "@/config/siteConfig": { siteConfig: { storageKeys: { services: "services" } } },
       "@/lib/api": { citsApi: { updateServices: () => response } },
+      "@/lib/actionAccessClient": { assertPageAction: () => {} },
       "@/lib/audio": {},
     },
     {
@@ -118,7 +119,7 @@ test("failed service saves cannot replace cached content or report success", asy
 test("service client rejects failed HTTP responses even when a response body exists", async () => {
   const { citsApi } = load(
     "lib/api.ts",
-    {},
+    { "./actionAccessClient": { assertPageAction: () => {} } },
     { fetch: async () => ({ ok: false, json: async () => ({ success: false, message: "Tidak tersimpan" }) }) }
   );
   await assert.rejects(citsApi.updateServices([service]), /Tidak tersimpan/);

@@ -22,6 +22,7 @@ import {
   initialCaseStudies,
 } from "@/data/initialData";
 import { siteConfig } from "@/config/siteConfig";
+import { assertPageAction } from "@/lib/actionAccessClient";
 import { citsApi } from "@/lib/api";
 import { playNewMessageSound } from "@/lib/audio";
 
@@ -199,6 +200,7 @@ export const CitsStore = {
     setStorageItem(siteConfig.storageKeys.products, products);
   },
   addProduct(product: Omit<ProductItem, "id" | "updatedAt">): ProductItem {
+    assertPageAction("products", "create");
     const current = this.getProducts();
     const newProduct: ProductItem = {
       ...product,
@@ -210,12 +212,14 @@ export const CitsStore = {
     return newProduct;
   },
   updateProduct(id: string, updates: Partial<ProductItem>): void {
+    assertPageAction("products", "edit");
     const current = this.getProducts();
     const updated = current.map((p) => (p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p));
     this.saveProducts(updated);
     citsApi.updateProduct(id, updates).catch((err) => console.warn("Sync update product error:", err));
   },
   toggleProductStatus(id: string): boolean {
+    assertPageAction("products", "edit");
     const current = this.getProducts();
     let newStatus = true;
     const updated = current.map((p) => {
@@ -230,6 +234,7 @@ export const CitsStore = {
     return newStatus;
   },
   deleteProduct(id: string): void {
+    assertPageAction("products", "delete");
     const current = this.getProducts();
     this.saveProducts(current.filter((p) => p.id !== id));
     citsApi.deleteProduct(id).catch((err) => console.warn("Sync delete product error:", err));
@@ -240,6 +245,7 @@ export const CitsStore = {
     return getStorageItem<ContactInfo>(siteConfig.storageKeys.contactInfo, initialContactInfo);
   },
   saveContactInfo(info: ContactInfo): void {
+    assertPageAction("contact", "edit");
     setStorageItem(siteConfig.storageKeys.contactInfo, info);
     citsApi.updateContactInfo(info).catch((err) => console.warn("Sync contact info error:", err));
   },
@@ -266,6 +272,7 @@ export const CitsStore = {
     return saved;
   },
   updateMessageStatus(id: string, status: "unread" | "read" | "replied"): void {
+    assertPageAction("contact", "edit");
     saveRecentStatusUpdate(id, status);
     const current = this.getMessages();
     const updated = current.map((m) => (m.id === id ? { ...m, status } : m));
@@ -273,6 +280,7 @@ export const CitsStore = {
     citsApi.updateMessageStatus(id, status).catch((err) => console.warn("Sync msg status error:", err));
   },
   updateMessageStage(id: string, dealStage: DealStage, dealNotes?: string): void {
+    assertPageAction("contact", "edit");
     const current = this.getMessages();
     const updated = current.map((m) =>
       m.id === id ? { ...m, dealStage, ...(dealNotes !== undefined ? { dealNotes } : {}) } : m
@@ -281,6 +289,7 @@ export const CitsStore = {
     citsApi.updateMessageStage(id, dealStage, dealNotes).catch((err) => console.warn("Sync deal stage error:", err));
   },
   deleteMessage(id: string): void {
+    assertPageAction("contact", "delete");
     markMessageDeleted(id);
     removeOptimisticMessage(id);
     const current = this.getMessages();
@@ -288,6 +297,7 @@ export const CitsStore = {
     citsApi.deleteMessage(id).catch((err) => console.warn("Sync delete message error:", err));
   },
   deleteMessages(ids: string[]): void {
+    assertPageAction("contact", "delete");
     if (!ids || ids.length === 0) return;
     for (const id of ids) {
       markMessageDeleted(id);
@@ -304,6 +314,7 @@ export const CitsStore = {
     return getStorageItem<AboutData>(siteConfig.storageKeys.about, initialAboutData);
   },
   async saveAboutData(data: AboutData): Promise<void> {
+    assertPageAction("about", "edit");
     const result = await citsApi.updateAboutData(data);
     setStorageItem(siteConfig.storageKeys.about, result.data);
   },
@@ -316,6 +327,7 @@ export const CitsStore = {
     setStorageItem(siteConfig.storageKeys.clients, clients);
   },
   addClient(client: Omit<ClientPartner, "id">): ClientPartner {
+    assertPageAction("clients", "create");
     const current = this.getClients();
     const newClient: ClientPartner = {
       ...client,
@@ -327,12 +339,14 @@ export const CitsStore = {
     return newClient;
   },
   updateClient(id: string, updates: Partial<ClientPartner>): void {
+    assertPageAction("clients", "edit");
     const current = this.getClients();
     const updated = current.map((c) => (c.id === id ? { ...c, ...updates } : c));
     this.saveClients(updated);
     citsApi.updateClient(id, updates).catch((err) => console.warn("Sync client update error:", err));
   },
   deleteClient(id: string): void {
+    assertPageAction("clients", "delete");
     const current = this.getClients();
     this.saveClients(current.filter((c) => c.id !== id));
     citsApi.deleteClient(id).catch((err) => console.warn("Sync client delete error:", err));
@@ -343,6 +357,7 @@ export const CitsStore = {
     return getStorageItem<ServicePillar[]>(siteConfig.storageKeys.services, initialServicePillars);
   },
   async saveServices(services: ServicePillar[]): Promise<void> {
+    assertPageAction("services", "edit");
     const result = await citsApi.updateServices(services);
     setStorageItem(siteConfig.storageKeys.services, result.data);
   },
@@ -357,6 +372,7 @@ export const CitsStore = {
     page: import("@/lib/homeSections").HomeEditorPage,
     patch: import("@/lib/homeSections").HomeSectionPatch
   ): Promise<void> {
+    assertPageAction(page, "edit");
     const result = await citsApi.updateHomeSection(page, patch);
     setStorageItem(siteConfig.storageKeys.landing, result.data);
   },
@@ -364,6 +380,7 @@ export const CitsStore = {
     return getStorageItem<LandingPageData>(siteConfig.storageKeys.landing, initialLandingPageData);
   },
   saveLandingData(data: LandingPageData): void {
+    assertPageAction("landing", "edit");
     setStorageItem(siteConfig.storageKeys.landing, data);
     citsApi.updateLandingData(data).catch((err) => console.warn("Sync landing error:", err));
   },
@@ -376,6 +393,7 @@ export const CitsStore = {
     return this.getCaseStudies().filter((c) => c.isActive !== false);
   },
   saveCaseStudies(studies: CaseStudyItem[]): void {
+    assertPageAction("portfolio", "edit");
     setStorageItem(siteConfig.storageKeys.portfolio, studies);
     citsApi.updatePortfolio(studies).catch((err) => console.warn("Sync portfolio error:", err));
   },

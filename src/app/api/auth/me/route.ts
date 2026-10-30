@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
-import { unauthorizedResponse, verifyAdminToken } from "@/lib/apiAuth";
+import { unauthorizedResponse, resolveAdminSession } from "@/lib/apiAuth";
 
 export async function GET(req: Request) {
-  const session = verifyAdminToken(req);
+  let session;
+  try {
+    session = await resolveAdminSession(req);
+  } catch {
+    return NextResponse.json({ success: false, message: "Pemeriksaan sesi tidak tersedia." }, { status: 503 });
+  }
   if (!session) return unauthorizedResponse();
 
   return NextResponse.json({
@@ -13,6 +18,7 @@ export async function GET(req: Request) {
       email: session.email,
       role: session.role === "superadmin" ? "Super Admin" : "Admin Internal",
       pageAccess: session.pageAccess,
+      permissions: session.permissions,
       isInternal: session.role === "internal",
       avatar: "/avatars/admin.webp",
     },

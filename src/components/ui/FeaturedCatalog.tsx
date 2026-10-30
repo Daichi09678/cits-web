@@ -10,7 +10,6 @@ import {
   ChevronRight,
   Search,
   SlidersHorizontal,
-  Sparkles,
   RotateCcw,
   ShieldCheck,
   X,
@@ -32,7 +31,7 @@ type FeaturedCatalogProps = {
   products: ProductItem[];
   title?: string;
   subtitle?: string;
-  badge?: string;
+  anchorId?: string;
   bottomCtaText?: string;
   bottomCtaLink?: string;
 };
@@ -46,7 +45,7 @@ export default function FeaturedCatalog({
   products,
   title,
   subtitle,
-  badge,
+  anchorId,
   bottomCtaText,
   bottomCtaLink,
 }: FeaturedCatalogProps) {
@@ -63,8 +62,9 @@ export default function FeaturedCatalog({
     ? selectedCatalogFeatures(selected, featureChoices[selected.id], result.filters.capability)
     : [];
   const hasFilters = Object.values(result.filters).some((value) => value.trim());
-  const servicesOnly = items.every((item) => item.kind === "Layanan");
-  const itemLabel = servicesOnly ? "layanan" : "solusi";
+  const servicesOnly = items.length > 0 && items.every((item) => item.kind === "Layanan");
+  const productsOnly = items.length > 0 && items.every((item) => item.kind === "Produk");
+  const itemLabel = servicesOnly ? "layanan" : productsOnly ? "produk" : "solusi";
   const resetFilters = () => {
     setFilters({ ...EMPTY_CATALOG_FILTERS });
     setSelectedId("");
@@ -83,21 +83,13 @@ export default function FeaturedCatalog({
 
   return (
     <section
-      id="temukan-layanan"
+      id={anchorId ?? "temukan-layanan"}
       aria-labelledby={id + "-heading"}
-      className="relative overflow-hidden bg-slate-50/70 py-16 sm:py-20 lg:py-24 dark:bg-[#151528]"
+      className="relative overflow-hidden border-t border-slate-200/70 bg-white py-16 transition-colors sm:py-20 lg:py-24 dark:border-white/10 dark:bg-[#1A1A2E]"
       data-testid="featured-catalog"
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-96 bg-[radial-gradient(ellipse_at_top,rgba(249,115,22,0.09),transparent_65%)]"
-      />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-9 max-w-3xl text-center sm:mb-12">
-          <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-200/80 bg-white px-3.5 py-1.5 text-xs font-semibold text-orange-800 shadow-xs dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-300">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>{badge ?? "Layanan Unggulan"}</span>
-          </span>
           <h2
             id={id + "-heading"}
             className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl dark:text-white"
@@ -117,7 +109,7 @@ export default function FeaturedCatalog({
             event.preventDefault();
             if (selected) router.push(consultationLink);
           }}
-          aria-label="Pencarian dan pemilihan kebutuhan layanan"
+          aria-label={`Pencarian dan pemilihan kebutuhan ${itemLabel}`}
           className="overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-xl shadow-slate-900/[0.04] sm:rounded-[2rem] dark:border-white/10 dark:bg-[#1A1A2E] dark:shadow-black/20"
           data-testid="service-finder"
         >
@@ -177,7 +169,7 @@ export default function FeaturedCatalog({
                 Kategori
                 <select
                   id={id + "-category"}
-                  aria-label="Pilih kategori layanan"
+                  aria-label={`Pilih kategori ${itemLabel}`}
                   value={result.filters.category}
                   onChange={(event) => updateCategory(event.target.value)}
                   className={selectClass}
@@ -275,7 +267,13 @@ export default function FeaturedCatalog({
                 <fieldset className="max-h-[28rem] space-y-2.5 overflow-y-auto p-1 -m-1">
                   <legend className="sr-only">Pilih {itemLabel} yang sesuai</legend>
                   {result.matches.map((item) => (
-                    <label key={item.id} className="relative block cursor-pointer" data-featured-item={item.id}>
+                    <label
+                      key={item.id}
+                      className="relative block cursor-pointer"
+                      data-featured-item={item.id}
+                      data-product-id={item.productId}
+                      data-service-id={item.serviceTitle ? item.id : undefined}
+                    >
                       <input
                         type="radio"
                         name="catalog-choice"
@@ -322,7 +320,7 @@ export default function FeaturedCatalog({
                 <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center dark:border-white/10 dark:bg-white/[0.02]">
                   <Search className="mx-auto mb-3 h-6 w-6 text-slate-400" />
                   <h4 className="text-sm font-bold text-slate-800 dark:text-white">
-                    {items.length ? "Belum ada yang sesuai" : "Layanan sedang diperbarui"}
+                    {items.length ? "Belum ada yang sesuai" : `Pilihan ${itemLabel} sedang diperbarui`}
                   </h4>
                   <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
                     {items.length

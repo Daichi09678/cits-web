@@ -2,6 +2,9 @@ import { createHash, randomBytes, randomUUID, scryptSync, timingSafeEqual } from
 import { getSql } from "./db";
 import {
   isPageKey,
+  normalizePermissions,
+  validateAccountPassword,
+  type PagePermissions,
   normalizeEmail,
   sortPageKeys,
   type AccountMutationResult,
@@ -13,8 +16,7 @@ import {
 /**
  * Penyimpanan akun internal di PostgreSQL.
  *
- * Semua operasi jatuh kembali ke memory hanya bila DATABASE_URL tidak tersedia
- * atau tabel belum bisa dibuat, supaya aplikasi tidak crash saat DB down.
+ * Akun dan izin membutuhkan database persisten. Kegagalan database tidak dianggap sukses.
  */
 
 interface InternalAccountRecord {
@@ -25,6 +27,7 @@ interface InternalAccountRecord {
   passwordSalt: string;
   passwordAlgo: "scrypt" | "sha256";
   pageAccess: PageKey[];
+  permissions?: PagePermissions;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -38,6 +41,7 @@ interface AccountRow {
   password_salt: string;
   password_algo: string | null;
   page_access: unknown;
+  permissions: unknown;
   is_active: boolean;
   created_at: Date | string;
   updated_at: Date | string;
@@ -49,7 +53,6 @@ export type InternalAuthResult =
   | { status: "inactive" }
   | { status: "invalid-password" };
 
-let memoryAccounts: InternalAccountRecord[] = [];
 let tableReadyPromise: Promise<void> | null = null;
 
 function ensureTable(): Promise<void> {
@@ -79,6 +82,9 @@ function ensureTable(): Promise<void> {
         [],
         { prepare: false }
       );
+      await sql.unsafe(`ALTER TABLE internal_accounts ADD COLUMN IF NOT EXISTS permissions JSONB`, [], {
+        prepare: false,
+      });
     })().catch((error) => {
       tableReadyPromise = null;
       throw error;
@@ -115,7 +121,8 @@ function rowToRecord(row: AccountRow): InternalAccountRecord {
     passwordHash: row.password_hash,
     passwordSalt: row.password_salt,
     passwordAlgo: row.password_algo === "sha256" ? "sha256" : "scrypt",
-    pageAccess: normalizePageAccess(row.page_access),
+    pageAccess: Object.keys(normalizePermissions(row.permissions, normalizePageAccess(row.page_access))) as PageKey[],
+    permissions: normalizePermissions(row.permissions, normalizePageAccess(row.page_access)),
     isActive: row.is_active !== false,
     createdAt: toIso(row.created_at),
     updatedAt: toIso(row.updated_at),
@@ -128,6 +135,7 @@ function toPublic(account: InternalAccountRecord): PublicInternalAccount {
     name: account.name,
     email: account.email,
     pageAccess: account.pageAccess,
+    permissions: normalizePermissions(account.permissions, account.pageAccess),
     isActive: account.isActive,
     createdAt: account.createdAt,
     updatedAt: account.updatedAt,
@@ -141,16 +149,17 @@ async function listRecords(): Promise<InternalAccountRecord[]> {
       await ensureTable();
       const rows = (await sql`
         SELECT id, name, email, password_hash, password_salt, password_algo,
-               page_access, is_active, created_at, updated_at
+               page_access, permissions, is_active, created_at, updated_at
         FROM internal_accounts
         ORDER BY created_at ASC
       `) as unknown as AccountRow[];
       return rows.map(rowToRecord);
     } catch (error) {
       console.error("DB Error listInternalAccounts:", error);
+      throw new Error("Database akun tidak tersedia. Coba lagi setelah koneksi pulih.");
     }
   }
-  return memoryAccounts;
+  throw new Error("Database akun belum dikonfigurasi. Hubungi pengelola sistem.");
 }
 
 export async function listInternalAccounts(): Promise<PublicInternalAccount[]> {
@@ -158,11 +167,19 @@ export async function listInternalAccounts(): Promise<PublicInternalAccount[]> {
   return records.map(toPublic);
 }
 
+export async function findInternalAccountById(id: string): Promise<PublicInternalAccount | null> {
+  const record = (await listRecords()).find((account) => account.id === id);
+  return record ? toPublic(record) : null;
+}
+
 function validateInput(input: InternalAccountInput, existing: InternalAccountRecord | null): string | null {
   if (input.name.trim().length < 2) return "Nama akun minimal 2 karakter.";
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail(input.email))) return "Format email tidak valid.";
   if (!input.password && !existing) return "Kata sandi wajib diisi untuk akun baru.";
-  if (input.password && input.password.length < 6) return "Kata sandi minimal 6 karakter.";
+  if (input.password) {
+    const error = validateAccountPassword(input.password);
+    if (error) return error;
+  }
   const email = normalizeEmail(input.email);
   if (email === "maswahyuganteng@cits.id" || email === "admin@cits.id") {
     return "Email tersebut dipakai akun Superadmin. Gunakan email internal lain.";
@@ -203,7 +220,8 @@ export async function createInternalAccount(input: InternalAccountInput): Promis
     passwordHash: hashPassword(input.password || "", salt),
     passwordSalt: salt,
     passwordAlgo: "scrypt",
-    pageAccess: sortPageKeys(input.pageAccess),
+    pageAccess: Object.keys(normalizePermissions(input.permissions, input.pageAccess)) as PageKey[],
+    permissions: normalizePermissions(input.permissions, input.pageAccess),
     isActive: input.isActive,
     createdAt: now,
     updatedAt: now,
@@ -215,13 +233,13 @@ export async function createInternalAccount(input: InternalAccountInput): Promis
       await ensureTable();
       const rows = (await sql`
         INSERT INTO internal_accounts
-          (id, name, email, password_hash, password_salt, password_algo, page_access, is_active, created_at, updated_at)
+          (id, name, email, password_hash, password_salt, password_algo, page_access, permissions, is_active, created_at, updated_at)
         VALUES
           (${record.id}, ${record.name}, ${record.email}, ${record.passwordHash}, ${record.passwordSalt},
-           ${record.passwordAlgo}, ${sql.json(record.pageAccess as unknown as never)}, ${record.isActive},
+           ${record.passwordAlgo}, ${sql.json(record.pageAccess as unknown as never)}, ${sql.json(record.permissions as never)}, ${record.isActive},
            ${record.createdAt}, ${record.updatedAt})
         RETURNING id, name, email, password_hash, password_salt, password_algo,
-                  page_access, is_active, created_at, updated_at
+                  page_access, permissions, is_active, created_at, updated_at
       `) as unknown as AccountRow[];
       return { success: true, account: toPublic(rowToRecord(rows[0])) };
     } catch (error) {
@@ -231,11 +249,11 @@ export async function createInternalAccount(input: InternalAccountInput): Promis
     }
   }
 
-  memoryAccounts = [...memoryAccounts, record];
-  return { success: true, account: toPublic(record) };
+  throw new Error("Database akun belum dikonfigurasi.");
 }
 
 export async function updateInternalAccount(id: string, input: InternalAccountInput): Promise<AccountMutationResult> {
+  if (id === "admin-1") return { success: false, message: "Akun Superadmin utama terkunci." };
   const records = await listRecords();
   const existing = records.find((account) => account.id === id);
   if (!existing) return { success: false, message: "Akun internal tidak ditemukan." };
@@ -265,7 +283,8 @@ export async function updateInternalAccount(id: string, input: InternalAccountIn
     passwordHash,
     passwordSalt,
     passwordAlgo,
-    pageAccess: sortPageKeys(input.pageAccess),
+    pageAccess: Object.keys(normalizePermissions(input.permissions, input.pageAccess)) as PageKey[],
+    permissions: normalizePermissions(input.permissions, input.pageAccess),
     isActive: input.isActive,
     updatedAt: new Date().toISOString(),
   };
@@ -282,11 +301,12 @@ export async function updateInternalAccount(id: string, input: InternalAccountIn
             password_salt = ${updated.passwordSalt},
             password_algo = ${updated.passwordAlgo},
             page_access = ${sql.json(updated.pageAccess as unknown as never)},
+            permissions = ${sql.json(updated.permissions as never)},
             is_active = ${updated.isActive},
             updated_at = ${updated.updatedAt}
         WHERE id = ${id}
         RETURNING id, name, email, password_hash, password_salt, password_algo,
-                  page_access, is_active, created_at, updated_at
+                  page_access, permissions, is_active, created_at, updated_at
       `) as unknown as AccountRow[];
       if (!rows[0]) return { success: false, message: "Akun internal tidak ditemukan." };
       return { success: true, account: toPublic(rowToRecord(rows[0])) };
@@ -297,8 +317,7 @@ export async function updateInternalAccount(id: string, input: InternalAccountIn
     }
   }
 
-  memoryAccounts = memoryAccounts.map((account) => (account.id === id ? updated : account));
-  return { success: true, account: toPublic(updated) };
+  throw new Error("Database akun belum dikonfigurasi.");
 }
 
 export async function findInternalAccountByEmail(email: string): Promise<PublicInternalAccount | null> {
@@ -340,10 +359,7 @@ export async function updateInternalAccountPassword(
     }
   }
 
-  memoryAccounts = memoryAccounts.map((account) =>
-    account.id === id ? { ...account, passwordHash, passwordSalt: salt, passwordAlgo: "scrypt", updatedAt } : account
-  );
-  return { success: true };
+  throw new Error("Database akun belum dikonfigurasi.");
 }
 
 export async function setInternalAccountName(id: string, name: string): Promise<void> {
@@ -365,11 +381,13 @@ export async function setInternalAccountName(id: string, name: string): Promise<
     }
   }
 
-  const account = memoryAccounts.find((item) => item.id === id);
-  if (account) account.name = cleanName;
+  throw new Error("Nama akun belum dapat disimpan ke database.");
 }
 
 export async function deleteInternalAccount(id: string): Promise<AccountMutationResult> {
+  if (id === "admin-1") return { success: false, message: "Akun Superadmin utama tidak dapat dihapus." };
+  const existing = (await listRecords()).find((account) => account.id === id);
+  if (!existing) return { success: false, message: "Akun internal tidak ditemukan." };
   const sql = getSql();
   if (sql) {
     try {
@@ -388,23 +406,27 @@ export async function deleteInternalAccount(id: string): Promise<AccountMutation
     }
   }
 
-  memoryAccounts = memoryAccounts.filter((account) => account.id !== id);
-  return { success: true };
+  throw new Error("Database akun belum dikonfigurasi.");
 }
 
 export async function bulkSetPageAccess(
   updates: { id: string; pageAccess: PageKey[] }[]
 ): Promise<PublicInternalAccount[]> {
-  const safeUpdates = updates.slice(0, 200);
+  const safeUpdates = updates.filter((update) => update.id !== "admin-1").slice(0, 200);
+  const existingAccounts = await listRecords();
   const sql = getSql();
 
   if (sql) {
     await ensureTable();
     for (const update of safeUpdates) {
       const pageAccess = sortPageKeys(update.pageAccess.filter((key) => isPageKey(key)));
+      const existing = existingAccounts.find((account) => account.id === update.id);
+      const current = normalizePermissions(existing?.permissions, existing?.pageAccess);
+      const permissions = Object.fromEntries(pageAccess.map((page) => [page, current[page] || ["view"]]));
       await sql`
         UPDATE internal_accounts
-        SET page_access = ${sql.json(pageAccess as unknown as never)},
+        SET permissions = ${sql.json(permissions as never)},
+            page_access = ${sql.json(pageAccess as unknown as never)},
             updated_at = ${new Date().toISOString()}
         WHERE id = ${update.id}
       `;
@@ -412,13 +434,7 @@ export async function bulkSetPageAccess(
     return listInternalAccounts();
   }
 
-  const map = new Map(safeUpdates.map((update) => [update.id, sortPageKeys(update.pageAccess)]));
-  memoryAccounts = memoryAccounts.map((account) =>
-    map.has(account.id)
-      ? { ...account, pageAccess: map.get(account.id) || [], updatedAt: new Date().toISOString() }
-      : account
-  );
-  return memoryAccounts.map(toPublic);
+  throw new Error("Database akun belum dikonfigurasi.");
 }
 
 export async function authenticateInternalAccount(email: string, password: string): Promise<InternalAuthResult> {
@@ -500,7 +516,7 @@ export async function migrateLegacyAccounts(rawAccounts: unknown): Promise<{ mig
       `;
     }
   } else {
-    memoryAccounts = [...memoryAccounts, ...legacyRecords];
+    throw new Error("Database akun belum dikonfigurasi.");
   }
 
   return { migrated: legacyRecords.length };

@@ -160,11 +160,28 @@ test("content validation rejects unsafe links, invalid lists, duplicate IDs and 
   assert.throws(() => contentLib.parsePublicPageContent("portfolio", data));
 });
 
-const auth = load(
-  "lib/apiAuth.ts",
-  { "next/server": { NextResponse } },
-  { Buffer, process: { env: { ADMIN_AUTH_SECRET: "page-content-tests" } } }
-);
+test("section order and homepage visibility are validated, defaulted, and persisted", () => {
+  const keys = definitions.publicPageDefinitions.about.sections.map((section) => section.key);
+  const data = structuredClone(contentLib.resolvePublicPageContent("about"));
+  assert.equal(data.order.join(","), keys.join(","));
+  assert.ok(Object.values(data.homeVisibility).every((value) => value === false));
+
+  const reordered = [...data.order].reverse();
+  const parsed = contentLib.parsePublicPageContent("about", {
+    ...data,
+    order: reordered,
+    homeVisibility: { ...data.homeVisibility, [keys[0]]: true },
+  });
+  assert.equal(parsed.order.join(","), reordered.join(","));
+  assert.equal(parsed.homeVisibility[keys[0]], true);
+
+  assert.throws(() => contentLib.parsePublicPageContent("about", { ...data, order: data.order.slice(1) }));
+  assert.throws(() => contentLib.parsePublicPageContent("about", { ...data, order: [...data.order.slice(1), data.order[1]] }));
+  assert.throws(() => contentLib.parsePublicPageContent("about", { ...data, order: [...data.order.slice(0, -1), "unknown"] }));
+  assert.throws(() => contentLib.parsePublicPageContent("about", { ...data, homeVisibility: { unknown: true } }));
+});
+
+const auth = require("./helpers/auth.cjs").createTestAuth("page-content-tests");
 const http = load("lib/http.ts", { "next/server": { NextResponse } });
 const credential = (pageAccess) =>
   auth.issueAdminToken({ sub: "staff", email: "staff@example.test", name: "Staff", role: "internal", pageAccess });

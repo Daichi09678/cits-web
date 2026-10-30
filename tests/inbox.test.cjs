@@ -5,7 +5,7 @@ const { load } = require("./helpers/load.cjs");
 test("failed inbox requests must not masquerade as a successfully empty inbox", async () => {
   const { citsApi } = load(
     "lib/api.ts",
-    {},
+    { "./actionAccessClient": { assertPageAction: () => {} } },
     {
       fetch: async () => ({ ok: false, status: 503 }),
     }
@@ -57,6 +57,7 @@ function storeHarness() {
       "@/data/initialData": new Proxy({}, { get: () => [] }),
       "@/config/siteConfig": { siteConfig: { storageKeys: { messages: "messages" } } },
       "@/lib/api": { citsApi: api },
+      "@/lib/actionAccessClient": { assertPageAction: () => {} },
       "@/lib/audio": { playNewMessageSound: () => events.push({ type: "sound" }) },
     },
     {

@@ -4,11 +4,7 @@ const { load } = require("./helpers/load.cjs");
 const { NextResponse } = require("next/server");
 const crypto = require("node:crypto");
 
-const auth = load(
-  "lib/apiAuth.ts",
-  { "node:crypto": crypto, "next/server": { NextResponse } },
-  { Buffer, process: { env: { ADMIN_AUTH_SECRET: "qa-secret" } } }
-);
+const auth = require("./helpers/auth.cjs").createTestAuth("qa-secret");
 const http = load("lib/http.ts", { "next/server": { NextResponse } });
 const consultation = load("lib/consultation.ts", {}, { URLSearchParams });
 const serviceCatalog = load("lib/serviceCatalog.ts", { "@/data/serviceDetails": load("data/serviceDetails.ts") });
@@ -32,18 +28,18 @@ const superadmin = auth.issueAdminToken({
   role: "superadmin",
 });
 
-test("admin authorization rejects missing, forged, expired and out-of-scope tokens", () => {
-  assert.equal(auth.requireAdmin(request({})).status, 401);
-  assert.equal(auth.requireAdmin(request({}, internal + "tampered")).status, 401);
+test("admin authorization rejects missing, forged, expired and out-of-scope tokens", async () => {
+  assert.equal((await auth.requireAdmin(request({}))).status, 401);
+  assert.equal((await auth.requireAdmin(request({}, internal + "tampered"))).status, 401);
   // Build a genuinely expired signed token, independent of the issuer's TTL.
   const body = Buffer.from(
     JSON.stringify({ sub: "admin", email: "admin@example.test", role: "superadmin", exp: 0 })
   ).toString("base64url");
   const signature = crypto.createHmac("sha256", "qa-secret").update(body).digest("base64url");
-  assert.equal(auth.requireAdmin(request({}, `cits_admin_jwt_${body}.${signature}`)).status, 401);
-  assert.equal(auth.requireAdmin(request({}, internal), "contact").status, 403);
-  assert.equal(auth.requireAdmin(request({}, internal), "products"), null);
-  assert.equal(auth.requireAdmin(request({}, superadmin), "contact"), null);
+  assert.equal((await auth.requireAdmin(request({}, `cits_admin_jwt_${body}.${signature}`))).status, 401);
+  assert.equal((await auth.requireAdmin(request({}, internal), "contact")).status, 403);
+  assert.equal(await auth.requireAdmin(request({}, internal), "products"), null);
+  assert.equal(await auth.requireAdmin(request({}, superadmin), "contact"), null);
 });
 
 test("private reads and content mutations refuse anonymous callers before accessing the database", async () => {

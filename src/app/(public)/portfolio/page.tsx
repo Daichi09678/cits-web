@@ -264,13 +264,13 @@ export default function PortfolioPage() {
 
                       {/* Footer Actions */}
                       <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
-                        <button
-                          onClick={() => setActiveModalStudy(project)}
+                        <Link
+                          href={`/portfolio/${encodeURIComponent(project.id)}`}
                           className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-orange-700 hover:bg-orange-800 text-white text-xs font-bold transition-all shadow-md shadow-orange-600/20 cursor-pointer"
                         >
                           {content.texts["flagship_text_8"]}
                           <ChevronRight className="w-3.5 h-3.5" />
-                        </button>
+                        </Link>
                         <Link
                           href={content.texts["flagship_href_9"]}
                           className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-gray-800 dark:text-white text-xs font-semibold border border-gray-200 dark:border-white/15 transition-all"
@@ -905,6 +905,13 @@ export default function PortfolioPage() {
                 </span>
 
                 <div className="flex items-center gap-3">
+                  <Link
+                    href={`/portfolio/${encodeURIComponent(activeModalStudy.id)}`}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-gray-700 dark:text-white text-xs font-semibold transition-all"
+                  >
+                    Buka Halaman Detail
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
                   <button
                     onClick={() => setActiveModalStudy(null)}
                     className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-gray-700 dark:text-white text-xs font-semibold transition-all cursor-pointer"

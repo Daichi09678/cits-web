@@ -1,4 +1,4 @@
-import { hasAdminToken, requireAdmin } from "@/lib/apiAuth";
+import { requireAdmin } from "@/lib/apiAuth";
 import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
 import { badRequest, readJsonBody } from "@/lib/http";
@@ -7,7 +7,7 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
   try {
     const { id } = await context.params;
     const prod = await DbRepo.getProductById(id);
-    if (!prod || (!prod.isActive && !hasAdminToken(req))) {
+    if (!prod || (!prod.isActive && (await requireAdmin(req, "products", "view")))) {
       return NextResponse.json({ success: false, message: "Produk tidak ditemukan." }, { status: 404 });
     }
     return NextResponse.json({ success: true, data: prod });
@@ -17,7 +17,7 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 }
 
 export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
-  const denied = requireAdmin(req, "products");
+  const denied = await requireAdmin(req, "products");
   if (denied) return denied;
   try {
     const { id } = await context.params;
@@ -38,7 +38,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
 }
 
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
-  const denied = requireAdmin(req, "products");
+  const denied = await requireAdmin(req, "products");
   if (denied) return denied;
   try {
     const { id } = await context.params;

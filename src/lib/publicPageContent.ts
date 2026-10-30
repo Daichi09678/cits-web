@@ -5,6 +5,10 @@ export type ContentRecord = Record<string, string | string[]>;
 export interface PublicPageContent {
   texts: Record<string, string>;
   visibility: Record<string, boolean>;
+  /** Urutan section yang dipakai halaman publik. */
+  order: string[];
+  /** Section yang juga ditampilkan sebagai ringkasan di beranda. */
+  homeVisibility: Record<string, boolean>;
   collections: Record<string, ContentRecord[]>;
 }
 export interface PublicPageDefinition {
@@ -20,16 +24,28 @@ export function isPublicContentPage(page: string): page is PublicContentPage {
 export function pageDefinition(page: PublicContentPage): PublicPageDefinition {
   return publicPageDefinitions[page];
 }
+export function sectionKeys(page: PublicContentPage): string[] {
+  return pageDefinition(page).sections.map((section) => section.key);
+}
 export function resolvePublicPageContent(
   page: PublicContentPage,
   saved?: Partial<PublicPageContent> | null
 ): PublicPageContent {
   const definition = pageDefinition(page);
+  const keys = definition.sections.map((section) => section.key);
+  const savedOrder = Array.isArray(saved?.order)
+    ? saved.order.filter((key): key is string => typeof key === "string" && keys.includes(key))
+    : [];
   return {
     texts: { ...definition.texts, ...saved?.texts },
     visibility: {
-      ...Object.fromEntries(definition.sections.map((section) => [section.key, true])),
+      ...Object.fromEntries(keys.map((key) => [key, true])),
       ...saved?.visibility,
+    },
+    order: [...new Set([...savedOrder, ...keys])],
+    homeVisibility: {
+      ...Object.fromEntries(keys.map((key) => [key, false])),
+      ...saved?.homeVisibility,
     },
     collections: {
       ...Object.fromEntries(Object.entries(definition.collections).map(([key, collection]) => [key, collection.items])),
@@ -41,7 +57,7 @@ export function pageCollection<T>(data: PublicPageContent, key: string): T[] {
   return (data.collections[key] || []) as T[];
 }
 export function validContentAddress(value: string, image = false): boolean {
-  if (/^\/(?![\/\\])[^\s\\]*$/.test(value)) return true;
+  if (/^\/(?![/\\])[^\s\\]*$/.test(value)) return true;
   if (!image && /^#[^\s]*$/.test(value)) return true;
   if (image && /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value)) return true;
   try {
@@ -60,13 +76,16 @@ export function parsePublicPageContent(page: PublicContentPage, input: unknown):
   };
   if (
     !record(input) ||
-    Object.keys(input).some((key) => !["texts", "visibility", "collections"].includes(key)) ||
+    Object.keys(input).some(
+      (key) => !["texts", "visibility", "collections", "order", "homeVisibility"].includes(key)
+    ) ||
     !record(input.texts) ||
     !record(input.visibility) ||
     !record(input.collections)
   )
     return fail();
   const definition = pageDefinition(page);
+  const keys = definition.sections.map((section) => section.key);
   const fields = definition.sections.flatMap((section) => section.fields);
   for (const [key, value] of Object.entries(input.texts)) {
     const field = fields.find((entry) => entry.key === key);
@@ -75,7 +94,22 @@ export function parsePublicPageContent(page: PublicContentPage, input: unknown):
     if (["link", "image"].includes(field.kind) && !validContentAddress(value, field.kind === "image")) return fail();
   }
   for (const [key, value] of Object.entries(input.visibility))
-    if (!definition.sections.some((section) => section.key === key) || typeof value !== "boolean") return fail();
+    if (!keys.includes(key) || typeof value !== "boolean") return fail();
+
+  if (input.order !== undefined) {
+    if (!Array.isArray(input.order) || input.order.length !== keys.length) return fail();
+    const seen = new Set<string>();
+    for (const key of input.order) {
+      if (typeof key !== "string" || !keys.includes(key) || seen.has(key)) return fail();
+      seen.add(key);
+    }
+  }
+  if (input.homeVisibility !== undefined) {
+    if (!record(input.homeVisibility)) return fail();
+    for (const [key, value] of Object.entries(input.homeVisibility))
+      if (!keys.includes(key) || typeof value !== "boolean") return fail();
+  }
+
   for (const [key, value] of Object.entries(input.collections)) {
     if (!Object.hasOwn(definition.collections, key) || !Array.isArray(value) || value.length > 100) return fail();
     const shape = definition.collections[key].items[0];

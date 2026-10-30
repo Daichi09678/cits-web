@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 async function runPurge(req: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`) {
-    const denied = requireAdmin(req, "contact");
+    const denied = await requireAdmin(req, "contact", "delete");
     if (denied) return denied;
   }
 

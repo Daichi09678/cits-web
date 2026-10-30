@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminAuth } from "@/lib/auth";
+import { canPerformAction } from "@/lib/internalAccess";
 import { useState } from "react";
 import Image from "next/image";
 import { ArrowDown, ArrowUp, FilePenLine, Plus, Save, Trash2 } from "lucide-react";
@@ -36,6 +38,8 @@ const fieldLabels: Record<string, string> = {
 };
 
 export default function PublicPageContentEditor({ page }: { page: PublicContentPage }) {
+  const { session } = useAdminAuth();
+  const canEdit = canPerformAction(session?.user, page, "edit");
   const { content, loading, loadError, save } = usePublicPageContent(page);
   const [draft, setDraft] = useState<PublicPageContent | null>(null);
   const [saving, setSaving] = useState(false);
@@ -119,7 +123,7 @@ export default function PublicPageContentEditor({ page }: { page: PublicContentP
           </p>
         )}
         <fieldset
-          disabled={loading || saving || readingImage || !!loadError}
+          disabled={!canEdit || loading || saving || readingImage || !!loadError}
           className="min-w-0 space-y-4 disabled:opacity-60"
         >
           {definition.sections.map((section) => (

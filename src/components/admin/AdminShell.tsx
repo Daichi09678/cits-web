@@ -5,6 +5,7 @@ import { PanelLeftOpen } from "lucide-react";
 import AdminSidebar from "./AdminSidebar";
 import PageAccessGate from "./PageAccessGate";
 import AdminDialogProvider from "./AdminDialogProvider";
+import AdminSessionSync from "./AdminSessionSync";
 
 /**
  * Shell back office.
@@ -76,6 +77,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   return (
     <AdminDialogProvider>
       <AdminShellContext.Provider value={value}>
+        <AdminSessionSync />
         <AdminSidebar />
 
         {/* Handle kecil di tepi kiri saat sidebar ditutup — bukan tombol di header

@@ -2,7 +2,7 @@ import { readJsonBody } from "@/lib/http";
 import { NextResponse } from "next/server";
 import { errorResponse, requireSuperadmin } from "@/lib/apiAuth";
 import { deleteInternalAccount, updateInternalAccount } from "@/lib/internalAccountsServer";
-import type { PageKey } from "@/lib/internalAccess";
+import { normalizePermissions, type PageKey } from "@/lib/internalAccess";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +25,10 @@ export async function PUT(request: Request, context: RouteContext) {
       email: typeof body.email === "string" ? body.email : "",
       password: typeof body.password === "string" ? body.password : undefined,
       pageAccess: Array.isArray(body.pageAccess) ? (body.pageAccess as PageKey[]) : [],
+      permissions: normalizePermissions(
+        body.permissions,
+        Array.isArray(body.pageAccess) ? (body.pageAccess as PageKey[]) : []
+      ),
       isActive: body.isActive !== false,
     });
 

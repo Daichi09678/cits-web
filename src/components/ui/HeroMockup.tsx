@@ -70,7 +70,8 @@ export default function HeroMockup({ title, status, projects = [] }: HeroMockupP
                 .map((project) => (
                   <Link
                     key={project.id}
-                    href="/portfolio"
+                    href={`/portfolio/${encodeURIComponent(project.id)}`}
+                    aria-label={`Lihat detail studi kasus ${project.clientShort || project.client}`}
                     className="flex items-center justify-between gap-3 rounded-lg border border-slate-200/70 bg-white p-2.5 transition hover:border-orange-400 dark:border-white/5 dark:bg-[#1a1a32]"
                   >
                     <div className="flex min-w-0 items-center gap-2.5">

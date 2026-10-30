@@ -3,6 +3,8 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 import { Handshake, Plus, CheckCircle2, Trash2, Edit, X, Search, Building2, Upload, Check } from "lucide-react";
+import { useAdminAuth } from "@/lib/auth";
+import { canPerformAction } from "@/lib/internalAccess";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
@@ -10,6 +12,10 @@ import { ClientPartner } from "@/types/schema";
 import Pagination from "@/components/admin/Pagination";
 
 export default function AdminClientsPage() {
+  const { session } = useAdminAuth();
+  const canEdit = canPerformAction(session?.user, "clients", "edit");
+  const canDelete = canPerformAction(session?.user, "clients", "delete");
+  const canCreate = canPerformAction(session?.user, "clients", "create");
   const { clients, actions } = useCitsStore();
   const dialog = useAdminDialog();
 
@@ -146,6 +152,7 @@ export default function AdminClientsPage() {
           </div>
 
           <button
+            disabled={!canCreate}
             onClick={openAddModal}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition-all cursor-pointer"
           >
@@ -189,6 +196,7 @@ export default function AdminClientsPage() {
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   type="button"
+                  disabled={!canEdit}
                   onClick={() => actions.updateClient(c.id, { isActive: !c.isActive })}
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold cursor-pointer transition-all ${
                     c.isActive !== false
@@ -207,6 +215,7 @@ export default function AdminClientsPage() {
                   <span>{c.isActive !== false ? "Aktif" : "Sembunyi"}</span>
                 </button>
                 <button
+                  disabled={!canEdit}
                   onClick={() => openEditModal(c)}
                   className="p-1.5 text-slate-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/20 rounded-lg cursor-pointer"
                   title="Edit Mitra"
@@ -214,6 +223,7 @@ export default function AdminClientsPage() {
                   <Edit className="w-4 h-4" />
                 </button>
                 <button
+                  disabled={!canDelete}
                   onClick={async () => {
                     const confirmed = await dialog.confirm({
                       title: "Hapus mitra klien?",

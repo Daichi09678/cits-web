@@ -21,6 +21,8 @@ import {
   Clock,
   TrendingUp,
 } from "lucide-react";
+import { useAdminAuth } from "@/lib/auth";
+import { canPerformAction } from "@/lib/internalAccess";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import PublicPageContentEditor from "@/components/admin/PublicPageContentEditor";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
@@ -51,6 +53,8 @@ const PRESET_LOGOS = [
 ];
 
 export default function AdminPortfolioPage() {
+  const { session } = useAdminAuth();
+  const canEdit = canPerformAction(session?.user, "portfolio", "edit");
   const { caseStudies, actions } = useCitsStore();
   const dialog = useAdminDialog();
 
@@ -376,6 +380,7 @@ export default function AdminPortfolioPage() {
             </a>
 
             <button
+              disabled={!canEdit}
               onClick={openAddModal}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 active:scale-98 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition-all cursor-pointer"
             >
@@ -475,6 +480,7 @@ export default function AdminPortfolioPage() {
               <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-2">
                 <button
                   type="button"
+                  disabled={!canEdit}
                   onClick={() => handleToggleStatus(study.id)}
                   className={`text-[11px] font-bold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
                     study.isActive !== false
@@ -488,6 +494,7 @@ export default function AdminPortfolioPage() {
                 <div className="flex items-center gap-1.5">
                   <button
                     type="button"
+                    disabled={!canEdit}
                     onClick={() => openEditModal(study)}
                     className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/40 transition-colors cursor-pointer"
                     title="Edit Studi Kasus"
@@ -496,6 +503,7 @@ export default function AdminPortfolioPage() {
                   </button>
                   <button
                     type="button"
+                    disabled={!canEdit}
                     onClick={() => handleDelete(study.id, study.title)}
                     className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
                     title="Hapus Studi Kasus"

@@ -9,7 +9,7 @@ export async function GET(req: Request) {
     // ?all=true dipakai back office untuk melihat produk non-aktif juga.
     const all = new URL(req.url).searchParams.get("all") === "true";
     if (all) {
-      const denied = requireAdmin(req);
+      const denied = await requireAdmin(req, "products", "view");
       if (denied) return denied;
     }
     const products = all ? await DbRepo.getAllProducts() : await DbRepo.getActiveProducts();
@@ -20,7 +20,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const denied = requireAdmin(req, "products");
+  const denied = await requireAdmin(req, "products");
   if (denied) return denied;
   try {
     const parsed = await readJsonBody(req);

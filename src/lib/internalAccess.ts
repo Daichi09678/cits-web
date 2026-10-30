@@ -72,6 +72,7 @@ export interface PublicInternalAccount {
   name: string;
   email: string;
   pageAccess: PageKey[];
+  permissions?: PagePermissions;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -83,6 +84,7 @@ export interface InternalAccountInput {
   /** Wajib untuk akun baru; opsional saat mengedit (kosong = tidak diubah). */
   password?: string;
   pageAccess: PageKey[];
+  permissions?: PagePermissions;
   isActive: boolean;
 }
 
@@ -111,11 +113,63 @@ export function isSuperadminRole(role: string | undefined | null): boolean {
 
 /** Akses menu dan halaman memakai izin yang sama; izin kosong menolak semua halaman konten. */
 export function canAccessPage(
-  user: { role: string; pageAccess?: PageKey[] } | null | undefined,
+  user: { role: string; pageAccess?: PageKey[]; permissions?: PagePermissions } | null | undefined,
   page?: PageKey | null
 ): boolean {
   if (!user) return false;
-  return isSuperadminRole(user.role) || !page || user.pageAccess?.includes(page) === true;
+  return isSuperadminRole(user.role) || !page || canPerformAction(user, page, "view");
+}
+
+export const PERMISSION_ACTIONS = ["view", "create", "edit", "delete"] as const;
+export type PermissionAction = (typeof PERMISSION_ACTIONS)[number];
+export type PagePermissions = Partial<Record<PageKey, PermissionAction[]>>;
+
+/** Only expose actions supported by the existing module APIs. */
+export function availableActions(page: PageKey): readonly PermissionAction[] {
+  if (page === "products" || page === "clients") return PERMISSION_ACTIONS;
+  if (page === "contact") return ["view", "edit", "delete"];
+  return ["view", "edit"];
+}
+
+/** Legacy page assignments retain their old capabilities; explicit empty maps deny everything. */
+export function normalizePermissions(value: unknown, legacyPages: PageKey[] = []): PagePermissions {
+  if (value === undefined || value === null) {
+    return Object.fromEntries(sortPageKeys(legacyPages).map((page) => [page, [...availableActions(page)]]));
+  }
+  if (typeof value !== "object" || Array.isArray(value)) return {};
+  const input = value as Record<string, unknown>;
+  const result: PagePermissions = {};
+  for (const { key } of EDITABLE_PAGES) {
+    const actions = input[key];
+    if (Array.isArray(actions) && actions.includes("view")) {
+      result[key] = availableActions(key).filter((action) => actions.includes(action));
+    }
+  }
+  return result;
+}
+
+export function canPerformAction(
+  user: { role: string; pageAccess?: PageKey[]; permissions?: PagePermissions } | null | undefined,
+  page: PageKey,
+  action: PermissionAction
+): boolean {
+  if (!user) return false;
+  if (isSuperadminRole(user.role)) return true;
+  const permissions = normalizePermissions(user.permissions, user.pageAccess);
+  return permissions[page]?.includes("view") === true && permissions[page]?.includes(action) === true;
+}
+
+export function validateAccountPassword(password: string): string | null {
+  if (password.length < 8 || password.length > 128) return "Password harus terdiri dari 8–128 karakter.";
+  if (
+    !/[A-Z]/.test(password) ||
+    !/[a-z]/.test(password) ||
+    !/[0-9]/.test(password) ||
+    !/[^A-Za-z0-9\s]/.test(password)
+  ) {
+    return "Gunakan kombinasi huruf besar, huruf kecil, angka, dan simbol.";
+  }
+  return null;
 }
 
 export function normalizeEmail(email: string): string {

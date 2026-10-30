@@ -8,7 +8,7 @@ import { parseConsultationRequest } from "@/lib/consultation";
 import { resolveServiceCatalog } from "@/lib/serviceCatalog";
 
 export async function GET(req: Request) {
-  const denied = requireAdmin(req);
+  const denied = await requireAdmin(req, "contact", "view");
   if (denied) return denied;
   try {
     const retentionDays = getMessageRetentionDays();
@@ -157,7 +157,7 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
-  const denied = requireAdmin(req, "contact");
+  const denied = await requireAdmin(req, "contact");
   if (denied) return denied;
   try {
     const parsed = await readJsonBody(req);

@@ -4,7 +4,7 @@ import { siteConfig } from "@/config/siteConfig";
 import { errorResponse, requireSuperadmin } from "@/lib/apiAuth";
 import { bulkSetPageAccess, createInternalAccount, listInternalAccounts } from "@/lib/internalAccountsServer";
 import { getAdminProfile } from "@/lib/profileServer";
-import type { PageKey } from "@/lib/internalAccess";
+import { normalizePermissions, type PageKey } from "@/lib/internalAccess";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,6 +44,10 @@ export async function POST(request: Request) {
       email: typeof body.email === "string" ? body.email : "",
       password: typeof body.password === "string" ? body.password : undefined,
       pageAccess: Array.isArray(body.pageAccess) ? (body.pageAccess as PageKey[]) : [],
+      permissions: normalizePermissions(
+        body.permissions,
+        Array.isArray(body.pageAccess) ? (body.pageAccess as PageKey[]) : []
+      ),
       isActive: body.isActive !== false,
     });
 

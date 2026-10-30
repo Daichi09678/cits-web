@@ -24,6 +24,8 @@ import {
   Upload,
   Camera,
 } from "lucide-react";
+import { useAdminAuth } from "@/lib/auth";
+import { canPerformAction } from "@/lib/internalAccess";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
@@ -68,6 +70,10 @@ const csvToList = (value: string): string[] =>
 const listToCsv = (list: string[]): string => list.join(", ");
 
 export default function AdminProductsPage() {
+  const { session } = useAdminAuth();
+  const canEdit = canPerformAction(session?.user, "products", "edit");
+  const canDelete = canPerformAction(session?.user, "products", "delete");
+  const canCreate = canPerformAction(session?.user, "products", "create");
   const { products, actions } = useCitsStore();
   const dialog = useAdminDialog();
 
@@ -260,6 +266,7 @@ export default function AdminProductsPage() {
 
           {/* Add Product Button */}
           <button
+            disabled={!canCreate}
             onClick={openAddModal}
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25 transition-all shrink-0"
           >
@@ -360,6 +367,7 @@ export default function AdminProductsPage() {
                       <td className="py-4 px-5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
+                            disabled={!canEdit}
                             onClick={() => openEditModal(prod)}
                             title="Edit Produk"
                             className="p-2 rounded-xl text-slate-600 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-colors"
@@ -367,6 +375,7 @@ export default function AdminProductsPage() {
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
+                            disabled={!canDelete}
                             onClick={async () => {
                               const confirmed = await dialog.confirm({
                                 title: "Hapus produk?",

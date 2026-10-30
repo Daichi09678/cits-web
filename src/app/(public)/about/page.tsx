@@ -71,16 +71,22 @@ export default function AboutPage() {
   const [awardFilter, setAwardFilter] = useState<"all" | "kementerian" | "bumn" | "egov">("all");
 
   const filteredAwards = awardFilter === "all" ? awards : awards.filter((item) => item.category === awardFilter);
+  // Urutan section mengikuti pengaturan admin (drag & drop).
+  const sectionOrder = (key: string) => {
+    const index = (content.order ?? []).indexOf(key);
+    return index === -1 ? 99 : index;
+  };
 
   return (
     <main
       id="main-content"
-      className="min-h-screen bg-white dark:bg-dark text-slate-900 dark:text-white transition-colors"
+      className="flex min-h-screen flex-col bg-white text-slate-900 transition-colors dark:bg-dark dark:text-white"
     >
       {/* 1. HERO SECTION & PROFIL RESMI INSTANSI (IDDS Standard) */}
       {content.visibility["about-hero-heading"] !== false && (
         <section
           aria-labelledby="about-hero-heading"
+          style={{ order: sectionOrder("about-hero-heading") }}
           className="relative bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-dark dark:to-slate-950 py-12 md:py-20 overflow-hidden transition-colors border-b border-slate-200/70 dark:border-white/10"
         >
           <FloatingShapes />
@@ -227,6 +233,7 @@ export default function AboutPage() {
       {content.visibility["vision-mission-heading"] !== false && (
         <section
           aria-labelledby="vision-mission-heading"
+          style={{ order: sectionOrder("vision-mission-heading") }}
           className="py-16 md:py-24 bg-white dark:bg-[#1A1A2E] transition-colors border-b border-slate-200/80 dark:border-white/10"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -351,6 +358,7 @@ export default function AboutPage() {
       {content.visibility["values-heading"] !== false && (
         <section
           aria-labelledby="values-heading"
+          style={{ order: sectionOrder("values-heading") }}
           className="relative py-16 md:py-24 bg-slate-50 dark:bg-[#151528] border-b border-slate-200/80 dark:border-white/10 overflow-hidden transition-colors"
         >
           <GridPattern />
@@ -428,6 +436,7 @@ export default function AboutPage() {
       {content.visibility["milestones-heading"] !== false && (
         <section
           aria-labelledby="milestones-heading"
+          style={{ order: sectionOrder("milestones-heading") }}
           className="py-16 md:py-24 bg-white dark:bg-[#1A1A2E] transition-colors border-b border-slate-200/80 dark:border-white/10"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -535,6 +544,7 @@ export default function AboutPage() {
       {content.visibility["awards-heading"] !== false && (
         <section
           aria-labelledby="awards-heading"
+          style={{ order: sectionOrder("awards-heading") }}
           className="relative py-16 md:py-24 bg-slate-50 dark:bg-[#151528] border-b border-slate-200/80 dark:border-white/10 overflow-hidden transition-colors"
         >
           <GridPattern />
@@ -640,6 +650,7 @@ export default function AboutPage() {
         <section
           id="legalitas-governance"
           aria-labelledby="governance-heading"
+          style={{ order: sectionOrder("governance-heading") }}
           className="py-16 md:py-24 bg-white dark:bg-[#1A1A2E] transition-colors border-b border-slate-200/80 dark:border-white/10"
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -726,6 +737,7 @@ export default function AboutPage() {
       {content.visibility["about-cta-heading"] !== false && (
         <section
           aria-labelledby="about-cta-heading"
+          style={{ order: sectionOrder("about-cta-heading") }}
           className="py-16 md:py-24 bg-slate-50 dark:bg-[#151528] transition-colors"
         >
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminAuth } from "@/lib/auth";
+import { canPerformAction } from "@/lib/internalAccess";
 import { useState } from "react";
 import { Home, Plus, Save, Trash2 } from "lucide-react";
 import { useCitsStore } from "@/stores/citsStore";
@@ -11,6 +13,8 @@ const fieldClass =
   "mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs font-normal text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:border-white/10 dark:bg-white/5 dark:text-white";
 
 export default function HomeSectionEditor({ page }: { page: HomeEditorPage }) {
+  const { session } = useAdminAuth();
+  const canEdit = canPerformAction(session?.user, page, "edit");
   const { landingData, actions } = useCitsStore();
   const [draft, setDraft] = useState<LandingPageData | null>(null);
   const [saving, setSaving] = useState(false);
@@ -67,7 +71,7 @@ export default function HomeSectionEditor({ page }: { page: HomeEditorPage }) {
           }
         }}
       >
-        <fieldset disabled={saving} className="min-w-0 space-y-6 disabled:opacity-60">
+        <fieldset disabled={saving || !canEdit} className="min-w-0 space-y-6 disabled:opacity-60">
           {HOME_SECTIONS[page].map((section) => (
             <div key={section.key} className="space-y-4">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">{section.title}</h3>

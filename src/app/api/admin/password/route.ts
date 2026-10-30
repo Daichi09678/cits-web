@@ -1,6 +1,6 @@
 import { readJsonBody } from "@/lib/http";
 import { NextResponse } from "next/server";
-import { errorResponse, unauthorizedResponse, verifyAdminToken } from "@/lib/apiAuth";
+import { errorResponse, requireAdmin, unauthorizedResponse, verifyAdminToken } from "@/lib/apiAuth";
 import { siteConfig } from "@/config/siteConfig";
 import { authenticateInternalAccount, updateInternalAccountPassword } from "@/lib/internalAccountsServer";
 import { setAdminCredential, verifyAdminCredential } from "@/lib/passwordServer";
@@ -14,6 +14,8 @@ function isDefaultSuperadminPassword(password: string): boolean {
 }
 
 export async function PUT(request: Request) {
+  const denied = await requireAdmin(request);
+  if (denied) return denied;
   const session = verifyAdminToken(request);
   if (!session) return unauthorizedResponse();
 

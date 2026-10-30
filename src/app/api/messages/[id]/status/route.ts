@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
 
 export async function PATCH(req: Request, context: { params: Promise<{ id: string }> }) {
-  const denied = requireAdmin(req, "contact");
+  const denied = await requireAdmin(req, "contact");
   if (denied) return denied;
   try {
     const { id } = await context.params;

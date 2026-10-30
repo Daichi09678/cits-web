@@ -4,7 +4,7 @@ import { DbRepo } from "@/lib/db";
 import { badRequest, readJsonBody } from "@/lib/http";
 
 export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
-  const denied = requireAdmin(req, "clients");
+  const denied = await requireAdmin(req, "clients");
   if (denied) return denied;
   try {
     const { id } = await context.params;
@@ -27,7 +27,7 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
 }
 
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
-  const denied = requireAdmin(req, "clients");
+  const denied = await requireAdmin(req, "clients");
   if (denied) return denied;
   try {
     const { id } = await context.params;
