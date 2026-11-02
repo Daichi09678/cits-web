@@ -58,6 +58,7 @@ function storeHarness() {
       "@/config/siteConfig": { siteConfig: { storageKeys: { messages: "messages" } } },
       "@/lib/api": { citsApi: api },
       "@/lib/actionAccessClient": { assertPageAction: () => {} },
+      "@/lib/internalAccess": load("lib/internalAccess.ts"),
       "@/lib/audio": { playNewMessageSound: () => events.push({ type: "sound" }) },
     },
     {

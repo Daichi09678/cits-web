@@ -5,10 +5,8 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
-  BadgeCheck,
   Briefcase,
   Building2,
-  CalendarDays,
   CheckCircle2,
   Cpu,
   ExternalLink,
@@ -52,9 +50,7 @@ export default function CaseStudyDetail({ id }: { id: string }) {
   }
 
   const evidence = caseStudyEvidence[study.id];
-  const related = caseStudies
-    .filter((item) => item.id !== study.id && item.isActive !== false)
-    .slice(0, 3);
+  const related = caseStudies.filter((item) => item.id !== study.id && item.isActive !== false).slice(0, 3);
 
   return (
     <main
@@ -62,38 +58,15 @@ export default function CaseStudyDetail({ id }: { id: string }) {
       className="min-h-screen bg-white text-slate-900 transition-colors dark:bg-[#1A1A2E] dark:text-white"
     >
       {/* Header studi kasus */}
-      <section className="relative overflow-hidden border-b border-slate-200/70 bg-gradient-to-b from-slate-50 via-white to-white py-14 sm:py-16 dark:border-white/10 dark:from-[#151528] dark:via-[#1A1A2E] dark:to-[#1A1A2E]">
+      <section className="border-b border-slate-200 bg-slate-50 py-14 sm:py-16 dark:border-white/10 dark:bg-[#151528]">
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-            <Link href="/" className="transition hover:text-orange-700 dark:hover:text-orange-300">
-              Beranda
-            </Link>
-            <span aria-hidden="true">/</span>
-            <Link href="/portfolio" className="transition hover:text-orange-700 dark:hover:text-orange-300">
-              Portofolio
-            </Link>
-            <span aria-hidden="true">/</span>
-            <span className="max-w-[16rem] truncate font-semibold text-slate-700 dark:text-slate-200">
-              {study.clientShort || study.client}
-            </span>
-          </nav>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-orange-800 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-300">
-              <Briefcase className="h-3.5 w-3.5" />
-              {study.sector}
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300">
-              <CalendarDays className="h-3.5 w-3.5" />
-              {study.period}
-            </span>
-            {study.isFlagship && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
-                <BadgeCheck className="h-3.5 w-3.5" />
-                Proyek Unggulan
-              </span>
-            )}
-          </div>
+          <p className="text-sm text-slate-600 dark:text-slate-400">
+            {study.sector}{" "}
+            <span aria-hidden="true" className="mx-2">
+              &middot;
+            </span>{" "}
+            {study.period}
+          </p>
 
           <h1 className="mt-5 text-3xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl dark:text-white">
             {study.title}
@@ -140,8 +113,14 @@ export default function CaseStudyDetail({ id }: { id: string }) {
       <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
         {/* Dampak terukur */}
         <ScrollReveal>
-          <section aria-labelledby="impact-heading" className="rounded-3xl border border-slate-200 bg-slate-50/70 p-6 sm:p-8 dark:border-white/10 dark:bg-white/[0.03]">
-            <h2 id="impact-heading" className="text-xs font-bold uppercase tracking-widest text-orange-800 dark:text-orange-300">
+          <section
+            aria-labelledby="impact-heading"
+            className="rounded-3xl border border-slate-200 bg-slate-50/70 p-6 sm:p-8 dark:border-white/10 dark:bg-white/[0.03]"
+          >
+            <h2
+              id="impact-heading"
+              className="text-xs font-bold uppercase tracking-widest text-orange-800 dark:text-orange-300"
+            >
               Dampak Terukur
             </h2>
             <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -212,8 +191,14 @@ export default function CaseStudyDetail({ id }: { id: string }) {
         {/* Tantangan & solusi */}
         <div className="mt-12 grid gap-6 sm:grid-cols-2">
           <ScrollReveal>
-            <section aria-labelledby="challenge-heading" className="h-full rounded-3xl border border-rose-200/70 bg-rose-50/50 p-6 dark:border-rose-500/20 dark:bg-rose-500/5">
-              <h2 id="challenge-heading" className="flex items-center gap-2 text-sm font-bold text-rose-800 dark:text-rose-300">
+            <section
+              aria-labelledby="challenge-heading"
+              className="h-full border-t border-slate-200 pt-6 dark:border-white/10"
+            >
+              <h2
+                id="challenge-heading"
+                className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white"
+              >
                 <Target className="h-4 w-4" />
                 Tantangan
               </h2>
@@ -221,8 +206,14 @@ export default function CaseStudyDetail({ id }: { id: string }) {
             </section>
           </ScrollReveal>
           <ScrollReveal delay={0.05}>
-            <section aria-labelledby="solution-heading" className="h-full rounded-3xl border border-emerald-200/70 bg-emerald-50/50 p-6 dark:border-emerald-500/20 dark:bg-emerald-500/5">
-              <h2 id="solution-heading" className="flex items-center gap-2 text-sm font-bold text-emerald-800 dark:text-emerald-300">
+            <section
+              aria-labelledby="solution-heading"
+              className="h-full border-t border-slate-200 pt-6 dark:border-white/10"
+            >
+              <h2
+                id="solution-heading"
+                className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white"
+              >
                 <Lightbulb className="h-4 w-4" />
                 Solusi CITS
               </h2>
@@ -234,7 +225,10 @@ export default function CaseStudyDetail({ id }: { id: string }) {
         {/* Lingkup, teknologi, luaran */}
         <div className="mt-12 grid gap-6 lg:grid-cols-3">
           <ScrollReveal>
-            <section aria-labelledby="scope-heading" className="h-full rounded-2xl border border-slate-200 p-5 dark:border-white/10">
+            <section
+              aria-labelledby="scope-heading"
+              className="h-full rounded-2xl border border-slate-200 p-5 dark:border-white/10"
+            >
               <h2 id="scope-heading" className="flex items-center gap-2 text-sm font-bold">
                 <Layers className="h-4 w-4 text-orange-700 dark:text-orange-300" />
                 Lingkup Pekerjaan
@@ -250,7 +244,10 @@ export default function CaseStudyDetail({ id }: { id: string }) {
             </section>
           </ScrollReveal>
           <ScrollReveal delay={0.05}>
-            <section aria-labelledby="tech-heading" className="h-full rounded-2xl border border-slate-200 p-5 dark:border-white/10">
+            <section
+              aria-labelledby="tech-heading"
+              className="h-full rounded-2xl border border-slate-200 p-5 dark:border-white/10"
+            >
               <h2 id="tech-heading" className="flex items-center gap-2 text-sm font-bold">
                 <Cpu className="h-4 w-4 text-orange-700 dark:text-orange-300" />
                 Teknologi
@@ -268,7 +265,10 @@ export default function CaseStudyDetail({ id }: { id: string }) {
             </section>
           </ScrollReveal>
           <ScrollReveal delay={0.1}>
-            <section aria-labelledby="deliverables-heading" className="h-full rounded-2xl border border-slate-200 p-5 dark:border-white/10">
+            <section
+              aria-labelledby="deliverables-heading"
+              className="h-full rounded-2xl border border-slate-200 p-5 dark:border-white/10"
+            >
               <h2 id="deliverables-heading" className="flex items-center gap-2 text-sm font-bold">
                 <FileText className="h-4 w-4 text-orange-700 dark:text-orange-300" />
                 Luaran
@@ -288,8 +288,14 @@ export default function CaseStudyDetail({ id }: { id: string }) {
         {/* Sumber resmi */}
         {evidence && (
           <ScrollReveal>
-            <section aria-labelledby="sources-heading" className="mt-12 rounded-3xl border border-slate-200 bg-slate-50/70 p-6 sm:p-8 dark:border-white/10 dark:bg-white/[0.03]">
-              <h2 id="sources-heading" className="text-sm font-bold uppercase tracking-widest text-slate-700 dark:text-slate-200">
+            <section
+              aria-labelledby="sources-heading"
+              className="mt-12 rounded-3xl border border-slate-200 bg-slate-50/70 p-6 sm:p-8 dark:border-white/10 dark:bg-white/[0.03]"
+            >
+              <h2
+                id="sources-heading"
+                className="text-sm font-bold uppercase tracking-widest text-slate-700 dark:text-slate-200"
+              >
                 Sumber &amp; Referensi
               </h2>
               <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">

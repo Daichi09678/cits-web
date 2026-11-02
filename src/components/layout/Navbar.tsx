@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
@@ -13,6 +13,7 @@ const navLinks = [
   { href: "/services", label: "Layanan" },
   { href: "/products", label: "Produk" },
   { href: "/portfolio", label: "Portofolio" },
+  { href: "/#team", label: "Team" },
   { href: "/about", label: "Tentang Kami" },
   { href: "/contact", label: "Kontak" },
 ];
@@ -20,6 +21,7 @@ const navLinks = [
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pendingTeamScroll = useRef(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -68,7 +70,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <ul className="hidden md:flex items-center gap-7">
+        <ul className="hidden lg:flex items-center gap-7">
           {navLinks.map((link) => (
             <li key={link.href}>
               <Link
@@ -101,7 +103,7 @@ export default function Navbar() {
         </ul>
 
         {/* Mobile controls */}
-        <div className="md:hidden flex items-center gap-2">
+        <div className="lg:hidden flex items-center gap-2">
           <ThemeToggle />
           <button
             className="p-2 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
@@ -116,14 +118,21 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile menu dropdown */}
-      <AnimatePresence>
+      <AnimatePresence
+        onExitComplete={() => {
+          if (!pendingTeamScroll.current) return;
+          pendingTeamScroll.current = false;
+          // Anchor positioning must use the collapsed navbar height.
+          document.getElementById("team")?.scrollIntoView({ block: "start" });
+        }}
+      >
         {mobileOpen && (
           <motion.div
             id="mobile-navigation"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white/95 dark:bg-[#1A1A2E]/95 backdrop-blur-md border-b border-gray-100 dark:border-white/10 overflow-hidden"
+            className="lg:hidden bg-white/95 dark:bg-[#1A1A2E]/95 backdrop-blur-md border-b border-gray-100 dark:border-white/10 overflow-hidden"
           >
             <ul className="px-4 py-4 space-y-1">
               {navLinks.map((link, i) => (
@@ -141,7 +150,10 @@ export default function Navbar() {
                         ? "text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 font-semibold"
                         : "text-gray-700 dark:text-white hover:text-orange-700 dark:hover:text-orange-400 hover:bg-orange-50/50 dark:hover:bg-orange-950/20"
                     }`}
-                    onClick={() => setMobileOpen(false)}
+                    onClick={() => {
+                      pendingTeamScroll.current = link.href === "/#team";
+                      setMobileOpen(false);
+                    }}
                   >
                     {link.label}
                   </Link>

@@ -26,6 +26,9 @@ export default function AdminClientsPage() {
   const [savedSuccess, setSavedSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [saving, setSaving] = useState(false);
+  const [mutationError, setMutationError] = useState("");
+
   // Form State
   const [formName, setFormName] = useState("");
   const [formLogo, setFormLogo] = useState("/clients/kemenhub.webp");
@@ -63,6 +66,7 @@ export default function AdminClientsPage() {
   };
 
   const openAddModal = () => {
+    setMutationError("");
     setEditingClient(null);
     setFormName("");
     setFormLogo("/clients/kemendagri.svg");
@@ -73,6 +77,7 @@ export default function AdminClientsPage() {
   };
 
   const openEditModal = (client: ClientPartner) => {
+    setMutationError("");
     setEditingClient(client);
     setFormName(client.name);
     setFormLogo(client.logo);
@@ -82,36 +87,45 @@ export default function AdminClientsPage() {
     setModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingClient) {
-      actions.updateClient(editingClient.id, {
-        name: formName,
-        logo: formLogo,
-        category: formCategory,
-        isActive: formIsActive,
-        showOnHome: formShowOnHome,
-      });
-    } else {
-      actions.addClient({
-        name: formName,
-        logo: formLogo,
-        category: formCategory,
-        isActive: formIsActive,
-        showOnHome: formShowOnHome,
-      });
-    }
+    if (saving) return;
+    setSaving(true);
+    setMutationError("");
+    try {
+      if (editingClient) {
+        await actions.updateClient(editingClient.id, {
+          name: formName,
+          logo: formLogo,
+          category: formCategory,
+          isActive: formIsActive,
+          showOnHome: formShowOnHome,
+        });
+      } else {
+        await actions.addClient({
+          name: formName,
+          logo: formLogo,
+          category: formCategory,
+          isActive: formIsActive,
+          showOnHome: formShowOnHome,
+        });
+      }
 
-    setSavedSuccess(true);
-    setModalOpen(false);
-    setTimeout(() => setSavedSuccess(false), 3000);
-    void dialog.alert({
-      title: editingClient ? "Mitra diperbarui" : "Mitra ditambahkan",
-      description: editingClient
-        ? `Perubahan mitra "${formName}" berhasil disimpan.`
-        : `Mitra "${formName}" berhasil ditambahkan.`,
-      variant: "success",
-    });
+      setSavedSuccess(true);
+      setModalOpen(false);
+      setTimeout(() => setSavedSuccess(false), 3000);
+      void dialog.alert({
+        title: editingClient ? "Mitra diperbarui" : "Mitra ditambahkan",
+        description: editingClient
+          ? `Perubahan mitra "${formName}" berhasil disimpan.`
+          : `Mitra "${formName}" berhasil ditambahkan.`,
+        variant: "success",
+      });
+    } catch (error) {
+      setMutationError(error instanceof Error ? error.message : "Perubahan gagal disimpan.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const filteredClients = clients.filter(
@@ -197,7 +211,17 @@ export default function AdminClientsPage() {
                 <button
                   type="button"
                   disabled={!canEdit}
-                  onClick={() => actions.updateClient(c.id, { isActive: !c.isActive })}
+                  onClick={async () => {
+                    try {
+                      await actions.updateClient(c.id, { isActive: !c.isActive });
+                    } catch (error) {
+                      void dialog.alert({
+                        title: "Status gagal disimpan",
+                        description: error instanceof Error ? error.message : "Silakan coba lagi.",
+                        variant: "danger",
+                      });
+                    }
+                  }}
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold cursor-pointer transition-all ${
                     c.isActive !== false
                       ? "bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30"
@@ -232,7 +256,18 @@ export default function AdminClientsPage() {
                       variant: "danger",
                     });
                     if (confirmed) {
-                      actions.deleteClient(c.id);
+                      const removed = await actions
+                        .deleteClient(c.id)
+                        .then(() => true)
+                        .catch((error) => {
+                          void dialog.alert({
+                            title: "Gagal menghapus",
+                            description: error instanceof Error ? error.message : "Data gagal dihapus.",
+                            variant: "danger",
+                          });
+                          return false;
+                        });
+                      if (!removed) return;
                       await dialog.alert({
                         title: "Mitra dihapus",
                         description: `"${c.name}" berhasil dihapus dari daftar mitra.`,
@@ -265,7 +300,9 @@ export default function AdminClientsPage() {
                   </p>
                 </div>
                 <button
-                  onClick={() => setModalOpen(false)}
+                  onClick={() => {
+                    if (!saving) setModalOpen(false);
+                  }}
                   className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
@@ -273,186 +310,195 @@ export default function AdminClientsPage() {
               </div>
 
               <form onSubmit={handleSave} className="p-6 space-y-4 text-xs">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Nama Kementerian / Institusi
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
-                    placeholder="cth. Kementerian Perhubungan RI"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Kategori Institusi
-                  </label>
-                  <select
-                    value={formCategory}
-                    onChange={(e) => setFormCategory(e.target.value as any)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
-                  >
-                    <option value="Kementerian" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                      Kementerian
-                    </option>
-                    <option value="BUMN" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                      BUMN
-                    </option>
-                    <option value="Lembaga" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                      Lembaga Tinggi Negara
-                    </option>
-                    <option value="Swasta" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                      Korporasi Swasta
-                    </option>
-                  </select>
-                </div>
-
-                {/* Logo Preview, File Upload, & Path */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                    Foto / Logo Kementerian & Mitra
-                  </label>
-
-                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-xl bg-white dark:bg-[#1A1A2E] border border-slate-200/80 dark:border-white/10 p-2 flex items-center justify-center shrink-0 shadow-xs">
-                      {formLogo ? (
-                        <Image
-                          src={formLogo}
-                          alt="Preview"
-                          width={60}
-                          height={60}
-                          unoptimized
-                          className="max-h-full max-w-full object-contain"
-                        />
-                      ) : (
-                        <Building2 className="w-8 h-8 text-slate-400" />
-                      )}
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        className="hidden"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 font-bold text-[11px] cursor-pointer transition-colors"
-                      >
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>Unggah Foto dari Komputer</span>
-                      </button>
-                      <input
-                        type="text"
-                        required
-                        value={formLogo}
-                        onChange={(e) => setFormLogo(e.target.value)}
-                        placeholder="/clients/kemenhub.webp atau URL gambar"
-                        className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-[#1A1A2E] border border-slate-200 dark:border-white/10 text-[11px] text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-orange-500 font-mono"
-                      />
-                    </div>
+                {mutationError && (
+                  <p role="alert" className="text-xs text-red-600">
+                    {mutationError}
+                  </p>
+                )}
+                <fieldset disabled={saving} className="contents">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                      Nama Kementerian / Institusi
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formName}
+                      onChange={(e) => setFormName(e.target.value)}
+                      placeholder="cth. Kementerian Perhubungan RI"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
                   </div>
-                </div>
 
-                {/* Preset Logos Selector */}
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                    Atau Pilih Cepat dari Logo Tersedia:
-                  </label>
-                  <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 max-h-36 overflow-y-auto p-2 rounded-xl bg-slate-50/70 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
-                    {PRESET_CLIENT_LOGOS.map((p) => {
-                      const isSelected = formLogo === p.logo;
-                      return (
-                        <button
-                          key={p.logo}
-                          type="button"
-                          onClick={() => {
-                            setFormLogo(p.logo);
-                            if (!formName || formName === "Kementerian Perhubungan RI") {
-                              setFormName(p.name);
-                            }
-                          }}
-                          title={p.name}
-                          className={`h-12 rounded-lg p-1 border flex items-center justify-center transition-all cursor-pointer relative ${
-                            isSelected
-                              ? "bg-orange-50 dark:bg-orange-950/60 border-orange-500 ring-2 ring-orange-500/30"
-                              : "bg-white dark:bg-[#1A1A2E] border-slate-200 dark:border-white/10 hover:border-orange-400"
-                          }`}
-                        >
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                      Kategori Institusi
+                    </label>
+                    <select
+                      value={formCategory}
+                      onChange={(e) => setFormCategory(e.target.value as any)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
+                    >
+                      <option value="Kementerian" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                        Kementerian
+                      </option>
+                      <option value="BUMN" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                        BUMN
+                      </option>
+                      <option value="Lembaga" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                        Lembaga Tinggi Negara
+                      </option>
+                      <option value="Swasta" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+                        Korporasi Swasta
+                      </option>
+                    </select>
+                  </div>
+
+                  {/* Logo Preview, File Upload, & Path */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                      Foto / Logo Kementerian & Mitra
+                    </label>
+
+                    <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-xl bg-white dark:bg-[#1A1A2E] border border-slate-200/80 dark:border-white/10 p-2 flex items-center justify-center shrink-0 shadow-xs">
+                        {formLogo ? (
                           <Image
-                            src={p.logo}
-                            alt={p.name}
-                            width={36}
-                            height={36}
+                            src={formLogo}
+                            alt="Preview"
+                            width={60}
+                            height={60}
                             unoptimized
                             className="max-h-full max-w-full object-contain"
                           />
-                          {isSelected && (
-                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-orange-600 text-white flex items-center justify-center text-[9px]">
-                              ✓
-                            </span>
-                          )}
+                        ) : (
+                          <Building2 className="w-8 h-8 text-slate-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          className="hidden"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 font-bold text-[11px] cursor-pointer transition-colors"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>Unggah Foto dari Komputer</span>
                         </button>
-                      );
-                    })}
+                        <input
+                          type="text"
+                          required
+                          value={formLogo}
+                          onChange={(e) => setFormLogo(e.target.value)}
+                          placeholder="/clients/kemenhub.webp atau URL gambar"
+                          className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-[#1A1A2E] border border-slate-200 dark:border-white/10 text-[11px] text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-orange-500 font-mono"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                {/* Active Checkbox */}
-                <div className="flex items-center gap-2 pt-1">
-                  <input
-                    type="checkbox"
-                    id="clientActiveCheckModal"
-                    checked={formIsActive}
-                    onChange={(e) => setFormIsActive(e.target.checked)}
-                    className="w-4 h-4 accent-orange-600 rounded cursor-pointer"
-                  />
-                  <label
-                    htmlFor="clientActiveCheckModal"
-                    className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
-                  >
-                    Tampilkan mitra ini di slider beranda & portofolio
+                  {/* Preset Logos Selector */}
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                      Atau Pilih Cepat dari Logo Tersedia:
+                    </label>
+                    <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 max-h-36 overflow-y-auto p-2 rounded-xl bg-slate-50/70 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
+                      {PRESET_CLIENT_LOGOS.map((p) => {
+                        const isSelected = formLogo === p.logo;
+                        return (
+                          <button
+                            key={p.logo}
+                            type="button"
+                            onClick={() => {
+                              setFormLogo(p.logo);
+                              if (!formName || formName === "Kementerian Perhubungan RI") {
+                                setFormName(p.name);
+                              }
+                            }}
+                            title={p.name}
+                            className={`h-12 rounded-lg p-1 border flex items-center justify-center transition-all cursor-pointer relative ${
+                              isSelected
+                                ? "bg-orange-50 dark:bg-orange-950/60 border-orange-500 ring-2 ring-orange-500/30"
+                                : "bg-white dark:bg-[#1A1A2E] border-slate-200 dark:border-white/10 hover:border-orange-400"
+                            }`}
+                          >
+                            <Image
+                              src={p.logo}
+                              alt={p.name}
+                              width={36}
+                              height={36}
+                              unoptimized
+                              className="max-h-full max-w-full object-contain"
+                            />
+                            {isSelected && (
+                              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-orange-600 text-white flex items-center justify-center text-[9px]">
+                                ✓
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Active Checkbox */}
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="checkbox"
+                      id="clientActiveCheckModal"
+                      checked={formIsActive}
+                      onChange={(e) => setFormIsActive(e.target.checked)}
+                      className="w-4 h-4 accent-orange-600 rounded cursor-pointer"
+                    />
+                    <label
+                      htmlFor="clientActiveCheckModal"
+                      className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
+                    >
+                      Tampilkan mitra ini di slider beranda & portofolio
+                    </label>
+                  </div>
+
+                  <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
+                    <span>
+                      <span className="block text-xs font-bold text-slate-900 dark:text-white">
+                        Tampilkan di Beranda Utama
+                      </span>
+                      <span className="block text-[11px] text-slate-500 dark:text-slate-300">
+                        Centang agar logo mitra tampil pada deretan mitra di beranda.
+                      </span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={formShowOnHome}
+                      onChange={(event) => setFormShowOnHome(event.target.checked)}
+                      className="mt-0.5 h-5 w-5 shrink-0 accent-orange-600"
+                    />
                   </label>
-                </div>
 
-                <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
-                  <span>
-                    <span className="block text-xs font-bold text-slate-900 dark:text-white">
-                      Tampilkan di Beranda Utama
-                    </span>
-                    <span className="block text-[11px] text-slate-500 dark:text-slate-300">
-                      Centang agar logo mitra tampil pada deretan mitra di beranda.
-                    </span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={formShowOnHome}
-                    onChange={(event) => setFormShowOnHome(event.target.checked)}
-                    className="mt-0.5 h-5 w-5 shrink-0 accent-orange-600"
-                  />
-                </label>
-
-                <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-end gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setModalOpen(false)}
-                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 cursor-pointer"
-                  >
-                    {editingClient ? "Simpan Perubahan" : "Tambahkan Mitra"}
-                  </button>
-                </div>
+                  <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-end gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!saving) setModalOpen(false);
+                      }}
+                      className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 cursor-pointer"
+                    >
+                      {editingClient ? "Simpan Perubahan" : "Tambahkan Mitra"}
+                    </button>
+                  </div>
+                </fieldset>
               </form>
             </div>
           </div>

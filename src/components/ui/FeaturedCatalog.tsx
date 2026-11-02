@@ -37,8 +37,8 @@ type FeaturedCatalogProps = {
 };
 
 const selectClass =
-  "mt-2 min-h-12 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-3 pr-8 text-sm text-slate-800 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-[#1A1A2E] dark:text-slate-100";
-const fieldLabelClass = "block min-w-0 text-xs font-semibold text-slate-600 dark:text-slate-300";
+  "mt-2 min-h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-2.5 pr-8 text-sm text-slate-800 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-[#1A1A2E] dark:text-slate-100";
+const fieldLabelClass = "block min-w-0 text-[13px] font-medium text-slate-600 dark:text-slate-300";
 
 export default function FeaturedCatalog({
   services,
@@ -85,18 +85,18 @@ export default function FeaturedCatalog({
     <section
       id={anchorId ?? "temukan-layanan"}
       aria-labelledby={id + "-heading"}
-      className="relative overflow-hidden border-t border-slate-200/70 bg-white py-16 transition-colors sm:py-20 lg:py-24 dark:border-white/10 dark:bg-[#1A1A2E]"
+      className="bg-white py-10 lg:py-12 dark:bg-[#1A1A2E]"
       data-testid="featured-catalog"
     >
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-9 max-w-3xl text-center sm:mb-12">
+      <div className="mx-auto max-w-[1200px] px-6 md:px-8">
+        <div className="mx-auto mb-8 max-w-3xl text-center">
           <h2
             id={id + "-heading"}
-            className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl dark:text-white"
+            className="text-[28px] font-bold leading-tight tracking-tight text-slate-900 md:text-[32px] dark:text-white"
           >
             {title ?? "Temukan solusi untuk kebutuhan Anda"}
           </h2>
-          <p className="mt-4 text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-300">
+          <p className="mt-3 text-base leading-relaxed text-slate-600 dark:text-slate-300">
             {subtitle ??
               "Cari kebutuhan Anda, pilih kapabilitas yang sesuai, lalu diskusikan solusinya bersama tim CITS."}
           </p>
@@ -110,15 +110,12 @@ export default function FeaturedCatalog({
             if (selected) router.push(consultationLink);
           }}
           aria-label={`Pencarian dan pemilihan kebutuhan ${itemLabel}`}
-          className="overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-xl shadow-slate-900/[0.04] sm:rounded-[2rem] dark:border-white/10 dark:bg-[#1A1A2E] dark:shadow-black/20"
+          className="overflow-hidden rounded-xl border border-[#E2E8F0] bg-white dark:border-white/10 dark:bg-[#1A1A2E]"
           data-testid="service-finder"
         >
-          <div className="border-b border-slate-200/80 bg-slate-50/60 p-5 sm:p-7 dark:border-white/10 dark:bg-white/[0.02]">
+          <div className="border-b border-slate-200/80 bg-slate-50/60 p-5 sm:p-6 dark:border-white/10 dark:bg-white/[0.02]">
             <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-600 text-white shadow-sm shadow-orange-600/20">
-                  <SlidersHorizontal className="h-5 w-5" />
-                </span>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 sm:text-base dark:text-white">
                     Sesuaikan dengan kebutuhan Anda
@@ -144,11 +141,11 @@ export default function FeaturedCatalog({
               data-testid="featured-category-control"
             >
               <label className={fieldLabelClass} htmlFor={id + "-query"}>
-                Cari kebutuhan
+                {productsOnly ? "Cari produk" : "Cari kebutuhan"}
                 <span className="relative mt-2 block">
                   <Search
                     aria-hidden="true"
-                    className="pointer-events-none absolute left-3.5 top-4 h-4 w-4 text-slate-400"
+                    className="pointer-events-none absolute left-3.5 top-3.5 h-4 w-4 text-slate-400"
                   />
                   <input
                     id={id + "-query"}
@@ -160,8 +157,8 @@ export default function FeaturedCatalog({
                     onKeyDown={(event) => {
                       if (event.key === "Enter") event.preventDefault();
                     }}
-                    placeholder="Aplikasi, SPBE, server..."
-                    className="min-h-12 w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm font-normal text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 dark:border-white/10 dark:bg-[#1A1A2E] dark:text-white"
+                    placeholder={productsOnly ? "Cari produk atau fitur..." : "Aplikasi, SPBE, server..."}
+                    className="min-h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-3 text-sm font-normal text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 dark:border-white/10 dark:bg-[#1A1A2E] dark:text-white"
                   />
                 </span>
               </label>
@@ -247,24 +244,24 @@ export default function FeaturedCatalog({
             )}
           </div>
 
-          <div className="grid lg:grid-cols-[0.82fr_1.18fr]">
-            <div className="min-w-0 border-b border-slate-200/80 p-5 sm:p-7 lg:border-r lg:border-b-0 dark:border-white/10">
+          <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+            <div className="min-w-0 border-b border-slate-200/80 p-5 sm:p-6 lg:border-r lg:border-b-0 dark:border-white/10">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">Pilihan {itemLabel}</h3>
                 <span
                   role="status"
                   aria-live="polite"
                   aria-atomic="true"
-                  className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:bg-white/5 dark:text-slate-300"
+                  className="rounded-full bg-slate-100 px-2.5 py-1 text-[13px] font-medium text-slate-600 dark:bg-white/5 dark:text-slate-300"
                 >
                   {result.matches.length} tersedia
                 </span>
               </div>
-              <p className="mb-5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+              <p className="mb-4 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                 Pilih salah satu untuk melihat rincian dan menyesuaikan kebutuhan konsultasi.
               </p>
               {result.matches.length ? (
-                <fieldset className="max-h-[28rem] space-y-2.5 overflow-y-auto p-1 -m-1">
+                <fieldset className="max-h-[28rem] space-y-3 overflow-y-auto p-1 -m-1">
                   <legend className="sr-only">Pilih {itemLabel} yang sesuai</legend>
                   {result.matches.map((item) => (
                     <label
@@ -282,8 +279,8 @@ export default function FeaturedCatalog({
                         onChange={() => setSelectedId(item.id)}
                         className="peer sr-only"
                       />
-                      <span className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 transition hover:border-orange-300 hover:bg-orange-50/30 peer-checked:border-orange-500 peer-checked:bg-orange-50/60 peer-checked:shadow-sm peer-focus-visible:ring-4 peer-focus-visible:ring-orange-500/20 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-orange-500/50 dark:hover:bg-orange-500/5 dark:peer-checked:border-orange-500 dark:peer-checked:bg-orange-500/10">
-                        <span className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-white/5">
+                      <span className="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 transition hover:border-orange-300 hover:bg-orange-50/30 peer-checked:border-orange-500 peer-checked:bg-orange-50/60 peer-focus-visible:ring-4 peer-focus-visible:ring-orange-500/20 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-orange-500/50 dark:hover:bg-orange-500/5 dark:peer-checked:border-orange-500 dark:peer-checked:bg-orange-500/10">
+                        <span className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-white/5">
                           {item.kind === "Produk" ? (
                             <ProductPhoto image={item.image} name={item.title} className="h-full" />
                           ) : (
@@ -292,12 +289,14 @@ export default function FeaturedCatalog({
                         </span>
                         <span className="min-w-0 flex-1">
                           {result.categories.length > 1 && (
-                            <span className="mb-1 block truncate text-[10px] font-semibold text-orange-800 dark:text-orange-300">
+                            <span className="mb-1 block truncate text-[13px] font-semibold text-orange-800 dark:text-orange-300">
                               {item.category}
                             </span>
                           )}
-                          <span className="block text-sm font-bold text-slate-900 dark:text-white">{item.title}</span>
-                          <span className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
+                          <span className="block text-base font-semibold text-slate-900 dark:text-white">
+                            {item.title}
+                          </span>
+                          <span className="mt-1 line-clamp-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                             {item.description}
                           </span>
                         </span>
@@ -322,7 +321,7 @@ export default function FeaturedCatalog({
                   <h4 className="text-sm font-bold text-slate-800 dark:text-white">
                     {items.length ? "Belum ada yang sesuai" : `Pilihan ${itemLabel} sedang diperbarui`}
                   </h4>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                  <p className="mt-2 text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">
                     {items.length
                       ? "Coba kata kunci lain atau kurangi filter untuk melihat lebih banyak pilihan."
                       : "Anda tetap bisa mendiskusikan kebutuhan langsung bersama tim kami."}
@@ -340,22 +339,15 @@ export default function FeaturedCatalog({
               )}
             </div>
 
-            <div
-              className="min-w-0 bg-slate-50/40 p-5 sm:p-7 dark:bg-white/[0.015]"
-              data-testid="selected-catalog-detail"
-            >
+            <div className="min-w-0 bg-white p-5 sm:p-6 dark:bg-[#1A1A2E]" data-testid="selected-catalog-detail">
               {selected ? (
                 <div key={selected.id}>
-                  <div className="mb-5 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-orange-800 dark:text-orange-300">
-                    <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
-                    Pilihan Anda
-                  </div>
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                       <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                         {selected.category}
                       </span>
-                      <h3 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                      <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
                         {selected.title}
                       </h3>
                     </div>
@@ -368,7 +360,7 @@ export default function FeaturedCatalog({
                       <ChevronRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                  <p className="mt-3 text-[15px] leading-relaxed text-slate-600 dark:text-slate-300">
                     {selected.description}
                   </p>
                   {selected.tags.length > 0 && (
@@ -376,7 +368,7 @@ export default function FeaturedCatalog({
                       {selected.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[10px] font-medium text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
+                          className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[13px] font-medium text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
                         >
                           {tag}
                         </span>
@@ -384,7 +376,7 @@ export default function FeaturedCatalog({
                     </div>
                   )}
                   {selected.sla && (
-                    <div className="mt-5 flex items-start gap-2 rounded-xl border border-emerald-200/70 bg-emerald-50/70 p-3 text-xs leading-relaxed text-emerald-800 dark:border-emerald-500/15 dark:bg-emerald-500/5 dark:text-emerald-300">
+                    <div className="mt-5 flex items-start gap-2 rounded-lg border border-emerald-200/70 bg-emerald-50/70 p-3 text-sm leading-relaxed text-emerald-800 dark:border-emerald-500/15 dark:bg-emerald-500/5 dark:text-emerald-300">
                       <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
                       <span>{selected.sla}</span>
                     </div>
@@ -394,14 +386,14 @@ export default function FeaturedCatalog({
                       <legend className="text-sm font-bold text-slate-900 dark:text-white">
                         Apa yang ingin Anda bahas?
                       </legend>
-                      <p className="mb-3 mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                      <p className="mb-3 mt-1 text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">
                         Centang kapabilitas yang dibutuhkan. Pilihan akan dibawa ke formulir konsultasi.
                       </p>
                       <div className="grid max-h-60 gap-2 overflow-y-auto p-1 -m-1 sm:grid-cols-2">
                         {selected.features.map((feature) => (
                           <label
                             key={feature}
-                            className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-slate-200 bg-white p-3 text-xs leading-relaxed text-slate-700 transition hover:border-orange-300 has-checked:border-orange-400 has-checked:bg-orange-50/60 has-focus-visible:ring-2 has-focus-visible:ring-orange-500/30 dark:border-white/10 dark:bg-white/[0.02] dark:text-slate-200 dark:has-checked:border-orange-500/50 dark:has-checked:bg-orange-500/10"
+                            className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-slate-200 bg-white p-3 text-[13px] leading-relaxed text-slate-700 transition hover:border-orange-300 has-checked:border-orange-400 has-checked:bg-orange-50/60 has-focus-visible:ring-2 has-focus-visible:ring-orange-500/30 dark:border-white/10 dark:bg-white/[0.02] dark:text-slate-200 dark:has-checked:border-orange-500/50 dark:has-checked:bg-orange-500/10"
                           >
                             <input
                               type="checkbox"
@@ -415,7 +407,7 @@ export default function FeaturedCatalog({
                                     : selectedFeatures.filter((item) => item !== feature),
                                 })
                               }
-                              className="mt-0.5 h-4 w-4 shrink-0 accent-orange-600"
+                              className="mt-0.5 h-4 w-4 shrink-0 accent-[#F4511E]"
                             />
                             <span>{feature}</span>
                           </label>
@@ -429,7 +421,7 @@ export default function FeaturedCatalog({
                     </fieldset>
                   )}
                   {selected.technologies.length > 0 && (
-                    <details className="mt-5 text-xs text-slate-500 dark:text-slate-400">
+                    <details className="mt-5 text-[13px] text-slate-500 dark:text-slate-400">
                       <summary className="cursor-pointer font-semibold">Teknologi & standar yang didukung</summary>
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {selected.technologies.map((technology) => (
@@ -479,10 +471,10 @@ export default function FeaturedCatalog({
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 border-t border-slate-200/80 bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:p-7 dark:border-white/10 dark:bg-white/[0.02]">
+          <div className="flex flex-col gap-4 border-t border-slate-200/80 bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 dark:border-white/10 dark:bg-white/[0.02]">
             <div className="flex min-w-0 items-start gap-2.5">
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-orange-600" />
-              <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+              <p className="text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">
                 {selected ? (
                   <>
                     <span className="font-semibold text-slate-800 dark:text-slate-200">{selected.title}</span>
@@ -509,7 +501,7 @@ export default function FeaturedCatalog({
                 type="submit"
                 disabled={!selected}
                 data-consultation-href={consultationLink}
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-orange-600 px-6 py-3 text-sm font-bold text-white shadow-md shadow-orange-600/15 transition hover:bg-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none dark:disabled:bg-white/10 dark:disabled:text-slate-500"
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#F4511E] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#DC3F0C] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600 w-full sm:w-auto disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 dark:disabled:bg-white/10 dark:disabled:text-slate-500"
               >
                 Lanjutkan konsultasi
                 <ArrowRight className="h-4 w-4" />
@@ -519,7 +511,7 @@ export default function FeaturedCatalog({
         </form>
 
         {bottomCtaText && bottomCtaLink && (
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
             <Link
               href={bottomCtaLink}
               className="inline-flex min-h-11 items-center justify-center gap-2 text-xs font-semibold text-slate-600 transition hover:text-orange-700 sm:text-sm dark:text-slate-300 dark:hover:text-orange-300"

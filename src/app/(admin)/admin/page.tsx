@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
   Package,
   Mail,
@@ -18,11 +19,13 @@ import AdminTopbar from "@/components/admin/AdminTopbar";
 import MetricCard from "@/components/admin/MetricCard";
 import { useCitsStore } from "@/stores/citsStore";
 import { useAdminAuth } from "@/lib/auth";
-import { canAccessPage } from "@/lib/internalAccess";
+import { canAccessPage, canPerformAction } from "@/lib/internalAccess";
 
 export default function AdminDashboardPage() {
   const { products, messages, clients, actions } = useCitsStore();
   const { session } = useAdminAuth();
+  const [error, setError] = useState("");
+  const canEditProducts = canPerformAction(session?.user, "products", "edit");
   const canManageProducts = canAccessPage(session?.user, "products");
   const canSeeInbox = canAccessPage(session?.user, "contact");
   const canSeeClients = canAccessPage(session?.user, "clients");
@@ -37,6 +40,11 @@ export default function AdminDashboardPage() {
         description="Pantau dan kelola seluruh konten website Front Office CITS secara real-time"
       />
       <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
+        {error && (
+          <p role="alert" className="text-xs text-red-600">
+            {error}
+          </p>
+        )}
         {/* Shopeers-style Top KPI Metric Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
           {canManageProducts && (
@@ -160,7 +168,15 @@ export default function AdminDashboardPage() {
 
                     {/* Status Switch Toggle Button */}
                     <button
-                      onClick={() => actions.toggleProductStatus(prod.id)}
+                      disabled={!canEditProducts}
+                      onClick={async () => {
+                        try {
+                          await actions.toggleProductStatus(prod.id);
+                          setError("");
+                        } catch (error) {
+                          setError(error instanceof Error ? error.message : "Status gagal disimpan.");
+                        }
+                      }}
                       title={`Ubah status ${prod.name}`}
                       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold transition-all shrink-0 border ${
                         prod.isActive

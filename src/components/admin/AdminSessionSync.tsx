@@ -13,7 +13,8 @@ export default function AdminSessionSync() {
     let pending = false;
     const refresh = async () => {
       const current = AdminAuth.getSession();
-      if (pending || !current?.user.isInternal) return;
+      if (pending || !current || (!current.user.isInternal && !current.user.role.toLowerCase().includes("internal")))
+        return;
       pending = true;
       const token = localStorage.getItem("cits_jwt_token");
       try {
@@ -25,6 +26,8 @@ export default function AdminSessionSync() {
             permissions: result.user.permissions,
             name: result.user.name,
             email: result.user.email,
+            role: result.user.role,
+            isInternal: result.user.isInternal,
           };
           if (
             Object.entries(updated).some(
@@ -41,12 +44,24 @@ export default function AdminSessionSync() {
     };
     void refresh();
     const onFocus = () => void refresh();
-    const interval = window.setInterval(onFocus, 30000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === "cits_permissions_updated_at") void refresh();
+    };
+    const interval = window.setInterval(onVisible, 3000);
     window.addEventListener("focus", onFocus);
+    window.addEventListener("cits-permissions-changed", onFocus);
+    window.addEventListener("storage", onStorage);
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       cancelled = true;
       window.clearInterval(interval);
       window.removeEventListener("focus", onFocus);
+      window.removeEventListener("cits-permissions-changed", onFocus);
+      window.removeEventListener("storage", onStorage);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [pathname]);
   return null;

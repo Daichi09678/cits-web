@@ -28,8 +28,6 @@ import type { ProductItem } from "@/types/schema";
 import ProductDetailsDialog from "@/components/ui/ProductDetailsDialog";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import GradientText from "@/components/ui/GradientText";
-import GridPattern from "@/components/ui/GridPattern";
-import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import { useCitsStore } from "@/stores/citsStore";
 
@@ -146,8 +144,6 @@ export default function ProductsPage() {
         aria-labelledby="products-hero-heading"
         className="relative bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-[#1A1A2E] dark:to-slate-950 py-16 md:py-24 overflow-hidden transition-colors"
       >
-        <FloatingShapes />
-        <GridPattern className="opacity-90" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-900 dark:text-orange-300 border border-orange-200/80 dark:border-orange-800/60 text-xs font-bold tracking-wide uppercase shadow-sm mb-5">

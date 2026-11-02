@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import {
   AlertCircle,
   Check,
@@ -19,10 +19,13 @@ import {
 import { createInternalAccount, updateInternalAccount } from "@/lib/internalAccountsApi";
 import {
   normalizePermissions,
+  applyAccessPreset,
+  getAccessPreset,
   validateAccountPassword,
   type InternalAccountInput,
   type PageKey,
   type PublicInternalAccount,
+  type PagePermissions,
 } from "@/lib/internalAccess";
 import { passwordStrength } from "@/lib/password";
 import { sendAdminResetLink } from "@/lib/passwordApi";
@@ -37,11 +40,13 @@ export default function AdminAccountEditor({
   variant = "inline",
   onSaved,
   onCancel,
+  onAccessSaved,
 }: {
   account: PublicInternalAccount | null;
   variant?: "inline" | "dialog";
   onSaved: (account: PublicInternalAccount) => void;
   onCancel: () => void;
+  onAccessSaved?: (account: PublicInternalAccount) => void;
 }) {
   const isDialog = variant === "dialog";
   const [name, setName] = useState(account?.name ?? "");
@@ -59,6 +64,41 @@ export default function AdminAccountEditor({
   const [resetResult, setResetResult] = useState<{ message: string; success: boolean } | null>(null);
   const [statusBusy, setStatusBusy] = useState(false);
   const [statusError, setStatusError] = useState("");
+  const permissionSavePending = useRef(false);
+  const [savingPermissions, setSavingPermissions] = useState(false);
+  const [permissionNotice, setPermissionNotice] = useState("");
+  const [permissionError, setPermissionError] = useState("");
+
+  const changePermissions = async (next: PagePermissions) => {
+    if (permissionSavePending.current || busy || statusBusy) return;
+    const previous = permissions;
+    setPermissions(next);
+    setPermissionError("");
+    setPermissionNotice("");
+    if (!account) return;
+    permissionSavePending.current = true;
+    setSavingPermissions(true);
+    try {
+      // Only persist access changes here; profile edits remain in the form draft.
+      const saved = await updateInternalAccount(account.id, {
+        name: account.name,
+        email: account.email,
+        isActive: account.isActive,
+        permissions: next,
+        pageAccess: Object.keys(next) as PageKey[],
+      });
+      if (saved?.id !== account.id) throw new Error("Server belum mengonfirmasi perubahan hak akses.");
+      setPermissions(normalizePermissions(saved.permissions, saved.pageAccess));
+      setPermissionNotice("Hak akses tersimpan. Akun terkait akan mengikuti izin terbaru tanpa login ulang.");
+      onAccessSaved?.(saved);
+    } catch (error) {
+      setPermissions(previous);
+      setPermissionError(error instanceof Error ? error.message : "Hak akses gagal disimpan. Coba lagi.");
+    } finally {
+      permissionSavePending.current = false;
+      setSavingPermissions(false);
+    }
+  };
 
   const strength = passwordStrength(password);
   const mismatch = confirmation.length > 0 && password !== confirmation;
@@ -78,7 +118,7 @@ export default function AdminAccountEditor({
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (busy) return;
+    if (busy || permissionSavePending.current || statusBusy) return;
     const issue =
       name.trim().length < 2
         ? "Nama lengkap minimal 2 karakter."
@@ -131,7 +171,7 @@ export default function AdminAccountEditor({
   };
 
   const toggleStatus = async () => {
-    if (!account || statusBusy) return;
+    if (!account || statusBusy || permissionSavePending.current || busy) return;
     setStatusBusy(true);
     setStatusError("");
     try {
@@ -195,7 +235,7 @@ export default function AdminAccountEditor({
               <button
                 type="button"
                 onClick={() => void toggleStatus()}
-                disabled={statusBusy || busy}
+                disabled={statusBusy || busy || savingPermissions}
                 className={`inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-3.5 py-2 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
                   account.isActive
                     ? "border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200"
@@ -239,7 +279,10 @@ export default function AdminAccountEditor({
             </header>
           )}
 
-          <fieldset disabled={busy} className="min-w-0 space-y-5 disabled:opacity-70">
+          <fieldset
+            disabled={busy || savingPermissions || statusBusy}
+            className="min-w-0 space-y-5 disabled:opacity-70"
+          >
             {/* Informasi Akun */}
             <section className="rounded-lg border border-[#E2E8F0] p-4 dark:border-white/10 sm:p-5">
               <div className="flex items-start gap-2.5">
@@ -473,8 +516,20 @@ export default function AdminAccountEditor({
                   <span className="mb-2 block">
                     Role / Tingkat Hak Akses <span className="text-red-500">*</span>
                   </span>
-                  <select value="internal" onChange={() => {}} className={fieldClass}>
-                    <option value="internal">Admin Internal</option>
+                  <select
+                    value={getAccessPreset(permissions)}
+                    onChange={(event) => {
+                      const preset = event.target.value;
+                      if (preset === "view" || preset === "edit")
+                        void changePermissions(applyAccessPreset(permissions, preset));
+                    }}
+                    className={fieldClass}
+                  >
+                    <option value="custom" disabled>
+                      Admin Internal — Izin Kustom
+                    </option>
+                    <option value="view">Admin Internal — Lihat saja</option>
+                    <option value="edit">Admin Internal — Lihat &amp; Edit</option>
                   </select>
                 </label>
                 <label className="block text-xs font-medium text-[#334155] dark:text-slate-300">
@@ -492,12 +547,34 @@ export default function AdminAccountEditor({
 
               <div className="mt-3 flex items-start gap-2 rounded-lg bg-[#EFF6FF] p-3 text-[11px] leading-relaxed text-[#1D4ED8] dark:bg-blue-500/10 dark:text-blue-200">
                 <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-                <p>Admin Internal hanya dapat mengakses halaman yang diberikan izin oleh Superadmin.</p>
+                <p>
+                  Admin Internal hanya dapat mengakses modul yang diberikan Superadmin. Tingkat akses berlaku pada modul
+                  terpilih; jika belum ada pilihan, berlaku pada semua modul. Lihat &amp; Edit tidak memberikan izin
+                  Tambah atau Hapus.
+                </p>
               </div>
 
               <div className="mt-4">
-                <PermissionMatrix id={matrixId} value={permissions} onChange={setPermissions} />
+                <PermissionMatrix
+                  id={matrixId}
+                  value={permissions}
+                  onChange={(next) => void changePermissions(next)}
+                  disabled={busy || savingPermissions || statusBusy}
+                />
               </div>
+              <p role="status" aria-live="polite" className="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                {savingPermissions
+                  ? "Menyimpan hak akses..."
+                  : permissionNotice ||
+                    (account
+                      ? "Perubahan hak akses langsung disimpan saat dipilih."
+                      : "Hak akses disimpan setelah akun baru dibuat.")}
+              </p>
+              {permissionError && (
+                <p role="alert" className="mt-2 text-xs text-red-600 dark:text-red-400">
+                  {permissionError}
+                </p>
+              )}
             </section>
           </fieldset>
         </div>
@@ -530,10 +607,15 @@ export default function AdminAccountEditor({
               : "flex flex-col-reverse gap-2 lg:col-start-2 lg:row-start-2 sm:flex-row sm:justify-end"
           }
         >
-          <button type="button" disabled={busy} onClick={resetForm} className={secondaryButton}>
+          <button
+            type="button"
+            disabled={busy || savingPermissions || statusBusy}
+            onClick={resetForm}
+            className={secondaryButton}
+          >
             Batal
           </button>
-          <button type="submit" disabled={busy} className={primaryButton}>
+          <button type="submit" disabled={busy || savingPermissions || statusBusy} className={primaryButton}>
             {busy ? <LoaderCircle className="size-4 animate-spin" /> : <Save className="size-4" />}
             {busy ? "Menyimpan..." : account ? "Simpan Perubahan" : "Simpan Akun Administrator"}
           </button>

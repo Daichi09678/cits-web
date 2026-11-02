@@ -23,6 +23,7 @@ import {
 } from "@/data/initialData";
 import { siteConfig } from "@/config/siteConfig";
 import { assertPageAction } from "@/lib/actionAccessClient";
+import { collectionPermissionActions } from "@/lib/internalAccess";
 import { citsApi } from "@/lib/api";
 import { playNewMessageSound } from "@/lib/audio";
 
@@ -199,45 +200,35 @@ export const CitsStore = {
   saveProducts(products: ProductItem[]): void {
     setStorageItem(siteConfig.storageKeys.products, products);
   },
-  addProduct(product: Omit<ProductItem, "id" | "updatedAt">): ProductItem {
+  async addProduct(product: Omit<ProductItem, "id" | "updatedAt">): Promise<ProductItem> {
     assertPageAction("products", "create");
-    const current = this.getProducts();
-    const newProduct: ProductItem = {
+    const result = await citsApi.createProduct({
       ...product,
-      id: "prod-" + Date.now(),
+      id: "prod-" + crypto.randomUUID(),
       updatedAt: new Date().toISOString(),
-    };
-    this.saveProducts([newProduct, ...current]);
-    citsApi.createProduct(newProduct).catch((err) => console.warn("Sync product error:", err));
-    return newProduct;
-  },
-  updateProduct(id: string, updates: Partial<ProductItem>): void {
-    assertPageAction("products", "edit");
-    const current = this.getProducts();
-    const updated = current.map((p) => (p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p));
-    this.saveProducts(updated);
-    citsApi.updateProduct(id, updates).catch((err) => console.warn("Sync update product error:", err));
-  },
-  toggleProductStatus(id: string): boolean {
-    assertPageAction("products", "edit");
-    const current = this.getProducts();
-    let newStatus = true;
-    const updated = current.map((p) => {
-      if (p.id === id) {
-        newStatus = !p.isActive;
-        return { ...p, isActive: newStatus, updatedAt: new Date().toISOString() };
-      }
-      return p;
     });
-    this.saveProducts(updated);
-    citsApi.updateProduct(id, { isActive: newStatus }).catch((err) => console.warn("Sync status error:", err));
-    return newStatus;
+    if (!result?.success || !result.data?.id) throw new Error(result?.message || "Produk gagal disimpan.");
+    this.saveProducts([result.data, ...this.getProducts()]);
+    return result.data;
   },
-  deleteProduct(id: string): void {
+  async updateProduct(id: string, updates: Partial<ProductItem>): Promise<void> {
+    assertPageAction("products", "edit");
+    const result = await citsApi.updateProduct(id, updates);
+    if (!result?.success || !result.data?.id) throw new Error(result?.message || "Produk gagal diperbarui.");
+    this.saveProducts(this.getProducts().map((item) => (item.id === id ? result.data : item)));
+  },
+  async toggleProductStatus(id: string): Promise<boolean> {
+    const product = this.getProducts().find((item) => item.id === id);
+    if (!product) throw new Error("Produk tidak ditemukan.");
+    const active = !product.isActive;
+    await this.updateProduct(id, { isActive: active });
+    return active;
+  },
+  async deleteProduct(id: string): Promise<void> {
     assertPageAction("products", "delete");
-    const current = this.getProducts();
-    this.saveProducts(current.filter((p) => p.id !== id));
-    citsApi.deleteProduct(id).catch((err) => console.warn("Sync delete product error:", err));
+    const result = await citsApi.deleteProduct(id);
+    if (!result?.success) throw new Error(result?.message || "Produk gagal dihapus.");
+    this.saveProducts(this.getProducts().filter((item) => item.id !== id));
   },
 
   // CONTACT INFO
@@ -326,30 +317,24 @@ export const CitsStore = {
   saveClients(clients: ClientPartner[]): void {
     setStorageItem(siteConfig.storageKeys.clients, clients);
   },
-  addClient(client: Omit<ClientPartner, "id">): ClientPartner {
+  async addClient(client: Omit<ClientPartner, "id">): Promise<ClientPartner> {
     assertPageAction("clients", "create");
-    const current = this.getClients();
-    const newClient: ClientPartner = {
-      ...client,
-      id: "client-" + Date.now(),
-    };
-    const updated = [newClient, ...current];
-    this.saveClients(updated);
-    citsApi.createClient(newClient).catch((err) => console.warn("Sync client create error:", err));
-    return newClient;
+    const result = await citsApi.createClient({ ...client, id: "client-" + crypto.randomUUID() });
+    if (!result?.success || !result.data?.id) throw new Error(result?.message || "Mitra gagal disimpan.");
+    this.saveClients([result.data, ...this.getClients()]);
+    return result.data;
   },
-  updateClient(id: string, updates: Partial<ClientPartner>): void {
+  async updateClient(id: string, updates: Partial<ClientPartner>): Promise<void> {
     assertPageAction("clients", "edit");
-    const current = this.getClients();
-    const updated = current.map((c) => (c.id === id ? { ...c, ...updates } : c));
-    this.saveClients(updated);
-    citsApi.updateClient(id, updates).catch((err) => console.warn("Sync client update error:", err));
+    const result = await citsApi.updateClient(id, updates);
+    if (!result?.success || !result.data?.id) throw new Error(result?.message || "Mitra gagal diperbarui.");
+    this.saveClients(this.getClients().map((item) => (item.id === id ? result.data : item)));
   },
-  deleteClient(id: string): void {
+  async deleteClient(id: string): Promise<void> {
     assertPageAction("clients", "delete");
-    const current = this.getClients();
-    this.saveClients(current.filter((c) => c.id !== id));
-    citsApi.deleteClient(id).catch((err) => console.warn("Sync client delete error:", err));
+    const result = await citsApi.deleteClient(id);
+    if (!result?.success) throw new Error(result?.message || "Mitra gagal dihapus.");
+    this.saveClients(this.getClients().filter((item) => item.id !== id));
   },
 
   // SERVICES (3 PILARS)
@@ -357,7 +342,8 @@ export const CitsStore = {
     return getStorageItem<ServicePillar[]>(siteConfig.storageKeys.services, initialServicePillars);
   },
   async saveServices(services: ServicePillar[]): Promise<void> {
-    assertPageAction("services", "edit");
+    for (const action of collectionPermissionActions(this.getServices(), services))
+      assertPageAction("services", action);
     const result = await citsApi.updateServices(services);
     setStorageItem(siteConfig.storageKeys.services, result.data);
   },
@@ -392,31 +378,34 @@ export const CitsStore = {
   getActiveCaseStudies(): CaseStudyItem[] {
     return this.getCaseStudies().filter((c) => c.isActive !== false);
   },
-  saveCaseStudies(studies: CaseStudyItem[]): void {
-    assertPageAction("portfolio", "edit");
-    setStorageItem(siteConfig.storageKeys.portfolio, studies);
-    citsApi.updatePortfolio(studies).catch((err) => console.warn("Sync portfolio error:", err));
+  async saveCaseStudies(studies: CaseStudyItem[]): Promise<void> {
+    for (const action of collectionPermissionActions(this.getCaseStudies(), studies))
+      assertPageAction("portfolio", action);
+    const result = await citsApi.updatePortfolio(studies);
+    if (!result?.success || !Array.isArray(result.data))
+      throw new Error(result?.message || "Portofolio gagal disimpan.");
+    setStorageItem(siteConfig.storageKeys.portfolio, result.data);
   },
-  addCaseStudy(study: Omit<CaseStudyItem, "id">): CaseStudyItem {
+  async addCaseStudy(study: Omit<CaseStudyItem, "id">): Promise<CaseStudyItem> {
     const current = this.getCaseStudies();
     const newStudy: CaseStudyItem = {
       ...study,
       id: "cs-" + Date.now(),
       isActive: study.isActive !== false,
     };
-    this.saveCaseStudies([newStudy, ...current]);
+    await this.saveCaseStudies([newStudy, ...current]);
     return newStudy;
   },
-  updateCaseStudy(id: string, updates: Partial<CaseStudyItem>): void {
+  async updateCaseStudy(id: string, updates: Partial<CaseStudyItem>): Promise<void> {
     const current = this.getCaseStudies();
     const updated = current.map((c) => (c.id === id ? { ...c, ...updates } : c));
-    this.saveCaseStudies(updated);
+    await this.saveCaseStudies(updated);
   },
-  deleteCaseStudy(id: string): void {
+  async deleteCaseStudy(id: string): Promise<void> {
     const current = this.getCaseStudies();
-    this.saveCaseStudies(current.filter((c) => c.id !== id));
+    await this.saveCaseStudies(current.filter((c) => c.id !== id));
   },
-  toggleCaseStudyStatus(id: string): boolean {
+  async toggleCaseStudyStatus(id: string): Promise<boolean> {
     const current = this.getCaseStudies();
     let newStatus = true;
     const updated = current.map((c) => {
@@ -426,7 +415,7 @@ export const CitsStore = {
       }
       return c;
     });
-    this.saveCaseStudies(updated);
+    await this.saveCaseStudies(updated);
     return newStatus;
   },
 
@@ -566,7 +555,7 @@ export function useCitsStore() {
           setAboutData(aboutRes.value);
           setStorageItem(siteConfig.storageKeys.about, aboutRes.value);
         }
-        if (clientRes.status === "fulfilled" && Array.isArray(clientRes.value) && clientRes.value.length > 0) {
+        if (clientRes.status === "fulfilled" && Array.isArray(clientRes.value)) {
           setClients(clientRes.value);
           setStorageItem(siteConfig.storageKeys.clients, clientRes.value);
         }
@@ -574,11 +563,11 @@ export function useCitsStore() {
           setLandingData(landRes.value);
           setStorageItem(siteConfig.storageKeys.landing, landRes.value);
         }
-        if (srvRes.status === "fulfilled" && Array.isArray(srvRes.value) && srvRes.value.length > 0) {
+        if (srvRes.status === "fulfilled" && Array.isArray(srvRes.value)) {
           setServices(srvRes.value);
           setStorageItem(siteConfig.storageKeys.services, srvRes.value);
         }
-        if (portRes.status === "fulfilled" && Array.isArray(portRes.value) && portRes.value.length > 0) {
+        if (portRes.status === "fulfilled" && Array.isArray(portRes.value)) {
           setCaseStudies(portRes.value);
           setStorageItem(siteConfig.storageKeys.portfolio, portRes.value);
         }

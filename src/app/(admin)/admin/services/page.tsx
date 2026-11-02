@@ -59,6 +59,8 @@ const listToCsv = (list: string[]): string => list.join(", ");
 
 export default function AdminServicesPage() {
   const { session } = useAdminAuth();
+  const canCreate = canPerformAction(session?.user, "services", "create");
+  const canDelete = canPerformAction(session?.user, "services", "delete");
   const canEdit = canPerformAction(session?.user, "services", "edit");
   const { services, actions } = useCitsStore();
   const dialog = useAdminDialog();
@@ -306,7 +308,7 @@ export default function AdminServicesPage() {
 
           {/* Add Service Button */}
           <button
-            disabled={!canEdit}
+            disabled={!canCreate}
             onClick={openAddModal}
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25 transition-all shrink-0"
           >
@@ -411,7 +413,7 @@ export default function AdminServicesPage() {
                           </button>
                           {services.length > 3 && (
                             <button
-                              disabled={!canEdit}
+                              disabled={!canDelete}
                               onClick={() => handleDeletePillar(prod.id, prod.title)}
                               title="Hapus Layanan"
                               aria-label={`Hapus layanan ${prod.title}`}

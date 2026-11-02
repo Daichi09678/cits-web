@@ -33,6 +33,41 @@ const services = [
   service("Inactive", "Internal", ["Fitur internal"], [], { isActive: false }),
 ];
 
+test("product technology filters use saved tags and discard tags removed by the CMS", () => {
+  const product = (id, tags, extra = {}) => ({
+    id,
+    name: id,
+    category: "Enterprise",
+    description: "Produk katalog",
+    features: ["Integrasi API"],
+    tags,
+    isActive: true,
+    ...extra,
+  });
+  const products = [
+    product("arsip", ["ISO 27001", "REST API"]),
+    product("portal", ["REST API"]),
+    product("private", ["Private SDK"], { showOnHome: false }),
+  ];
+  const result = finder.filterFeaturedCatalog(finder.buildFeaturedCatalog([], products), {
+    ...defaults,
+    category: "Enterprise",
+    capability: "Integrasi API",
+    technology: "ISO 27001",
+  });
+  assert.deepEqual(
+    Array.from(result.matches, (item) => item.productId),
+    ["arsip"]
+  );
+  assert.ok(!result.technologies.includes("Private SDK"));
+  const updated = finder.filterFeaturedCatalog(
+    finder.buildFeaturedCatalog([], [product("arsip", ["REST API"])]),
+    result.filters
+  );
+  assert.equal(updated.filters.technology, "");
+  assert.equal(updated.matches[0].productId, "arsip");
+});
+
 test("catalog choices and search fields come from active, homepage-selected admin content", () => {
   const catalog = finder.buildFeaturedCatalog(services, []);
   assert.deepEqual(

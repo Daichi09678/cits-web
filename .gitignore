@@ -13,6 +13,7 @@
 
 # next.js
 /.next/
+/.next-*/
 /out/
 
 # production
@@ -43,3 +44,9 @@ next-env.d.ts
 
 # kredensial lokal (jangan pernah di-commit)
 /.env
+/.dev-token.txt
+
+# artefak pengujian lokal
+/.about-backup.json
+/debug.log
+/qa-report.json

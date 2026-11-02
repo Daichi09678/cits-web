@@ -14,6 +14,8 @@ import { useCitsStore } from "@/stores/citsStore";
 import { initialLandingPageData, defaultSectionVisibility } from "@/data/initialData";
 import FeaturedCatalog from "@/components/ui/FeaturedCatalog";
 import AboutHomeHighlights from "@/components/ui/AboutHomeHighlights";
+import TeamSection from "@/components/ui/TeamSection";
+import { demoTeamMembers } from "@/data/teamMembers";
 import { usePublicPageContent } from "@/lib/publicPageContentClient";
 
 export default function Home() {
@@ -195,6 +197,8 @@ export default function Home() {
           bottomCtaLink={productsIntro.bottomCtaLink ?? "/products"}
         />
       )}
+      <TeamSection members={demoTeamMembers} isDemo />
+
       {/* Client Logos Marquee */}
       {visibility.clients !== false && marqueeList.length > 0 && (
         <section className="py-16 bg-white dark:bg-[#1A1A2E] border-t border-gray-100 dark:border-white/10 relative overflow-hidden transition-colors">

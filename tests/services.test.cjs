@@ -60,8 +60,10 @@ test("services API persists the validated image and all details and rejects bad 
     "@/lib/apiAuth": { requireAdmin: () => null },
     "@/lib/http": http,
     "@/lib/serviceCatalog": catalog,
+    "@/lib/internalAccess": load("lib/internalAccess.ts"),
     "@/lib/db": {
       DbRepo: {
+        getServices: async () => [service],
         updateServices: async (data) => {
           saved = data;
           return data;
@@ -92,6 +94,7 @@ test("failed service saves cannot replace cached content or report success", asy
       "@/config/siteConfig": { siteConfig: { storageKeys: { services: "services" } } },
       "@/lib/api": { citsApi: { updateServices: () => response } },
       "@/lib/actionAccessClient": { assertPageAction: () => {} },
+      "@/lib/internalAccess": load("lib/internalAccess.ts"),
       "@/lib/audio": {},
     },
     {

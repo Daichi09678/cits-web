@@ -80,6 +80,14 @@ export async function updateInternalAccount(id: string, input: InternalAccountIn
     method: "PUT",
     body: JSON.stringify(input),
   });
+  if (payload.data?.id && typeof window !== "undefined") {
+    window.dispatchEvent(new Event("cits-permissions-changed"));
+    try {
+      window.localStorage.setItem("cits_permissions_updated_at", String(Date.now()));
+    } catch {
+      // Cross-device polling still refreshes permissions when browser storage is unavailable.
+    }
+  }
   return payload.data;
 }
 

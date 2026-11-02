@@ -20,7 +20,7 @@ test("explicit permissions require view, reject unknown modules/actions, and pre
   });
   assert.equal(permissions.products, undefined);
   assert.deepEqual(Array.from(permissions.clients), ["view", "create"]);
-  assert.deepEqual(Array.from(permissions.services), ["view"]);
+  assert.deepEqual(Array.from(permissions.services), ["view", "delete"]);
   assert.equal(permissions.unknown, undefined);
   for (const value of [false, "all", ["products"], {}])
     assert.equal(Object.keys(access.normalizePermissions(value)).length, 0);
@@ -215,4 +215,81 @@ test("account and reset clients require explicit server success and preserve unc
   await assert.rejects(accounts.deleteInternalAccount("staff"));
   await assert.rejects(passwords.sendAdminResetLink("staff@example.test"));
   assert.equal(await accounts.migrateLegacyAccounts([{ email: "legacy@example.test" }]), null);
+});
+
+test("bulk portfolio and service writes enforce create/edit/delete separately, including mixed payloads", async () => {
+  const catalog = load("lib/serviceCatalog.ts", { "@/data/serviceDetails": load("data/serviceDetails.ts") });
+  const http = load("lib/http.ts", { "next/server": { NextResponse } });
+  for (const moduleKey of ["portfolio", "services"]) {
+    const auth = createTestAuth();
+    const entry = (id) => ({
+      id,
+      title: id,
+      badge: "Layanan",
+      icon: "Code2",
+      desc: "Deskripsi layanan",
+      sla: "Sesuai perjanjian",
+      isActive: true,
+    });
+    const previous = [entry("a"), entry("b")];
+    let writes = 0;
+    const route = load("app/api/" + moduleKey + "/route.ts", {
+      "next/server": { NextResponse },
+      "@/lib/apiAuth": auth,
+      "@/lib/http": http,
+      "@/lib/internalAccess": access,
+      "@/lib/serviceCatalog": catalog,
+      "@/lib/db": {
+        DbRepo: {
+          getPortfolio: async () => previous,
+          getServices: async () => previous,
+          updatePortfolio: async (data) => {
+            writes++;
+            return data;
+          },
+          updateServices: async (data) => {
+            writes++;
+            return data;
+          },
+        },
+      },
+    });
+    for (const [permission, body] of [
+      ["create", [...previous, entry("c")]],
+      ["edit", [{ ...previous[0], title: "Changed" }, previous[1]]],
+      ["delete", [previous[0]]],
+    ]) {
+      const token = auth.issueAdminToken({
+        sub: "qa",
+        email: "qa@example.test",
+        name: "QA",
+        role: "internal",
+        permissions: { [moduleKey]: ["view", permission] },
+      });
+      assert.equal((await route.PUT(request(token, "PUT", body))).status, 200, moduleKey + ": " + permission);
+      const denied = auth.issueAdminToken({
+        sub: "viewer",
+        email: "viewer@example.test",
+        name: "Viewer",
+        role: "internal",
+        permissions: { [moduleKey]: ["view"] },
+      });
+      const count = writes;
+      assert.equal((await route.PUT(request(denied, "PUT", body))).status, 403);
+      assert.equal(writes, count);
+    }
+    const editor = auth.issueAdminToken({
+      sub: "editor",
+      email: "editor@example.test",
+      name: "Editor",
+      role: "internal",
+      permissions: { [moduleKey]: ["view", "edit"] },
+    });
+    const count = writes;
+    assert.equal(
+      (await route.PUT(request(editor, "PUT", [{ ...previous[0], title: "Changed" }, entry("c")]))).status,
+      403
+    );
+    assert.equal(writes, count);
+  }
 });

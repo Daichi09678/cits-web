@@ -124,11 +124,65 @@ export const PERMISSION_ACTIONS = ["view", "create", "edit", "delete"] as const;
 export type PermissionAction = (typeof PERMISSION_ACTIONS)[number];
 export type PagePermissions = Partial<Record<PageKey, PermissionAction[]>>;
 
-/** Only expose actions supported by the existing module APIs. */
-export function availableActions(page: PageKey): readonly PermissionAction[] {
-  if (page === "products" || page === "clients") return PERMISSION_ACTIONS;
-  if (page === "contact") return ["view", "edit", "delete"];
-  return ["view", "edit"];
+export type AccessPreset = "custom" | "view" | "edit";
+
+/** Apply a level to assigned modules; an empty assignment starts with all modules. */
+export function applyAccessPreset(value: PagePermissions, preset: Exclude<AccessPreset, "custom">): PagePermissions {
+  const assigned = EDITABLE_PAGES.filter(({ key }) => value[key]?.includes("view"));
+  return Object.fromEntries(
+    (assigned.length ? assigned : EDITABLE_PAGES).map(({ key }) => [
+      key,
+      preset === "edit" ? ["view", "edit"] : ["view"],
+    ])
+  );
+}
+
+export function getAccessPreset(value: PagePermissions): AccessPreset {
+  const actions = Object.values(normalizePermissions(value));
+  if (!actions.length) return "custom";
+  if (actions.every((items) => items.length === 1 && items.includes("view"))) return "view";
+  if (actions.every((items) => items.length === 2 && items.includes("view") && items.includes("edit"))) return "edit";
+  return "custom";
+}
+
+export function togglePermission(value: PagePermissions, page: PageKey, action: PermissionAction): PagePermissions {
+  if (!availableActions(page).includes(action)) return value;
+  const current = value[page] || [];
+  const actions = current.includes(action)
+    ? action === "view"
+      ? []
+      : current.filter((item) => item !== action)
+    : [...new Set(["view", ...current, action])];
+  return normalizePermissions({ ...value, [page]: actions });
+}
+
+/** Every module has the same configurable action set. */
+export function availableActions(_page: PageKey): readonly PermissionAction[] {
+  return PERMISSION_ACTIONS;
+}
+
+/** Bulk catalog endpoints must authorize additions and removals separately from edits. */
+export function collectionPermissionActions(previous: { id: string }[], next: { id: string }[]): PermissionAction[] {
+  const stable = (value: unknown): string => {
+    if (Array.isArray(value)) return `[${value.map(stable).join(",")}]`;
+    if (value && typeof value === "object")
+      return (
+        "{" +
+        Object.entries(value)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([key, entry]) => `${JSON.stringify(key)}:${stable(entry)}`)
+          .join(",") +
+        "}"
+      );
+    return JSON.stringify(value) ?? "undefined";
+  };
+  const before = new Map(previous.map((item) => [item.id, item]));
+  const after = new Map(next.map((item) => [item.id, item]));
+  const actions: PermissionAction[] = [];
+  if (next.some((item) => !before.has(item.id))) actions.push("create");
+  if (next.some((item) => before.has(item.id) && stable(before.get(item.id)) !== stable(item))) actions.push("edit");
+  if (previous.some((item) => !after.has(item.id))) actions.push("delete");
+  return actions.length ? actions : ["edit"];
 }
 
 /** Legacy page assignments retain their old capabilities; explicit empty maps deny everything. */

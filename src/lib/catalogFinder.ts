@@ -75,11 +75,13 @@ export function buildFeaturedCatalog(services: ServicePillar[], products: Produc
       category: item.category ?? "",
       tags: item.tags ?? [],
       features: [...new Set(item.features ?? [])],
-      technologies: [],
+      technologies: item.tags ?? [],
       image: item.image,
       href: `/products#${encodeURIComponent(item.id)}`,
       productId: item.id,
-      searchText: normalize([item.name, item.description, item.category ?? "", ...(item.tags ?? []), ...(item.features ?? [])].join(" ")),
+      searchText: normalize(
+        [item.name, item.description, item.category ?? "", ...(item.tags ?? []), ...(item.features ?? [])].join(" ")
+      ),
     }));
   return [...serviceItems, ...productItems];
 }

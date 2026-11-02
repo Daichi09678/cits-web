@@ -53,6 +53,7 @@ export const citsApi = {
   async getMe(token?: string) {
     const res = await fetch(`${API_URL}/auth/me`, {
       headers: getHeaders(token),
+      cache: "no-store",
     });
     return { ...(await res.json()), status: res.status };
   },

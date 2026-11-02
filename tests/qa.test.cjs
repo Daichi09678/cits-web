@@ -68,6 +68,7 @@ test("private reads and content mutations refuse anonymous callers before access
         "@/lib/http": http,
         "@/lib/consultation": consultation,
         "@/lib/serviceCatalog": serviceCatalog,
+        "@/lib/internalAccess": load("lib/internalAccess.ts"),
         "@/lib/db": {
           DbRepo: new Proxy(
             {},

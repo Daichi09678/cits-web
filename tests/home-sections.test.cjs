@@ -114,6 +114,7 @@ test("failed homepage saves cannot update local cache or emit a success event", 
         },
       },
       "@/lib/actionAccessClient": { assertPageAction: () => {} },
+      "@/lib/internalAccess": load("lib/internalAccess.ts"),
       "@/lib/audio": {},
     },
     {
@@ -221,6 +222,8 @@ function renderHome(landingData, overrides = {}) {
     "@/components/ui/GradientText": { default: wrap },
     "@/components/ui/FeaturedCatalog": { default: FeaturedCatalog },
     "@/components/ui/AboutHomeHighlights": { default: () => null },
+    "@/components/ui/TeamSection": { default: () => null },
+    "@/data/teamMembers": load("data/teamMembers.ts"),
     "@/lib/publicPageContentClient": { usePublicPageContent: () => ({ content: {} }) },
     "@/components/ui/Marquee": {
       default: ({ items }) => React.createElement("div", null, items.map((item) => item.name).join(", ")),

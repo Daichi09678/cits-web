@@ -14,18 +14,14 @@ import {
   Target,
   Lightbulb,
   Layers,
-  ChevronRight,
   X,
   Briefcase,
-  Compass,
   LayoutGrid,
   Table as TableIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import GradientText from "@/components/ui/GradientText";
-import GridPattern from "@/components/ui/GridPattern";
-import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import TestimonialSlider from "@/components/ui/TestimonialSlider";
 import { useCitsStore } from "@/stores/citsStore";
@@ -76,8 +72,6 @@ export default function PortfolioPage() {
           aria-labelledby="portfolio-hero-heading"
           className="relative bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-[#1A1A2E] dark:to-slate-950 py-16 md:py-24 overflow-hidden transition-colors"
         >
-          <FloatingShapes />
-          <GridPattern className="opacity-90" />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <ScrollReveal>
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-900 dark:text-orange-300 border border-orange-200/80 dark:border-orange-800/60 text-xs font-bold tracking-wide uppercase shadow-sm mb-5">
@@ -117,34 +111,6 @@ export default function PortfolioPage() {
                 </span>
               </div>
             </ScrollReveal>
-
-            {/* Contextual Clarity Banner (Distinction between Portfolio Case Studies & Products) */}
-            <ScrollReveal delay={0.25}>
-              <div className="mt-10 max-w-4xl mx-auto p-4 sm:p-5 rounded-2xl bg-white/90 dark:bg-[#16162c]/90 border border-orange-200/80 dark:border-orange-900/40 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0 mt-0.5">
-                    <Compass className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs sm:text-sm font-bold text-dark dark:text-white">
-                      {content.texts["portfolio_hero_text_8"]}
-                    </h4>
-                    <p className="text-xs text-gray-600 dark:text-white/75 mt-0.5">
-                      {content.texts["portfolio_hero_text_9"]}{" "}
-                      <strong className="text-dark dark:text-white">{content.texts["portfolio_hero_text_10"]}</strong>
-                      {content.texts["portfolio_hero_text_11"]}
-                    </p>
-                  </div>
-                </div>
-                <Link
-                  href={content.texts["portfolio_hero_href_12"]}
-                  className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-orange-600 hover:text-white text-gray-800 dark:text-white text-xs font-bold border border-gray-200 dark:border-white/15 transition-all shadow-sm"
-                >
-                  {content.texts["portfolio_hero_text_13"]}
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-            </ScrollReveal>
           </div>
         </section>
       )}
@@ -159,14 +125,14 @@ export default function PortfolioPage() {
             <ScrollReveal>
               <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
                 <div>
-                  <span className="inline-block text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1 rounded-full uppercase tracking-wider mb-2">
+                  <span className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">
                     {content.texts["flagship_text_1"]}
                   </span>
                   <h2
                     id="flagship-heading"
                     className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-dark dark:text-white"
                   >
-                    {content.texts["flagship_text_2"]} <GradientText>{content.texts["flagship_text_3"]}</GradientText>
+                    {content.texts["flagship_text_2"]} {content.texts["flagship_text_3"]}
                   </h2>
                 </div>
                 <p className="text-xs sm:text-sm text-gray-600 dark:text-white/75 max-w-md">
@@ -175,112 +141,60 @@ export default function PortfolioPage() {
               </div>
             </ScrollReveal>
 
-            <div className="grid lg:grid-cols-2 gap-8 items-stretch">
-              {flagshipProjects.map((project, idx) => (
-                <ScrollReveal key={project.id} delay={idx * 0.15} className="h-full">
-                  <SpotlightCard className="h-full">
-                    <article className="p-7 sm:p-9 flex flex-col justify-between h-full bg-white dark:bg-[#16162c] space-y-6">
-                      <div>
-                        {/* Top Meta Bar */}
-                        <div className="flex items-center justify-between gap-3 border-b border-gray-150 dark:border-white/10 pb-5">
-                          <div className="flex items-center gap-3">
-                            <div className="relative w-12 h-12 rounded-xl bg-slate-50 dark:bg-white/10 border border-gray-200 dark:border-white/15 p-2 flex items-center justify-center shrink-0">
-                              <Image
-                                src={project.clientLogo}
-                                alt={project.client}
-                                width={44}
-                                height={44}
-                                unoptimized
-                                className="object-contain max-h-9 w-auto"
-                              />
-                            </div>
-                            <div>
-                              <span className="block text-xs font-bold text-orange-800 dark:text-orange-400">
-                                {project.clientShort}
-                              </span>
-                              <span className="block text-[11px] text-gray-500 dark:text-white/60 font-medium">
-                                {project.categoryTag}
-                              </span>
-                            </div>
-                          </div>
-
-                          <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-950/70 text-orange-900 dark:text-orange-300 border border-orange-200/80 dark:border-orange-800/60 uppercase tracking-wider">
-                            {content.texts["flagship_text_5"]}
-                          </span>
-                        </div>
-
-                        {/* Title & Tagline */}
-                        <div className="mt-5">
-                          <div className="h-14 sm:h-16 flex items-start overflow-hidden">
-                            <h3 className="text-xl sm:text-2xl font-extrabold text-dark dark:text-white tracking-tight line-clamp-2 leading-snug">
-                              {project.title}
-                            </h3>
-                          </div>
-                          <div className="h-12 flex items-start mt-2 overflow-hidden">
-                            <p className="text-xs sm:text-sm text-gray-700 dark:text-white/85 leading-relaxed font-medium line-clamp-2">
-                              {project.tagline}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Challenge vs Solution Bento */}
-                        <div className="mt-6 grid sm:grid-cols-2 gap-4">
-                          <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10 h-28 flex flex-col justify-center">
-                            <div className="flex items-center gap-1.5 text-xs font-bold text-rose-700 dark:text-rose-400 mb-1.5 shrink-0">
-                              <Target className="w-3.5 h-3.5 shrink-0" />
-                              <span>{content.texts["flagship_text_6"]}</span>
-                            </div>
-                            <p className="text-[11px] sm:text-xs text-gray-700 dark:text-white/80 leading-relaxed line-clamp-3">
-                              {project.challenge}
-                            </p>
-                          </div>
-
-                          <div className="p-4 rounded-xl bg-orange-50/60 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-900/40 h-28 flex flex-col justify-center">
-                            <div className="flex items-center gap-1.5 text-xs font-bold text-orange-800 dark:text-orange-400 mb-1.5 shrink-0">
-                              <Lightbulb className="w-3.5 h-3.5 shrink-0" />
-                              <span>{content.texts["flagship_text_7"]}</span>
-                            </div>
-                            <p className="text-[11px] sm:text-xs text-gray-800 dark:text-white/85 leading-relaxed line-clamp-3">
-                              {project.solution}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Measurable KPI Banner */}
-                        <div className="mt-5 p-4 rounded-xl bg-slate-100/90 dark:bg-[#1A1A32] border border-gray-200 dark:border-white/10 h-20 flex items-center justify-between gap-4">
-                          <div className="min-w-0">
-                            <span className="block text-2xl sm:text-3xl font-black text-orange-600 dark:text-orange-400 leading-none">
-                              {project.measurableImpact.highlightValue}
-                            </span>
-                            <span className="block text-[11px] font-bold text-dark dark:text-white mt-1 truncate">
-                              {project.measurableImpact.highlightLabel}
-                            </span>
-                          </div>
-                          <p className="text-[11px] text-gray-600 dark:text-white/70 max-w-[200px] text-right hidden sm:block line-clamp-2">
-                            {project.measurableImpact.detail}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Footer Actions */}
-                      <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
-                        <Link
-                          href={`/portfolio/${encodeURIComponent(project.id)}`}
-                          className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-orange-700 hover:bg-orange-800 text-white text-xs font-bold transition-all shadow-md shadow-orange-600/20 cursor-pointer"
-                        >
-                          {content.texts["flagship_text_8"]}
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </Link>
-                        <Link
-                          href={content.texts["flagship_href_9"]}
-                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-gray-800 dark:text-white text-xs font-semibold border border-gray-200 dark:border-white/15 transition-all"
-                        >
-                          {content.texts["flagship_text_10"]}
-                        </Link>
-                      </div>
-                    </article>
-                  </SpotlightCard>
-                </ScrollReveal>
+            <div className="grid gap-8 lg:grid-cols-2">
+              {flagshipProjects.map((project) => (
+                <article key={project.id} className="flex flex-col border-t border-slate-300 pt-6 dark:border-white/20">
+                  <div className="flex items-center gap-3">
+                    <Image
+                      src={project.clientLogo}
+                      alt={project.client}
+                      width={40}
+                      height={40}
+                      unoptimized
+                      className="h-10 w-10 shrink-0 object-contain"
+                    />
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">{project.clientShort}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{project.categoryTag}</p>
+                    </div>
+                  </div>
+                  <h3 className="mt-6 text-xl font-bold leading-snug tracking-tight text-slate-900 sm:text-2xl dark:text-white">
+                    {project.title}
+                  </h3>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">{project.tagline}</p>
+                  <dl className="mt-6 space-y-4 text-sm leading-relaxed">
+                    <div>
+                      <dt className="font-semibold text-slate-900 dark:text-white">
+                        {content.texts["flagship_text_6"]}
+                      </dt>
+                      <dd className="mt-1 text-slate-600 dark:text-slate-300">{project.challenge}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-semibold text-slate-900 dark:text-white">
+                        {content.texts["flagship_text_7"]}
+                      </dt>
+                      <dd className="mt-1 text-slate-600 dark:text-slate-300">{project.solution}</dd>
+                    </div>
+                  </dl>
+                  <div className="mt-6 border-t border-slate-200 py-5 dark:border-white/10">
+                    <p className="text-3xl font-bold tracking-tight text-orange-700 dark:text-orange-400">
+                      {project.measurableImpact.highlightValue}
+                    </p>
+                    <p className="mt-1 text-sm font-medium text-slate-900 dark:text-white">
+                      {project.measurableImpact.highlightLabel}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                      {project.measurableImpact.detail}
+                    </p>
+                  </div>
+                  <Link
+                    href={"/portfolio/" + encodeURIComponent(project.id)}
+                    className="mt-auto inline-flex min-h-11 w-fit items-center gap-2 text-sm font-semibold text-orange-800 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-700 dark:text-orange-300"
+                  >
+                    {content.texts["flagship_text_8"]}
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </article>
               ))}
             </div>
           </div>

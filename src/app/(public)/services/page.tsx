@@ -23,8 +23,6 @@ import {
 } from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import GradientText from "@/components/ui/GradientText";
-import GridPattern from "@/components/ui/GridPattern";
-import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import { useCitsStore } from "@/stores/citsStore";
 import { getPillarIcon } from "@/lib/serviceIcons";
@@ -166,8 +164,6 @@ export default function ServicesPage() {
         aria-labelledby="services-hero-heading"
         className="relative bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-dark dark:to-slate-950 py-12 md:py-20 overflow-hidden transition-colors border-b border-slate-200/80 dark:border-white/10"
       >
-        <FloatingShapes />
-        <GridPattern className="opacity-100" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <ScrollReveal>
@@ -436,7 +432,6 @@ export default function ServicesPage() {
         aria-labelledby="workflow-heading"
         className="relative py-16 md:py-24 bg-slate-50 dark:bg-[#151528] border-b border-slate-200/80 dark:border-white/10 overflow-hidden transition-colors scroll-mt-20"
       >
-        <GridPattern />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-14">

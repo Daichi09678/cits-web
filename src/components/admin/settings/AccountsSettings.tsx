@@ -150,6 +150,10 @@ export default function AccountsSettings() {
         <EditAccountDialog
           account={editAccount}
           onClose={() => setEditAccount(null)}
+          onAccessSaved={(saved) => {
+            replaceAccount(saved);
+            setEditAccount((current) => (current?.id === saved.id ? saved : current));
+          }}
           onSaved={(saved) => {
             replaceAccount(saved);
             setNotice(`Akun “${saved.name}” berhasil diperbarui.`);

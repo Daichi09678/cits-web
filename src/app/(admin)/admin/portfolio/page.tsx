@@ -54,6 +54,8 @@ const PRESET_LOGOS = [
 
 export default function AdminPortfolioPage() {
   const { session } = useAdminAuth();
+  const canCreate = canPerformAction(session?.user, "portfolio", "create");
+  const canDelete = canPerformAction(session?.user, "portfolio", "delete");
   const canEdit = canPerformAction(session?.user, "portfolio", "edit");
   const { caseStudies, actions } = useCitsStore();
   const dialog = useAdminDialog();
@@ -66,6 +68,9 @@ export default function AdminPortfolioPage() {
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [saving, setSaving] = useState(false);
+  const [mutationError, setMutationError] = useState("");
 
   // Form State
   const [formTitle, setFormTitle] = useState("");
@@ -113,6 +118,7 @@ export default function AdminPortfolioPage() {
   };
 
   const openAddModal = () => {
+    setMutationError("");
     setEditingStudy(null);
     setFormTitle("");
     setFormClient("");
@@ -138,6 +144,7 @@ export default function AdminPortfolioPage() {
   };
 
   const openEditModal = (study: CaseStudyItem) => {
+    setMutationError("");
     setEditingStudy(study);
     setFormTitle(study.title);
     setFormClient(study.client);
@@ -162,56 +169,64 @@ export default function AdminPortfolioPage() {
     setModalOpen(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
+    setSaving(true);
+    setMutationError("");
+    try {
+      const parseList = (str: string) =>
+        str
+          .split(/,|\n/)
+          .map((s) => s.trim())
+          .filter(Boolean);
 
-    const parseList = (str: string) =>
-      str
-        .split(/,|\n/)
-        .map((s) => s.trim())
-        .filter(Boolean);
+      const studyPayload: Omit<CaseStudyItem, "id"> = {
+        title: formTitle,
+        client: formClient,
+        clientShort: formClientShort || formClient,
+        clientLogo: formClientLogo,
+        sector: formSector,
+        categoryTag: formCategoryTag || formSector,
+        period: formPeriod,
+        servicePillar: formServicePillar,
+        isFlagship: formIsFlagship,
+        tagline: formTagline,
+        challenge: formChallenge,
+        solution: formSolution,
+        measurableImpact: {
+          highlightValue: formKpiValue,
+          highlightLabel: formKpiLabel,
+          detail: formKpiDetail,
+        },
+        scopeOfWork: parseList(formScopeOfWork),
+        techStack: parseList(formTechStack),
+        deliverables: parseList(formDeliverables),
+        isActive: formIsActive,
+        showOnHome: formShowOnHome,
+      };
 
-    const studyPayload: Omit<CaseStudyItem, "id"> = {
-      title: formTitle,
-      client: formClient,
-      clientShort: formClientShort || formClient,
-      clientLogo: formClientLogo,
-      sector: formSector,
-      categoryTag: formCategoryTag || formSector,
-      period: formPeriod,
-      servicePillar: formServicePillar,
-      isFlagship: formIsFlagship,
-      tagline: formTagline,
-      challenge: formChallenge,
-      solution: formSolution,
-      measurableImpact: {
-        highlightValue: formKpiValue,
-        highlightLabel: formKpiLabel,
-        detail: formKpiDetail,
-      },
-      scopeOfWork: parseList(formScopeOfWork),
-      techStack: parseList(formTechStack),
-      deliverables: parseList(formDeliverables),
-      isActive: formIsActive,
-      showOnHome: formShowOnHome,
-    };
+      if (editingStudy) {
+        await actions.updateCaseStudy(editingStudy.id, studyPayload);
+      } else {
+        await actions.addCaseStudy(studyPayload);
+      }
 
-    if (editingStudy) {
-      actions.updateCaseStudy(editingStudy.id, studyPayload);
-    } else {
-      actions.addCaseStudy(studyPayload);
+      setSavedSuccess(true);
+      setModalOpen(false);
+      setTimeout(() => setSavedSuccess(false), 3000);
+      void dialog.alert({
+        title: editingStudy ? "Studi kasus diperbarui" : "Studi kasus ditambahkan",
+        description: editingStudy
+          ? `Perubahan studi kasus "${formTitle}" berhasil disimpan.`
+          : `Studi kasus "${formTitle}" berhasil ditambahkan ke portofolio.`,
+        variant: "success",
+      });
+    } catch (error) {
+      setMutationError(error instanceof Error ? error.message : "Perubahan gagal disimpan.");
+    } finally {
+      setSaving(false);
     }
-
-    setSavedSuccess(true);
-    setModalOpen(false);
-    setTimeout(() => setSavedSuccess(false), 3000);
-    void dialog.alert({
-      title: editingStudy ? "Studi kasus diperbarui" : "Studi kasus ditambahkan",
-      description: editingStudy
-        ? `Perubahan studi kasus "${formTitle}" berhasil disimpan.`
-        : `Studi kasus "${formTitle}" berhasil ditambahkan ke portofolio.`,
-      variant: "success",
-    });
   };
 
   const handleDelete = async (id: string, title: string) => {
@@ -222,7 +237,14 @@ export default function AdminPortfolioPage() {
       variant: "danger",
     });
     if (confirmed) {
-      actions.deleteCaseStudy(id);
+      const removed = await actions
+        .deleteCaseStudy(id)
+        .then(() => true)
+        .catch((error) => {
+          setMutationError(error instanceof Error ? error.message : "Studi kasus gagal dihapus.");
+          return false;
+        });
+      if (!removed) return;
       await dialog.alert({
         title: "Studi kasus dihapus",
         description: `"${title}" berhasil dihapus dari portofolio.`,
@@ -231,8 +253,16 @@ export default function AdminPortfolioPage() {
     }
   };
 
-  const handleToggleStatus = (id: string) => {
-    actions.toggleCaseStudyStatus(id);
+  const handleToggleStatus = async (id: string) => {
+    try {
+      await actions.toggleCaseStudyStatus(id);
+    } catch (error) {
+      void dialog.alert({
+        title: "Status gagal disimpan",
+        description: error instanceof Error ? error.message : "Silakan coba lagi.",
+        variant: "danger",
+      });
+    }
   };
 
   const activeCount = caseStudies.filter((c) => c.isActive !== false).length;
@@ -380,7 +410,7 @@ export default function AdminPortfolioPage() {
             </a>
 
             <button
-              disabled={!canEdit}
+              disabled={!canCreate}
               onClick={openAddModal}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 active:scale-98 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition-all cursor-pointer"
             >
@@ -503,7 +533,7 @@ export default function AdminPortfolioPage() {
                   </button>
                   <button
                     type="button"
-                    disabled={!canEdit}
+                    disabled={!canDelete}
                     onClick={() => handleDelete(study.id, study.title)}
                     className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
                     title="Hapus Studi Kasus"
@@ -537,7 +567,9 @@ export default function AdminPortfolioPage() {
                   </p>
                 </div>
                 <button
-                  onClick={() => setModalOpen(false)}
+                  onClick={() => {
+                    if (!saving) setModalOpen(false);
+                  }}
                   className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
@@ -545,351 +577,360 @@ export default function AdminPortfolioPage() {
               </div>
 
               <form onSubmit={handleSave} className="p-6 space-y-4 text-xs overflow-y-auto flex-1">
-                {/* Title */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Judul Penugasan / Proyek
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formTitle}
-                    onChange={(e) => setFormTitle(e.target.value)}
-                    placeholder="cth. Pemeliharaan & Rekayasa Arsitektur KTP Elektronik Nasional"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  />
-                </div>
-
-                {/* Client Info Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {mutationError && (
+                  <p role="alert" className="text-xs text-red-600">
+                    {mutationError}
+                  </p>
+                )}
+                <fieldset disabled={saving} className="contents">
+                  {/* Title */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                      Nama Instansi Klien Lengkap
+                      Judul Penugasan / Proyek
                     </label>
                     <input
                       type="text"
                       required
-                      value={formClient}
-                      onChange={(e) => setFormClient(e.target.value)}
-                      placeholder="cth. Kementerian Dalam Negeri RI (Ditjen Dukcapil)"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      value={formTitle}
+                      onChange={(e) => setFormTitle(e.target.value)}
+                      placeholder="cth. Pemeliharaan & Rekayasa Arsitektur KTP Elektronik Nasional"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white font-bold focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                      Nama Singkat Klien
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formClientShort}
-                      onChange={(e) => setFormClientShort(e.target.value)}
-                      placeholder="cth. Kemendagri RI"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Logo Uploader & Preset */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Logo Instansi Klien
-                  </label>
-                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#1A1A2E] border border-slate-200 dark:border-white/10 p-1.5 flex items-center justify-center shrink-0">
-                      {formClientLogo ? (
-                        <Image
-                          src={formClientLogo}
-                          alt="Logo Preview"
-                          width={40}
-                          height={40}
-                          unoptimized
-                          className="max-h-full max-w-full object-contain"
-                        />
-                      ) : (
-                        <Building2 className="w-6 h-6 text-slate-400" />
-                      )}
-                    </div>
-                    <div className="flex-1 space-y-1.5">
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                        className="hidden"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 font-bold text-[11px] cursor-pointer"
-                      >
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>Unggah Logo dari Komputer</span>
-                      </button>
+                  {/* Client Info Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                        Nama Instansi Klien Lengkap
+                      </label>
                       <input
                         type="text"
-                        value={formClientLogo}
-                        onChange={(e) => setFormClientLogo(e.target.value)}
-                        placeholder="/clients/kemendagri.svg atau URL"
-                        className="w-full px-2.5 py-1 rounded bg-white dark:bg-[#1A1A2E] border border-slate-200 dark:border-white/10 text-[11px] text-slate-900 dark:text-white focus:outline-none font-mono"
+                        required
+                        value={formClient}
+                        onChange={(e) => setFormClient(e.target.value)}
+                        placeholder="cth. Kementerian Dalam Negeri RI (Ditjen Dukcapil)"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                        Nama Singkat Klien
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formClientShort}
+                        onChange={(e) => setFormClientShort(e.target.value)}
+                        placeholder="cth. Kemendagri RI"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
                       />
                     </div>
                   </div>
 
-                  {/* Preset quick picker */}
-                  <div className="mt-1.5 flex flex-wrap gap-1">
-                    {PRESET_LOGOS.slice(0, 8).map((p) => (
-                      <button
-                        key={p.logo}
-                        type="button"
-                        onClick={() => {
-                          setFormClientLogo(p.logo);
-                          if (!formClientShort) setFormClientShort(p.name);
-                        }}
-                        className="px-2 py-0.5 rounded text-[10px] bg-slate-100 hover:bg-orange-100 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 transition-colors"
-                      >
-                        {p.name.replace("Kementerian ", "Kemen. ")}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Sektor & Periode */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {/* Logo Uploader & Preset */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                      Sektor Penugasan
+                      Logo Instansi Klien
                     </label>
-                    <select
-                      value={formSector}
-                      onChange={(e) => setFormSector(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none cursor-pointer"
-                    >
-                      {SECTOR_OPTIONS.map((sec) => (
-                        <option
-                          key={sec}
-                          value={sec}
-                          className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                    <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#1A1A2E] border border-slate-200 dark:border-white/10 p-1.5 flex items-center justify-center shrink-0">
+                        {formClientLogo ? (
+                          <Image
+                            src={formClientLogo}
+                            alt="Logo Preview"
+                            width={40}
+                            height={40}
+                            unoptimized
+                            className="max-h-full max-w-full object-contain"
+                          />
+                        ) : (
+                          <Building2 className="w-6 h-6 text-slate-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-1.5">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          accept="image/*"
+                          onChange={handleLogoUpload}
+                          className="hidden"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 font-bold text-[11px] cursor-pointer"
                         >
-                          {sec}
-                        </option>
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>Unggah Logo dari Komputer</span>
+                        </button>
+                        <input
+                          type="text"
+                          value={formClientLogo}
+                          onChange={(e) => setFormClientLogo(e.target.value)}
+                          placeholder="/clients/kemendagri.svg atau URL"
+                          className="w-full px-2.5 py-1 rounded bg-white dark:bg-[#1A1A2E] border border-slate-200 dark:border-white/10 text-[11px] text-slate-900 dark:text-white focus:outline-none font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Preset quick picker */}
+                    <div className="mt-1.5 flex flex-wrap gap-1">
+                      {PRESET_LOGOS.slice(0, 8).map((p) => (
+                        <button
+                          key={p.logo}
+                          type="button"
+                          onClick={() => {
+                            setFormClientLogo(p.logo);
+                            if (!formClientShort) setFormClientShort(p.name);
+                          }}
+                          className="px-2 py-0.5 rounded text-[10px] bg-slate-100 hover:bg-orange-100 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 transition-colors"
+                        >
+                          {p.name.replace("Kementerian ", "Kemen. ")}
+                        </button>
                       ))}
-                    </select>
+                    </div>
                   </div>
 
+                  {/* Sektor & Periode */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                        Sektor Penugasan
+                      </label>
+                      <select
+                        value={formSector}
+                        onChange={(e) => setFormSector(e.target.value)}
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none cursor-pointer"
+                      >
+                        {SECTOR_OPTIONS.map((sec) => (
+                          <option
+                            key={sec}
+                            value={sec}
+                            className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+                          >
+                            {sec}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                        Kategori Spesifik
+                      </label>
+                      <input
+                        type="text"
+                        value={formCategoryTag}
+                        onChange={(e) => setFormCategoryTag(e.target.value)}
+                        placeholder="cth. Kependudukan & Identitas Digital"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                        Periode Penugasan
+                      </label>
+                      <input
+                        type="text"
+                        value={formPeriod}
+                        onChange={(e) => setFormPeriod(e.target.value)}
+                        placeholder="cth. Multi-Tahun (Operasional Aktif)"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Pilar & Flagship */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                        Pilar Layanan CITS
+                      </label>
+                      <input
+                        type="text"
+                        value={formServicePillar}
+                        onChange={(e) => setFormServicePillar(e.target.value)}
+                        placeholder="cth. Software House & Pemeliharaan Mission-Critical"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="pt-4 flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="formIsFlagship"
+                        checked={formIsFlagship}
+                        onChange={(e) => setFormIsFlagship(e.target.checked)}
+                        className="w-4 h-4 accent-orange-600 rounded cursor-pointer"
+                      />
+                      <label
+                        htmlFor="formIsFlagship"
+                        className="font-bold text-slate-700 dark:text-slate-300 cursor-pointer"
+                      >
+                        Jadikan Studi Kasus Unggulan (Flagship)
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Tagline / Ringkasan */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                      Kategori Spesifik
+                      Ringkasan Singkat / Tagline
                     </label>
-                    <input
-                      type="text"
-                      value={formCategoryTag}
-                      onChange={(e) => setFormCategoryTag(e.target.value)}
-                      placeholder="cth. Kependudukan & Identitas Digital"
+                    <textarea
+                      rows={2}
+                      value={formTagline}
+                      onChange={(e) => setFormTagline(e.target.value)}
+                      placeholder="Kalimat pengantar dampak sistem bagi publik atau kementerian..."
                       className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                      Periode Penugasan
+                  {/* Tantangan & Solusi */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                        Tantangan Inti Klien
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={formChallenge}
+                        onChange={(e) => setFormChallenge(e.target.value)}
+                        placeholder="Kendala teknis, beban transaksi data, atau regulasi yang dihadapi..."
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                        Solusi Rekayasa CITS
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={formSolution}
+                        onChange={(e) => setFormSolution(e.target.value)}
+                        placeholder="Solusi arsitektur, API, database, atau pengadaan yang diimplementasikan..."
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Capaian Utama KPI */}
+                  <div className="p-3 rounded-2xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-200/60 dark:border-orange-900/40 space-y-2">
+                    <label className="block text-xs font-bold text-orange-900 dark:text-orange-300 uppercase tracking-wider">
+                      Capaian Terukur (KPI Highlight Badge)
                     </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Nilai (cth. 100+ Juta / 99.98%)"
+                        value={formKpiValue}
+                        onChange={(e) => setFormKpiValue(e.target.value)}
+                        className="px-3 py-1.5 rounded-lg bg-white dark:bg-[#1A1A2E] border border-orange-200 dark:border-orange-800/50 text-xs font-bold text-slate-900 dark:text-white focus:outline-none"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Label (cth. Transaksi Verifikasi / Tahun)"
+                        value={formKpiLabel}
+                        onChange={(e) => setFormKpiLabel(e.target.value)}
+                        className="px-3 py-1.5 rounded-lg bg-white dark:bg-[#1A1A2E] border border-orange-200 dark:border-orange-800/50 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      />
+                    </div>
                     <input
                       type="text"
-                      value={formPeriod}
-                      onChange={(e) => setFormPeriod(e.target.value)}
-                      placeholder="cth. Multi-Tahun (Operasional Aktif)"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Pilar & Flagship */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                      Pilar Layanan CITS
-                    </label>
-                    <input
-                      type="text"
-                      value={formServicePillar}
-                      onChange={(e) => setFormServicePillar(e.target.value)}
-                      placeholder="cth. Software House & Pemeliharaan Mission-Critical"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      placeholder="Detail dampak (cth. Menjamin latensi verifikasi < 1.5 detik)"
+                      value={formKpiDetail}
+                      onChange={(e) => setFormKpiDetail(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-[#1A1A2E] border border-orange-200 dark:border-orange-800/50 text-xs text-slate-900 dark:text-white focus:outline-none"
                     />
                   </div>
 
-                  <div className="pt-4 flex items-center gap-2">
+                  {/* Tech Stack & Scope */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                        Teknologi yang Digunakan (Pisahkan dengan koma)
+                      </label>
+                      <input
+                        type="text"
+                        value={formTechStack}
+                        onChange={(e) => setFormTechStack(e.target.value)}
+                        placeholder="cth. Next.js, Oracle RAC, REST API, Docker"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                        Deliverables / Hasil Kerja (Pisahkan dengan koma)
+                      </label>
+                      <input
+                        type="text"
+                        value={formDeliverables}
+                        onChange={(e) => setFormDeliverables(e.target.value)}
+                        placeholder="cth. API Gateway, Dasbor Eksekutif, SLA 24/7"
+                        className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Active Checkbox */}
+                  <div className="flex items-center gap-2 pt-1">
                     <input
                       type="checkbox"
-                      id="formIsFlagship"
-                      checked={formIsFlagship}
-                      onChange={(e) => setFormIsFlagship(e.target.checked)}
+                      id="formIsActiveCheck"
+                      checked={formIsActive}
+                      onChange={(e) => setFormIsActive(e.target.checked)}
                       className="w-4 h-4 accent-orange-600 rounded cursor-pointer"
                     />
                     <label
-                      htmlFor="formIsFlagship"
-                      className="font-bold text-slate-700 dark:text-slate-300 cursor-pointer"
+                      htmlFor="formIsActiveCheck"
+                      className="font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
                     >
-                      Jadikan Studi Kasus Unggulan (Flagship)
+                      Tampilkan studi kasus ini di Front Office (/portfolio)
                     </label>
                   </div>
-                </div>
 
-                {/* Tagline / Ringkasan */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                    Ringkasan Singkat / Tagline
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={formTagline}
-                    onChange={(e) => setFormTagline(e.target.value)}
-                    placeholder="Kalimat pengantar dampak sistem bagi publik atau kementerian..."
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
-                  />
-                </div>
-
-                {/* Tantangan & Solusi */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                      Tantangan Inti Klien
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={formChallenge}
-                      onChange={(e) => setFormChallenge(e.target.value)}
-                      placeholder="Kendala teknis, beban transaksi data, atau regulasi yang dihadapi..."
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                      Solusi Rekayasa CITS
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={formSolution}
-                      onChange={(e) => setFormSolution(e.target.value)}
-                      placeholder="Solusi arsitektur, API, database, atau pengadaan yang diimplementasikan..."
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Capaian Utama KPI */}
-                <div className="p-3 rounded-2xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-200/60 dark:border-orange-900/40 space-y-2">
-                  <label className="block text-xs font-bold text-orange-900 dark:text-orange-300 uppercase tracking-wider">
-                    Capaian Terukur (KPI Highlight Badge)
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <input
-                      type="text"
-                      placeholder="Nilai (cth. 100+ Juta / 99.98%)"
-                      value={formKpiValue}
-                      onChange={(e) => setFormKpiValue(e.target.value)}
-                      className="px-3 py-1.5 rounded-lg bg-white dark:bg-[#1A1A2E] border border-orange-200 dark:border-orange-800/50 text-xs font-bold text-slate-900 dark:text-white focus:outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Label (cth. Transaksi Verifikasi / Tahun)"
-                      value={formKpiLabel}
-                      onChange={(e) => setFormKpiLabel(e.target.value)}
-                      className="px-3 py-1.5 rounded-lg bg-white dark:bg-[#1A1A2E] border border-orange-200 dark:border-orange-800/50 text-xs text-slate-900 dark:text-white focus:outline-none"
-                    />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Detail dampak (cth. Menjamin latensi verifikasi < 1.5 detik)"
-                    value={formKpiDetail}
-                    onChange={(e) => setFormKpiDetail(e.target.value)}
-                    className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-[#1A1A2E] border border-orange-200 dark:border-orange-800/50 text-xs text-slate-900 dark:text-white focus:outline-none"
-                  />
-                </div>
-
-                {/* Tech Stack & Scope */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                      Teknologi yang Digunakan (Pisahkan dengan koma)
-                    </label>
-                    <input
-                      type="text"
-                      value={formTechStack}
-                      onChange={(e) => setFormTechStack(e.target.value)}
-                      placeholder="cth. Next.js, Oracle RAC, REST API, Docker"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                      Deliverables / Hasil Kerja (Pisahkan dengan koma)
-                    </label>
-                    <input
-                      type="text"
-                      value={formDeliverables}
-                      onChange={(e) => setFormDeliverables(e.target.value)}
-                      placeholder="cth. API Gateway, Dasbor Eksekutif, SLA 24/7"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Active Checkbox */}
-                <div className="flex items-center gap-2 pt-1">
-                  <input
-                    type="checkbox"
-                    id="formIsActiveCheck"
-                    checked={formIsActive}
-                    onChange={(e) => setFormIsActive(e.target.checked)}
-                    className="w-4 h-4 accent-orange-600 rounded cursor-pointer"
-                  />
-                  <label
-                    htmlFor="formIsActiveCheck"
-                    className="font-semibold text-slate-700 dark:text-slate-300 cursor-pointer"
-                  >
-                    Tampilkan studi kasus ini di Front Office (/portfolio)
-                  </label>
-                </div>
-
-                {/* Footer Buttons */}
-                <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
-                  <span>
-                    <span className="block text-xs font-bold text-slate-900 dark:text-white">
-                      Tampilkan di Beranda Utama
+                  {/* Footer Buttons */}
+                  <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
+                    <span>
+                      <span className="block text-xs font-bold text-slate-900 dark:text-white">
+                        Tampilkan di Beranda Utama
+                      </span>
+                      <span className="block text-[11px] text-slate-500 dark:text-slate-300">
+                        Centang agar proyek masuk ke panel ilustrasi pembuka beranda. Maksimal 3 proyek terpilih
+                        ditampilkan.
+                      </span>
                     </span>
-                    <span className="block text-[11px] text-slate-500 dark:text-slate-300">
-                      Centang agar proyek masuk ke panel ilustrasi pembuka beranda. Maksimal 3 proyek terpilih
-                      ditampilkan.
-                    </span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={formShowOnHome}
-                    onChange={(event) => setFormShowOnHome(event.target.checked)}
-                    className="mt-0.5 h-5 w-5 shrink-0 accent-orange-600"
-                  />
-                </label>
+                    <input
+                      type="checkbox"
+                      checked={formShowOnHome}
+                      onChange={(event) => setFormShowOnHome(event.target.checked)}
+                      className="mt-0.5 h-5 w-5 shrink-0 accent-orange-600"
+                    />
+                  </label>
 
-                <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-end gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setModalOpen(false)}
-                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 cursor-pointer transition-all"
-                  >
-                    {editingStudy ? "Simpan Perubahan" : "Tambahkan Studi Kasus"}
-                  </button>
-                </div>
+                  <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-end gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!saving) setModalOpen(false);
+                      }}
+                      className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 cursor-pointer transition-all"
+                    >
+                      {editingStudy ? "Simpan Perubahan" : "Tambahkan Studi Kasus"}
+                    </button>
+                  </div>
+                </fieldset>
               </form>
             </div>
           </div>

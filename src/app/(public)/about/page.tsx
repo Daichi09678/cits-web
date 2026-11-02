@@ -22,8 +22,6 @@ import {
 } from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import GradientText from "@/components/ui/GradientText";
-import GridPattern from "@/components/ui/GridPattern";
-import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import { useCitsStore } from "@/stores/citsStore";
 import { usePublicPageContent } from "@/lib/publicPageContentClient";
@@ -89,8 +87,6 @@ export default function AboutPage() {
           style={{ order: sectionOrder("about-hero-heading") }}
           className="relative bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-dark dark:to-slate-950 py-12 md:py-20 overflow-hidden transition-colors border-b border-slate-200/70 dark:border-white/10"
         >
-          <FloatingShapes />
-          <GridPattern className="opacity-100" />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center">
               {/* Left Column: Official Profile Narrative */}
@@ -361,7 +357,6 @@ export default function AboutPage() {
           style={{ order: sectionOrder("values-heading") }}
           className="relative py-16 md:py-24 bg-slate-50 dark:bg-[#151528] border-b border-slate-200/80 dark:border-white/10 overflow-hidden transition-colors"
         >
-          <GridPattern />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <ScrollReveal>
               <div className="text-center max-w-3xl mx-auto mb-14">
@@ -547,7 +542,6 @@ export default function AboutPage() {
           style={{ order: sectionOrder("awards-heading") }}
           className="relative py-16 md:py-24 bg-slate-50 dark:bg-[#151528] border-b border-slate-200/80 dark:border-white/10 overflow-hidden transition-colors"
         >
-          <GridPattern />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <ScrollReveal>
               <div className="text-center max-w-3xl mx-auto mb-10">

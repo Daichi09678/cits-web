@@ -8,10 +8,12 @@ export default function EditAccountDialog({
   account,
   onClose,
   onSaved,
+  onAccessSaved,
 }: {
   account: PublicInternalAccount;
   onClose: () => void;
   onSaved: (account: PublicInternalAccount) => void;
+  onAccessSaved?: (account: PublicInternalAccount) => void;
 }) {
   return (
     <SettingsDialog
@@ -20,7 +22,13 @@ export default function EditAccountDialog({
       busy={false}
       onClose={onClose}
     >
-      <AdminAccountEditor variant="dialog" account={account} onCancel={onClose} onSaved={onSaved} />
+      <AdminAccountEditor
+        variant="dialog"
+        account={account}
+        onCancel={onClose}
+        onSaved={onSaved}
+        onAccessSaved={onAccessSaved}
+      />
     </SettingsDialog>
   );
 }

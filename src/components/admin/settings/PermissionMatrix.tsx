@@ -6,7 +6,7 @@ import {
   EDITABLE_PAGES,
   PERMISSION_ACTIONS,
   availableActions,
-  normalizePermissions,
+  togglePermission,
   type PagePermissions,
 } from "@/lib/internalAccess";
 import { fieldClass } from "./styles";
@@ -17,10 +17,12 @@ export default function PermissionMatrix({
   value,
   onChange,
   id,
+  disabled = false,
 }: {
   value: PagePermissions;
   onChange: (value: PagePermissions) => void;
   id?: string;
+  disabled?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const pages = EDITABLE_PAGES.filter((page) =>
@@ -43,6 +45,7 @@ export default function PermissionMatrix({
         <div className="flex flex-wrap items-center gap-1 text-xs font-semibold">
           <button
             type="button"
+            disabled={disabled}
             className="min-h-9 rounded-md px-2 text-[#FF4D00] hover:bg-[#FFF1E9] focus-visible:outline-2 focus-visible:outline-[#FF4D00] dark:hover:bg-orange-500/10"
             onClick={() =>
               onChange(Object.fromEntries(EDITABLE_PAGES.map(({ key }) => [key, [...availableActions(key)]])))
@@ -53,6 +56,7 @@ export default function PermissionMatrix({
           <span aria-hidden="true" className="h-4 w-px bg-[#E2E8F0] dark:bg-white/10" />
           <button
             type="button"
+            disabled={disabled}
             className="min-h-9 rounded-md px-2 text-[#64748B] hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-[#FF4D00] dark:hover:bg-white/5"
             onClick={() => onChange({})}
           >
@@ -68,7 +72,7 @@ export default function PermissionMatrix({
         aria-label="Matriks hak akses; geser untuk melihat semua tindakan"
       >
         <table className="w-full min-w-[640px] text-sm">
-          <caption className="sr-only">Hak akses per modul. Aktifkan Lihat sebelum memilih tindakan lainnya.</caption>
+          <caption className="sr-only">Hak akses per modul. Memilih tindakan otomatis mengaktifkan Lihat.</caption>
           <thead>
             <tr className="bg-[#F8FAFC] text-[11px] font-semibold tracking-wide text-[#64748B] uppercase dark:bg-white/5">
               <th scope="col" className="px-4 py-2.5 text-left">
@@ -99,41 +103,29 @@ export default function PermissionMatrix({
                 {PERMISSION_ACTIONS.map((action) => {
                   const available = availableActions(page.key).includes(action);
                   const checked = value[page.key]?.includes(action) === true;
-                  const disabled = action !== "view" && !value[page.key]?.includes("view");
                   return (
                     <td key={action} className="px-1 py-2.5 text-center">
                       {available ? (
-                        <label
-                          className={`relative inline-flex size-9 items-center justify-center ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
+                        <button
+                          type="button"
+                          role="checkbox"
+                          aria-checked={checked}
+                          aria-label={`${labels[action]} ${page.shortLabel}`}
+                          disabled={disabled}
+                          onClick={() => onChange(togglePermission(value, page.key, action))}
+                          className="inline-flex size-10 cursor-pointer items-center justify-center rounded-md hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-[#FF4D00] disabled:cursor-wait disabled:opacity-50 dark:hover:bg-white/5"
                         >
-                          <input
-                            type="checkbox"
-                            aria-label={`${labels[action]} ${page.shortLabel}`}
-                            checked={checked}
-                            disabled={disabled}
-                            className="peer sr-only"
-                            onChange={(event) => {
-                              const current = value[page.key] || [];
-                              const actions = event.target.checked
-                                ? [...current, action]
-                                : action === "view"
-                                  ? []
-                                  : current.filter((item) => item !== action);
-                              onChange(normalizePermissions({ ...value, [page.key]: actions }));
-                            }}
-                          />
                           <span
-                            className={`flex size-[18px] items-center justify-center rounded-[5px] border transition peer-focus-visible:ring-2 peer-focus-visible:ring-[#FF4D00] peer-focus-visible:ring-offset-2 ${
+                            aria-hidden="true"
+                            className={`flex size-[18px] items-center justify-center rounded-[5px] border transition ${
                               checked
                                 ? "border-[#FF4D00] bg-[#FF4D00] text-white"
-                                : disabled
-                                  ? "border-[#E2E8F0] bg-slate-100 dark:border-white/5 dark:bg-white/5"
-                                  : "border-slate-300 bg-white dark:border-white/20 dark:bg-transparent"
+                                : "border-slate-300 bg-white dark:border-white/20 dark:bg-transparent"
                             }`}
                           >
                             {checked && <Check className="size-3" strokeWidth={3} aria-hidden="true" />}
                           </span>
-                        </label>
+                        </button>
                       ) : (
                         <span
                           title="Tindakan tidak tersedia untuk modul ini"
@@ -160,7 +152,7 @@ export default function PermissionMatrix({
       </div>
 
       <div className="mt-2.5 flex flex-wrap justify-between gap-2 text-[11px] text-[#64748B]">
-        <span>Aktifkan Lihat untuk mengatur izin lainnya. — = tidak tersedia.</span>
+        <span>Semua tindakan dapat diatur. Memilih tindakan otomatis mengaktifkan Lihat.</span>
         <span aria-live="polite" className="font-semibold text-[#FF4D00]">
           {Object.keys(value).length} dari {EDITABLE_PAGES.length} modul dipilih
         </span>
