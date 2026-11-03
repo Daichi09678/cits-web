@@ -239,6 +239,7 @@ test("notification emails include visitor requirements and escape visitor conten
   const mailer = load(
     "lib/email.ts",
     {
+      "node:dns/promises": { lookup: async () => ({ address: "192.0.2.1", family: 4 }) },
       nodemailer: {
         default: {
           createTransport: () => ({

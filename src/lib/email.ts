@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { lookup } from "node:dns/promises";
 import { CONSULTATION_PURPOSES, CONSULTATION_SOURCES } from "@/lib/consultation";
 import type { ConsultationDetails } from "@/types/schema";
 
@@ -38,6 +39,19 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#039;");
 }
 
+async function createSmtpTransport(config: ReturnType<typeof getSmtpConfig>) {
+  const { host, port, user, pass } = config;
+  // Use the system resolver, which also supports Windows DNS configuration.
+  const { address } = await lookup(host, { family: 4 });
+  return nodemailer.createTransport({
+    host: address,
+    port,
+    secure: port === 465,
+    tls: { servername: host },
+    auth: { user, pass },
+  });
+}
+
 export async function sendPasswordResetEmail(params: {
   to: string;
   name: string;
@@ -52,12 +66,7 @@ export async function sendPasswordResetEmail(params: {
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: { user, pass },
-    });
+    const transporter = await createSmtpTransport({ host, port, user, pass });
 
     const safeName = escapeHtml(params.name || "Administrator");
     const safeUrl = escapeHtml(params.resetUrl);
@@ -128,12 +137,7 @@ export async function sendContactNotificationEmail(
   }
 
   try {
-    const transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: { user, pass },
-    });
+    const transporter = await createSmtpTransport({ host, port, user, pass });
 
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
