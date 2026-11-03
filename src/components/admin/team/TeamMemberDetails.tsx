@@ -15,7 +15,7 @@ export function TeamPhoto({
   const size = large ? 80 : 48;
   return (
     <div
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#F1F5F9] text-[#64748B] ${large ? "h-20 w-20" : "h-12 w-12"}`}
+      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 ${large ? "h-20 w-20" : "h-12 w-12"}`}
     >
       {member.photoUrl ? (
         <Image
@@ -35,7 +35,7 @@ export function TeamPhoto({
 
 export function TeamStatus({ active }: { active: boolean }) {
   return (
-    <span className="inline-flex items-center gap-2 text-[13px] text-[#64748B]">
+    <span className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
       <span aria-hidden="true" className={`h-2 w-2 rounded-full ${active ? "bg-green-600" : "bg-slate-400"}`} />
       {active ? "Aktif" : "Nonaktif"}
     </span>
@@ -79,22 +79,24 @@ export default function TeamMemberDetails({
         <div className="flex items-center gap-4">
           <TeamPhoto member={member} large />
           <div className="min-w-0 [overflow-wrap:anywhere]">
-            <h3 className="text-lg font-semibold">{member.name}</h3>
-            <p className="mb-2 mt-1 text-sm text-[#64748B]">{member.position}</p>
+            <h3 className="text-lg font-bold">{member.name}</h3>
+            <p className="mb-2 mt-1 text-sm text-slate-600 dark:text-slate-300">{member.position}</p>
             <TeamStatus active={member.isActive !== false} />
           </div>
         </div>
-        <dl className="mt-6 divide-y divide-[#E5E7EB] border-t border-[#E5E7EB]">
+        <dl className="mt-6 divide-y divide-slate-200 dark:divide-white/10 border-t border-slate-200 dark:border-white/10">
           {info.map(([label, value]) => (
             <div key={label} className="grid gap-1 py-4 text-sm sm:grid-cols-[160px_1fr] sm:gap-4">
-              <dt className="text-[#64748B]">{label}</dt>
+              <dt className="text-slate-600 dark:text-slate-300">{label}</dt>
               <dd className="font-medium">{value}</dd>
             </div>
           ))}
         </dl>
-        {member.isDemo && <p className="text-xs text-[#64748B]">Data contoh, bukan anggota resmi.</p>}
+        {member.isDemo && (
+          <p className="text-xs text-slate-600 dark:text-slate-300">Data contoh, bukan anggota resmi.</p>
+        )}
       </div>
-      <footer className="flex shrink-0 justify-end gap-3 border-t border-[#E5E7EB] px-6 py-4">
+      <footer className="flex shrink-0 justify-end gap-3 border-t border-slate-200 dark:border-white/10 px-6 py-4">
         <button type="button" onClick={onClose} className={teamSecondary}>
           Tutup
         </button>

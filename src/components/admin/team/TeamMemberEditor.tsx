@@ -89,7 +89,7 @@ export default function TeamMemberEditor({
           <fieldset disabled={busy} className="space-y-5 disabled:opacity-60">
             <div>
               <label htmlFor={`${id}-photo`} className="text-xs font-medium">
-                Upload Foto Profil <span className="font-normal text-[#64748B]">(opsional)</span>
+                Upload Foto Profil <span className="font-normal text-slate-600 dark:text-slate-300">(opsional)</span>
               </label>
               <div className="mt-3 flex flex-wrap items-center gap-4">
                 <TeamPhoto
@@ -121,26 +121,32 @@ export default function TeamMemberEditor({
                           setDraft({ ...draft, photoUrl: null });
                           setPhotoError("");
                         }}
-                        className={teamButton + " px-2 text-[#64748B] hover:text-red-700"}
+                        className={
+                          teamButton + " px-2 text-slate-600 dark:text-slate-300 hover:text-red-700 dark:text-red-300"
+                        }
                       >
                         Hapus Foto
                       </button>
                     )}
                   </div>
-                  <p id={`${id}-photo-help`} className="mt-2 text-xs leading-5 text-[#64748B]">
+                  <p id={`${id}-photo-help`} className="mt-2 text-xs leading-5 text-slate-600 dark:text-slate-300">
                     PNG, JPEG, WebP, GIF, atau AVIF.
                     <br />
                     Maksimal 5 MB.
                   </p>
                 </div>
               </div>
-              <p id={`${id}-photo-error`} role={photoError ? "alert" : undefined} className="mt-2 text-xs text-red-700">
+              <p
+                id={`${id}-photo-error`}
+                role={photoError ? "alert" : undefined}
+                className="mt-2 text-xs text-red-700 dark:text-red-300"
+              >
                 {photoError}
               </p>
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
               <label htmlFor={`${id}-name`} className="block text-xs font-medium sm:col-span-2">
-                Nama Lengkap <span className="text-red-700">*</span>
+                Nama Lengkap <span className="text-red-700 dark:text-red-300">*</span>
                 <input
                   autoFocus
                   id={`${id}-name`}
@@ -154,7 +160,7 @@ export default function TeamMemberEditor({
                 />
               </label>
               <label htmlFor={`${id}-position`} className="block text-xs font-medium sm:col-span-2">
-                Jabatan <span className="text-red-700">*</span>
+                Jabatan <span className="text-red-700 dark:text-red-300">*</span>
                 <input
                   id={`${id}-position`}
                   name="position"
@@ -167,7 +173,7 @@ export default function TeamMemberEditor({
                 />
               </label>
               <label htmlFor={`${id}-order`} className="block text-xs font-medium">
-                Urutan Tampil <span className="text-red-700">*</span>
+                Urutan Tampil <span className="text-red-700 dark:text-red-300">*</span>
                 <input
                   id={`${id}-order`}
                   name="displayOrder"
@@ -181,7 +187,7 @@ export default function TeamMemberEditor({
                   placeholder="Contoh: 1"
                   className={teamField}
                 />
-                <span className="mt-2 block text-xs font-normal leading-5 text-[#64748B]">
+                <span className="mt-2 block text-xs font-normal leading-5 text-slate-600 dark:text-slate-300">
                   Angka lebih kecil tampil lebih dahulu. Gunakan 0–9999.
                 </span>
               </label>
@@ -211,8 +217,10 @@ export default function TeamMemberEditor({
               />
               Tampilkan di beranda
             </label>
-            <details className="border-t border-[#E5E7EB] pt-4">
-              <summary className="cursor-pointer text-xs font-medium text-[#64748B]">Pilihan lainnya</summary>
+            <details className="border-t border-slate-200 dark:border-white/10 pt-4">
+              <summary className="cursor-pointer text-xs font-medium text-slate-600 dark:text-slate-300">
+                Pilihan lainnya
+              </summary>
               <label htmlFor={`${id}-photo-url`} className="mt-4 block text-xs font-medium">
                 URL Foto
                 <input
@@ -223,7 +231,7 @@ export default function TeamMemberEditor({
                   className={teamField}
                 />
               </label>
-              <label className="mt-3 flex min-h-11 cursor-pointer items-center gap-3 text-xs text-[#64748B]">
+              <label className="mt-3 flex min-h-11 cursor-pointer items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
                 <input
                   type="checkbox"
                   checked={draft.isDemo === true}
@@ -235,17 +243,17 @@ export default function TeamMemberEditor({
             </details>
           </fieldset>
           {error && (
-            <p role="alert" className="mt-4 text-sm text-red-700">
+            <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">
               {error}
             </p>
           )}
           {uploading && (
-            <p role="status" className="mt-3 text-xs text-[#64748B]">
+            <p role="status" className="mt-3 text-xs text-slate-600 dark:text-slate-300">
               Mengunggah foto profil...
             </p>
           )}
         </div>
-        <footer className="flex shrink-0 justify-end gap-3 border-t border-[#E5E7EB] px-6 py-4">
+        <footer className="flex shrink-0 justify-end gap-3 border-t border-slate-200 dark:border-white/10 px-6 py-4">
           <button type="button" onClick={close} disabled={busy} className={teamSecondary}>
             Batal
           </button>

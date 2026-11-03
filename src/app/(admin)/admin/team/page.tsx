@@ -11,7 +11,6 @@ import { canPerformAction } from "@/lib/internalAccess";
 import { citsApi } from "@/lib/api";
 import { announceTeamUpdate, useTeamMembers } from "@/lib/teamClient";
 import { sortTeamMembers, type TeamMember, type TeamMemberInput } from "@/lib/team";
-import styles from "./page.module.css";
 
 const blank: TeamMemberInput = {
   name: "",
@@ -77,19 +76,19 @@ export default function AdminTeamPage() {
     announceTeamUpdate();
   }
   return (
-    <div className={styles.page}>
+    <div className="flex min-w-0 flex-1 flex-col bg-slate-50/70 text-slate-900 dark:bg-[#0F0F1A] dark:text-white">
       <AdminTopbar title="Tim Kami" description="Kelola anggota tim yang tampil di website." />
       <div className="p-4 sm:p-6 lg:p-8">
         <section
           aria-labelledby="team-members-heading"
-          className="overflow-hidden rounded-xl border border-[#E5E7EB] bg-white shadow-xs"
+          className="overflow-hidden rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151528] shadow-xs"
         >
-          <div className="flex flex-wrap items-center justify-between gap-5 border-b border-[#E5E7EB] px-5 py-6 sm:px-6">
+          <div className="flex flex-wrap items-center justify-between gap-5 border-b border-slate-200 dark:border-white/10 px-5 py-6 sm:px-6">
             <div className="border-l-4 border-[#F45100] pl-4">
-              <h2 id="team-members-heading" className="text-lg font-semibold tracking-tight">
+              <h2 id="team-members-heading" className="text-lg font-bold">
                 Anggota Tim
               </h2>
-              <p className="mt-2 max-w-2xl text-[13px] leading-6 text-[#64748B]">
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
                 Beranda menampilkan maksimal empat anggota aktif sesuai urutan yang Anda tentukan. Gunakan data dan foto
                 resmi tim.
               </p>
@@ -110,20 +109,20 @@ export default function AdminTeamPage() {
             {success && (
               <p
                 role="status"
-                className="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800"
+                className="mb-4 rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950/30 px-4 py-3 text-sm text-green-800 dark:text-green-200"
               >
                 {success}
               </p>
             )}
             {!pendingDelete && mutationError && (
-              <p role="alert" className="mb-4 text-sm text-red-700">
+              <p role="alert" className="mb-4 text-sm text-red-700 dark:text-red-300">
                 {mutationError}
               </p>
             )}
             {error && (
               <div
                 role="alert"
-                className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+                className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4 text-sm text-red-800 dark:text-red-200"
               >
                 <p>{error}</p>
                 <button type="button" onClick={() => void reload()} className={teamSecondary}>
@@ -137,7 +136,7 @@ export default function AdminTeamPage() {
                   Cari nama atau jabatan
                 </label>
                 <Search
-                  className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-[#64748B]"
+                  className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-slate-600 dark:text-slate-300"
                   aria-hidden="true"
                 />
                 <input
@@ -146,18 +145,18 @@ export default function AdminTeamPage() {
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Cari nama atau jabatan..."
-                  className="min-h-11 w-full rounded-lg border border-[#E5E7EB] bg-white py-2 pl-10 pr-3 text-sm placeholder:text-[#64748B] focus:border-[#F45100] focus:outline-2 focus:outline-[#F45100]/20"
+                  className="min-h-11 w-full rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151528] py-2 pl-10 pr-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#F45100] focus:outline-2 focus:outline-[#F45100]/20"
                 />
               </div>
               <div className="flex items-center gap-3">
-                <label htmlFor="team-status" className="text-xs text-[#64748B]">
+                <label htmlFor="team-status" className="text-xs text-slate-600 dark:text-slate-300">
                   Status
                 </label>
                 <select
                   id="team-status"
                   value={status}
                   onChange={(event) => setStatus(event.target.value)}
-                  className="min-h-11 flex-1 rounded-lg border border-[#E5E7EB] bg-white px-3 py-2 text-sm font-medium focus:outline-2 focus:outline-[#F45100]/30 sm:min-w-36"
+                  className="min-h-11 flex-1 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151528] px-3 py-2 text-sm font-medium focus:outline-2 focus:outline-[#F45100]/30 sm:min-w-36"
                 >
                   <option value="all">Semua</option>
                   <option value="active">Aktif</option>
@@ -166,15 +165,19 @@ export default function AdminTeamPage() {
               </div>
             </div>
             {loading ? (
-              <p role="status" aria-busy="true" className="py-16 text-center text-sm text-[#64748B]">
+              <p
+                role="status"
+                aria-busy="true"
+                className="py-16 text-center text-sm text-slate-600 dark:text-slate-300"
+              >
                 Memuat anggota tim...
               </p>
             ) : !error && !filtered.length ? (
-              <div className="border-y border-[#E5E7EB] py-16 text-center">
+              <div className="border-y border-slate-200 dark:border-white/10 py-16 text-center">
                 <h3 className="text-sm font-semibold">
                   {members.length ? "Anggota tidak ditemukan" : "Belum ada anggota tim"}
                 </h3>
-                <p className="mx-auto mt-2 max-w-md text-[13px] leading-6 text-[#64748B]">
+                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-600 dark:text-slate-300">
                   {members.length
                     ? "Coba nama atau jabatan lain, atau ubah filter status."
                     : "Tambahkan anggota tim untuk ditampilkan di website."}
@@ -192,7 +195,7 @@ export default function AdminTeamPage() {
                   </button>
                 )}
                 {canCreate && !members.length && (
-                  <details className="mt-5 text-xs text-[#64748B]">
+                  <details className="mt-5 text-xs text-slate-600 dark:text-slate-300">
                     <summary className="cursor-pointer">Opsi data contoh</summary>
                     <p className="mt-2">Gunakan hanya untuk pengujian, bukan identitas resmi perusahaan.</p>
                     <button
@@ -225,14 +228,14 @@ export default function AdminTeamPage() {
                 <div>
                   <div
                     aria-hidden="true"
-                    className="hidden grid-cols-[minmax(0,1fr)_72px_110px_244px] gap-4 border-b border-[#E5E7EB] px-3 pb-3 text-xs font-medium text-[#64748B] lg:grid"
+                    className="hidden grid-cols-[minmax(0,1fr)_72px_110px_244px] gap-4 border-b border-slate-200 dark:border-white/10 px-3 pb-3 text-xs font-medium text-slate-600 dark:text-slate-300 lg:grid"
                   >
                     <span>Nama &amp; jabatan</span>
                     <span>Urutan</span>
                     <span>Status</span>
                     <span className="text-right">Aksi</span>
                   </div>
-                  <ul className="divide-y divide-[#E5E7EB]">
+                  <ul className="divide-y divide-slate-200 dark:divide-white/10">
                     {filtered.map((member) => (
                       <li
                         key={member.id}
@@ -242,11 +245,13 @@ export default function AdminTeamPage() {
                           <TeamPhoto member={member} />
                           <div className="min-w-0 [overflow-wrap:anywhere]">
                             <h3 className="text-sm font-semibold">{member.name}</h3>
-                            <p className="mt-1 text-[13px] text-[#64748B]">{member.position}</p>
-                            {member.isDemo && <p className="mt-1 text-xs text-[#64748B]">Data contoh</p>}
+                            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{member.position}</p>
+                            {member.isDemo && (
+                              <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">Data contoh</p>
+                            )}
                           </div>
                         </div>
-                        <p className="text-[13px] text-[#64748B]">
+                        <p className="text-sm text-slate-600 dark:text-slate-300">
                           <span className="lg:sr-only">Urutan: </span>
                           {member.displayOrder ?? 0}
                         </p>
@@ -259,7 +264,10 @@ export default function AdminTeamPage() {
                               rememberOpener();
                               setDetail(member);
                             }}
-                            className={teamButton + " px-3 text-[#64748B] hover:bg-[#F8F9FB]"}
+                            className={
+                              teamButton +
+                              " px-3 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10"
+                            }
                           >
                             <Eye className="h-4 w-4" aria-hidden="true" />
                             Detail
@@ -284,7 +292,9 @@ export default function AdminTeamPage() {
                                 rememberOpener();
                                 setPendingDelete(member);
                               }}
-                              className={teamButton + " w-11 px-0 text-red-600 hover:bg-red-50"}
+                              className={
+                                teamButton + " w-11 px-0 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                              }
                             >
                               <Trash2 className="h-4 w-4" aria-hidden="true" />
                             </button>
@@ -297,7 +307,10 @@ export default function AdminTeamPage() {
               )
             )}
             {!loading && !error && (
-              <p aria-live="polite" className="mt-1 border-t border-[#E5E7EB] pt-5 text-[13px] text-[#64748B]">
+              <p
+                aria-live="polite"
+                className="mt-1 border-t border-slate-200 dark:border-white/10 pt-5 text-sm text-slate-600 dark:text-slate-300"
+              >
                 Menampilkan {filtered.length} dari {members.length} anggota
               </p>
             )}
@@ -317,17 +330,17 @@ export default function AdminTeamPage() {
       {pendingDelete && (
         <TeamDialog title="Hapus Anggota Tim?" titleId={titleId} busy={saving} onClose={close}>
           <div className="p-6">
-            <p className="text-sm leading-6 text-[#64748B]">
-              <strong className="font-semibold text-[#111827]">{pendingDelete.name}</strong> akan dihapus dari daftar
-              tim dan tidak lagi tampil di website.
+            <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
+              <strong className="font-semibold text-slate-900 dark:text-white">{pendingDelete.name}</strong> akan
+              dihapus dari daftar tim dan tidak lagi tampil di website.
             </p>
             {mutationError && (
-              <p role="alert" className="mt-4 text-sm text-red-700">
+              <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">
                 {mutationError}
               </p>
             )}
           </div>
-          <footer className="flex shrink-0 justify-end gap-3 border-t border-[#E5E7EB] px-6 py-4">
+          <footer className="flex shrink-0 justify-end gap-3 border-t border-slate-200 dark:border-white/10 px-6 py-4">
             <button autoFocus type="button" onClick={close} disabled={saving} className={teamSecondary}>
               Batal
             </button>
