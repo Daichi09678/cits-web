@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ChevronDown } from "lucide-react";
 
@@ -25,7 +25,7 @@ export default function CustomSelect({
         onChange={(event) => onChange?.(event.target.value)}
         aria-labelledby={labelledBy}
         aria-label={labelledBy ? undefined : placeholder}
-        className="w-full min-w-0 appearance-none truncate pl-4 pr-10 py-3 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#111827] text-gray-900 dark:text-white text-left outline-none transition-colors hover:border-gray-300 dark:hover:border-white/20 focus:border-orange-600 focus:ring-2 focus:ring-orange-600/20"
+        className="w-full min-w-0 appearance-none truncate pl-4 pr-10 py-3 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1A1A2E] text-gray-900 dark:text-white text-left outline-none transition-colors hover:border-gray-300 dark:hover:border-white/20 focus:border-orange-600 focus:ring-2 focus:ring-orange-600/20"
       >
         <option value="">{placeholder}</option>
         {options.map((option) => (

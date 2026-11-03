@@ -9,9 +9,11 @@ import ConsultationRequirementsFields, {
 import { consultationPurpose, consultationSource, CONSULTATION_SOURCES } from "@/lib/consultation";
 import { resolveServiceCatalog } from "@/lib/serviceCatalog";
 import type { ConsultationPurpose, ConsultationSource } from "@/types/schema";
-import { MapPin, Phone, Mail, Send, Building2, CheckCircle2, ExternalLink, MessageSquare, HelpCircle, User, Copy, CheckCheck, ChevronDown } from "lucide-react";
+import { MapPin, Phone, Mail, Send, Building2, Clock, ShieldCheck, CheckCircle2, ExternalLink, MessageSquare, HelpCircle, Check, User, Copy, CheckCheck, ChevronDown } from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import GradientText from "@/components/ui/GradientText";
+import GridPattern from "@/components/ui/GridPattern";
+import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { useCitsStore } from "@/stores/citsStore";
@@ -133,11 +135,11 @@ function ContactPageContent({
       {announcement?.isActive && announcement.text && (
         <aside
           aria-label="Pengumuman Resmi"
-          className="text-white py-2.5 px-4 text-xs font-semibold  bg-orange-700"
+          className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-2.5 px-4 text-xs font-semibold shadow-xs"
         >
           <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-center sm:text-left">
             <div className="flex items-center gap-2 mx-auto sm:mx-0">
-              
+              <span className="w-2 h-2 rounded-full bg-white animate-ping shrink-0" />
               <span>{announcement.text}</span>
             </div>
             {announcement.linkText && announcement.linkUrl && (
@@ -154,13 +156,17 @@ function ContactPageContent({
           </div>
         </aside>
       )}
+
+      {/* 1. HERO SECTION (Clean, WCAG compliant, No breadcrumbs, No black border line) */}
       <section
         aria-labelledby="contact-hero-heading"
-        className="relative py-14 md:py-22 overflow-hidden transition-colors bg-slate-50 dark:bg-[#0f172a]"
+        className="relative bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-dark dark:to-slate-950 py-14 md:py-22 overflow-hidden transition-colors"
       >
+        <FloatingShapes />
+        <GridPattern className="opacity-100" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
-            
+
 
             <h1
               id="contact-hero-heading"
@@ -170,21 +176,38 @@ function ContactPageContent({
             </h1>
           </ScrollReveal>
 
-          
-
           <ScrollReveal delay={0.1}>
             <p className="mt-5 text-gray-700 dark:text-white/85 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
               Kami siap mendampingi kementerian, lembaga tinggi negara, BUMN, dan korporasi dalam merumuskan arsitektur
               sistem digital yang andal, aman, dan berdaya guna jangka panjang.
             </p>
           </ScrollReveal>
-          
+
+          {/* Quick Credential Highlights */}
+          <ScrollReveal delay={0.2}>
+            <div className="mt-8 flex flex-wrap justify-center gap-2.5 text-xs">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15">
+                <Clock className="w-4 h-4 text-orange-700 dark:text-orange-400" />
+                Respon Cepat 1x24 Jam Kerja
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15">
+                <Building2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
+                Terdaftar Resmi LPSE & SIKaP LKPP
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15">
+                <ShieldCheck className="w-4 h-4 text-blue-700 dark:text-blue-400" />
+                Jaminan Kerahasiaan Data (NDA)
+              </span>
+            </div>
+          </ScrollReveal>
         </div>
       </section>
+
+      {/* 2. CONTACT DETAILS & FORM BENTO (Perfect Symmetry & Visual Polish) */}
       <section
         id="consultation-form"
         aria-labelledby="contact-form-heading"
-        className="scroll-mt-20 py-16 md:py-24 bg-white dark:bg-[#111827] transition-colors"
+        className="scroll-mt-20 py-16 md:py-24 bg-white dark:bg-[#1A1A2E] transition-colors"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 id="contact-form-heading" className="sr-only">
@@ -196,7 +219,7 @@ function ContactPageContent({
             <div className="lg:col-span-5 space-y-6">
               <ScrollReveal>
                 <div>
-                  
+
                   <h3 className="mt-3 text-2xl md:text-3xl font-extrabold text-dark dark:text-white">
                     Hubungi Kantor CITS
                   </h3>
@@ -210,7 +233,7 @@ function ContactPageContent({
               <div className="space-y-3.5">
                 {/* Address Card */}
                 <ScrollReveal delay={0.1}>
-                  <div className="p-5 rounded-xl bg-slate-50 dark:bg-[#111827] border border-gray-200 dark:border-white/10 flex items-start gap-4 hover:border-orange-500/40 transition-all ">
+                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-gray-200 dark:border-white/10 flex items-start gap-4 hover:border-orange-500/40 transition-all shadow-sm">
                     <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0 mt-0.5">
                       <MapPin className="w-5 h-5" />
                     </div>
@@ -226,7 +249,7 @@ function ContactPageContent({
 
                 {/* Phone Card with Click-to-Call & Copy button */}
                 <ScrollReveal delay={0.15}>
-                  <div className="p-5 rounded-xl bg-slate-50 dark:bg-[#111827] border border-gray-200 dark:border-white/10 flex items-start gap-4 hover:border-orange-500/40 transition-all ">
+                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-gray-200 dark:border-white/10 flex items-start gap-4 hover:border-orange-500/40 transition-all shadow-sm">
                     <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0 mt-0.5">
                       <Phone className="w-5 h-5" />
                     </div>
@@ -267,7 +290,7 @@ function ContactPageContent({
 
                 {/* Email Card with Click-to-Mail & Copy button */}
                 <ScrollReveal delay={0.2}>
-                  <div className="p-5 rounded-xl bg-slate-50 dark:bg-[#111827] border border-gray-200 dark:border-white/10 flex items-start gap-4 hover:border-orange-500/40 transition-all ">
+                  <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-gray-200 dark:border-white/10 flex items-start gap-4 hover:border-orange-500/40 transition-all shadow-sm">
                     <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0 mt-0.5">
                       <Mail className="w-5 h-5" />
                     </div>
@@ -308,8 +331,8 @@ function ContactPageContent({
 
                 {/* Interactive Google Maps Card */}
                 <ScrollReveal delay={0.25}>
-                  <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-white/10  bg-slate-100 dark:bg-slate-900">
-                    <div className="p-3 bg-slate-50 dark:bg-[#111827] border-b border-gray-200 dark:border-white/10 flex items-center justify-between text-xs">
+                  <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-sm bg-slate-100 dark:bg-slate-900">
+                    <div className="p-3 bg-slate-50 dark:bg-[#16162c] border-b border-gray-200 dark:border-white/10 flex items-center justify-between text-xs">
                       <span className="font-semibold text-dark dark:text-white flex items-center gap-1.5">
                         <MapPin className="w-3.5 h-3.5 text-orange-700 dark:text-orange-400" />
                         Peta Lokasi Kantor Wisma Mampang
@@ -365,7 +388,7 @@ function ContactPageContent({
                         <div
                           role="status"
                           aria-live="polite"
-                          className="p-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-center space-y-4 my-8"
+                          className="p-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-center space-y-4 my-8"
                         >
                           <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center mx-auto text-emerald-700 dark:text-emerald-300">
                             <CheckCircle2 className="w-8 h-8" />
@@ -375,7 +398,7 @@ function ContactPageContent({
                           </h4>
                           <p className="text-sm text-emerald-800 dark:text-emerald-300 max-w-md mx-auto leading-relaxed">
                             Terima kasih telah menghubungi CITS Indonesia. Tim konsultan kami akan meninjau pesan Anda
-                            dan menghubungi Anda kembali melalui kontak yang dicantumkan.
+                            dan segera menghubungi Anda kembali dalam 1x24 jam kerja.
                           </p>
                           <button
                             type="button"
@@ -470,7 +493,7 @@ function ContactPageContent({
                                   required
                                   value={formName}
                                   onChange={(e) => setFormName(e.target.value)}
-                                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#0b1220] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
+                                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
                                   placeholder="cth. Ir. Budi Santoso"
                                 />
                               </div>
@@ -494,7 +517,7 @@ function ContactPageContent({
                                   required
                                   value={formCompany}
                                   onChange={(e) => setFormCompany(e.target.value)}
-                                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#0b1220] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
+                                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
                                   placeholder="cth. Kementerian / BUMN / PT"
                                 />
                               </div>
@@ -521,7 +544,7 @@ function ContactPageContent({
                                   required
                                   value={formEmail}
                                   onChange={(e) => setFormEmail(e.target.value)}
-                                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#0b1220] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
+                                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
                                   placeholder="nama@instansi.go.id"
                                 />
                               </div>
@@ -545,7 +568,7 @@ function ContactPageContent({
                                   required
                                   value={formPhone}
                                   onChange={(e) => setFormPhone(e.target.value)}
-                                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#0b1220] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
+                                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
                                   placeholder="0812-xxxx-xxxx"
                                 />
                               </div>
@@ -656,7 +679,7 @@ function ContactPageContent({
                               rows={4}
                               value={formMessage}
                               onChange={(e) => setFormMessage(e.target.value)}
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#0b1220] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all resize-none text-sm"
+                              className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all resize-none text-sm"
                               placeholder="Jelaskan kendala, alur kerja yang perlu dibantu, integrasi yang dibutuhkan, dan pertanyaan yang ingin dibahas dengan tim CITS..."
                             />
                           </div>
@@ -667,7 +690,8 @@ function ContactPageContent({
                               id="contact-consent"
                               type="checkbox"
                               required
-                                                            className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 accent-orange-600 mt-0.5 cursor-pointer"
+                              defaultChecked
+                              className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 accent-orange-600 mt-0.5 cursor-pointer"
                             />
                             <label
                               htmlFor="contact-consent"
@@ -683,7 +707,7 @@ function ContactPageContent({
                             <button
                               type="submit"
                               disabled={isSubmitting}
-                              className="w-full py-3.5 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl   transition-all flex items-center justify-center gap-2 group cursor-pointer text-sm   active:scale-[0.99] bg-orange-700 hover:bg-orange-800"
+                              className="w-full py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-600/30 transition-all flex items-center justify-center gap-2 group cursor-pointer text-sm shadow-md shadow-orange-600/20 active:scale-[0.99]"
                             >
                               {isSubmitting ? (
                                 <>
@@ -708,11 +732,13 @@ function ContactPageContent({
           </div>
         </div>
       </section>
-      <section aria-labelledby="faq-heading" className="py-16 md:py-24 bg-gray-50 dark:bg-[#0f172a] transition-colors">
+
+      {/* 3. FAQ SECTION (IDDS Inquiries Accordion with Smooth Interactivity) */}
+      <section aria-labelledby="faq-heading" className="py-16 md:py-24 bg-gray-50 dark:bg-[#151528] transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-16">
-              
+
               <h2 id="faq-heading" className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white">
                 Informasi & <GradientText>Tanya Jawab</GradientText>
               </h2>
@@ -728,7 +754,7 @@ function ContactPageContent({
               const isOpen = openFaqIndex === idx;
               return (
                 <ScrollReveal key={faq.question} delay={idx * 0.06}>
-                  <div className="rounded-xl bg-white dark:bg-[#111827] border border-gray-200 dark:border-white/10 hover:border-orange-500/40 transition-all  overflow-hidden">
+                  <div className="rounded-2xl bg-white dark:bg-[#16162c] border border-gray-200 dark:border-white/10 hover:border-orange-500/40 transition-all shadow-sm overflow-hidden">
                     <button
                       type="button"
                       onClick={() => toggleFaq(idx)}
@@ -753,7 +779,10 @@ function ContactPageContent({
                         <p className="pl-12 text-xs md:text-sm text-gray-700 dark:text-white/85 leading-relaxed">
                           {faq.answer}
                         </p>
-                        
+                        <div className="mt-4 pl-12 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-400">
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Informasi Resmi Terverifikasi</span>
+                        </div>
                       </div>
                     )}
                   </div>

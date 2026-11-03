@@ -101,7 +101,7 @@ test("About displays edited badges, logo, legal status, history, governance and 
 
 test("Portfolio displays edited introduction, impact metrics, testimonials and bottom consultation text", () => {
   const data = fullContent("portfolio");
-  editText("portfolio", data, "Rekam Jejak Kemitraan & Studi Kasus Enterprise", "Portofolio pilihan kami");
+  editText("portfolio", data, "Studi Kasus Rekayasa Sistem", "Portofolio pilihan kami");
   editText(
     "portfolio",
     data,

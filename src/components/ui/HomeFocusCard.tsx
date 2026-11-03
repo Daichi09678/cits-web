@@ -11,13 +11,15 @@ export default function HomeFocusCard({ content }: { content?: LandingServicesIn
     <SpotlightCard className="h-full">
       <article
         data-home-focus
-        className="min-w-0 p-8 md:p-10 flex flex-col h-full bg-white dark:bg-[#111827] text-dark dark:text-white [overflow-wrap:anywhere]"
+        className="min-w-0 p-8 md:p-10 flex flex-col h-full bg-white dark:bg-[#16162c] text-dark dark:text-white [overflow-wrap:anywhere]"
       >
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-          <span className="w-14 h-14 shrink-0 rounded-xl flex items-center justify-center   bg-orange-700">
+          <span className="w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/20">
             <Shield className="w-7 h-7 text-white" aria-hidden="true" />
           </span>
-          
+          <span className="max-w-full text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1.5 rounded-full uppercase tracking-wider">
+            {content?.badge || "Budaya Kerja & Standar SLA"}
+          </span>
         </div>
         <h3 className="text-2xl font-bold leading-snug">{content?.title || "Prinsip Kerja FOCUS"}</h3>
         <p className="mt-3 text-sm md:text-base leading-relaxed text-gray-700 dark:text-white/85">
@@ -28,7 +30,7 @@ export default function HomeFocusCard({ content }: { content?: LandingServicesIn
           {items.map((item, index) => (
             <li
               key={item.letter + index}
-              className={`min-w-0 rounded-xl bg-orange-50/70 dark:bg-[#0b1220] border border-orange-200/70 dark:border-white/10 p-4 ${items.length % 2 && index === items.length - 1 ? "sm:col-span-2" : ""}`}
+              className={`min-w-0 rounded-xl bg-orange-50/70 dark:bg-[#121222] border border-orange-200/70 dark:border-white/10 p-4 ${items.length % 2 && index === items.length - 1 ? "sm:col-span-2" : ""}`}
             >
               <div className="flex items-start gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-950/60 text-xl font-black text-orange-800 dark:text-orange-300">
