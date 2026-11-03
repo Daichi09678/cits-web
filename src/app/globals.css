@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import "tailwindcss" source("../");
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -151,6 +151,10 @@ body {
 html.dark body {
   background: #1a1a2e;
   color: #ffffff;
+}
+
+body:has(dialog[data-admin-dialog][open]) {
+  overflow: hidden;
 }
 
 /* Animasi dialog/modal back office */

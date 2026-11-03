@@ -365,8 +365,8 @@ export const initialLandingPageData: LandingPageData = {
     secondaryCtaLink: "/products",
     trustBadges: ["Terdaftar LPSE & SIKaP LKPP", "Dukungan Tim Ahli 24/7"],
     showMockup: true,
-    mockupTitle: "CITS Enterprise System Portal",
-    mockupStatus: "Sistem Aktif",
+    mockupTitle: "Pilihan Proyek CITS",
+    mockupDescription: "Kenali kebutuhan dan solusi yang dikerjakan CITS melalui portofolio berikut.",
   },
   highlights: [
     { label: "Tahun Berpengalaman", value: "19+", isActive: true },
@@ -377,7 +377,8 @@ export const initialLandingPageData: LandingPageData = {
   servicesIntro: {
     badge: "Pilar Layanan Utama",
     title: "Solusi yang Siap Dipakai dan Dikembangkan",
-    subtitle: "Pilih kapabilitas yang sesuai kebutuhan Anda—mulai dari rekayasa perangkat lunak, konsultasi strategis, hingga infrastruktur TI.",
+    subtitle:
+      "Pilih kapabilitas yang sesuai kebutuhan Anda—mulai dari rekayasa perangkat lunak, konsultasi strategis, hingga infrastruktur TI.",
     cardSoftwareHouse: {
       badge: "Pilar Utama Pengembangan",
       title: "Pengembangan Perangkat Lunak (Software House)",

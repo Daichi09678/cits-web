@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, ChevronDown, Play, X } from "lucide-react";
+import { CheckCircle2, ChevronDown, Play, X } from "lucide-react";
 import ProductPhoto from "@/components/ui/ProductPhoto";
 import { useModalFocus } from "@/components/ui/useModalFocus";
 import { consultationHref } from "@/lib/consultation";
@@ -27,12 +27,12 @@ export default function ProductDetailsDialog({ product, onClose }: { product: Pr
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-product-title"
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-6"
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60  p-3 sm:p-6"
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-4xl max-h-[92dvh] min-h-0 flex flex-col rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#16162c] shadow-2xl overflow-hidden">
+      <div className="w-full max-w-4xl max-h-[92dvh] min-h-0 flex flex-col rounded-xl sm:rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#111827] shadow-2xl overflow-hidden">
         <header className="shrink-0 flex items-center justify-between gap-3 border-b border-slate-200 dark:border-white/10 px-4 py-3 sm:px-6">
           <p className="text-sm font-bold text-slate-900 dark:text-white">Spesifikasi Produk</p>
           <button
@@ -51,9 +51,7 @@ export default function ProductDetailsDialog({ product, onClose }: { product: Pr
           <div className="grid md:grid-cols-2 items-start gap-5 sm:gap-6">
             <ProductPhoto image={product.image} name={product.name} className="h-40 sm:h-52 md:h-60 rounded-xl" />
             <div className="min-w-0">
-              <span className="inline-block max-w-full rounded-lg bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/60 px-2.5 py-1 text-xs font-semibold text-orange-800 dark:text-orange-300">
-                {product.category}
-              </span>
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{product.category}</span>
               <h2
                 id="modal-product-title"
                 className="mt-3 text-xl sm:text-2xl font-extrabold leading-snug text-slate-900 dark:text-white"
@@ -146,7 +144,7 @@ export default function ProductDetailsDialog({ product, onClose }: { product: Pr
             </p>
           </details>
         </div>
-        <footer className="shrink-0 border-t border-slate-200 dark:border-white/10 bg-white dark:bg-[#16162c] p-3 sm:px-6 sm:py-4">
+        <footer className="shrink-0 border-t border-slate-200 dark:border-white/10 bg-white dark:bg-[#111827] p-3 sm:px-6 sm:py-4">
           <div className="grid grid-cols-2 gap-2 sm:gap-3">
             <Link
               href={consultationHref({
@@ -158,7 +156,7 @@ export default function ProductDetailsDialog({ product, onClose }: { product: Pr
               className="min-w-0 min-h-11 inline-flex items-center justify-center gap-2 rounded-xl bg-orange-700 hover:bg-orange-800 px-3 py-2.5 text-center text-xs sm:text-sm font-semibold text-white"
             >
               Konsultasi Produk
-              <ArrowRight className="hidden sm:block h-4 w-4 shrink-0" aria-hidden="true" />
+              
             </Link>
             <Link
               href={consultationHref({

@@ -39,7 +39,7 @@ const eslintConfig = defineConfig([
   },
   // Harus paling akhir: mematikan aturan format yang bentrok dengan Prettier.
   prettier,
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
+  globalIgnores([".next/**", ".next-*/**", "out/**", "build/**", "next-env.d.ts"]),
 ]);
 
 export default eslintConfig;

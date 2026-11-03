@@ -6,7 +6,9 @@ const { load } = require("./helpers/load.cjs");
 
 const Card = load("components/ui/TeamMemberCard.tsx", {
   "react/jsx-runtime": require("react/jsx-runtime"),
-  "next/image": { default: ({ fill: _fill, ...props }) => React.createElement("img", props) },
+  "next/image": {
+    default: ({ fill: _fill, unoptimized: _unoptimized, ...props }) => React.createElement("img", props),
+  },
 }).default;
 const Section = load("components/ui/TeamSection.tsx", {
   "react/jsx-runtime": require("react/jsx-runtime"),

@@ -1,5 +1,6 @@
 import { CONSULTATION_PURPOSES, CONSULTATION_SOURCES } from "@/lib/consultation";
 import type { ContactMessage } from "@/types/schema";
+import { FileText, Info } from "lucide-react";
 
 export default function MessageConsultationDetails({ message }: { message: ContactMessage }) {
   const details = message.consultation;
@@ -10,35 +11,45 @@ export default function MessageConsultationDetails({ message }: { message: Conta
     ["Perkiraan Penggunaan", details?.usageEstimate],
   ];
   return (
-    <section className="space-y-4 min-w-0 [overflow-wrap:anywhere]" aria-label="Detail kebutuhan konsultasi">
-      <div className="rounded-xl border border-orange-200 dark:border-orange-800/60 bg-orange-50 dark:bg-orange-950/20 p-4 space-y-3">
-        <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">Kebutuhan Pengunjung</h4>
-        {details?.purpose && (
-          <p className="font-semibold text-orange-800 dark:text-orange-300">{CONSULTATION_PURPOSES[details.purpose]}</p>
-        )}
-        {details?.source && (
-          <p className="text-xs text-slate-600 dark:text-slate-300">
-            Asal Konsultasi: {CONSULTATION_SOURCES[details.source]}
-          </p>
-        )}
-        <dl className="grid sm:grid-cols-2 gap-3">
+    <section
+      className="min-w-0 space-y-5 text-[13px] sm:space-y-6 [overflow-wrap:anywhere]"
+      aria-label="Detail kebutuhan konsultasi"
+    >
+      <div className="space-y-3 rounded-lg border border-gray-200 bg-[#FFF1E8]/60 p-4 dark:border-white/10 dark:bg-orange-500/5">
+        <h3 className="flex items-center gap-2 text-[15px] font-semibold text-gray-900 dark:text-white">
+          <FileText className="h-[18px] w-[18px] text-[#F45100]" />
+          Kebutuhan Pengunjung
+        </h3>
+        <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
           <div>
-            <dt className="text-xs text-slate-600 dark:text-slate-300">Layanan yang Dikonsultasikan</dt>
-            <dd className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
+            <dt className="text-xs text-slate-500 dark:text-slate-400">Layanan yang Dikonsultasikan</dt>
+            <dd className="mt-0.5 font-medium text-gray-900 dark:text-white">
               {details?.service?.title || message.serviceRequested || "Konsultasi Umum"}
             </dd>
           </div>
           <div>
-            <dt className="text-xs text-slate-600 dark:text-slate-300">Produk yang Dikonsultasikan</dt>
-            <dd className="mt-1 text-sm font-bold text-slate-900 dark:text-white">
+            <dt className="text-xs text-slate-500 dark:text-slate-400">Produk yang Dikonsultasikan</dt>
+            <dd className="mt-0.5 font-medium text-gray-900 dark:text-white">
               {details?.product?.name || message.productRequested || "Tidak memilih produk"}
             </dd>
           </div>
+          {details?.source && (
+            <div>
+              <dt className="text-xs text-slate-500 dark:text-slate-400">Asal Konsultasi</dt>
+              <dd className="mt-0.5 text-gray-900 dark:text-white">{CONSULTATION_SOURCES[details.source]}</dd>
+            </div>
+          )}
+          {details?.purpose && (
+            <div>
+              <dt className="text-xs text-slate-500 dark:text-slate-400">Tujuan Konsultasi</dt>
+              <dd className="mt-0.5 text-gray-900 dark:text-white">{CONSULTATION_PURPOSES[details.purpose]}</dd>
+            </div>
+          )}
         </dl>
         {details?.portfolio && (
-          <div className="pt-3 border-t border-orange-200 dark:border-orange-800/60">
+          <div className="pt-3 border-t border-gray-200 dark:border-white/10">
             <p className="text-xs text-slate-600 dark:text-slate-300">Referensi Proyek untuk Kebutuhan Serupa</p>
-            <p className="mt-1 text-sm font-bold text-slate-900 dark:text-white">{details.portfolio.title}</p>
+            <p className="mt-1 font-medium text-gray-900 dark:text-white">{details.portfolio.title}</p>
             <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
               {details.portfolio.client} · {details.portfolio.servicePillar}
             </p>
@@ -47,7 +58,7 @@ export default function MessageConsultationDetails({ message }: { message: Conta
         {!!details?.requestedFeatures?.length && (
           <div>
             <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 mb-2">Fitur yang Ingin Dibahas</p>
-            <ul className="list-disc pl-5 space-y-1 text-sm text-slate-800 dark:text-slate-100">
+            <ul className="list-disc pl-5 space-y-1 text-[13px] text-slate-800 dark:text-slate-100">
               {details.requestedFeatures.map((feature) => (
                 <li key={feature}>{feature}</li>
               ))}
@@ -55,26 +66,39 @@ export default function MessageConsultationDetails({ message }: { message: Conta
           </div>
         )}
       </div>
-      <dl className="grid sm:grid-cols-2 gap-3">
-        {requirements.map(([label, value]) => (
-          <div key={label} className="rounded-xl border border-slate-200 dark:border-white/10 p-3">
-            <dt className="text-xs font-bold text-slate-600 dark:text-slate-300">{label}</dt>
-            <dd className="mt-1 text-sm whitespace-pre-wrap text-slate-900 dark:text-white">
-              {value || "Belum disampaikan oleh pengunjung"}
-            </dd>
-          </div>
-        ))}
-      </dl>
-      <div>
-        <h4 className="text-xs font-bold text-slate-600 dark:text-slate-300 mb-2">
-          Detail Masalah & Kebutuhan dari Pengunjung
-        </h4>
-        <p className="rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 text-sm leading-relaxed whitespace-pre-wrap text-slate-900 dark:text-white">
-          {message.message}
-        </p>
-      </div>
+      <section aria-label="Detail tambahan">
+        <h3 className="mb-3 flex items-center gap-2 text-[15px] font-semibold text-gray-900 dark:text-white">
+          <Info className="h-[18px] w-[18px] text-slate-500" />
+          Detail Tambahan
+        </h3>
+        <dl className="grid sm:grid-cols-2 gap-3">
+          {requirements.map(([label, value]) => (
+            <div
+              key={label}
+              className="rounded-lg border border-gray-200 bg-[#F8F9FB] px-3 py-2 dark:border-white/10 dark:bg-white/5"
+            >
+              <dt className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</dt>
+              <dd
+                className={`mt-0.5 whitespace-pre-wrap leading-5 ${value?.trim() ? "text-gray-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}
+              >
+                {value?.trim() ? value : "Belum disampaikan oleh pengunjung"}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <div className="mt-3 rounded-lg border border-gray-200 bg-[#F8F9FB] px-3 py-2 dark:border-white/10 dark:bg-white/5">
+          <h4 className="mb-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+            Detail Masalah & Kebutuhan dari Pengunjung
+          </h4>
+          <p
+            className={`whitespace-pre-wrap leading-5 ${message.message?.trim() ? "text-gray-900 dark:text-white" : "text-slate-500 dark:text-slate-400"}`}
+          >
+            {message.message?.trim() ? message.message : "Belum disampaikan oleh pengunjung"}
+          </p>
+        </div>
+      </section>
       {(details?.service || details?.product || details?.portfolio) && (
-        <details className="rounded-xl border border-slate-200 dark:border-white/10 p-3 text-slate-700 dark:text-slate-200">
+        <details className="border-t border-gray-200 pt-4 text-slate-700 dark:border-white/10 dark:text-slate-200">
           <summary className="cursor-pointer font-semibold">Rincian Katalog Saat Pesan Dikirim</summary>
           <div className="mt-3 space-y-4">
             {details.service && (

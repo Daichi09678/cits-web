@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Package,
   Building2,
+  Users,
   Mail,
   Cpu,
   Handshake,
@@ -24,6 +25,7 @@ import { useAdminAuth } from "@/lib/auth";
 import { useCitsStore } from "@/stores/citsStore";
 import { useAdminShell } from "@/components/admin/AdminShell";
 import { canAccessPage, type PageKey } from "@/lib/internalAccess";
+import AdminPageTransitionLoader from "./AdminPageTransitionLoader";
 
 interface NavItem {
   title: string;
@@ -97,6 +99,23 @@ export default function AdminSidebar() {
           icon: Cpu,
           pageKey: "services",
         },
+      ],
+    },
+    {
+      title: "Informasi Perusahaan",
+      items: [
+        {
+          title: "Tim Kami",
+          href: "/admin/team",
+          icon: Users,
+          pageKey: "team",
+        },
+        {
+          title: "Tentang Kami",
+          href: "/admin/about",
+          icon: Building2,
+          pageKey: "about",
+        },
         {
           title: "Portofolio Kami",
           href: "/admin/portfolio",
@@ -104,17 +123,6 @@ export default function AdminSidebar() {
           pageKey: "portfolio",
           badge: `${activeCaseStudiesCount} Kasus`,
           badgeColor: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 font-semibold",
-        },
-      ],
-    },
-    {
-      title: "Informasi Perusahaan",
-      items: [
-        {
-          title: "Tentang Kami",
-          href: "/admin/about",
-          icon: Building2,
-          pageKey: "about",
         },
         {
           title: "Mitra Klien",
@@ -279,6 +287,7 @@ export default function AdminSidebar() {
                             }`}
                           />
                           <span className="truncate">{item.title}</span>
+                          <AdminPageTransitionLoader />
                         </div>
 
                         {item.badge ? (

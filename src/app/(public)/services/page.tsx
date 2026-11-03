@@ -3,24 +3,7 @@
 import ServicePhoto from "@/components/ui/ServicePhoto";
 import Link from "next/link";
 import { consultationHref } from "@/lib/consultation";
-import {
-  Code2,
-  ShieldCheck,
-  CheckCircle2,
-  ArrowRight,
-  Layers,
-  Sparkles,
-  Zap,
-  Building2,
-  Headphones,
-  Check,
-  Award,
-  Briefcase,
-  FileText,
-  Clock,
-  FileCheck,
-  Boxes,
-} from "lucide-react";
+import { Code2, ShieldCheck, CheckCircle2, Layers, Zap, Building2, Headphones, Check, Award, Briefcase, FileText, Clock, FileCheck, Boxes } from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import GradientText from "@/components/ui/GradientText";
 import SpotlightCard from "@/components/ui/SpotlightCard";
@@ -79,15 +62,15 @@ const qualityStandards = [
     icon: FileCheck,
   },
   {
-    title: "Keamanan Siber Teruji",
+    title: "Perencanaan Keamanan Sistem",
     description:
-      "Menerapkan pengamanan data berlapis, enkripsi end-to-end, dan pemindaian kerentanan berkala sesuai standar praktik terbaik ISO 27001.",
+      "Kebutuhan pengamanan data, enkripsi, dan pengujian kerentanan dibahas sesuai ruang lingkup proyek.",
     icon: ShieldCheck,
   },
   {
     title: "Arsitektur Skalabel & Andal",
     description:
-      "Sistem dirancang modular untuk memfasilitasi lonjakan transaksi jutaan pengguna tanpa hambatan latensi maupun downtime tak terduga.",
+      "Arsitektur modular disesuaikan dengan kebutuhan transaksi, integrasi, dan kapasitas operasional.",
     icon: Layers,
   },
   {
@@ -126,7 +109,7 @@ const engagementModels: EngagementModel[] = [
     badge: "Layanan Berkelanjutan",
     scope: "Perjanjian tingkat layanan (SLA) untuk pemeliharaan sistem berkala, audit keamanan, dan operasi TI.",
     characteristics: [
-      "Jaminan waktu respon insiden (SLA response time < 2 jam)",
+      "Waktu respons insiden disepakati dalam SLA",
       "Pemantauan performa & keamanan infrastruktur berkala",
       "Pembaruan modul keamanan & optimasi basis data terjadwal",
       "Laporan kinerja bulanan & rekomendasi peningkatan kapasitas",
@@ -159,18 +142,14 @@ export default function ServicesPage() {
       id="main-content"
       className="min-h-screen bg-white dark:bg-dark text-slate-900 dark:text-white transition-colors"
     >
-      {/* 1. HERO SECTION & PROFIL KATALOG LAYANAN (IDDS Standard) */}
       <section
         aria-labelledby="services-hero-heading"
-        className="relative bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-dark dark:to-slate-950 py-12 md:py-20 overflow-hidden transition-colors border-b border-slate-200/80 dark:border-white/10"
+        className="relative py-12 md:py-20 overflow-hidden transition-colors border-b border-slate-200/80 dark:border-white/10 bg-slate-50 dark:bg-[#0f172a]"
       >
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <ScrollReveal>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-50 dark:bg-orange-500/15 text-orange-950 dark:text-orange-200 border border-orange-200/90 dark:border-orange-500/30 text-xs font-bold tracking-wide uppercase shadow-sm mb-4">
-                <Sparkles className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" aria-hidden="true" />
-                <span>Katalog Resmi Layanan CITS Indonesia • Standar IDDS & SPBE</span>
-              </div>
+              
               <h1
                 id="services-hero-heading"
                 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.2]"
@@ -185,8 +164,6 @@ export default function ServicesPage() {
                 kebutuhan teknologi instansi serta perusahaan Anda.
               </p>
             </ScrollReveal>
-
-            {/* Quick Service Anchor Navigation (High-Contrast & Focus-Visible) */}
             <ScrollReveal delay={0.2}>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 {displayServices.map((item) => {
@@ -195,7 +172,7 @@ export default function ServicesPage() {
                     <a
                       key={item.id}
                       href={`#${item.id}`}
-                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A2E] text-slate-800 dark:text-white border border-slate-200 dark:border-white/15 hover:border-orange-500/60 shadow-xs text-xs font-semibold transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#111827] text-slate-800 dark:text-white border border-slate-200 dark:border-white/15 hover:border-orange-500/60  text-xs font-semibold transition-all  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                     >
                       <NavIcon className="w-4 h-4 text-orange-600 dark:text-orange-400" aria-hidden="true" />
                       <span>{item.category}</span>
@@ -211,9 +188,9 @@ export default function ServicesPage() {
                 </a>
                 <a
                   href="#skema-kerjasama"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A2E] text-slate-800 dark:text-white border border-slate-200 dark:border-white/15 hover:border-orange-500/60 shadow-xs text-xs font-semibold transition-all hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-[#111827] text-slate-800 dark:text-white border border-slate-200 dark:border-white/15 hover:border-orange-500/60  text-xs font-semibold transition-all  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                 >
-                  <Boxes className="w-4 h-4 text-indigo-600 dark:text-indigo-400" aria-hidden="true" />
+                  <Boxes className="w-4 h-4 text-slate-600 dark:text-slate-400" aria-hidden="true" />
                   <span>Skema Pengadaan PBJ</span>
                 </a>
               </div>
@@ -221,12 +198,10 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
-
-      {/* 2. DETAIL TIGA PILAR LAYANAN UTAMA (Symmetrical Bento Layout) */}
       <section
         data-testid="service-details"
         aria-labelledby="services-detail-heading"
-        className="py-16 md:py-24 bg-white dark:bg-[#1A1A2E] transition-colors border-b border-slate-200/80 dark:border-white/10"
+        className="py-16 md:py-24 bg-white dark:bg-[#111827] transition-colors border-b border-slate-200/80 dark:border-white/10"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20 md:space-y-28">
           <h2 id="services-detail-heading" className="sr-only">
@@ -252,9 +227,7 @@ export default function ServicesPage() {
                 >
                   <div className="space-y-6">
                     <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="text-xs font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/90 dark:border-orange-500/30 px-3 py-1 rounded-full uppercase tracking-wider">
-                        {service.badge}
-                      </span>
+                      
                       <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                         {service.category}
                       </span>
@@ -269,7 +242,7 @@ export default function ServicesPage() {
                     </p>
 
                     {service.details && service.details !== service.description && (
-                      <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#151528] p-5">
+                      <div className="rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#0f172a] p-5">
                         <h4 className="text-sm font-bold text-slate-900 dark:text-white">Tentang Layanan Ini</h4>
                         <p className="mt-2 text-sm leading-relaxed whitespace-pre-line text-slate-700 dark:text-slate-200">
                           {service.details}
@@ -279,8 +252,8 @@ export default function ServicesPage() {
 
                     {/* Features list */}
                     {service.features.length > 0 && (
-                      <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#151528] border border-slate-200 dark:border-white/10 space-y-3">
-                        <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2">
+                      <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 space-y-3">
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white   mb-2">
                           Cakupan Solusi & Kemampuan Rekayasa
                         </h4>
                         <ul className="grid sm:grid-cols-2 gap-3 list-none p-0 m-0">
@@ -299,18 +272,14 @@ export default function ServicesPage() {
                         </ul>
                       </div>
                     )}
-
-                    {/* Tech Stacks / Competency Badges */}
                     {service.techStack.length > 0 && (
                       <div>
-                        <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2.5">
+                        <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300   mb-2.5">
                           Standar Teknologi & Kerangka Kerja
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {service.techStack.map((tech) => (
-                            <span
-                              key={tech}
-                              className="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-100 dark:bg-white/10 text-slate-800 dark:text-white border border-slate-200 dark:border-white/15"
+                            <span key={tech} className="text-xs leading-relaxed text-slate-600 dark:text-slate-300"
                             >
                               {tech}
                             </span>
@@ -343,10 +312,10 @@ export default function ServicesPage() {
                     <div className="pt-2 flex flex-wrap gap-3">
                       <Link
                         href={consultationHref({ service: service.title, source: "services" })}
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-md shadow-orange-600/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                        className="inline-flex items-center gap-2 px-6 py-3 text-white font-semibold rounded-xl transition-all   text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 bg-orange-700 hover:bg-orange-800"
                       >
                         <span>Konsultasikan Kebutuhan Ini</span>
-                        <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                        
                       </Link>
                       <Link
                         href="/portfolio"
@@ -367,17 +336,15 @@ export default function ServicesPage() {
                   <SpotlightCard className="h-full">
                     <div className="p-5 md:p-6 flex flex-col justify-between h-full space-y-5">
                       {/* Image container */}
-                      <div className="relative rounded-2xl overflow-hidden shadow-md border border-slate-200 dark:border-white/10 aspect-[16/10] bg-slate-100 dark:bg-slate-900">
+                      <div className="relative rounded-xl overflow-hidden  border border-slate-200 dark:border-white/10 aspect-[16/10] bg-slate-100 dark:bg-slate-900">
                         <ServicePhoto
                           image={service.image}
                           name={service.title}
                           className="h-full transform hover:scale-105 transition-transform duration-500"
                         />
                       </div>
-
-                      {/* Deliverables & SLA Bento Card (Resolves the vertical void) */}
                       {service.deliverables.length > 0 && (
-                        <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 space-y-3">
+                        <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#0b1220] border border-slate-200 dark:border-white/10 space-y-3">
                           <div className="flex flex-wrap gap-2 items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2.5">
                             <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                               <Icon className="w-4 h-4 text-orange-600 dark:text-orange-400" aria-hidden="true" />
@@ -405,7 +372,7 @@ export default function ServicesPage() {
 
                       {/* Service SLA Chip */}
                       <div className="p-3.5 rounded-xl bg-orange-50/80 dark:bg-orange-500/10 border border-orange-200/80 dark:border-orange-500/30 flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-orange-600/20">
+                        <div className="w-9 h-9 rounded-lg text-white flex items-center justify-center shrink-0   bg-orange-700">
                           <ShieldCheck className="w-4 h-4 text-white" aria-hidden="true" />
                         </div>
                         <div className="min-w-0">
@@ -425,19 +392,15 @@ export default function ServicesPage() {
           })}
         </div>
       </section>
-
-      {/* 3. ALUR METODOLOGI REKAYASA SISTEM (5 Tahap Kerja IDDS & SDLC Terukur) */}
       <section
         id="alur-kerja"
         aria-labelledby="workflow-heading"
-        className="relative py-16 md:py-24 bg-slate-50 dark:bg-[#151528] border-b border-slate-200/80 dark:border-white/10 overflow-hidden transition-colors scroll-mt-20"
+        className="relative py-16 md:py-24 bg-slate-50 dark:bg-[#0f172a] border-b border-slate-200/80 dark:border-white/10 overflow-hidden transition-colors scroll-mt-20"
       >
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-14">
-              <span className="inline-block text-xs font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/90 dark:border-orange-500/30 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
-                Metodologi Profesional
-              </span>
+              
               <h2
                 id="workflow-heading"
                 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight"
@@ -450,12 +413,10 @@ export default function ServicesPage() {
               </p>
             </div>
           </ScrollReveal>
-
-          {/* Symmetrical 5-Item Grid with balanced tablet and desktop layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 items-stretch">
             {workProcess.map((p, i) => {
               const isLastOnTablet = i === 4;
-              const ProcessIcon = p.icon;
+              
               return (
                 <ScrollReveal
                   key={p.step}
@@ -466,42 +427,22 @@ export default function ServicesPage() {
                     <article className="p-6 h-full flex flex-col justify-between">
                       <div className="w-full">
                         <div className="flex items-center justify-between mb-4">
-                          <span className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white font-extrabold text-lg flex items-center justify-center shadow-md shadow-orange-600/25 shrink-0">
+                          <span className="w-12 h-12 rounded-xl text-white font-extrabold text-lg flex items-center justify-center   shrink-0 bg-orange-700">
                             {p.step}
                           </span>
-                          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200 dark:border-orange-500/30 px-2.5 py-1 rounded-md uppercase">
-                            <ProcessIcon
-                              className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 shrink-0"
-                              aria-hidden="true"
-                            />
-                            <span>Fase #{i + 1}</span>
-                          </span>
+                          
                         </div>
-
-                        {/* Title Slot (Normalized height) */}
                         <h3 className="font-extrabold text-slate-900 dark:text-white text-base min-h-[44px] flex items-center">
                           {p.title}
                         </h3>
-
-                        {/* Subtitle Slot (Normalized height) */}
                         <span className="inline-block text-xs font-semibold text-orange-800 dark:text-orange-300 mt-1 mb-2 min-h-[20px]">
                           {p.subtitle}
                         </span>
-
-                        {/* Description Slot (Normalized min-height) */}
                         <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed min-h-[72px]">
                           {p.description}
                         </p>
                       </div>
-
-                      {/* Footer Badge (Normalized baseline) */}
-                      <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
-                        <CheckCircle2
-                          className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0"
-                          aria-hidden="true"
-                        />
-                        <span>Standar Mutu Terverifikasi</span>
-                      </div>
+                      
                     </article>
                   </SpotlightCard>
                 </ScrollReveal>
@@ -510,18 +451,14 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
-
-      {/* 4. JAMINAN KUALITAS & STANDAR MUTU (IDDS Governance Credibility) */}
       <section
         aria-labelledby="quality-heading"
-        className="py-16 md:py-24 bg-white dark:bg-[#1A1A2E] transition-colors border-b border-slate-200/80 dark:border-white/10"
+        className="py-16 md:py-24 bg-white dark:bg-[#111827] transition-colors border-b border-slate-200/80 dark:border-white/10"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-14">
-              <span className="inline-block text-xs font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/90 dark:border-orange-500/30 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
-                Keandalan Layanan
-              </span>
+              
               <h2
                 id="quality-heading"
                 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight"
@@ -534,16 +471,14 @@ export default function ServicesPage() {
               </p>
             </div>
           </ScrollReveal>
-
-          {/* Symmetrical 4-Card Grid */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
             {qualityStandards.map((item, idx) => {
               const Icon = item.icon;
               return (
                 <ScrollReveal key={item.title} delay={idx * 0.08} className="h-full">
-                  <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-slate-200 dark:border-white/10 hover:border-orange-500/40 transition-all shadow-xs h-full flex flex-col justify-between">
+                  <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#111827] border border-slate-200 dark:border-white/10 hover:border-orange-500/40 transition-all  h-full flex flex-col justify-between">
                     <div>
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center mb-4 shadow-md shadow-orange-600/25 shrink-0">
+                      <div className="w-12 h-12 rounded-xl text-white flex items-center justify-center mb-4   shrink-0 bg-orange-700">
                         <Icon className="w-6 h-6 text-white" aria-hidden="true" />
                       </div>
                       <h3 className="font-bold text-slate-900 dark:text-white text-base min-h-[44px] flex items-center">
@@ -565,19 +500,15 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
-
-      {/* 5. SKEMA PENGADAAN & MODEL KEMITRAAN (IDDS Enterprise Standard) */}
       <section
         id="skema-kerjasama"
         aria-labelledby="engagement-heading"
-        className="py-16 md:py-24 bg-slate-50 dark:bg-[#151528] border-b border-slate-200/80 dark:border-white/10 transition-colors scroll-mt-20"
+        className="py-16 md:py-24 bg-slate-50 dark:bg-[#0f172a] border-b border-slate-200/80 dark:border-white/10 transition-colors scroll-mt-20"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-14">
-              <span className="inline-block text-xs font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/90 dark:border-orange-500/30 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
-                Transparansi Pengadaan
-              </span>
+              
               <h2
                 id="engagement-heading"
                 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight"
@@ -590,8 +521,6 @@ export default function ServicesPage() {
               </p>
             </div>
           </ScrollReveal>
-
-          {/* Symmetrical 3-Card Engagement Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
             {engagementModels.map((model, idx) => {
               const IconModel = model.icon;
@@ -600,14 +529,11 @@ export default function ServicesPage() {
                   <SpotlightCard className="h-full">
                     <div className="p-7 flex flex-col justify-between h-full">
                       <div>
-                        {/* Header badge & icon */}
                         <div className="flex items-center justify-between mb-4">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-md shadow-orange-600/25 shrink-0">
+                          <div className="w-12 h-12 rounded-xl text-white flex items-center justify-center   shrink-0 bg-orange-700">
                             <IconModel className="w-6 h-6 text-white" aria-hidden="true" />
                           </div>
-                          <span className="text-[11px] font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200 dark:border-orange-500/30 px-2.5 py-1 rounded-md uppercase">
-                            {model.badge}
-                          </span>
+                          
                         </div>
 
                         <h3 className="font-extrabold text-slate-900 dark:text-white text-base min-h-[44px] flex items-center">
@@ -638,7 +564,7 @@ export default function ServicesPage() {
                         </div>
 
                         {/* Recommendation */}
-                        <div className="mt-5 p-3 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10">
+                        <div className="mt-5 p-3 rounded-xl bg-slate-50 dark:bg-[#0b1220] border border-slate-200 dark:border-white/10">
                           <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 block">
                             Paling Tepat Untuk:
                           </span>
@@ -652,10 +578,10 @@ export default function ServicesPage() {
                       <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10">
                         <Link
                           href={consultationHref({ service: model.title, source: "services" })}
-                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-semibold text-xs transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-semibold text-xs transition-colors  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                         >
                           <span>Diskusikan Skema Ini</span>
-                          <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+                          
                         </Link>
                       </div>
                     </div>
@@ -666,18 +592,14 @@ export default function ServicesPage() {
           </div>
         </div>
       </section>
-
-      {/* 6. CALL TO ACTION KEMITRAAN RESMI (IDDS Conversion Section) */}
       <section
         aria-labelledby="services-cta-heading"
-        className="py-16 md:py-24 bg-white dark:bg-[#1A1A2E] transition-colors"
+        className="py-16 md:py-24 bg-white dark:bg-[#111827] transition-colors"
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
-            <div className="p-8 md:p-14 rounded-3xl bg-gradient-to-br from-white via-orange-50/40 to-white dark:from-[#181830] dark:via-[#1F1712] dark:to-[#181830] border border-orange-200/80 dark:border-orange-900/40 shadow-xl">
-              <span className="inline-block text-xs font-bold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/90 dark:border-orange-500/30 px-3.5 py-1 rounded-full uppercase tracking-wider mb-4">
-                Konsultasi & Solusi Kustom
-              </span>
+            <div className="p-8 md:p-14 rounded-xl border border-orange-200/80 dark:border-orange-900/40  bg-slate-50 dark:bg-[#0f172a]">
+              
               <h2
                 id="services-cta-heading"
                 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug"
@@ -692,10 +614,10 @@ export default function ServicesPage() {
               <div className="mt-8 flex flex-wrap justify-center gap-3.5">
                 <Link
                   href={consultationHref({ source: "services" })}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-md shadow-orange-600/20 hover:shadow-lg hover:shadow-orange-600/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 text-white font-semibold rounded-xl transition-all     text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 bg-orange-700 hover:bg-orange-800"
                 >
                   <span>Ajukan Diskusi Kebutuhan</span>
-                  <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                  
                 </Link>
 
                 <Link
@@ -714,8 +636,6 @@ export default function ServicesPage() {
                   <span>Katalog Produk Enterprise</span>
                 </Link>
               </div>
-
-              {/* IDDS Official SLA & Contact Assurance Bar */}
               <div className="mt-10 pt-6 border-t border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-600 dark:text-slate-400">
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" aria-hidden="true" />
@@ -726,7 +646,7 @@ export default function ServicesPage() {
                   <span>Jaminan Kerahasiaan Data (NDA)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Building2 className="w-4 h-4 text-blue-700 dark:text-blue-400" aria-hidden="true" />
+                  <Building2 className="w-4 h-4 text-slate-700 dark:text-slate-400" aria-hidden="true" />
                   <span>Terdaftar Resmi LPSE & SIKaP LKPP</span>
                 </div>
               </div>

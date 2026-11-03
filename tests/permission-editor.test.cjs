@@ -194,6 +194,7 @@ test("active internal sessions refresh promptly, react to permission events, and
         },
       },
       "next/navigation": { usePathname: () => "/admin/products" },
+      "@/config/siteConfig": { siteConfig: { admin: { sessionKey: "cits_admin_session" } } },
       "@/lib/auth": {
         AdminAuth: {
           getSession: () => ({ user }),
@@ -249,7 +250,7 @@ test("active internal sessions refresh promptly, react to permission events, and
   assert.equal(documentEvents.size, 0);
 });
 
-test("every action in all six modules is clickable and remains selected after normalization", () => {
+test("every action in all content modules is clickable and remains selected after normalization", () => {
   const state = hooks();
   let value = {};
   const Matrix = load("components/admin/settings/PermissionMatrix.tsx", {
@@ -275,5 +276,5 @@ test("every action in all six modules is clickable and remains selected after no
     }
     assert.deepEqual(plain(value[page.key]), ["view", "create", "edit", "delete"]);
   }
-  assert.equal(Object.keys(access.normalizePermissions(value)).length, 6);
+  assert.equal(Object.keys(access.normalizePermissions(value)).length, access.EDITABLE_PAGES.length);
 });

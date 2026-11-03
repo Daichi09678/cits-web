@@ -1,4 +1,5 @@
 import { assertPageAction } from "./actionAccessClient";
+import type { TeamMember, TeamMemberInput } from "./team";
 import type { ConsultationRequest, ServicePillar } from "@/types/schema";
 import type { HomeEditorPage, HomeSectionPatch } from "@/lib/homeSections";
 import type { PublicContentPage, PublicPageContent } from "@/lib/publicPageContent";
@@ -21,6 +22,25 @@ function getHeaders(token?: string): HeadersInit {
 }
 
 export const citsApi = {
+  getTeamMembers(admin = false): Promise<TeamMember[]> {
+    return teamRequest<TeamMember[]>(`/team${admin ? "?admin=1" : ""}`);
+  },
+  seedTeamExamples(): Promise<TeamMember[]> {
+    assertPageAction("team", "create");
+    return teamRequest<TeamMember[]>("/team/examples", "POST");
+  },
+  createTeamMember(input: TeamMemberInput): Promise<TeamMember> {
+    assertPageAction("team", "create");
+    return teamRequest<TeamMember>("/team", "POST", input);
+  },
+  updateTeamMember(id: string, input: TeamMemberInput): Promise<TeamMember> {
+    assertPageAction("team", "edit");
+    return teamRequest<TeamMember>(`/team/${encodeURIComponent(id)}`, "PUT", input);
+  },
+  deleteTeamMember(id: string): Promise<void> {
+    assertPageAction("team", "delete");
+    return teamRequest<void>(`/team/${encodeURIComponent(id)}`, "DELETE");
+  },
   async getPublicPageContent(page: PublicContentPage): Promise<PublicPageContent> {
     const response = await fetch(`${API_URL}/page-content/${page}`, { cache: "no-store" });
     const result = await response.json();
@@ -320,3 +340,15 @@ export const citsApi = {
     return res.json();
   },
 };
+
+async function teamRequest<T>(path: string, method = "GET", body?: TeamMemberInput): Promise<T> {
+  const response = await fetch(`${API_URL}${path}`, {
+    method,
+    headers: getHeaders(),
+    cache: "no-store",
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) throw new Error(result.message || "Permintaan data tim gagal.");
+  return result.data as T;
+}

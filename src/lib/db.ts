@@ -263,7 +263,7 @@ export async function ensureDbReady(): Promise<void> {
   // Saat circuit breaker terbuka (database mati/salah kredensial), jangan ulangi
   // 11 statement migrasi di setiap request — itu sumber utama halaman terasa lama.
   if (dbIsDown()) return;
-  const schemaVersion = 5;
+  const schemaVersion = 6;
   if (globalThis._citsDbInitialized && globalThis._citsDbSchemaVersion === schemaVersion) return;
   if (globalThis._citsDbInitPromise) return globalThis._citsDbInitPromise;
 
@@ -273,6 +273,7 @@ export async function ensureDbReady(): Promise<void> {
     // (error 42601: "cannot insert multiple commands into a prepared statement").
     // Karena itu setiap DDL WAJIB dijalankan sebagai query terpisah.
     const migrations: string[] = [
+      `CREATE TABLE IF NOT EXISTS team_members (id TEXT PRIMARY KEY, data JSONB NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
       `CREATE TABLE IF NOT EXISTS public_page_content (page TEXT PRIMARY KEY CHECK (page IN ('about', 'portfolio')), data JSONB NOT NULL DEFAULT '{}'::jsonb, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
       `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS consultation_details JSONB DEFAULT '{}'::jsonb`,
       `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS product_id TEXT`,

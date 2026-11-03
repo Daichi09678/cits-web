@@ -8,7 +8,7 @@ interface SpotlightCardProps {
 export default function SpotlightCard({ children, className = "" }: SpotlightCardProps) {
   return (
     <div
-      className={`group relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#16162c] ${className}`}
+      className={`group relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-white/10 dark:bg-[#111827] ${className}`}
     >
       {children}
     </div>

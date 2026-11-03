@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
   ProductItem,
   ContactInfo,
@@ -132,12 +132,21 @@ function removeOptimisticMessage(id: string): void {
 }
 
 // ─── localStorage Helpers ──────────────────────────────────────────────
+const parsedStorage = new Map<string, { raw: string; value: unknown }>();
+
 function getStorageItem<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
   try {
     const raw = localStorage.getItem(key);
-    if (!raw) return fallback;
-    return JSON.parse(raw);
+    if (!raw) {
+      parsedStorage.delete(key);
+      return fallback;
+    }
+    const cached = parsedStorage.get(key);
+    if (cached?.raw === raw) return cached.value as T;
+    const value: T = JSON.parse(raw);
+    parsedStorage.set(key, { raw, value });
+    return value;
   } catch {
     return fallback;
   }
@@ -278,6 +287,12 @@ export const CitsStore = {
     );
     this.saveMessages(updated);
     citsApi.updateMessageStage(id, dealStage, dealNotes).catch((err) => console.warn("Sync deal stage error:", err));
+  },
+  async saveMessageNotes(id: string, dealStage: DealStage, dealNotes: string): Promise<void> {
+    assertPageAction("contact", "edit");
+    const result = await citsApi.updateMessageStage(id, dealStage, dealNotes);
+    if (!result?.success) throw new Error(result?.message || "Catatan belum tersimpan. Silakan coba lagi.");
+    this.saveMessages(this.getMessages().map((message) => (message.id === id ? { ...message, dealNotes } : message)));
   },
   deleteMessage(id: string): void {
     assertPageAction("contact", "delete");
@@ -492,6 +507,73 @@ export function startAdminInboxSync(): () => void {
 // ═══════════════════════════════════════════════════════════════════════
 // React Hook — subscribe to store + background sync
 // ═══════════════════════════════════════════════════════════════════════
+type BackendSync = { key: string; promise: Promise<void>; completedAt: number; ttl: number };
+let backendSync: BackendSync | null = null;
+
+function contentSessionKey(): string {
+  try {
+    return localStorage.getItem("cits_jwt_token") || "public";
+  } catch {
+    return "public";
+  }
+}
+
+/** Share one background refresh across the header, sidebar and page; cache confirmed snapshots for navigation. */
+export function syncContentFromBackend(force = false): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  const key = contentSessionKey();
+  if (backendSync?.key === key) {
+    if (!backendSync.completedAt) return backendSync.promise;
+    if (!force && Date.now() - backendSync.completedAt < backendSync.ttl) return backendSync.promise;
+  }
+  const entries = [
+    [siteConfig.storageKeys.products, () => citsApi.getAllProducts(), true],
+    [siteConfig.storageKeys.contactInfo, () => citsApi.getContactInfo(), false],
+    [siteConfig.storageKeys.about, () => citsApi.getAboutData(), false],
+    [siteConfig.storageKeys.clients, () => citsApi.getClients(), true],
+    [siteConfig.storageKeys.landing, () => citsApi.getLandingData(), false],
+    [siteConfig.storageKeys.services, () => citsApi.getServices(), true],
+    [siteConfig.storageKeys.portfolio, () => citsApi.getPortfolio(), true],
+  ] as const;
+  const before = entries.map(([storageKey]) => {
+    try {
+      return localStorage.getItem(storageKey);
+    } catch {
+      return null;
+    }
+  });
+  const record: BackendSync = { key, promise: Promise.resolve(), completedAt: 0, ttl: 30000 };
+  backendSync = record;
+  record.promise = Promise.resolve()
+    .then(async () => {
+      const results = await Promise.allSettled(entries.map(([, fetchData]) => fetchData()));
+      if (backendSync !== record || contentSessionKey() !== key) return;
+      let changed = false;
+      results.forEach((result, index) => {
+        const [storageKey, , isArray] = entries[index];
+        if (result.status !== "fulfilled" || !result.value || (isArray && !Array.isArray(result.value))) {
+          record.ttl = 5000;
+          return;
+        }
+        // A completed admin save takes precedence over an older in-flight read.
+        if (localStorage.getItem(storageKey) !== before[index]) return;
+        const raw = JSON.stringify(result.value);
+        if (raw === before[index]) return;
+        localStorage.setItem(storageKey, raw);
+        changed = true;
+      });
+      if (changed) window.dispatchEvent(new Event("cits-data-updated"));
+    })
+    .catch((error) => {
+      record.ttl = 5000;
+      console.warn("Backend background sync fallback:", error);
+    })
+    .finally(() => {
+      record.completedAt = Date.now();
+    });
+  return record.promise;
+}
+
 export function useCitsStore() {
   // PENTING (hydration): render pertama WAJIB identik di server dan browser.
   // Jangan membaca localStorage saat inisialisasi state — cache lokal dimuat
@@ -506,9 +588,6 @@ export function useCitsStore() {
   const [landingData, setLandingData] = useState<LandingPageData>(initialLandingPageData);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLiveConnected, setIsLiveConnected] = useState(false);
-
-  // Guard against duplicate syncBackend calls from React strict mode / remounts
-  const hasSyncedRef = useRef(false);
 
   useEffect(() => {
     function refreshFromLocal() {
@@ -527,56 +606,7 @@ export function useCitsStore() {
     refreshFromLocal();
 
     // ── 1. Initial Backend Sync ────────────────────────────────────────
-    async function syncBackend() {
-      // Prevent duplicate sync on React strict mode double-mount
-      if (hasSyncedRef.current) return;
-      hasSyncedRef.current = true;
-
-      try {
-        const [prodRes, contactRes, aboutRes, clientRes, landRes, srvRes, portRes] = await Promise.allSettled([
-          citsApi.getAllProducts(),
-          citsApi.getContactInfo(),
-          citsApi.getAboutData(),
-          citsApi.getClients(),
-          citsApi.getLandingData(),
-          citsApi.getServices(),
-          citsApi.getPortfolio(),
-        ]);
-
-        if (prodRes.status === "fulfilled" && Array.isArray(prodRes.value)) {
-          setProducts(prodRes.value);
-          setStorageItem(siteConfig.storageKeys.products, prodRes.value);
-        }
-        if (contactRes.status === "fulfilled" && contactRes.value) {
-          setContactInfo(contactRes.value);
-          setStorageItem(siteConfig.storageKeys.contactInfo, contactRes.value);
-        }
-        if (aboutRes.status === "fulfilled" && aboutRes.value) {
-          setAboutData(aboutRes.value);
-          setStorageItem(siteConfig.storageKeys.about, aboutRes.value);
-        }
-        if (clientRes.status === "fulfilled" && Array.isArray(clientRes.value)) {
-          setClients(clientRes.value);
-          setStorageItem(siteConfig.storageKeys.clients, clientRes.value);
-        }
-        if (landRes.status === "fulfilled" && landRes.value) {
-          setLandingData(landRes.value);
-          setStorageItem(siteConfig.storageKeys.landing, landRes.value);
-        }
-        if (srvRes.status === "fulfilled" && Array.isArray(srvRes.value)) {
-          setServices(srvRes.value);
-          setStorageItem(siteConfig.storageKeys.services, srvRes.value);
-        }
-        if (portRes.status === "fulfilled" && Array.isArray(portRes.value)) {
-          setCaseStudies(portRes.value);
-          setStorageItem(siteConfig.storageKeys.portfolio, portRes.value);
-        }
-      } catch (err) {
-        console.warn("Backend background sync fallback:", err);
-      }
-    }
-
-    syncBackend();
+    void syncContentFromBackend();
 
     window.addEventListener("cits-data-updated", refreshFromLocal);
     window.addEventListener("storage", refreshFromLocal);

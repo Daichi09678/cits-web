@@ -14,8 +14,7 @@ import { useCitsStore } from "@/stores/citsStore";
 import { initialLandingPageData, defaultSectionVisibility } from "@/data/initialData";
 import FeaturedCatalog from "@/components/ui/FeaturedCatalog";
 import AboutHomeHighlights from "@/components/ui/AboutHomeHighlights";
-import TeamSection from "@/components/ui/TeamSection";
-import { demoTeamMembers } from "@/data/teamMembers";
+import ManagedTeamSection from "@/components/ui/ManagedTeamSection";
 import { usePublicPageContent } from "@/lib/publicPageContentClient";
 
 export default function Home() {
@@ -26,6 +25,7 @@ export default function Home() {
     services: storeServices,
     activeProducts,
     activeCaseStudies,
+    aboutData,
   } = useCitsStore();
   const { content: aboutContent } = usePublicPageContent("about");
   const currentLanding = landingData || initialLandingPageData;
@@ -102,7 +102,7 @@ export default function Home() {
                   <div className="mt-8 flex flex-wrap gap-4 items-center">
                     <Link
                       href={hero.primaryCtaLink ?? "/contact"}
-                      className="group px-7 py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-lg shadow-orange-600/25 hover:shadow-xl hover:shadow-orange-600/35 flex items-center gap-2.5 text-sm"
+                      className="group inline-flex min-h-11 items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-orange-700 to-orange-800 px-7 py-3.5 text-sm font-semibold text-white shadow-sm transition-colors hover:from-orange-800 hover:to-orange-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-700 dark:focus-visible:outline-orange-300"
                     >
                       {hero.primaryCtaText ?? "Konsultasi Sekarang"}
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -134,7 +134,11 @@ export default function Home() {
               {hero.showMockup !== false && (
                 <div className="lg:col-span-5">
                   <ScrollReveal direction="right" delay={0.2}>
-                    <HeroMockup title={hero.mockupTitle} status={hero.mockupStatus} projects={activeCaseStudies} />
+                    <HeroMockup
+                      title={hero.mockupTitle}
+                      description={hero.mockupDescription}
+                      projects={activeCaseStudies}
+                    />
                   </ScrollReveal>
                 </div>
               )}
@@ -168,7 +172,7 @@ export default function Home() {
       )}
 
       {/* Ringkasan Tentang Kami yang dipilih admin untuk tampil di beranda */}
-      <AboutHomeHighlights content={aboutContent} />
+      <AboutHomeHighlights content={aboutContent} aboutData={aboutData} />
 
       {/* Interactive featured services and products */}
       {visibility.services !== false && featuredServices.length > 0 && (
@@ -197,7 +201,7 @@ export default function Home() {
           bottomCtaLink={productsIntro.bottomCtaLink ?? "/products"}
         />
       )}
-      <TeamSection members={demoTeamMembers} isDemo />
+      <ManagedTeamSection />
 
       {/* Client Logos Marquee */}
       {visibility.clients !== false && marqueeList.length > 0 && (
@@ -231,7 +235,7 @@ export default function Home() {
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Link
                   href={cta.primaryLink ?? "/contact"}
-                  className="group inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-bold rounded-xl transition-all shadow-lg shadow-orange-600/25 hover:shadow-xl hover:shadow-orange-600/35 text-sm"
+                  className="group inline-flex min-h-11 items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-orange-700 to-orange-800 px-7 py-3.5 text-sm font-semibold text-white shadow-sm transition-colors hover:from-orange-800 hover:to-orange-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-700 dark:focus-visible:outline-orange-300"
                 >
                   {cta.primaryText ?? "Mulai Konsultasi Gratis"}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

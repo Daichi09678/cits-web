@@ -4,8 +4,9 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { AdminAuth } from "@/lib/auth";
 import { citsApi } from "@/lib/api";
+import { siteConfig } from "@/config/siteConfig";
 
-/** Refresh sidebar/action permissions after changes made by another administrator. */
+/** Validate sessions on return and refresh permissions for every admin role. */
 export default function AdminSessionSync() {
   const pathname = usePathname();
   useEffect(() => {
@@ -13,12 +14,15 @@ export default function AdminSessionSync() {
     let pending = false;
     const refresh = async () => {
       const current = AdminAuth.getSession();
-      if (pending || !current || (!current.user.isInternal && !current.user.role.toLowerCase().includes("internal")))
+      if (!current) {
+        AdminAuth.logout();
         return;
+      }
+      if (pending) return;
       pending = true;
       const token = localStorage.getItem("cits_jwt_token");
       try {
-        const result = await citsApi.getMe();
+        const result = await citsApi.getMe(token || undefined);
         if (cancelled || token !== localStorage.getItem("cits_jwt_token")) return;
         if (result.success && result.user) {
           const updated = {
@@ -48,10 +52,17 @@ export default function AdminSessionSync() {
       if (document.visibilityState === "visible") void refresh();
     };
     const onStorage = (event: StorageEvent) => {
-      if (event.key === "cits_permissions_updated_at") void refresh();
+      if (
+        event.key === null ||
+        event.key === siteConfig.admin.sessionKey ||
+        event.key === "cits_jwt_token" ||
+        event.key === "cits_permissions_updated_at"
+      )
+        onFocus();
     };
     const interval = window.setInterval(onVisible, 3000);
     window.addEventListener("focus", onFocus);
+    window.addEventListener("pageshow", onFocus);
     window.addEventListener("cits-permissions-changed", onFocus);
     window.addEventListener("storage", onStorage);
     document.addEventListener("visibilitychange", onVisible);
@@ -59,6 +70,7 @@ export default function AdminSessionSync() {
       cancelled = true;
       window.clearInterval(interval);
       window.removeEventListener("focus", onFocus);
+      window.removeEventListener("pageshow", onFocus);
       window.removeEventListener("cits-permissions-changed", onFocus);
       window.removeEventListener("storage", onStorage);
       document.removeEventListener("visibilitychange", onVisible);

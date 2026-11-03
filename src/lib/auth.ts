@@ -38,8 +38,16 @@ export const AdminAuth = {
     if (typeof window === "undefined") return null;
     try {
       const raw = localStorage.getItem(siteConfig.admin.sessionKey);
-      if (!raw) return null;
-      return JSON.parse(raw);
+      if (!raw || !localStorage.getItem("cits_jwt_token")) return null;
+      const session = JSON.parse(raw);
+      if (
+        session?.isLoggedIn !== true ||
+        !session.user ||
+        typeof session.user.email !== "string" ||
+        typeof session.user.role !== "string"
+      )
+        return null;
+      return session;
     } catch {
       return null;
     }
@@ -127,8 +135,24 @@ export function useAdminAuth() {
       setLoading(false);
     }
     check();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") check();
+    };
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === null || event.key === siteConfig.admin.sessionKey || event.key === "cits_jwt_token") check();
+    };
     window.addEventListener("cits-auth-changed", check);
-    return () => window.removeEventListener("cits-auth-changed", check);
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("focus", check);
+    window.addEventListener("pageshow", check);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("cits-auth-changed", check);
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("focus", check);
+      window.removeEventListener("pageshow", check);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   return {

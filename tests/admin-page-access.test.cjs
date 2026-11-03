@@ -29,6 +29,10 @@ function render(relative, { user = internal, pathname = "/admin", loading = fals
     "@/components/admin/AdminShell": { useAdminShell: () => ({ closeMobile: noop }) },
     "@/components/admin/AdminTopbar": { default: () => null },
     "@/components/admin/UserAvatar": { default: () => null },
+    "./AdminPageTransitionLoader": load("components/admin/AdminPageTransitionLoader.tsx", {
+      "react/jsx-runtime": require("react/jsx-runtime"),
+      "next/link": { useLinkStatus: () => ({ pending: false }) },
+    }),
     "@/components/admin/MetricCard": { default: ({ title }) => React.createElement("p", null, title) },
   }).default;
   const html = renderToStaticMarkup(React.createElement(component, null, children));

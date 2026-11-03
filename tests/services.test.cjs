@@ -7,6 +7,8 @@ const http = load("lib/http.ts", { "next/server": { NextResponse } });
 const service = {
   id: "pillar-1",
   title: "Layanan Web",
+  category: "Infrastruktur TI",
+  tags: ["Cloud", "Managed Service"],
   badge: "Pilar 01",
   icon: "Code2",
   desc: "Deskripsi ringkas",
@@ -73,6 +75,8 @@ test("services API persists the validated image and all details and rejects bad 
   });
   assert.equal((await route.PUT(request([service]))).status, 200);
   assert.equal(saved[0].image, service.image);
+  assert.equal(saved[0].category, service.category);
+  assert.deepEqual(Array.from(saved[0].tags), service.tags);
   assert.equal(saved[0].details, service.details);
   assert.equal(saved[0].deliverables[0].description, service.deliverables[0].description);
   saved = undefined;

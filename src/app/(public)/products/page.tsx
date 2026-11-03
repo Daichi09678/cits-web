@@ -4,25 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import ProductPhoto from "@/components/ui/ProductPhoto";
 import { consultationHref } from "@/lib/consultation";
-import {
-  Truck,
-  Package,
-  FileText,
-  Map,
-  MessageSquare,
-  Globe,
-  Smartphone,
-  BarChart3,
-  CheckCircle2,
-  ShieldCheck,
-  Building2,
-  Layers,
-  Cpu,
-  ArrowRight,
-  Zap,
-  ChevronRight,
-  Award,
-} from "lucide-react";
+import { Truck, Package, FileText, Map, MessageSquare, Globe, Smartphone, BarChart3, CheckCircle2, ShieldCheck, Layers, Cpu, ChevronRight, Award } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ProductItem } from "@/types/schema";
 import ProductDetailsDialog from "@/components/ui/ProductDetailsDialog";
@@ -48,26 +30,26 @@ function getProductIcon(icon: string): LucideIcon {
 
 const categoryColors: Record<string, string> = {
   "IoT & Telemetri":
-    "bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/60",
+    "bg-slate-100 dark:bg-slate-950/60 text-slate-900 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800/60",
   "Aset & Korporasi":
-    "bg-amber-100 dark:bg-amber-950/60 text-amber-950 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60",
+    "bg-slate-100 dark:bg-slate-950/60 text-slate-950 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800/60",
   "Dokumen & Arsip Digital":
     "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60",
   "Sistem Geografis (SIG)":
-    "bg-teal-100 dark:bg-teal-950/60 text-teal-900 dark:text-teal-300 border border-teal-200/80 dark:border-teal-800/60",
+    "bg-slate-100 dark:bg-slate-950/60 text-slate-900 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800/60",
   "Komunikasi & Layanan Publik":
-    "bg-blue-100 dark:bg-blue-950/60 text-blue-900 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60",
+    "bg-slate-100 dark:bg-slate-950/60 text-slate-900 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800/60",
   "Aplikasi Mobile & Lapangan":
     "bg-orange-100 dark:bg-orange-950/60 text-orange-900 dark:text-orange-300 border border-orange-200/80 dark:border-orange-800/60",
   "Analitik & Intelijen Bisnis":
-    "bg-purple-100 dark:bg-purple-950/60 text-purple-950 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/60",
+    "bg-slate-100 dark:bg-slate-950/60 text-slate-950 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800/60",
 };
 
 const advantages = [
   {
-    title: "100% Kepemilikan Kode Mandiri",
+    title: "Pengembangan & Kustomisasi",
     description:
-      "Seluruh produk dikembangkan mandiri oleh tim rekayasa CITS tanpa ketergantungan lisensi black-box pihak luar, memberikan kebebasan kustomisasi penuh tanpa biaya lisensi tersembunyi.",
+      "Ruang lingkup kustomisasi, kepemilikan kode, dan ketentuan lisensi dibahas sesuai produk dan kebutuhan implementasi.",
     icon: Cpu,
   },
   {
@@ -109,7 +91,7 @@ const licensingModels = [
     features: [
       "Siap pakai tanpa investasi perangkat keras server",
       "Pencadangan data (backup) harian otomatis",
-      "SLA ketersediaan sistem 99.9% uptime",
+      "Target ketersediaan sistem disepakati dalam SLA",
       "Monitoring performa & pembaruan keamanan",
     ],
   },
@@ -142,49 +124,30 @@ export default function ProductsPage() {
       {/* 1. HERO SECTION */}
       <section
         aria-labelledby="products-hero-heading"
-        className="relative bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-[#1A1A2E] dark:to-slate-950 py-16 md:py-24 overflow-hidden transition-colors"
+        className="relative py-16 md:py-24 overflow-hidden transition-colors bg-slate-50 dark:bg-[#0f172a]"
       >
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-900 dark:text-orange-300 border border-orange-200/80 dark:border-orange-800/60 text-xs font-bold tracking-wide uppercase shadow-sm mb-5">
-              <Zap className="w-3.5 h-3.5 text-orange-700 dark:text-orange-400" />
-              <span>Platform Perangkat Lunak & Solusi Digital Siap Pakai</span>
-            </div>
+            
 
             <h1
               id="products-hero-heading"
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-dark dark:text-white tracking-tight leading-[1.15]"
             >
-              Solusi Perangkat Lunak Enterprise <br />
-              <GradientText>Mandiri, Teruji, & Siap Diimplementasikan</GradientText>
+              Produk Perangkat Lunak CITS 
+              <GradientText>untuk Kebutuhan Organisasi</GradientText>
             </h1>
           </ScrollReveal>
 
+          
+
           <ScrollReveal delay={0.1}>
             <p className="mt-5 text-gray-700 dark:text-white/85 max-w-3xl mx-auto text-base md:text-lg leading-relaxed">
-              Rangkaian platform perangkat lunak siap pakai dan dapat dikustomisasi, dirancang dengan arsitektur
-              enterprise modular, kepatuhan tata kelola SPBE, dan keamanan siber tinggi untuk mempercepat digitalisasi
-              organisasi Anda.
+              Temukan produk berdasarkan kebutuhan organisasi. Lihat rincian fitur, pilih yang ingin dibahas,
+              lalu konsultasikan penyesuaian dan penerapannya bersama tim CITS.
             </p>
           </ScrollReveal>
-
-          {/* Quick Credential Highlights */}
-          <ScrollReveal delay={0.2}>
-            <div className="mt-8 flex flex-wrap justify-center gap-3 text-xs">
-              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15 shadow-sm">
-                <Building2 className="w-4 h-4 text-orange-700 dark:text-orange-400" />
-                {activeProducts.length} Rangkaian Solusi Enterprise Siap Pakai
-              </span>
-              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15 shadow-sm">
-                <Cpu className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-                100% Kepemilikan Kode Mandiri Tanpa Vendor Lock-in
-              </span>
-              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15 shadow-sm">
-                <ShieldCheck className="w-4 h-4 text-blue-700 dark:text-blue-400" />
-                Kepatuhan Standar SPBE & Perlindungan Data Pribadi
-              </span>
-            </div>
-          </ScrollReveal>
+          
 
           {/* Interactive Filter Pills */}
           <ScrollReveal delay={0.3}>
@@ -201,10 +164,10 @@ export default function ProductsPage() {
                     role="tab"
                     aria-selected={isActive}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer ${
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all  cursor-pointer ${
                       isActive
-                        ? "bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-md shadow-orange-600/25 scale-105"
-                        : "bg-white dark:bg-[#16162c] text-gray-800 dark:text-white border border-gray-200 dark:border-white/15 hover:border-orange-500/40 hover:text-orange-700 dark:hover:text-orange-400"
+                        ? "bg-orange-700 text-white"
+                        : "bg-white dark:bg-[#111827] text-gray-800 dark:text-white border border-gray-200 dark:border-white/15 hover:border-orange-500/40 hover:text-orange-700 dark:hover:text-orange-400"
                     }`}
                   >
                     {cat}
@@ -219,7 +182,7 @@ export default function ProductsPage() {
       {/* 2. PRODUCTS SHOWCASE BENTO GRID */}
       <section
         aria-labelledby="products-grid-heading"
-        className="py-16 md:py-24 bg-white dark:bg-[#1A1A2E] transition-colors"
+        className="py-16 md:py-24 bg-white dark:bg-[#111827] transition-colors"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 id="products-grid-heading" className="sr-only">
@@ -241,11 +204,11 @@ export default function ProductsPage() {
                     <SpotlightCard className="h-full">
                       <article
                         data-product-id={product.id}
-                        className="p-6 sm:p-7 flex flex-col justify-between h-full bg-white dark:bg-[#16162c] space-y-6"
+                        className="p-6 sm:p-7 flex flex-col justify-between h-full bg-white dark:bg-[#111827] space-y-6"
                       >
                         <div>
                           {/* Product Image Banner if available */}
-                          <div className="relative w-full h-44 -mt-1 mb-4 rounded-2xl overflow-hidden bg-slate-100 dark:bg-white/5">
+                          <div className="relative w-full h-44 -mt-1 mb-4 rounded-xl overflow-hidden bg-slate-100 dark:bg-white/5">
                             <ProductPhoto
                               image={product.image}
                               name={product.name}
@@ -256,7 +219,7 @@ export default function ProductsPage() {
                           {/* Card Header: Category & Release Version */}
                           <div className="flex items-center justify-between gap-3 mb-4">
                             <span
-                              className={`text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${
+                              className={`text-[11px] font-bold px-3 py-1 rounded-full   ${
                                 categoryColors[product.category] ||
                                 "bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white"
                               }`}
@@ -267,7 +230,7 @@ export default function ProductsPage() {
 
                           {/* Icon & Product Name */}
                           <div className="flex items-center gap-3.5 mb-3">
-                            <div className="w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shadow-sm shrink-0">
+                            <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400  shrink-0">
                               <Icon className="w-6 h-6" />
                             </div>
                             <div>
@@ -283,8 +246,8 @@ export default function ProductsPage() {
                           </p>
 
                           {/* Core Capabilities */}
-                          <div className="mt-5 p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10 space-y-2">
-                            <h4 className="text-[11px] font-bold text-dark dark:text-white uppercase tracking-wider">
+                          <div className="mt-5 p-4 rounded-xl bg-slate-50 dark:bg-[#0b1220] border border-gray-200 dark:border-white/10 space-y-2">
+                            <h4 className="text-[11px] font-bold text-dark dark:text-white  ">
                               Fitur & Kapabilitas Inti:
                             </h4>
                             <ul className="space-y-1.5">
@@ -302,9 +265,7 @@ export default function ProductsPage() {
 
                           <div className="mt-4 flex flex-wrap gap-1.5">
                             {product.tags.map((tag) => (
-                              <span
-                                key={tag}
-                                className="max-w-full break-words rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-200"
+                              <span key={tag} className="text-xs leading-relaxed text-slate-600 dark:text-slate-300"
                               >
                                 {tag}
                               </span>
@@ -323,10 +284,10 @@ export default function ProductsPage() {
                           </button>
                           <Link
                             href={consultationHref({ productId: product.id, purpose: "demo", source: "products" })}
-                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white text-xs font-bold transition-all shadow-md shadow-orange-600/20 hover:shadow-orange-600/30"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white text-xs font-bold transition-all    bg-orange-700 hover:bg-orange-800"
                           >
                             Minta Demo
-                            <ArrowRight className="w-3.5 h-3.5" />
+                            
                           </Link>
                         </div>
                       </article>
@@ -342,14 +303,12 @@ export default function ProductsPage() {
       {/* 3. LICENSING & DEPLOYMENT MODELS */}
       <section
         aria-labelledby="licensing-heading"
-        className="py-16 md:py-24 bg-gray-50 dark:bg-[#151528] transition-colors"
+        className="py-16 md:py-24 bg-gray-50 dark:bg-[#0f172a] transition-colors"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <span className="inline-block text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
-                Opsi Implementasi
-              </span>
+              
               <h2 id="licensing-heading" className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white">
                 Model Penerapan & Lisensi <GradientText>Fleksibel</GradientText>
               </h2>
@@ -363,18 +322,16 @@ export default function ProductsPage() {
           <div className="grid md:grid-cols-3 gap-8 items-stretch">
             {licensingModels.map((item, idx) => (
               <ScrollReveal key={item.title} delay={idx * 0.12} className="h-full">
-                <div className="p-7 sm:p-8 rounded-3xl bg-white dark:bg-[#16162c] border border-gray-200 dark:border-white/10 hover:border-orange-500/40 transition-all shadow-sm h-full flex flex-col justify-between">
+                <div className="p-7 sm:p-8 rounded-xl bg-white dark:bg-[#111827] border border-gray-200 dark:border-white/10 hover:border-orange-500/40 transition-all  h-full flex flex-col justify-between">
                   <div>
-                    <span className="inline-block text-[11px] font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1 rounded-full uppercase tracking-wider mb-4">
-                      {item.badge}
-                    </span>
+                    
                     <h3 className="text-xl font-extrabold text-dark dark:text-white">{item.title}</h3>
                     <p className="mt-3 text-xs md:text-sm text-gray-700 dark:text-white/80 leading-relaxed">
                       {item.desc}
                     </p>
 
                     <div className="mt-6 pt-5 border-t border-gray-150 dark:border-white/10 space-y-2.5">
-                      <span className="block text-[11px] font-bold text-dark dark:text-white uppercase tracking-wider">
+                      <span className="block text-[11px] font-bold text-dark dark:text-white  ">
                         Cakupan Layanan:
                       </span>
                       <ul className="space-y-2 text-xs text-gray-800 dark:text-white/90">
@@ -391,10 +348,10 @@ export default function ProductsPage() {
                   <div className="mt-8 pt-4">
                     <Link
                       href={consultationHref({ service: `Konsultasi Produk: ${item.title}`, source: "products" })}
-                      className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-orange-600 hover:text-white text-gray-800 dark:text-white text-xs font-bold border border-gray-200 dark:border-white/15 transition-all shadow-sm"
+                      className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-orange-600 hover:text-white text-gray-800 dark:text-white text-xs font-bold border border-gray-200 dark:border-white/15 transition-all "
                     >
                       Konsultasikan Skema Ini
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      
                     </Link>
                   </div>
                 </div>
@@ -407,14 +364,12 @@ export default function ProductsPage() {
       {/* 4. VALUE PROPOSITION SECTION */}
       <section
         aria-labelledby="advantages-heading"
-        className="py-16 md:py-24 bg-white dark:bg-[#1A1A2E] transition-colors"
+        className="py-16 md:py-24 bg-white dark:bg-[#111827] transition-colors"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-16">
-              <span className="inline-block text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1 rounded-full uppercase tracking-wider mb-3">
-                Keunggulan Solusi
-              </span>
+              
               <h2 id="advantages-heading" className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white">
                 Mengapa Memilih Platform Produk <GradientText>CITS Indonesia?</GradientText>
               </h2>
@@ -430,9 +385,9 @@ export default function ProductsPage() {
               const AdvIcon = adv.icon;
               return (
                 <ScrollReveal key={adv.title} delay={idx * 0.1} className="h-full">
-                  <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-gray-200 dark:border-white/10 hover:border-orange-500/40 transition-all shadow-sm h-full flex flex-col justify-between">
+                  <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#111827] border border-gray-200 dark:border-white/10 hover:border-orange-500/40 transition-all  h-full flex flex-col justify-between">
                     <div>
-                      <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 mb-4 shadow-sm">
+                      <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 mb-4 ">
                         <AdvIcon className="w-6 h-6" />
                       </div>
                       <h3 className="font-bold text-dark dark:text-white text-base">{adv.title}</h3>
@@ -456,14 +411,12 @@ export default function ProductsPage() {
       {/* 5. CALL TO ACTION SECTION */}
       <section
         aria-labelledby="products-cta-heading"
-        className="py-16 md:py-24 bg-gray-50 dark:bg-[#151528] transition-colors"
+        className="py-16 md:py-24 bg-gray-50 dark:bg-[#0f172a] transition-colors"
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
-            <div className="p-8 md:p-14 rounded-3xl bg-gradient-to-br from-slate-50 via-orange-50/30 to-slate-50 dark:from-[#151528] dark:via-[#1E1710] dark:to-[#151528] border border-orange-200/60 dark:border-orange-900/30 shadow-lg">
-              <span className="inline-block text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3.5 py-1 rounded-full uppercase tracking-wider mb-4">
-                Konsultasi & Uji Coba Demo
-              </span>
+            <div className="p-8 md:p-14 rounded-xl border border-orange-200/60 dark:border-orange-900/30  bg-slate-50 dark:bg-[#0f172a]">
+              
               <h2
                 id="products-cta-heading"
                 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-dark dark:text-white tracking-tight"
@@ -478,10 +431,10 @@ export default function ProductsPage() {
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Link
                   href={consultationHref({ purpose: "demo", source: "products" })}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-md shadow-orange-600/20 hover:shadow-lg hover:shadow-orange-600/30 text-sm"
+                  className="inline-flex items-center gap-2 px-8 py-3.5 text-white font-semibold rounded-xl transition-all     text-sm bg-orange-700 hover:bg-orange-800"
                 >
                   Jadwalkan Demo Produk
-                  <ArrowRight className="w-4 h-4" />
+                  
                 </Link>
                 <Link
                   href="/portfolio"

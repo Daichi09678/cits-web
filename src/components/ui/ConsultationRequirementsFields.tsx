@@ -12,7 +12,7 @@ export interface RequirementsFormValue {
 }
 
 const inputClass =
-  "mt-1.5 w-full rounded-xl border border-slate-300 dark:border-white/15 bg-white dark:bg-[#121222] px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-600";
+  "mt-1.5 w-full rounded-xl border border-slate-300 dark:border-white/15 bg-white dark:bg-[#0b1220] px-3 py-2.5 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-600";
 
 export default function ConsultationRequirementsFields({
   value,

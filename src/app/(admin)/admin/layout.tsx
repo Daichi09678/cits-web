@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import AdminShell from "@/components/admin/AdminShell";
 import RealtimeNotificationToast from "@/components/admin/RealtimeNotificationToast";
-import AdminPageTransitionLoader from "@/components/admin/AdminPageTransitionLoader";
 import { useAdminAuth } from "@/lib/auth";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -45,9 +44,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-slate-50/70 dark:bg-[#0F0F1A] text-slate-900 dark:text-white flex">
-      {/* Network-Adaptive Page Transition Loading Bar & Indicator */}
-      <AdminPageTransitionLoader />
-
       {/* Sidebar Navigation + Main Workspace (collapse/expand state) */}
       <AdminShell>{children}</AdminShell>
 

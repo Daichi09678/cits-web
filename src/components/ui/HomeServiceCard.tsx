@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import ServicePhoto from "@/components/ui/ServicePhoto";
-import { ArrowRight, CheckCircle2, Cpu } from "lucide-react";
+import { CheckCircle2, Cpu } from "lucide-react";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import { PILLAR_ICON_MAP } from "@/lib/serviceIcons";
 import { consultationHref } from "@/lib/consultation";
@@ -13,11 +13,11 @@ export default function HomeServiceCard({ service, wide = false }: { service: Se
   return (
     <SpotlightCard className="h-full">
       <article className={`min-w-0 h-full flex flex-col p-8 ${wide ? "md:p-10" : ""}`} data-home-service={service.id}>
-        <div className="mb-6 h-48 sm:h-56 w-full shrink-0 overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-900">
+        <div className="mb-6 h-48 sm:h-56 w-full shrink-0 overflow-hidden rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-900">
           <ServicePhoto image={service.image} name={service.title} className="h-full" />
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-          <span className="w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/20">
+          <span className="w-14 h-14 shrink-0 rounded-xl flex items-center justify-center   bg-orange-700">
             <Icon className="w-7 h-7 text-white" aria-hidden="true" />
           </span>
           <span className="max-w-full break-words px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800/60 bg-orange-100 dark:bg-orange-950/60 text-xs font-bold text-orange-900 dark:text-orange-300">
@@ -30,7 +30,7 @@ export default function HomeServiceCard({ service, wide = false }: { service: Se
             {service.category}
           </span>
           {service.tags.slice(0, 4).map((tag) => (
-            <span key={tag} className="rounded-full border border-orange-200 px-2.5 py-1 text-[11px] font-medium text-orange-800 dark:border-orange-800/60 dark:text-orange-300">
+            <span key={tag} className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
               {tag}
             </span>
           ))}
@@ -76,13 +76,13 @@ export default function HomeServiceCard({ service, wide = false }: { service: Se
             href={`/services#${service.id}`}
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-800 dark:text-orange-300 hover:underline"
           >
-            Pelajari Selengkapnya <ArrowRight className="w-4 h-4 shrink-0" aria-hidden="true" />
+            Pelajari Selengkapnya 
           </Link>
           <Link
             href={consultationHref({ service: service.title, source: "home" })}
             className="inline-flex items-center gap-2 rounded-xl bg-orange-700 hover:bg-orange-800 px-4 py-2.5 text-sm font-semibold text-white"
           >
-            Konsultasi Layanan <ArrowRight className="w-4 h-4 shrink-0" aria-hidden="true" />
+            Konsultasi Layanan 
           </Link>
         </div>
       </article>

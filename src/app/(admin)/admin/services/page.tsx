@@ -65,7 +65,12 @@ export default function AdminServicesPage() {
   const { services, actions } = useCitsStore();
   const dialog = useAdminDialog();
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [categoryEditorOpen, setCategoryEditorOpen] = useState(false);
+  const [categoryName, setCategoryName] = useState("");
+  const [categoryServiceIds, setCategoryServiceIds] = useState<string[]>([]);
+  const [categorySaving, setCategorySaving] = useState(false);
+  const [categoryError, setCategoryError] = useState("");
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPillar, setEditingPillar] = useState<ServicePillar | null>(null);
@@ -247,13 +252,51 @@ export default function AdminServicesPage() {
       source: service,
     };
   });
-  const categories = ["All", ...new Set(catalog.map((service) => service.category))];
+  const categories = [...new Set(catalog.map((service) => service.category))];
+  const tags = [...new Set(catalog.flatMap((service) => service.tags || []))];
+  const tagPresets = [...new Set([...tags, ...SERVICE_TAG_PRESETS])];
   const query = search.trim().toLowerCase();
   const filteredServices = catalog.filter(
     (service) =>
       [service.title, service.desc, ...(service.tags || [])].some((value) => value.toLowerCase().includes(query)) &&
-      (categoryFilter === "All" || service.category === categoryFilter)
+      (categoryFilter === null || service.category === categoryFilter)
   );
+  const hasFilters = !!search || categoryFilter !== null;
+  const resetFilters = () => {
+    setSearch("");
+    setCategoryFilter(null);
+    setPage(1);
+  };
+  const saveCategory = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!canEdit || categorySaving) return;
+    const name = categoryName.trim();
+    if (!name || name.length > 100 || categoryServiceIds.length === 0) {
+      setCategoryError("Isi nama kategori dan pilih minimal satu layanan.");
+      return;
+    }
+    const ids = new Set(categoryServiceIds);
+    if (!services.some((service) => ids.has(service.id))) {
+      setCategoryError("Layanan yang dipilih sudah tidak tersedia. Pilih kembali layanan.");
+      return;
+    }
+    setCategorySaving(true);
+    setCategoryError("");
+    try {
+      await actions.saveServices(
+        services.map((service) => (ids.has(service.id) ? { ...service, category: name } : service))
+      );
+      setCategoryEditorOpen(false);
+      setCategoryName("");
+      setCategoryServiceIds([]);
+      resetFilters();
+      setCategoryFilter(name);
+    } catch (error) {
+      setCategoryError(error instanceof Error ? error.message : "Kategori gagal disimpan. Silakan coba lagi.");
+    } finally {
+      setCategorySaving(false);
+    }
+  };
   const pageSize = 8;
   const currentPage = Math.min(page, Math.max(1, Math.ceil(filteredServices.length / pageSize)));
   const paginatedServices = filteredServices.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -266,55 +309,167 @@ export default function AdminServicesPage() {
       />
       <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
         {/* Top Controls & Action Bar */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#151528] border border-slate-200/90 dark:border-white/10 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          {/* Search & Filter */}
-          <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-0">
-            <div className="relative w-full sm:min-w-[240px] flex-1 max-w-sm">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                aria-label="Cari layanan"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                placeholder="Cari nama atau deskripsi layanan..."
-                className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-            </div>
-
-            {/* Category Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  aria-pressed={categoryFilter === cat}
-                  onClick={() => {
-                    setCategoryFilter(cat);
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#151528] border border-slate-200/90 dark:border-white/10 shadow-xs space-y-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            {/* Search & Filter */}
+            <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-0">
+              <div className="relative w-full sm:min-w-[240px] flex-1 max-w-sm">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  aria-label="Cari layanan"
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
                     setPage(1);
                   }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
-                    categoryFilter === cat
-                      ? "bg-orange-600 text-white shadow-xs"
-                      : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+                  placeholder="Cari nama atau deskripsi layanan..."
+                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+
+              {/* Category Filter Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full">
+                {[null, ...categories].map((cat) => (
+                  <button
+                    key={cat === null ? "all" : `category:${cat}`}
+                    aria-pressed={categoryFilter === cat}
+                    onClick={() => {
+                      setCategoryFilter(cat);
+                      setPage(1);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
+                      categoryFilter === cat
+                        ? "bg-orange-600 text-white shadow-xs"
+                        : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                    }`}
+                  >
+                    {cat === null ? "Semua" : cat}
+                  </button>
+                ))}
+                {canEdit && (
+                  <button
+                    type="button"
+                    disabled={categorySaving}
+                    aria-expanded={categoryEditorOpen}
+                    aria-controls="service-category-editor"
+                    onClick={() => setCategoryEditorOpen((open) => !open)}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:border-orange-300 hover:text-orange-600 dark:border-white/10 dark:text-slate-300"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Tambah kategori
+                  </button>
+                )}
+                {hasFilters && (
+                  <button
+                    type="button"
+                    onClick={resetFilters}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-slate-500 hover:text-orange-600"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Reset filter
+                  </button>
+                )}
+              </div>
             </div>
+
+            {/* Add Service Button */}
+            <button
+              disabled={!canCreate || categorySaving}
+              onClick={openAddModal}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25 transition-all shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tambah Layanan Baru</span>
+            </button>
           </div>
 
-          {/* Add Service Button */}
-          <button
-            disabled={!canCreate}
-            onClick={openAddModal}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25 transition-all shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Tambah Layanan Baru</span>
-          </button>
+          {categoryEditorOpen && canEdit && (
+            <form
+              id="service-category-editor"
+              onSubmit={saveCategory}
+              className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-white/5"
+            >
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Tambah kategori filter</h2>
+              <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
+                Buat kategori dan pilih layanan yang masuk di dalamnya. Kategori akan muncul sebagai filter setelah
+                disimpan.
+              </p>
+              <label
+                htmlFor="new-service-category"
+                className="block text-xs font-medium text-slate-700 dark:text-slate-300"
+              >
+                Nama kategori
+              </label>
+              <input
+                id="new-service-category"
+                required
+                maxLength={100}
+                disabled={categorySaving}
+                list="service-category-options"
+                value={categoryName}
+                onChange={(event) => setCategoryName(event.target.value)}
+                placeholder="Contoh: Infrastruktur TI"
+                className="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500/30 dark:border-white/10 dark:bg-[#151528] dark:text-white"
+              />
+              <fieldset disabled={categorySaving} className="space-y-2">
+                <legend className="mb-2 text-xs font-medium text-slate-700 dark:text-slate-300">
+                  Terapkan ke layanan
+                </legend>
+                <div className="max-h-48 space-y-2 overflow-y-auto">
+                  {catalog.map((service) => (
+                    <label
+                      key={service.id}
+                      className="flex cursor-pointer items-center gap-2 text-xs text-slate-700 dark:text-slate-300"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={categoryServiceIds.includes(service.id)}
+                        onChange={(event) =>
+                          setCategoryServiceIds((ids) =>
+                            event.target.checked ? [...ids, service.id] : ids.filter((id) => id !== service.id)
+                          )
+                        }
+                        className="h-4 w-4 accent-orange-600"
+                      />
+                      <span className="min-w-0 break-words">
+                        {service.title} <span className="text-slate-500">· {service.category}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              {categoryError && (
+                <p role="alert" className="text-xs text-red-600 dark:text-red-400">
+                  {categoryError}
+                </p>
+              )}
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  disabled={categorySaving}
+                  onClick={() => setCategoryEditorOpen(false)}
+                  className="h-9 rounded-lg px-3 text-xs text-slate-600 hover:bg-slate-100 disabled:opacity-50 dark:text-slate-300 dark:hover:bg-white/5"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={categorySaving || categoryServiceIds.length === 0}
+                  className="h-9 rounded-lg bg-orange-600 px-3 text-xs font-medium text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {categorySaving ? "Menyimpan..." : "Simpan kategori"}
+                </button>
+              </div>
+            </form>
+          )}
+          <datalist id="service-category-options">
+            {[...new Set([...categories, "Pengembangan Aplikasi", "Konsultasi TI", "Infrastruktur TI"])].map(
+              (category) => (
+                <option key={category} value={category} />
+              )
+            )}
+          </datalist>
         </div>
 
         {/* Table Data Container */}
@@ -334,7 +489,7 @@ export default function AdminServicesPage() {
                 {filteredServices.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-12 text-center text-slate-500">
-                      Tidak ada layanan yang cocok dengan pencarian Anda.
+                      Tidak ada layanan yang cocok dengan pencarian dan filter Anda.
                     </td>
                   </tr>
                 ) : (
@@ -403,7 +558,7 @@ export default function AdminServicesPage() {
                       <td className="py-4 px-5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
-                            disabled={!canEdit}
+                            disabled={!canEdit || categorySaving}
                             onClick={() => openEditModal(prod.source)}
                             title="Edit Layanan"
                             aria-label={`Edit layanan ${prod.title}`}
@@ -413,7 +568,7 @@ export default function AdminServicesPage() {
                           </button>
                           {services.length > 3 && (
                             <button
-                              disabled={!canDelete}
+                              disabled={!canDelete || categorySaving}
                               onClick={() => handleDeletePillar(prod.id, prod.title)}
                               title="Hapus Layanan"
                               aria-label={`Hapus layanan ${prod.title}`}
@@ -503,6 +658,8 @@ export default function AdminServicesPage() {
                       type="text"
                       required
                       maxLength={100}
+                      id="service-category"
+                      list="service-category-options"
                       value={formCategory}
                       onChange={(event) => setFormCategory(event.target.value)}
                       placeholder="cth. Software House"
@@ -510,6 +667,10 @@ export default function AdminServicesPage() {
                     />
                   </label>
                 </div>
+                <p className="text-[11px] leading-5 text-slate-500 dark:text-slate-400">
+                  Pilih kategori yang ada atau ketik kategori baru. Setelah layanan disimpan, kategori otomatis tersedia
+                  di filter.
+                </p>
 
                 <div>
                   <label
@@ -549,11 +710,11 @@ export default function AdminServicesPage() {
                 <div>
                   <ChipField
                     label="Tags / Label"
-                    hint="Untuk pencarian dan pengelompokan layanan."
+                    hint="Pilih label yang ada atau tambahkan label sendiri untuk pencarian dan pengelompokan layanan."
                     value={csvToList(formTags)}
                     onChange={(list) => setFormTags(listToCsv(list))}
-                    presets={SERVICE_TAG_PRESETS}
-                    placeholder="cth: Custom Development, Integrasi Sistem"
+                    presets={tagPresets}
+                    placeholder="cth: Cloud, Integrasi Sistem, Audit TI"
                     accent="emerald"
                   />
                 </div>

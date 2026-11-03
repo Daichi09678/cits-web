@@ -171,6 +171,7 @@ export interface LandingHero {
   trustBadges: string[];
   showMockup?: boolean;
   mockupTitle?: string;
+  mockupDescription?: string;
   mockupStatus?: string;
 }
 

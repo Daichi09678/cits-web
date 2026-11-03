@@ -1,21 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  ArrowUpRight,
-  Briefcase,
-  Building2,
-  CheckCircle2,
-  Cpu,
-  ExternalLink,
-  FileText,
-  Layers,
-  Lightbulb,
-  ShieldCheck,
-  Target,
-} from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Briefcase, Building2, CheckCircle2, Cpu, ExternalLink, FileText, Layers, Lightbulb, ShieldCheck, Target } from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import { caseStudyEvidence } from "@/data/caseStudyFacts";
 import { consultationHref } from "@/lib/consultation";
@@ -27,9 +13,9 @@ export default function CaseStudyDetail({ id }: { id: string }) {
 
   if (!study) {
     return (
-      <main id="main-content" className="min-h-screen bg-white py-24 dark:bg-[#1A1A2E]">
+      <main id="main-content" className="min-h-screen bg-white py-24 dark:bg-[#111827]">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300">
             <Briefcase className="h-6 w-6" />
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Studi kasus tidak ditemukan</h1>
@@ -55,10 +41,10 @@ export default function CaseStudyDetail({ id }: { id: string }) {
   return (
     <main
       id="main-content"
-      className="min-h-screen bg-white text-slate-900 transition-colors dark:bg-[#1A1A2E] dark:text-white"
+      className="min-h-screen bg-white text-slate-900 transition-colors dark:bg-[#111827] dark:text-white"
     >
       {/* Header studi kasus */}
-      <section className="border-b border-slate-200 bg-slate-50 py-14 sm:py-16 dark:border-white/10 dark:bg-[#151528]">
+      <section className="border-b border-slate-200 bg-slate-50 py-14 sm:py-16 dark:border-white/10 dark:bg-[#0f172a]">
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <p className="text-sm text-slate-600 dark:text-slate-400">
             {study.sector}{" "}
@@ -76,7 +62,7 @@ export default function CaseStudyDetail({ id }: { id: string }) {
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 dark:border-white/10 dark:bg-white/5">
+            <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-2.5 dark:border-white/10 dark:bg-white/5">
               {study.clientLogo ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={study.clientLogo} alt="" className="h-8 w-8 shrink-0 object-contain" />
@@ -84,7 +70,7 @@ export default function CaseStudyDetail({ id }: { id: string }) {
                 <Building2 className="h-6 w-6 shrink-0 text-orange-700 dark:text-orange-300" />
               )}
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <p className="text-[10px] font-semibold   text-slate-500 dark:text-slate-400">
                   Klien
                 </p>
                 <p className="truncate text-xs font-bold text-slate-800 sm:text-sm dark:text-slate-100">
@@ -94,10 +80,10 @@ export default function CaseStudyDetail({ id }: { id: string }) {
             </div>
             <Link
               href={consultationHref({ source: "portfolio", referenceId: study.id })}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-orange-700 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-orange-600/20 transition hover:bg-orange-800"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-orange-700 px-5 py-2.5 text-sm font-bold text-white   transition hover:bg-orange-800"
             >
               Konsultasi Kebutuhan Serupa
-              <ArrowRight className="h-4 w-4" />
+              
             </Link>
             <Link
               href="/portfolio"
@@ -115,11 +101,11 @@ export default function CaseStudyDetail({ id }: { id: string }) {
         <ScrollReveal>
           <section
             aria-labelledby="impact-heading"
-            className="rounded-3xl border border-slate-200 bg-slate-50/70 p-6 sm:p-8 dark:border-white/10 dark:bg-white/[0.03]"
+            className="rounded-xl border border-slate-200 bg-slate-50/70 p-6 sm:p-8 dark:border-white/10 dark:bg-white/[0.03]"
           >
             <h2
               id="impact-heading"
-              className="text-xs font-bold uppercase tracking-widest text-orange-800 dark:text-orange-300"
+              className="text-xs font-bold   text-orange-800 dark:text-orange-300"
             >
               Dampak Terukur
             </h2>
@@ -174,9 +160,9 @@ export default function CaseStudyDetail({ id }: { id: string }) {
                 {evidence.facts.map((fact) => (
                   <div
                     key={fact.label}
-                    className="rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-orange-300 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-orange-500/40"
+                    className="rounded-xl border border-slate-200 bg-white p-5 transition hover:border-orange-300 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-orange-500/40"
                   >
-                    <dt className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <dt className="text-[11px] font-semibold   text-slate-500 dark:text-slate-400">
                       {fact.label}
                     </dt>
                     <dd className="mt-1.5 text-lg font-extrabold text-slate-900 dark:text-white">{fact.value}</dd>
@@ -227,7 +213,7 @@ export default function CaseStudyDetail({ id }: { id: string }) {
           <ScrollReveal>
             <section
               aria-labelledby="scope-heading"
-              className="h-full rounded-2xl border border-slate-200 p-5 dark:border-white/10"
+              className="h-full rounded-xl border border-slate-200 p-5 dark:border-white/10"
             >
               <h2 id="scope-heading" className="flex items-center gap-2 text-sm font-bold">
                 <Layers className="h-4 w-4 text-orange-700 dark:text-orange-300" />
@@ -246,7 +232,7 @@ export default function CaseStudyDetail({ id }: { id: string }) {
           <ScrollReveal delay={0.05}>
             <section
               aria-labelledby="tech-heading"
-              className="h-full rounded-2xl border border-slate-200 p-5 dark:border-white/10"
+              className="h-full rounded-xl border border-slate-200 p-5 dark:border-white/10"
             >
               <h2 id="tech-heading" className="flex items-center gap-2 text-sm font-bold">
                 <Cpu className="h-4 w-4 text-orange-700 dark:text-orange-300" />
@@ -254,9 +240,7 @@ export default function CaseStudyDetail({ id }: { id: string }) {
               </h2>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {study.techStack.map((tech) => (
-                  <span
-                    key={tech}
-                    className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-300"
+                  <span key={tech} className="text-xs leading-relaxed text-slate-600 dark:text-slate-300"
                   >
                     {tech}
                   </span>
@@ -267,7 +251,7 @@ export default function CaseStudyDetail({ id }: { id: string }) {
           <ScrollReveal delay={0.1}>
             <section
               aria-labelledby="deliverables-heading"
-              className="h-full rounded-2xl border border-slate-200 p-5 dark:border-white/10"
+              className="h-full rounded-xl border border-slate-200 p-5 dark:border-white/10"
             >
               <h2 id="deliverables-heading" className="flex items-center gap-2 text-sm font-bold">
                 <FileText className="h-4 w-4 text-orange-700 dark:text-orange-300" />
@@ -290,11 +274,11 @@ export default function CaseStudyDetail({ id }: { id: string }) {
           <ScrollReveal>
             <section
               aria-labelledby="sources-heading"
-              className="mt-12 rounded-3xl border border-slate-200 bg-slate-50/70 p-6 sm:p-8 dark:border-white/10 dark:bg-white/[0.03]"
+              className="mt-12 rounded-xl border border-slate-200 bg-slate-50/70 p-6 sm:p-8 dark:border-white/10 dark:bg-white/[0.03]"
             >
               <h2
                 id="sources-heading"
-                className="text-sm font-bold uppercase tracking-widest text-slate-700 dark:text-slate-200"
+                className="text-sm font-bold   text-slate-700 dark:text-slate-200"
               >
                 Sumber &amp; Referensi
               </h2>
@@ -333,7 +317,7 @@ export default function CaseStudyDetail({ id }: { id: string }) {
 
         {/* CTA */}
         <ScrollReveal>
-          <section className="mt-12 rounded-3xl bg-slate-900 p-7 text-white sm:p-9 dark:bg-[#121222]">
+          <section className="mt-12 rounded-xl bg-slate-900 p-7 text-white sm:p-9 dark:bg-[#0b1220]">
             <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">
               Punya kebutuhan serupa di instansi Anda?
             </h2>
@@ -347,7 +331,7 @@ export default function CaseStudyDetail({ id }: { id: string }) {
                 className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-orange-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-orange-700"
               >
                 Mulai Konsultasi
-                <ArrowRight className="h-4 w-4" />
+                
               </Link>
               <Link
                 href="/portfolio"
@@ -370,15 +354,15 @@ export default function CaseStudyDetail({ id }: { id: string }) {
                 <Link
                   key={item.id}
                   href={`/portfolio/${encodeURIComponent(item.id)}`}
-                  className="group rounded-2xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-orange-300 hover:shadow-md dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-orange-500/40"
+                  className="group rounded-xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-orange-300  dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-orange-500/40"
                 >
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-orange-800 dark:text-orange-300">
+                  <p className="text-[10px] font-bold   text-orange-800 dark:text-orange-300">
                     {item.clientShort || item.client}
                   </p>
                   <p className="mt-1.5 line-clamp-2 text-sm font-bold text-slate-900 dark:text-white">{item.title}</p>
                   <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 group-hover:text-orange-700 dark:text-slate-400 dark:group-hover:text-orange-300">
                     Buka detail
-                    <ArrowRight className="h-3 w-3" />
+                    
                   </span>
                 </Link>
               ))}

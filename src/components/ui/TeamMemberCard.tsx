@@ -1,14 +1,7 @@
 import Image from "next/image";
+import type { TeamMember } from "@/lib/team";
 
-export interface TeamMember {
-  id: string;
-  name: string;
-  position: string;
-  photoUrl: string | null;
-  displayOrder?: number;
-  isActive?: boolean;
-  showOnHomepage?: boolean;
-}
+export type { TeamMember } from "@/lib/team";
 
 export default function TeamMemberCard({ member }: { member: TeamMember }) {
   return (
@@ -19,6 +12,7 @@ export default function TeamMemberCard({ member }: { member: TeamMember }) {
             src={member.photoUrl}
             alt={`Foto ${member.name}`}
             fill
+            unoptimized
             sizes="(min-width: 1280px) 280px, (min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
             className="object-cover object-top"
           />
@@ -29,6 +23,7 @@ export default function TeamMemberCard({ member }: { member: TeamMember }) {
         )}
       </div>
       <div className="p-4">
+        {member.isDemo && <p className="mb-2 text-xs font-semibold text-slate-600 dark:text-slate-300">Contoh</p>}
         <h3 className="break-words text-base font-semibold leading-snug text-slate-900 dark:text-white">
           {member.name}
         </h3>

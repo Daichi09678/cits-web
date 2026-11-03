@@ -37,7 +37,7 @@ function storeHarness() {
     {},
     {
       get: (_, name) => async () => {
-        if (name === "getMessages" || name === "sendMessage") {
+        if (name === "getMessages" || name === "sendMessage" || name === "updateMessageStage") {
           requests++;
           if (response instanceof Error) throw response;
           return response;
@@ -263,4 +263,30 @@ test("updating message deal stage updates store with stage and notes", async () 
   const updated = h.CitsStore.getMessages().find((m) => m.id === "msg-deal");
   assert.equal(updated.dealStage, "kesepakatan");
   assert.equal(updated.dealNotes, "Sepakat kontrak pengadaan server");
+});
+
+test("notes update the cache only after the server confirms persistence", async () => {
+  const h = storeHarness();
+  h.CitsStore.saveMessages([{ id: "notes", dealStage: "diskusi", status: "read", dealNotes: "Old notes" }]);
+  let complete;
+  h.response = new Promise((resolve) => {
+    complete = resolve;
+  });
+  const pending = h.CitsStore.saveMessageNotes("notes", "diskusi", "Confirmed notes");
+  assert.equal(h.CitsStore.getMessages()[0].dealNotes, "Old notes");
+  complete({ success: true });
+  await pending;
+  assert.equal(h.CitsStore.getMessages()[0].dealNotes, "Confirmed notes");
+  assert.equal(h.CitsStore.getMessages()[0].dealStage, "diskusi");
+  assert.equal(h.CitsStore.getMessages()[0].status, "read");
+});
+
+test("rejected note saves and connection failures preserve the last confirmed notes", async () => {
+  for (const failure of [{ success: false, message: "Database unavailable" }, new Error("Offline")]) {
+    const h = storeHarness();
+    h.CitsStore.saveMessages([{ id: "notes", dealStage: "baru", dealNotes: "Old notes" }]);
+    h.response = failure;
+    await assert.rejects(h.CitsStore.saveMessageNotes("notes", "baru", "Unsaved draft"));
+    assert.equal(h.CitsStore.getMessages()[0].dealNotes, "Old notes");
+  }
 });

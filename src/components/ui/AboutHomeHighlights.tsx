@@ -1,16 +1,62 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Home, Sparkles } from "lucide-react";
-import { pageDefinition, type PublicPageContent } from "@/lib/publicPageContent";
+import { ArrowRight } from "lucide-react";
+import { pageCollection, pageDefinition, type PublicPageContent } from "@/lib/publicPageContent";
+import type { AboutData } from "@/types/schema";
 
 /**
  * Ringkasan section Tentang Kami yang dipilih admin untuk tampil di beranda.
  * Hanya section dengan `homeVisibility = true` (dan masih ditampilkan di
  * halaman Tentang Kami) yang dirender, mengikuti urutan section tersimpan.
  */
-export default function AboutHomeHighlights({ content }: { content: PublicPageContent }) {
+export default function AboutHomeHighlights({
+  content,
+  aboutData,
+}: {
+  content: PublicPageContent;
+  aboutData?: AboutData;
+}) {
   const definition = pageDefinition("about");
+  const joinText = (parts: string[], separator = ": ") =>
+    parts
+      .map((part) => part?.trim())
+      .filter(Boolean)
+      .join(separator);
+  const summary = (key: string): string[] => {
+    switch (key) {
+      case "about-hero-heading":
+        return aboutData?.story?.trim() ? [aboutData.story] : [];
+      case "vision-mission-heading":
+        return [aboutData?.vision, ...(aboutData?.mission ?? []).slice(0, 1)].filter((text): text is string =>
+          Boolean(text?.trim())
+        );
+      case "values-heading":
+        return pageCollection<{ word: string; description: string }>(content, "values")
+          .slice(0, 2)
+          .map((item) => joinText([item.word, item.description]))
+          .filter(Boolean);
+      case "milestones-heading":
+        return pageCollection<{ year: string; title: string; description: string }>(content, "milestones")
+          .slice(-2)
+          .map((item) => joinText([item.year, joinText([item.title, item.description], ". ")]))
+          .filter(Boolean);
+      case "awards-heading":
+        return pageCollection<{ title: string; issuer: string }>(content, "awards")
+          .slice(0, 2)
+          .map((item) => joinText([item.title, item.issuer], ". "))
+          .filter(Boolean);
+      case "governance-heading":
+        return pageCollection<{ title: string; description: string }>(content, "governancePillars")
+          .slice(0, 2)
+          .map((item) => joinText([item.title, item.description]))
+          .filter(Boolean);
+      case "about-cta-heading":
+        return content.texts["about_cta_text_3"]?.trim() ? [content.texts["about_cta_text_3"]] : [];
+      default:
+        return [];
+    }
+  };
   const order = content.order?.length ? content.order : definition.sections.map((section) => section.key);
   const enabled = order
     .map((key) => definition.sections.find((section) => section.key === key))
@@ -19,7 +65,9 @@ export default function AboutHomeHighlights({ content }: { content: PublicPageCo
         Boolean(section) &&
         content.homeVisibility?.[section!.key] === true &&
         content.visibility[section!.key] !== false
-    );
+    )
+    .map((section) => ({ ...section, snippets: summary(section.key) }))
+    .filter((section) => section.snippets.length > 0);
 
   if (!enabled.length) return null;
 
@@ -31,41 +79,29 @@ export default function AboutHomeHighlights({ content }: { content: PublicPageCo
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-[#FFF1E9] px-3 py-1 text-[11px] font-semibold tracking-wide text-[#C2410C] uppercase dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-300">
-            <Sparkles className="size-3.5" aria-hidden="true" />
-            Tentang CITS
-          </span>
           <h2
             id="about-home-heading"
-            className="mt-3 text-2xl font-extrabold tracking-tight text-[#0F172A] sm:text-3xl lg:text-4xl dark:text-white"
+            className="text-2xl font-extrabold tracking-tight text-[#0F172A] sm:text-3xl lg:text-4xl dark:text-white"
           >
             Mengenal CITS Indonesia
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-[#64748B] sm:text-base dark:text-slate-300">
-            Ringkasan profil, nilai, dan perjalanan perusahaan yang dipilih langsung oleh tim kami.
+            Profil, nilai kerja, dan perjalanan CITS Indonesia.
           </p>
         </div>
 
         <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {enabled.map((section) => {
-            const snippets = section.fields
-              .filter((field) => field.kind === "text")
-              .map((field) => content.texts[field.key] ?? "")
-              .filter((value) => value.trim().length > 30)
-              .slice(0, 2);
             return (
               <article
                 key={section.key}
                 className="flex h-full flex-col rounded-xl border border-[#E2E8F0] bg-white p-5 transition hover:border-orange-300 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-orange-500/40"
               >
-                <span className="flex size-9 items-center justify-center rounded-lg bg-[#FFF1E9] text-[#FF4D00] dark:bg-orange-500/10 dark:text-orange-300">
-                  <Home className="size-4" aria-hidden="true" />
-                </span>
-                <h3 className="mt-3 text-sm font-bold text-[#0F172A] dark:text-white">{section.title}</h3>
-                {snippets.map((text, index) => (
+                <h3 className="text-base font-bold text-[#0F172A] dark:text-white">{section.title}</h3>
+                {section.snippets.map((text, index) => (
                   <p
                     key={index}
-                    className="mt-2 line-clamp-4 text-xs leading-relaxed text-[#64748B] dark:text-slate-300"
+                    className="mt-3 line-clamp-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300"
                   >
                     {text}
                   </p>

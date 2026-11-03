@@ -41,9 +41,9 @@ export default function TeamSection({ members = [], isDemo = false }: TeamSectio
             <ArrowRight aria-hidden="true" className="size-4" />
           </Link>
         </div>
-        {isDemo && (
+        {(isDemo || featuredMembers.some((member) => member.isDemo)) && (
           <p className="mb-4 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-            Data contoh untuk preview. Nama dan jabatan berikut bukan data resmi CITS Indonesia.
+            Data contoh untuk preview. Anggota berlabel Contoh bukan data resmi CITS Indonesia.
           </p>
         )}
         {featuredMembers.length > 0 ? (

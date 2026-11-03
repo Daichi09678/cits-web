@@ -9,7 +9,7 @@
  * bukan di localStorage, agar akun bisa dipakai lintas browser/perangkat.
  */
 
-export type PageKey = "landing" | "products" | "portfolio" | "about" | "contact" | "services" | "clients";
+export type PageKey = "landing" | "products" | "portfolio" | "about" | "contact" | "services" | "clients" | "team";
 
 export interface EditablePage {
   key: PageKey;
@@ -20,6 +20,13 @@ export interface EditablePage {
 }
 
 export const EDITABLE_PAGES: EditablePage[] = [
+  {
+    key: "team",
+    label: "Tim Kami",
+    shortLabel: "Tim",
+    href: "/admin/team",
+    description: "Anggota tim, foto, jabatan, urutan, dan tampilan di beranda",
+  },
   {
     key: "products",
     label: "Produk Kami",
