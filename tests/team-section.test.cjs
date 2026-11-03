@@ -42,7 +42,7 @@ test("team preview uses only eligible members, sorts without mutating data, and 
 test("team section never invents identities, and missing photos use a plain placeholder", () => {
   const empty = renderToStaticMarkup(React.createElement(Section));
   assert.match(empty, /id="team"/);
-  assert.match(empty, /href="\/#team"/);
+  assert.match(empty, /href="\/team"/);
   assert.match(empty, /Informasi anggota tim belum tersedia/);
   assert.doesNotMatch(empty, /<article|<img/);
   const hidden = renderToStaticMarkup(
@@ -61,4 +61,22 @@ test("team section never invents identities, and missing photos use a plain plac
   );
   assert.match(withPhoto, /alt="Foto Nama Uji"/);
   assert.match(withPhoto, /object-cover object-top/);
+});
+
+test("full team listing includes every published active member beyond the four-person homepage preview", () => {
+  const members = Array.from({ length: 6 }, (_, index) => ({
+    id: `member-${index}`,
+    name: `Anggota Uji ${index}`,
+    position: "Teknisi",
+    photoUrl: null,
+    displayOrder: 6 - index,
+    isActive: index !== 0,
+    showOnHomepage: true,
+  }));
+  const html = renderToStaticMarkup(React.createElement(Section, { members, showAll: true }));
+  assert.equal((html.match(/<article/g) || []).length, 5);
+  assert.doesNotMatch(html, /Anggota Uji 0/);
+  assert.ok(html.indexOf("Anggota Uji 5") < html.indexOf("Anggota Uji 1"));
+  assert.match(html, /<h1/);
+  assert.match(html, /href="\/#team"/);
 });
