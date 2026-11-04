@@ -65,7 +65,7 @@ export function ServiceImageField({
         <div className="flex-1 min-w-0 space-y-1.5">
           <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span>{image ? "Foto Layanan Berhasil Dipilih" : "Foto Bawaan Layanan"}</span>
+            <span>{image ? "Foto Layanan Dipilih" : fallbackImage ? "Ilustrasi Bawaan Layanan" : "Belum Ada Foto Layanan"}</span>
           </div>
           {image && (
             <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
@@ -112,7 +112,7 @@ export function ServiceImageField({
         }}
       />
       <p className="text-[11px] text-slate-500 dark:text-slate-400">
-        Mendukung format PNG, JPG, atau WebP (maksimal 2 MB). Hapus foto untuk menggunakan foto bawaan.
+        Mendukung format PNG, JPG, atau WebP (maksimal 2 MB). Jika kosong, ilustrasi bawaan digunakan bila tersedia.
       </p>
       {imageError && (
         <p role="alert" className="text-xs font-semibold text-red-700 dark:text-red-300">

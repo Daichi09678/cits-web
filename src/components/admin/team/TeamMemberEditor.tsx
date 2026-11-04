@@ -172,6 +172,21 @@ export default function TeamMemberEditor({
                   className={teamField}
                 />
               </label>
+              <label htmlFor={`${id}-team`} className="block text-xs font-medium sm:col-span-2">
+                Kelompok Tim
+                <input
+                  id={`${id}-team`}
+                  name="teamName"
+                  maxLength={100}
+                  value={draft.teamName ?? ""}
+                  onChange={(event) => setDraft({ ...draft, teamName: event.target.value })}
+                  placeholder="Contoh: Pengembangan Aplikasi"
+                  className={teamField}
+                />
+                <span className="mt-2 block text-xs font-normal leading-5 text-slate-600 dark:text-slate-300">
+                  Gunakan nama yang sama untuk anggota dalam satu tim.
+                </span>
+              </label>
               <label htmlFor={`${id}-order`} className="block text-xs font-medium">
                 Urutan Tampil <span className="text-red-700 dark:text-red-300">*</span>
                 <input

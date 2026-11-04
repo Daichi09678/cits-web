@@ -50,6 +50,17 @@ test("team validation rejects invalid names, orders, flags, and executable photo
     assert.equal(team.parseTeamMember({ ...input, photoUrl }).ok, true);
 });
 
+test("team grouping accepts an optional trimmed name and rejects malformed names", () => {
+  assert.equal(
+    team.parseTeamMember({ ...input, teamName: "  Pengembangan Aplikasi  " }).value.teamName,
+    "Pengembangan Aplikasi"
+  );
+  assert.equal(team.parseTeamMember({ ...input, teamName: "" }).value.teamName, "");
+  assert.equal(team.parseTeamMember(input).value.teamName, undefined);
+  for (const teamName of [null, [], 7, "x".repeat(101)])
+    assert.equal(team.parseTeamMember({ ...input, teamName }).ok, false);
+});
+
 function routes(repo, auth) {
   const overrides = {
     "next/server": { NextResponse },
@@ -60,6 +71,35 @@ function routes(repo, auth) {
   };
   return { list: load("app/api/team/route.ts", overrides), item: load("app/api/team/[id]/route.ts", overrides) };
 }
+
+test("team API preserves the editable team name on create and update", async () => {
+  const auth = createTestAuth();
+  const token = auth.issueAdminToken({ sub: "admin", email: "admin@example.test", name: "Admin", role: "superadmin" });
+  let stored;
+  const handler = routes(
+    {
+      create: async (value) => {
+        stored = value;
+        return { ...value, id: "member-1" };
+      },
+      update: async (id, value) => {
+        stored = value;
+        return { ...value, id };
+      },
+    },
+    auth
+  );
+  const created = await handler.list.POST(request("POST", token, { ...input, teamName: " Konsultasi TI " }));
+  assert.equal(created.status, 201);
+  assert.equal(stored.teamName, "Konsultasi TI");
+  assert.equal((await created.json()).data.teamName, "Konsultasi TI");
+  const updated = await handler.item.PUT(request("PUT", token, { ...input, teamName: "Manajemen Proyek" }), context);
+  assert.equal(updated.status, 200);
+  assert.equal(stored.teamName, "Manajemen Proyek");
+  const invalid = await handler.list.POST(request("POST", token, { ...input, teamName: 10 }));
+  assert.equal(invalid.status, 400);
+  assert.equal(stored.teamName, "Manajemen Proyek");
+});
 
 test("public team responses hide inactive and unpublished members; admin listing requires team view permission", async () => {
   const auth = createTestAuth();

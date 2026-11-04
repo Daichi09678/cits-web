@@ -29,22 +29,18 @@ export default function TeamSection({
     <section
       id="team"
       aria-labelledby="team-heading"
-      className="scroll-mt-24 bg-[#1A1A2E] py-16 text-white sm:py-20 lg:py-24 dark:bg-transparent"
+      className="scroll-mt-24 bg-white py-16 text-dark sm:py-20 lg:py-24 dark:bg-transparent dark:text-white"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-10 flex flex-col items-start justify-between gap-6 lg:mb-12 lg:flex-row lg:items-end lg:gap-8">
           <div className="min-w-0 max-w-3xl">
-            <p className="mb-3 flex items-center gap-3 text-xs font-semibold tracking-wide text-brand sm:text-sm">
-              <span aria-hidden="true" className="h-[3px] w-12 shrink-0 rounded-sm bg-brand" />
-              TIM KAMI
-            </p>
             <Heading
               id="team-heading"
-              className="text-[28px] font-semibold leading-tight tracking-tight text-white sm:text-[32px] xl:text-[40px]"
+              className="text-[28px] font-bold leading-tight tracking-tight text-dark md:text-[32px] dark:text-white"
             >
               Tim Profesional di Balik <span className="text-brand">Solusi CITS</span>
             </Heading>
-            <p className="mt-4 text-sm leading-relaxed text-slate-300 sm:text-base sm:leading-7">
+            <p className="mt-3 text-base leading-relaxed text-gray-600 dark:text-slate-300">
               Didukung oleh para ahli di bidang teknologi informasi, manajemen proyek, dan pengembangan bisnis untuk
               menghadirkan solusi terbaik bagi kebutuhan Anda.
             </p>
@@ -58,13 +54,17 @@ export default function TeamSection({
           </Link>
         </div>
         {(isDemo || featuredMembers.some((member) => member.isDemo)) && (
-          <p className="mb-4 text-sm leading-relaxed text-slate-400">
+          <p className="mb-4 text-sm leading-relaxed text-gray-500 dark:text-slate-400">
             Data contoh untuk preview, bukan data resmi CITS Indonesia.
           </p>
         )}
         {loading || (error && !featuredMembers.length) ? (
-          <div className="border-t border-[#303442] py-8">
-            <p role={error ? "alert" : "status"} aria-busy={loading} className="text-sm leading-relaxed text-slate-300">
+          <div className="border-t border-gray-200 py-8 dark:border-[#303442]">
+            <p
+              role={error ? "alert" : "status"}
+              aria-busy={loading}
+              className="text-sm leading-relaxed text-gray-600 dark:text-slate-300"
+            >
               {loading ? "Memuat informasi tim..." : "Informasi tim belum dapat dimuat."}
             </p>
             {!loading && onRetry && (
@@ -84,7 +84,7 @@ export default function TeamSection({
             ))}
           </div>
         ) : (
-          <p className="border-t border-[#303442] py-8 text-sm leading-relaxed text-slate-400">
+          <p className="border-t border-gray-200 py-8 text-sm leading-relaxed text-gray-500 dark:border-[#303442] dark:text-slate-400">
             Informasi anggota tim belum tersedia.
           </p>
         )}

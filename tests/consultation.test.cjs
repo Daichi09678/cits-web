@@ -156,7 +156,9 @@ test("service presentation follows catalog edits and remains stable after reorde
   assert.equal(resolved[1].id, "it-consultant");
   assert.equal(resolved[1].description, service.desc);
   assert.deepEqual(Array.from(resolved[1].features), service.features);
-  assert.ok(resolved[1].techStack.includes("TOGAF Framework"));
+  assert.equal(resolved[1].techStack.length, 0);
+  assert.equal(resolved[1].caseStudies.length, 0);
+  assert.equal(resolved[1].deliverables.length, 0);
 });
 
 test("structured requirements reject malformed or excessive values before writing", async () => {

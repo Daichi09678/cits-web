@@ -128,6 +128,11 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/team" className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors block">
+                  Tim Kami
+                </Link>
+              </li>
+              <li>
                 <Link
                   href="/products"
                   className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors block"

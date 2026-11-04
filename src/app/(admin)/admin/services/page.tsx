@@ -155,9 +155,9 @@ export default function AdminServicesPage() {
     setFormBadge(`Pilar 0${services.length + 1}`);
     setFormIcon("Code2");
     setFormDesc("");
-    setFormSla("SLA Terjamin & Bergaransi");
-    setFormFeatures("Arsitektur Andal\nPengujian Ketat\nDukungan 24/7");
-    setFormTags("Software House, Custom Development, Integrasi Sistem");
+    setFormSla("");
+    setFormFeatures("");
+    setFormTags("");
     setFormDetails({ image: "", details: "", techStack: "", caseStudies: "", deliverables: [] });
     setSaveError("");
     setFormIsActive(true);
@@ -907,7 +907,7 @@ export default function AdminServicesPage() {
                     id="service-sla"
                     value={formSla}
                     onChange={(e) => setFormSla(e.target.value)}
-                    placeholder="cth. Target Ketersediaan 99.9% / TOGAF & LKPP"
+                    placeholder="Isi standar atau ketentuan dukungan yang berlaku untuk layanan ini"
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>

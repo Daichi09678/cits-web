@@ -3,10 +3,17 @@ import type { TeamMember } from "@/lib/team";
 
 export type { TeamMember } from "@/lib/team";
 
-export default function TeamMemberCard({ member }: { member: TeamMember }) {
+export default function TeamMemberCard({
+  member,
+  headingLevel = "h3",
+}: {
+  member: TeamMember;
+  headingLevel?: "h3" | "h4";
+}) {
+  const Heading = headingLevel;
   return (
-    <article className="flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-[#303442] bg-[#141722] transition-colors duration-200 hover:border-[#626979]">
-      <div className="relative aspect-[4/3] shrink-0 bg-[#191D29]">
+    <article className="flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-colors duration-200 hover:border-gray-400 dark:border-[#303442] dark:bg-[#141722] dark:hover:border-[#626979]">
+      <div className="relative aspect-[4/3] shrink-0 bg-gray-100 dark:bg-[#191D29]">
         {member.photoUrl ? (
           <Image
             src={member.photoUrl}
@@ -17,12 +24,16 @@ export default function TeamMemberCard({ member }: { member: TeamMember }) {
             className="object-cover object-top"
           />
         ) : (
-          <div className="flex h-full items-center justify-center p-4 text-sm text-slate-400">Foto belum tersedia</div>
+          <div className="flex h-full items-center justify-center p-4 text-sm text-gray-500 dark:text-slate-400">
+            Foto belum tersedia
+          </div>
         )}
       </div>
       <div className="flex min-h-32 flex-1 flex-col p-5">
-        <h3 className="break-words text-lg font-semibold leading-snug text-white xl:text-xl">{member.name}</h3>
-        <p className="mt-1 break-words text-sm leading-relaxed text-slate-300">{member.position}</p>
+        <Heading className="break-words text-lg font-semibold leading-snug text-dark xl:text-xl dark:text-white">
+          {member.name}
+        </Heading>
+        <p className="mt-1 break-words text-sm leading-relaxed text-gray-600 dark:text-slate-300">{member.position}</p>
         <div className="mt-auto pt-4" aria-hidden="true">
           <div className="h-[3px] w-16 rounded-sm bg-brand" />
         </div>

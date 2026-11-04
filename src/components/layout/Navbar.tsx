@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
@@ -13,7 +13,7 @@ const navLinks = [
   { href: "/services", label: "Layanan" },
   { href: "/products", label: "Produk" },
   { href: "/portfolio", label: "Portofolio" },
-  { href: "/#team", label: "Team" },
+  { href: "/team", label: "Tim" },
   { href: "/about", label: "Tentang Kami" },
   { href: "/contact", label: "Kontak" },
 ];
@@ -21,7 +21,6 @@ const navLinks = [
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const pendingTeamScroll = useRef(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -118,14 +117,7 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile menu dropdown */}
-      <AnimatePresence
-        onExitComplete={() => {
-          if (!pendingTeamScroll.current) return;
-          pendingTeamScroll.current = false;
-          // Anchor positioning must use the collapsed navbar height.
-          document.getElementById("team")?.scrollIntoView({ block: "start" });
-        }}
-      >
+      <AnimatePresence>
         {mobileOpen && (
           <motion.div
             id="mobile-navigation"
@@ -151,7 +143,6 @@ export default function Navbar() {
                         : "text-gray-700 dark:text-white hover:text-orange-700 dark:hover:text-orange-400 hover:bg-orange-50/50 dark:hover:bg-orange-950/20"
                     }`}
                     onClick={() => {
-                      pendingTeamScroll.current = link.href === "/#team";
                       setMobileOpen(false);
                     }}
                   >

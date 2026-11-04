@@ -15,6 +15,7 @@ import { sortTeamMembers, type TeamMember, type TeamMemberInput } from "@/lib/te
 const blank: TeamMemberInput = {
   name: "",
   position: "",
+  teamName: "",
   photoUrl: null,
   displayOrder: 0,
   isActive: true,
@@ -40,7 +41,7 @@ export default function AdminTeamPage() {
   const opener = useRef<HTMLElement | null>(null);
   const sorted = sortTeamMembers(members);
   const filtered = sorted.filter((member) => {
-    const matchesQuery = `${member.name} ${member.position}`
+    const matchesQuery = `${member.name} ${member.position} ${member.teamName ?? ""}`
       .toLocaleLowerCase("id")
       .includes(query.trim().toLocaleLowerCase("id"));
     const active = member.isActive !== false;
@@ -133,7 +134,7 @@ export default function AdminTeamPage() {
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="relative w-full sm:max-w-sm">
                 <label htmlFor="team-search" className="sr-only">
-                  Cari nama atau jabatan
+                  Cari nama, jabatan, atau tim
                 </label>
                 <Search
                   className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-slate-600 dark:text-slate-300"
@@ -144,7 +145,7 @@ export default function AdminTeamPage() {
                   type="search"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Cari nama atau jabatan..."
+                  placeholder="Cari nama, jabatan, atau tim..."
                   className="min-h-11 w-full rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-[#151528] py-2 pl-10 pr-3 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#F45100] focus:outline-2 focus:outline-[#F45100]/20"
                 />
               </div>
@@ -246,6 +247,9 @@ export default function AdminTeamPage() {
                           <div className="min-w-0 [overflow-wrap:anywhere]">
                             <h3 className="text-sm font-semibold">{member.name}</h3>
                             <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{member.position}</p>
+                            {member.teamName && (
+                              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{member.teamName}</p>
+                            )}
                             {member.isDemo && (
                               <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">Data contoh</p>
                             )}

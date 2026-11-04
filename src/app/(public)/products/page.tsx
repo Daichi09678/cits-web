@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import ProductPhoto from "@/components/ui/ProductPhoto";
 import { consultationHref } from "@/lib/consultation";
-import { Truck, Package, FileText, Map, MessageSquare, Globe, Smartphone, BarChart3, CheckCircle2, ShieldCheck, Building2, Layers, Cpu, ArrowRight, ChevronRight, Award } from "lucide-react";
+import { Truck, Package, FileText, Map, MessageSquare, Globe, Smartphone, BarChart3, CheckCircle2, ShieldCheck, Layers, Cpu, ArrowRight, ChevronRight, Award } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import type { ProductItem } from "@/types/schema";
 import ProductDetailsDialog from "@/components/ui/ProductDetailsDialog";
@@ -29,23 +29,6 @@ const iconMap: Record<string, LucideIcon> = {
 function getProductIcon(icon: string): LucideIcon {
   return iconMap[icon] || Package;
 }
-
-const categoryColors: Record<string, string> = {
-  "IoT & Telemetri":
-    "bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/60",
-  "Aset & Korporasi":
-    "bg-amber-100 dark:bg-amber-950/60 text-amber-950 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60",
-  "Dokumen & Arsip Digital":
-    "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60",
-  "Sistem Geografis (SIG)":
-    "bg-teal-100 dark:bg-teal-950/60 text-teal-900 dark:text-teal-300 border border-teal-200/80 dark:border-teal-800/60",
-  "Komunikasi & Layanan Publik":
-    "bg-blue-100 dark:bg-blue-950/60 text-blue-900 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60",
-  "Aplikasi Mobile & Lapangan":
-    "bg-orange-100 dark:bg-orange-950/60 text-orange-900 dark:text-orange-300 border border-orange-200/80 dark:border-orange-800/60",
-  "Analitik & Intelijen Bisnis":
-    "bg-purple-100 dark:bg-purple-950/60 text-purple-950 dark:text-purple-300 border border-purple-200/80 dark:border-purple-800/60",
-};
 
 const advantages = [
   {
@@ -151,24 +134,6 @@ export default function ProductsPage() {
             </p>
           </ScrollReveal>
 
-          {/* Quick Credential Highlights */}
-          <ScrollReveal delay={0.2}>
-            <div className="mt-8 flex flex-wrap justify-center gap-3 text-xs">
-              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15 shadow-sm">
-                <Building2 className="w-4 h-4 text-orange-700 dark:text-orange-400" />
-                {activeProducts.length} Rangkaian Solusi Enterprise Siap Pakai
-              </span>
-              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15 shadow-sm">
-                <Cpu className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-                100% Kepemilikan Kode Mandiri Tanpa Vendor Lock-in
-              </span>
-              <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15 shadow-sm">
-                <ShieldCheck className="w-4 h-4 text-blue-700 dark:text-blue-400" />
-                Kepatuhan Standar SPBE & Perlindungan Data Pribadi
-              </span>
-            </div>
-          </ScrollReveal>
-
           {/* Interactive Filter Pills */}
           <ScrollReveal delay={0.3}>
             <div
@@ -234,18 +199,6 @@ export default function ProductsPage() {
                               name={product.name}
                               className="h-full group-hover:scale-105 transition-transform duration-500"
                             />
-                          </div>
-
-                          {/* Card Header: Category & Release Version */}
-                          <div className="flex items-center justify-between gap-3 mb-4">
-                            <span
-                              className={`text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${
-                                categoryColors[product.category] ||
-                                "bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white"
-                              }`}
-                            >
-                              {product.category}
-                            </span>
                           </div>
 
                           {/* Icon & Product Name */}
@@ -418,10 +371,6 @@ export default function ProductsPage() {
                       </p>
                     </div>
 
-                    <div className="mt-6 pt-3 border-t border-gray-150 dark:border-white/10 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-400">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      <span>Standar Mutu Terjamin</span>
-                    </div>
                   </div>
                 </ScrollReveal>
               );

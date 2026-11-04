@@ -5,7 +5,7 @@ import { consultationHref } from "@/lib/consultation";
 import { useModalFocus } from "@/components/ui/useModalFocus";
 import Image from "next/image";
 import Link from "next/link";
-import { Building2, ShieldCheck, Award, ArrowRight, CheckCircle2, Target, Lightbulb, Layers, ChevronRight, X, Compass, LayoutGrid, Table as TableIcon } from "lucide-react";
+import { ArrowRight, CheckCircle2, Target, Lightbulb, Layers, ChevronRight, X, Compass, LayoutGrid, Table as TableIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import GradientText from "@/components/ui/GradientText";
@@ -80,24 +80,6 @@ export default function PortfolioPage() {
               <p className="mt-5 text-gray-700 dark:text-white/85 max-w-3xl mx-auto text-base md:text-lg leading-relaxed">
                 {content.texts["portfolio_hero_text_4"]}
               </p>
-            </ScrollReveal>
-
-            {/* Quick Credential Highlights */}
-            <ScrollReveal delay={0.2}>
-              <div className="mt-8 flex flex-wrap justify-center gap-3 text-xs">
-                <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15 shadow-sm">
-                  <Building2 className="w-4 h-4 text-orange-700 dark:text-orange-400" />
-                  {content.texts["portfolio_hero_text_5"]}
-                </span>
-                <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15 shadow-sm">
-                  <ShieldCheck className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-                  {content.texts["portfolio_hero_text_6"]}
-                </span>
-                <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15 shadow-sm">
-                  <Award className="w-4 h-4 text-blue-700 dark:text-blue-400" />
-                  {content.texts["portfolio_hero_text_7"]}
-                </span>
-              </div>
             </ScrollReveal>
 
             {/* Contextual Clarity Banner (Distinction between Portfolio Case Studies & Products) */}
@@ -381,14 +363,6 @@ export default function PortfolioPage() {
                                 </div>
                               </div>
 
-                              <span
-                                className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider min-w-0 break-words ${
-                                  categoryColors[project.sector] ||
-                                  "bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white"
-                                }`}
-                              >
-                                {project.categoryTag}
-                              </span>
                             </div>
 
                             {/* Title (Normalized h-14) */}
@@ -442,9 +416,6 @@ export default function PortfolioPage() {
                                   {project.measurableImpact.highlightLabel}
                                 </span>
                               </div>
-                              <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60 shrink-0 whitespace-nowrap">
-                                {content.texts["case_studies_list_text_11"]}
-                              </span>
                             </div>
 
                             {/* Tech Stack Pills (Normalized h-10) */}

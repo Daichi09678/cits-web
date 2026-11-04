@@ -2,6 +2,7 @@ export interface TeamMember {
   id: string;
   name: string;
   position: string;
+  teamName?: string;
   photoUrl: string | null;
   displayOrder?: number;
   isActive?: boolean;
@@ -20,6 +21,8 @@ export function parseTeamMember(value: unknown): { ok: true; value: TeamMemberIn
   if (typeof input.position !== "string" || !input.position.trim() || input.position.trim().length > 160)
     return { ok: false, message: "Jabatan wajib diisi, maksimal 160 karakter." };
   const order = input.displayOrder ?? 0;
+  if (input.teamName !== undefined && (typeof input.teamName !== "string" || input.teamName.trim().length > 100))
+    return { ok: false, message: "Nama tim harus berupa teks, maksimal 100 karakter." };
   if (typeof order !== "number" || !Number.isSafeInteger(order) || order < 0 || order > 9999)
     return { ok: false, message: "Urutan harus berupa angka bulat antara 0 dan 9999." };
   for (const key of ["isActive", "showOnHomepage", "isDemo"])
@@ -36,6 +39,7 @@ export function parseTeamMember(value: unknown): { ok: true; value: TeamMemberIn
     value: {
       name: input.name.trim(),
       position: input.position.trim(),
+      ...(typeof input.teamName === "string" ? { teamName: input.teamName.trim() } : {}),
       photoUrl: photoUrl || null,
       displayOrder: order,
       isActive: input.isActive !== false,

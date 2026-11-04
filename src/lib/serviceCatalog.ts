@@ -1,4 +1,4 @@
-import { defaultServicePresentations, type ServicePresentation } from "@/data/serviceDetails";
+import type { ServicePresentation } from "@/data/serviceDetails";
 import type { ServicePillar } from "@/types/schema";
 
 const SERVICE_ANCHORS = new Map([
@@ -7,34 +7,39 @@ const SERVICE_ANCHORS = new Map([
   ["pillar-3", "it-supplier"],
 ]);
 
+const SERVICE_ILLUSTRATIONS: Record<string, string> = {
+  "software-house": "/services/software-house.webp",
+  "it-consultant": "/services/it-consultant.webp",
+  "it-supplier": "/services/it-supplier.webp",
+};
+
 /** Keep existing service links stable even when administrators reorder the catalog. */
 export function serviceAnchor(id: string): string {
   return SERVICE_ANCHORS.get(id) || id;
 }
 
-/** Both public pages use the editable service catalog and the same detail defaults. */
+/** Render saved content without supplementing it with template claims. */
 export function resolveServiceCatalog(services: ServicePillar[]): ServicePresentation[] {
   return services
     .filter((service) => service.isActive !== false)
     .map((service) => {
       const id = serviceAnchor(service.id);
-      const fallback = defaultServicePresentations.find((item) => item.id === id);
       return {
         id,
-        title: service.title || fallback?.title || "Layanan CITS",
-        category: service.category || fallback?.category || "Layanan CITS",
-        badge: service.badge || fallback?.badge || "Layanan",
-        description: service.desc || fallback?.description || "",
-        details: service.details ?? (service.desc !== fallback?.description ? fallback?.description : ""),
-        icon: service.icon || fallback?.icon || "Briefcase",
-        features: service.features ?? fallback?.features ?? [],
+        title: service.title,
+        category: service.category || "Layanan CITS",
+        badge: service.badge,
+        description: service.desc,
+        details: service.details ?? "",
+        icon: service.icon || "Briefcase",
+        features: service.features ?? [],
         tags: service.tags ?? [],
-        slaNote: service.sla || fallback?.slaNote || "Dukungan disesuaikan dengan kebutuhan proyek.",
-        image: service.image || fallback?.image || "/services/software-house.webp",
-        gradient: fallback?.gradient || "from-orange-600 to-amber-500",
-        techStack: service.techStack ?? fallback?.techStack ?? [],
-        caseStudies: service.caseStudies ?? fallback?.caseStudies ?? [],
-        deliverables: service.deliverables ?? fallback?.deliverables ?? [],
+        slaNote: service.sla,
+        image: service.image ?? SERVICE_ILLUSTRATIONS[id] ?? "",
+        gradient: "from-orange-600 to-amber-500",
+        techStack: service.techStack ?? [],
+        caseStudies: service.caseStudies ?? [],
+        deliverables: service.deliverables ?? [],
       };
     });
 }

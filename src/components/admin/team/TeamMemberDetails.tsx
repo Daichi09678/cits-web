@@ -65,6 +65,7 @@ export default function TeamMemberDetails({
   onEdit: () => void;
 }) {
   const info = [
+    ["Kelompok tim", member.teamName || "Belum dikelompokkan"],
     ["Urutan tampil", String(member.displayOrder ?? 0)],
     [
       "Ditampilkan di beranda",
