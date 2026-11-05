@@ -127,26 +127,20 @@ npm run verify          # typecheck + lint + test + format:check
 
 ### Branch frontend per area
 
-Branch berikut dibuat dari snapshot `bc8cde2` pada branch `feat/service-details-consultation`.
 Semua branch berisi aplikasi lengkap; tabel ini menentukan fokus pekerjaan, bukan pembatas akses file.
 
-| Branch              | Area utama                                                            |
-| ------------------- | --------------------------------------------------------------------- |
-| `feat/fe-home`      | Beranda: `src/app/(public)/page.tsx`                                  |
-| `feat/fe-about`     | Tentang kami: `src/app/(public)/about/`                               |
-| `feat/fe-services`  | Layanan: `src/app/(public)/services/`                                 |
-| `feat/fe-products`  | Produk: `src/app/(public)/products/`                                  |
-| `feat/fe-portfolio` | Portofolio dan detail: `src/app/(public)/portfolio/`                  |
-| `feat/fe-team`      | Direktori tim: `src/app/(public)/team/`                               |
-| `feat/fe-contact`   | Kontak: `src/app/(public)/contact/`                                   |
-| `feat/fe-admin`     | Dashboard: `src/app/(admin)/` dan `src/components/admin/`             |
-| `feat/fe-shared`    | Layout, navbar, footer, tema, CSS global, dan komponen lintas halaman |
+| Branch                              | Area utama                                                         |
+| ----------------------------------- | ------------------------------------------------------------------ |
+| `main`                              | Versi utama yang sudah digabung                                    |
+| `feat/service-details-consultation` | Branch fitur layanan dan konsultasi yang dipertahankan             |
+| `feat/user-management`              | Frontend pengguna/publik: `src/app/(public)/` dan komponen terkait |
+| `feat/admin-management`             | Frontend dashboard: `src/app/(admin)/` dan `src/components/admin/` |
 
 Contoh mengerjakan beranda dari folder `frontend`:
 
 ```bash
 git status
-git switch feat/fe-home
+git switch feat/user-management
 # Edit beranda dan komponen khusus beranda.
 npm run verify
 git add "src/app/(public)/page.tsx"
@@ -167,8 +161,8 @@ memengaruhi semua halaman yang menggunakannya. Untuk membatasi dampak perubahan:
   Hindari mengubah selector global demi memperbaiki satu halaman.
 - Untuk perubahan khusus satu pemakai komponen bersama, gunakan prop/varian dengan
   perilaku default yang tetap sama untuk pemakai lain, atau buat komponen khusus halaman.
-- Kerjakan perubahan yang memang berlaku lintas halaman pada `feat/fe-shared` dan
-  periksa halaman yang memakai komponen tersebut, termasuk tampilan mobile dan tema.
+- Untuk perubahan yang berlaku lintas area, periksa seluruh halaman publik dan admin
+  yang memakai komponen tersebut, termasuk tampilan mobile dan tema.
 - Perubahan data melalui admin atau sumber data bersama tetap dapat muncul di beberapa halaman;
   branch Git tidak memisahkan database maupun konten.
 
