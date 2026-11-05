@@ -6,25 +6,19 @@ import {
   Briefcase,
   Plus,
   Search,
-  Filter,
   Edit,
   Trash2,
   CheckCircle2,
-  XCircle,
   ExternalLink,
-  Sparkles,
   X,
   Upload,
   Building2,
   Award,
-  Layers,
-  Clock,
-  TrendingUp,
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
 import { canPerformAction } from "@/lib/internalAccess";
 import AdminTopbar from "@/components/admin/AdminTopbar";
-import PublicPageContentEditor from "@/components/admin/PublicPageContentEditor";
+import PortfolioEditor from "@/components/pages/admin-portfolio/PortfolioEditor";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
 import { CaseStudyItem } from "@/types/schema";
@@ -70,6 +64,7 @@ export default function AdminPortfolioPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [saving, setSaving] = useState(false);
+  const [readingLogo, setReadingLogo] = useState(false);
   const [mutationError, setMutationError] = useState("");
 
   // Form State
@@ -98,6 +93,7 @@ export default function AdminPortfolioPage() {
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
 
     if (file.size > 3 * 1024 * 1024) {
       void dialog.alert({
@@ -108,11 +104,18 @@ export default function AdminPortfolioPage() {
       return;
     }
 
+    setReadingLogo(true);
+    setMutationError("");
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
         setFormClientLogo(event.target.result as string);
       }
+      setReadingLogo(false);
+    };
+    reader.onerror = () => {
+      setReadingLogo(false);
+      setMutationError("Logo gagal dibaca. Silakan pilih kembali.");
     };
     reader.readAsDataURL(file);
   };
@@ -171,7 +174,7 @@ export default function AdminPortfolioPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (saving) return;
+    if (saving || readingLogo) return;
     setSaving(true);
     setMutationError("");
     try {
@@ -293,8 +296,7 @@ export default function AdminPortfolioPage() {
         description="Kelola seluruh rekam jejak kemitraan instansi, capaian proyek nasional, dan rincian arsitektur sistem Front Office"
       />
 
-      <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
-        <PublicPageContentEditor page="portfolio" />
+      <PortfolioEditor studies={caseStudies} onSaveStudies={(next) => actions.saveCaseStudies(next)}>
         {savedSuccess && (
           <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-2.5 text-xs text-emerald-800 dark:text-emerald-300 animate-in fade-in">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -303,7 +305,7 @@ export default function AdminPortfolioPage() {
         )}
 
         {/* Top KPI Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-4" aria-label="Ringkasan studi kasus">
           <div className="p-4 rounded-2xl bg-white dark:bg-[#151528] border border-slate-200/90 dark:border-white/10 shadow-xs flex items-center justify-between">
             <div>
               <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Penugasan</p>
@@ -351,11 +353,12 @@ export default function AdminPortfolioPage() {
 
         {/* Top Controls & Filter */}
         <div className="p-4 rounded-2xl bg-white dark:bg-[#151528] border border-slate-200/90 dark:border-white/10 flex flex-wrap items-center justify-between gap-3 shadow-xs">
-          <div className="flex flex-wrap items-center gap-3 flex-1 min-w-[280px]">
-            <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <div className="flex min-w-0 flex-wrap items-center gap-3 flex-1 basis-full">
+            <div className="relative min-w-0 flex-1 basis-full">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
+                aria-label="Cari studi kasus"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari nama kementerian, proyek, atau sektor..."
@@ -364,14 +367,15 @@ export default function AdminPortfolioPage() {
             </div>
 
             <select
+              aria-label="Filter sektor penugasan"
               value={sectorFilter}
               onChange={(e) => setSectorFilter(e.target.value)}
-              className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-700 dark:text-slate-200 font-semibold focus:outline-none cursor-pointer"
+              className="min-w-0 max-w-full flex-1 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-700 dark:text-slate-200 font-semibold focus:outline-none cursor-pointer"
             >
               <option value="All" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                 Semua Sektor Penugasan
               </option>
-              {SECTOR_OPTIONS.map((sec) => (
+              {[...new Set(caseStudies.map((study) => study.sector))].sort().map((sec) => (
                 <option key={sec} value={sec} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                   {sec}
                 </option>
@@ -379,9 +383,10 @@ export default function AdminPortfolioPage() {
             </select>
 
             <select
+              aria-label="Filter status studi kasus"
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-700 dark:text-slate-200 font-semibold focus:outline-none cursor-pointer"
+              onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+              className="min-w-0 max-w-full flex-1 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-700 dark:text-slate-200 font-semibold focus:outline-none cursor-pointer"
             >
               <option value="all" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                 Semua Status
@@ -398,7 +403,7 @@ export default function AdminPortfolioPage() {
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <a
               href="/portfolio"
               target="_blank"
@@ -421,11 +426,17 @@ export default function AdminPortfolioPage() {
         </div>
 
         {/* Case Studies Cards List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {mutationError && !modalOpen && (
+          <p role="alert" className="text-xs text-red-700 dark:text-red-300">
+            {mutationError}
+          </p>
+        )}
+        <div className="grid min-w-0 grid-cols-1 xl:grid-cols-2 gap-5" aria-label="Daftar studi kasus">
           {filteredStudies.map((study) => (
             <div
               key={study.id}
-              className={`p-5 rounded-2xl bg-white dark:bg-[#151528] border transition-all flex flex-col justify-between shadow-xs ${
+              data-study-id={study.id}
+              className={`min-w-0 p-5 rounded-2xl bg-white dark:bg-[#151528] border transition-all flex flex-col justify-between shadow-xs ${
                 study.isActive !== false
                   ? "border-slate-200/90 dark:border-white/10"
                   : "border-slate-200 dark:border-white/5 opacity-60 bg-slate-50/50 dark:bg-white/[0.02]"
@@ -433,7 +444,7 @@ export default function AdminPortfolioPage() {
             >
               <div>
                 {/* Header: Logo & Status Badge */}
-                <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-white/10 border border-slate-200 dark:border-white/10 p-1.5 flex items-center justify-center shrink-0">
                       {study.clientLogo ? (
@@ -491,7 +502,7 @@ export default function AdminPortfolioPage() {
                 {/* KPI Highlight Snippet */}
                 {study.measurableImpact?.highlightValue && (
                   <div className="mt-3 p-2.5 rounded-xl bg-orange-50/60 dark:bg-orange-950/30 border border-orange-200/60 dark:border-orange-900/40 flex items-center justify-between">
-                    <div>
+                    <div className="min-w-0">
                       <span className="block font-black text-sm text-orange-600 dark:text-orange-400 leading-tight">
                         {study.measurableImpact.highlightValue}
                       </span>
@@ -507,7 +518,7 @@ export default function AdminPortfolioPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-2">
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/10 flex flex-wrap items-center justify-between gap-2">
                 <button
                   type="button"
                   disabled={!canEdit}
@@ -522,6 +533,15 @@ export default function AdminPortfolioPage() {
                 </button>
 
                 <div className="flex items-center gap-1.5">
+                  <a
+                    href={`/portfolio/${encodeURIComponent(study.id)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Lihat detail ${study.title}`}
+                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
+                  >
+                    Detail <ExternalLink className="size-3" />
+                  </a>
                   <button
                     type="button"
                     disabled={!canEdit}
@@ -568,7 +588,7 @@ export default function AdminPortfolioPage() {
                 </div>
                 <button
                   onClick={() => {
-                    if (!saving) setModalOpen(false);
+                    if (!saving && !readingLogo) setModalOpen(false);
                   }}
                   className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
                 >
@@ -582,7 +602,7 @@ export default function AdminPortfolioPage() {
                     {mutationError}
                   </p>
                 )}
-                <fieldset disabled={saving} className="contents">
+                <fieldset disabled={saving || readingLogo} className="min-w-0 space-y-5">
                   {/* Title */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
@@ -917,7 +937,7 @@ export default function AdminPortfolioPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        if (!saving) setModalOpen(false);
+                        if (!saving && !readingLogo) setModalOpen(false);
                       }}
                       className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
                     >
@@ -927,7 +947,13 @@ export default function AdminPortfolioPage() {
                       type="submit"
                       className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 cursor-pointer transition-all"
                     >
-                      {editingStudy ? "Simpan Perubahan" : "Tambahkan Studi Kasus"}
+                      {saving
+                        ? "Menyimpan..."
+                        : readingLogo
+                          ? "Membaca logo..."
+                          : editingStudy
+                            ? "Simpan Perubahan"
+                            : "Tambahkan Studi Kasus"}
                     </button>
                   </div>
                 </fieldset>
@@ -935,7 +961,7 @@ export default function AdminPortfolioPage() {
             </div>
           </div>
         )}
-      </div>
+      </PortfolioEditor>
     </div>
   );
 }

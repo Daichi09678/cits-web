@@ -26,5 +26,5 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function CaseStudyDetailPage({ params }: PageProps) {
   const { id } = await params;
-  return <CaseStudyDetail id={id} />;
+  return <CaseStudyDetail id={id} matchPortfolioTheme={id === "ktp-el"} />;
 }

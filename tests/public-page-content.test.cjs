@@ -176,8 +176,12 @@ test("section order and homepage visibility are validated, defaulted, and persis
   assert.equal(parsed.homeVisibility[keys[0]], true);
 
   assert.throws(() => contentLib.parsePublicPageContent("about", { ...data, order: data.order.slice(1) }));
-  assert.throws(() => contentLib.parsePublicPageContent("about", { ...data, order: [...data.order.slice(1), data.order[1]] }));
-  assert.throws(() => contentLib.parsePublicPageContent("about", { ...data, order: [...data.order.slice(0, -1), "unknown"] }));
+  assert.throws(() =>
+    contentLib.parsePublicPageContent("about", { ...data, order: [...data.order.slice(1), data.order[1]] })
+  );
+  assert.throws(() =>
+    contentLib.parsePublicPageContent("about", { ...data, order: [...data.order.slice(0, -1), "unknown"] })
+  );
   assert.throws(() => contentLib.parsePublicPageContent("about", { ...data, homeVisibility: { unknown: true } }));
 });
 
@@ -278,6 +282,8 @@ test("a stale page fetch cannot overwrite a confirmed edit, even if browser stor
     },
     {
       window: {
+        setInterval: () => 1,
+        clearInterval: () => {},
         addEventListener: (type, listener) => handlers.set(type, listener),
         removeEventListener: () => {},
         dispatchEvent: (event) => handlers.get(event.type)?.(event),
@@ -290,6 +296,7 @@ test("a stale page fetch cannot overwrite a confirmed edit, even if browser stor
       },
       CustomEvent: CustomEventMock,
       StorageEvent: class {},
+      document: { hidden: false, addEventListener() {}, removeEventListener() {} },
     }
   );
   const { save } = hook.usePublicPageContent("about");
@@ -298,4 +305,66 @@ test("a stale page fetch cannot overwrite a confirmed edit, even if browser stor
   finishFetch(fullContent("about"));
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(states[0].collections.awards.length, 0);
+});
+
+test("an open About or Portfolio page refreshes remote text and collection changes without navigation", async () => {
+  for (const page of ["about", "portfolio"]) {
+    const states = [],
+      effects = [],
+      handlers = new Map(),
+      timers = new Map(),
+      cache = new Map();
+    const remote = fullContent(page);
+    const { usePublicPageContent } = load(
+      "lib/publicPageContentClient.ts",
+      {
+        react: {
+          useState: (initial) => {
+            const index = states.length;
+            states.push(typeof initial === "function" ? initial() : initial);
+            return [
+              states[index],
+              (value) => {
+                states[index] = value;
+              },
+            ];
+          },
+          useEffect: (effect) => effects.push(effect),
+        },
+        "@/lib/publicPageContent": contentLib,
+        "@/lib/api": { citsApi: { getPublicPageContent: async () => structuredClone(remote) } },
+      },
+      {
+        window: {
+          setInterval: (fn) => {
+            timers.set(1, fn);
+            return 1;
+          },
+          clearInterval: (id) => timers.delete(id),
+          addEventListener: (name, fn) => handlers.set(name, fn),
+          removeEventListener: (name) => handlers.delete(name),
+        },
+        document: { hidden: false, addEventListener() {}, removeEventListener() {} },
+        localStorage: { getItem: (key) => cache.get(key), setItem: (key, value) => cache.set(key, value) },
+      }
+    );
+    usePublicPageContent(page);
+    const stop = effects[0]();
+    await new Promise((resolve) => setImmediate(resolve));
+    const key = Object.keys(remote.texts)[0];
+    remote.texts[key] = "Teks yang diubah dari perangkat lain";
+    const collection = Object.keys(remote.collections)[0];
+    remote.collections[collection] = [];
+    handlers.get("focus")();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(states[0].texts[key], remote.texts[key]);
+    assert.equal(states[0].collections[collection].length, 0);
+    remote.texts[key] = "Perubahan berikutnya";
+    timers.get(1)();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.equal(states[0].texts[key], "Perubahan berikutnya");
+    stop();
+    assert.equal(timers.size, 0);
+    assert.equal(handlers.size, 0);
+  }
 });

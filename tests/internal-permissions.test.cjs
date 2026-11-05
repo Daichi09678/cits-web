@@ -86,6 +86,7 @@ test("API action checks reject read-only product/clients mutations before reachi
       ["[id]/route.ts", ["PUT", "DELETE"]],
     ]) {
       const route = load(`app/api/${moduleKey}/${file}`, {
+        "@/lib/productValidation": load("lib/productValidation.ts"),
         "next/server": { NextResponse },
         "@/lib/apiAuth": auth,
         "@/lib/http": http,

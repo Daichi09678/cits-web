@@ -133,11 +133,32 @@ function removeOptimisticMessage(id: string): void {
 
 // ─── localStorage Helpers ──────────────────────────────────────────────
 const parsedStorage = new Map<string, { raw: string; value: unknown }>();
+// Confirmed server data must remain usable when large photos exhaust browser storage.
+const memoryStorage = new Map<string, string>();
+
+function readStorage(key: string): string | null {
+  if (memoryStorage.has(key)) return memoryStorage.get(key)!;
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function cacheStorage(key: string, raw: string): void {
+  memoryStorage.set(key, raw);
+  try {
+    localStorage.setItem(key, raw);
+    memoryStorage.delete(key);
+  } catch {
+    // The database remains the source of truth; this cache only serves the current tab.
+  }
+}
 
 function getStorageItem<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
   try {
-    const raw = localStorage.getItem(key);
+    const raw = readStorage(key);
     if (!raw) {
       parsedStorage.delete(key);
       return fallback;
@@ -154,12 +175,8 @@ function getStorageItem<T>(key: string, fallback: T): T {
 
 function setStorageItem<T>(key: string, value: T): void {
   if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-    window.dispatchEvent(new Event("cits-data-updated"));
-  } catch (e) {
-    console.error("Failed to write to localStorage", e);
-  }
+  cacheStorage(key, JSON.stringify(value));
+  window.dispatchEvent(new Event("cits-data-updated"));
 }
 
 // ─── Notification Helper (deduplicated) ────────────────────────────────
@@ -405,7 +422,7 @@ export const CitsStore = {
     const current = this.getCaseStudies();
     const newStudy: CaseStudyItem = {
       ...study,
-      id: "cs-" + Date.now(),
+      id: "cs-" + crypto.randomUUID(),
       isActive: study.isActive !== false,
     };
     await this.saveCaseStudies([newStudy, ...current]);
@@ -535,13 +552,7 @@ export function syncContentFromBackend(force = false): Promise<void> {
     [siteConfig.storageKeys.services, () => citsApi.getServices(), true],
     [siteConfig.storageKeys.portfolio, () => citsApi.getPortfolio(), true],
   ] as const;
-  const before = entries.map(([storageKey]) => {
-    try {
-      return localStorage.getItem(storageKey);
-    } catch {
-      return null;
-    }
-  });
+  const before = entries.map(([storageKey]) => readStorage(storageKey));
   const record: BackendSync = { key, promise: Promise.resolve(), completedAt: 0, ttl: 30000 };
   backendSync = record;
   record.promise = Promise.resolve()
@@ -556,10 +567,10 @@ export function syncContentFromBackend(force = false): Promise<void> {
           return;
         }
         // A completed admin save takes precedence over an older in-flight read.
-        if (localStorage.getItem(storageKey) !== before[index]) return;
+        if (readStorage(storageKey) !== before[index]) return;
         const raw = JSON.stringify(result.value);
         if (raw === before[index]) return;
-        localStorage.setItem(storageKey, raw);
+        cacheStorage(storageKey, raw);
         changed = true;
       });
       if (changed) window.dispatchEvent(new Event("cits-data-updated"));
@@ -572,6 +583,37 @@ export function syncContentFromBackend(force = false): Promise<void> {
       record.completedAt = Date.now();
     });
   return record.promise;
+}
+
+let contentSubscribers = 0;
+let stopContentRefresh: (() => void) | null = null;
+
+/** One live refresh for all store consumers, including public tabs on other devices. */
+export function startContentRefresh(): () => void {
+  contentSubscribers++;
+  if (!stopContentRefresh) {
+    const refresh = () => {
+      if (!document.hidden) void syncContentFromBackend(true);
+    };
+    const timer = setInterval(refresh, 10000);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    stopContentRefresh = () => {
+      clearInterval(timer);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }
+  let stopped = false;
+  return () => {
+    if (stopped) return;
+    stopped = true;
+    contentSubscribers--;
+    if (contentSubscribers === 0) {
+      stopContentRefresh?.();
+      stopContentRefresh = null;
+    }
+  };
 }
 
 export function useCitsStore() {
@@ -607,13 +649,20 @@ export function useCitsStore() {
 
     // ── 1. Initial Backend Sync ────────────────────────────────────────
     void syncContentFromBackend();
+    const stopRefresh = startContentRefresh();
+    const onStorage = (event: StorageEvent) => {
+      if (event.key) memoryStorage.delete(event.key);
+      else memoryStorage.clear();
+      refreshFromLocal();
+    };
 
     window.addEventListener("cits-data-updated", refreshFromLocal);
-    window.addEventListener("storage", refreshFromLocal);
+    window.addEventListener("storage", onStorage);
 
     return () => {
+      stopRefresh();
       window.removeEventListener("cits-data-updated", refreshFromLocal);
-      window.removeEventListener("storage", refreshFromLocal);
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
 

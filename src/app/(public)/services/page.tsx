@@ -4,7 +4,22 @@ import { useState } from "react";
 import ServicePhoto from "@/components/ui/ServicePhoto";
 import Link from "next/link";
 import { consultationHref } from "@/lib/consultation";
-import { Code2, ShieldCheck, CheckCircle2, ArrowRight, Layers, Building2, Headphones, Check, Award, Briefcase, FileText, Clock, FileCheck, Boxes } from "lucide-react";
+import {
+  Code2,
+  ShieldCheck,
+  CheckCircle2,
+  ArrowRight,
+  Layers,
+  Building2,
+  Headphones,
+  Check,
+  Award,
+  Briefcase,
+  FileText,
+  Clock,
+  FileCheck,
+  Boxes,
+} from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import GradientText from "@/components/ui/GradientText";
 import GridPattern from "@/components/ui/GridPattern";
@@ -13,6 +28,7 @@ import SpotlightCard from "@/components/ui/SpotlightCard";
 import { useCitsStore } from "@/stores/citsStore";
 import { getPillarIcon } from "@/lib/serviceIcons";
 import { resolveServiceCatalog } from "@/lib/serviceCatalog";
+import ServiceCaseStudyLinks from "@/components/pages/services/ServiceCaseStudyLinks";
 
 const workProcess = [
   {
@@ -136,7 +152,7 @@ const engagementModels: EngagementModel[] = [
 ];
 
 export default function ServicesPage() {
-  const { services: storeServices } = useCitsStore();
+  const { services: storeServices, caseStudies = [] } = useCitsStore();
 
   const displayServices = resolveServiceCatalog(storeServices);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
@@ -162,7 +178,6 @@ export default function ServicesPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <ScrollReveal>
-
               <h1
                 id="services-hero-heading"
                 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-[1.2]"
@@ -215,6 +230,11 @@ export default function ServicesPage() {
           <h2 id="services-detail-heading" className="sr-only">
             Detail Pilar Layanan CITS Indonesia
           </h2>
+          {displayServices.length === 0 && (
+            <p className="rounded-xl border border-dashed border-slate-200 p-8 text-center text-sm text-slate-500 dark:border-white/15">
+              Katalog layanan sedang diperbarui.
+            </p>
+          )}
 
           {displayServices.map((service, i) => {
             const Icon = getPillarIcon(service.icon);
@@ -235,7 +255,6 @@ export default function ServicesPage() {
                 >
                   <div className="space-y-6">
                     <div className="flex flex-wrap items-center gap-2.5">
-
                       <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                         {service.category}
                       </span>
@@ -263,7 +282,9 @@ export default function ServicesPage() {
                       </h4>
                       <ul className="grid sm:grid-cols-2 gap-3 list-none p-0 m-0">
                         {service.features.length === 0 && (
-                          <li className="text-xs text-slate-600 dark:text-slate-400">Informasi cakupan layanan belum tersedia.</li>
+                          <li className="text-xs text-slate-600 dark:text-slate-400">
+                            Informasi cakupan layanan belum tersedia.
+                          </li>
                         )}
                         {service.features.map((feature) => (
                           <li
@@ -287,7 +308,9 @@ export default function ServicesPage() {
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {service.techStack.length === 0 && (
-                          <p className="text-xs text-slate-600 dark:text-slate-400">Informasi teknologi dan standar belum tersedia.</p>
+                          <p className="text-xs text-slate-600 dark:text-slate-400">
+                            Informasi teknologi dan standar belum tersedia.
+                          </p>
                         )}
                         {service.techStack.map((tech) => (
                           <span
@@ -307,7 +330,9 @@ export default function ServicesPage() {
                       </span>
                       <div className="flex flex-wrap gap-2">
                         {service.caseStudies.length === 0 && (
-                          <p className="text-xs text-slate-600 dark:text-slate-400">Contoh implementasi belum tersedia.</p>
+                          <p className="text-xs text-slate-600 dark:text-slate-400">
+                            Contoh implementasi belum tersedia.
+                          </p>
                         )}
                         {service.caseStudies.map((cs) => (
                           <span
@@ -330,13 +355,7 @@ export default function ServicesPage() {
                         <span>Konsultasikan Kebutuhan Ini</span>
                         <ArrowRight className="w-4 h-4" aria-hidden="true" />
                       </Link>
-                      <Link
-                        href="/portfolio"
-                        className="inline-flex items-center gap-2 px-5 py-3 bg-white dark:bg-white/10 text-slate-800 dark:text-white hover:bg-slate-100 dark:hover:bg-white/15 font-semibold rounded-xl border border-slate-200 dark:border-white/15 transition-all text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
-                      >
-                        <Briefcase className="w-4 h-4 text-orange-600 dark:text-orange-400" aria-hidden="true" />
-                        <span>Lihat Studi Kasus</span>
-                      </Link>
+                      <ServiceCaseStudyLinks ids={service.caseStudyIds || []} studies={caseStudies} />
                     </div>
                   </div>
                 </ScrollReveal>
@@ -373,13 +392,13 @@ export default function ServicesPage() {
 
                         <div className="space-y-2.5">
                           {service.deliverables.length === 0 && (
-                            <p className="text-xs text-slate-600 dark:text-slate-400">Informasi hasil layanan dan jaminan kualitas belum tersedia.</p>
+                            <p className="text-xs text-slate-600 dark:text-slate-400">
+                              Informasi hasil layanan dan jaminan kualitas belum tersedia.
+                            </p>
                           )}
                           {service.deliverables.map((item) => (
                             <div key={item.label} className="text-xs">
-                              <span className="font-bold text-slate-800 dark:text-slate-200 block">
-                                {item.label}:
-                              </span>
+                              <span className="font-bold text-slate-800 dark:text-slate-200 block">{item.label}:</span>
                               <span className="text-slate-600 dark:text-slate-400 leading-relaxed block mt-0.5">
                                 {item.description}
                               </span>
@@ -420,7 +439,6 @@ export default function ServicesPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-14">
-
               <h2
                 id="workflow-heading"
                 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight"
@@ -494,7 +512,6 @@ export default function ServicesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-14">
-
               <h2
                 id="quality-heading"
                 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight"
@@ -548,7 +565,6 @@ export default function ServicesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-14">
-
               <h2
                 id="engagement-heading"
                 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight"
@@ -643,7 +659,6 @@ export default function ServicesPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
             <div className="p-8 md:p-14 rounded-3xl bg-gradient-to-br from-white via-orange-50/40 to-white dark:from-[#181830] dark:via-[#1F1712] dark:to-[#181830] border border-orange-200/80 dark:border-orange-900/40 shadow-xl">
-
               <h2
                 id="services-cta-heading"
                 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug"

@@ -47,6 +47,8 @@ function app(readOnly = false) {
   let cursor = 0;
   let currentServices = services.map((service) => ({ ...service }));
   let save = async () => {};
+  let confirmation = true;
+  const alerts = [];
   const saved = [];
   const ChipField = () => null;
   const Component = load(
@@ -54,6 +56,11 @@ function app(readOnly = false) {
     {
       react: {
         ...React,
+        useRef(initial) {
+          const index = cursor++;
+          if (!(index in values)) values[index] = { current: initial };
+          return values[index];
+        },
         useState(initial) {
           const index = cursor++;
           if (!(index in values)) values[index] = typeof initial === "function" ? initial() : initial;
@@ -70,6 +77,8 @@ function app(readOnly = false) {
       "@/components/admin/ServiceDetailsFields": { default: () => null, ServiceImageField: () => null },
       "@/components/ui/ServicePhoto": { default: () => null },
       "@/lib/serviceCatalog": catalog,
+      "@/lib/catalogSearch": load("lib/catalogSearch.ts"),
+      "@/components/pages/admin-services/ServiceCaseStudyPicker": { default: () => null },
       "@/components/ui/useModalFocus": { useModalFocus: () => ({ current: null }) },
       "@/lib/auth": {
         useAdminAuth: () => ({
@@ -80,7 +89,14 @@ function app(readOnly = false) {
       },
       "@/lib/internalAccess": load("lib/internalAccess.ts"),
       "@/components/admin/AdminTopbar": { default: () => null },
-      "@/components/admin/AdminDialogProvider": { useAdminDialog: () => ({ alert() {} }) },
+      "@/components/admin/AdminDialogProvider": {
+        useAdminDialog: () => ({
+          alert(value) {
+            alerts.push(value);
+          },
+          confirm: async () => confirmation,
+        }),
+      },
       "@/stores/citsStore": {
         useCitsStore: () => ({
           services: currentServices,
@@ -108,6 +124,10 @@ function app(readOnly = false) {
     render,
     field,
     saved,
+    alerts,
+    setConfirmation: (value) => {
+      confirmation = value;
+    },
     ChipField,
     setSaver: (next) => {
       save = next;
@@ -199,4 +219,58 @@ test("read-only users can filter services without receiving category management 
   assert.equal(button(h.render(), "Tambah Layanan Baru").props.disabled, true);
   button(h.render(), "Konsultasi").props.onClick();
   assert.equal(h.visible().length, 1);
+});
+
+test("admin service search matches separate words across title, category and saved tags", () => {
+  const h = app();
+  const search = (value) =>
+    find(h.render(), (node) => node.props["aria-label"] === "Cari layanan").props.onChange({ target: { value } });
+  search("  CLOUD   Pengembangan ");
+  assert.equal(h.visible().length, 1);
+  search("solusi cloud");
+  assert.equal(h.visible().length, 2);
+  search("cloud pisang tidak terkait");
+  assert.equal(h.visible().length, 0);
+});
+
+test("delete remains available at three, two and one service and can persist an empty catalog", async () => {
+  const h = app();
+  for (const count of [3, 2, 1]) {
+    const controls = nodes(h.render()).filter((node) => node.props["aria-label"]?.startsWith("Hapus layanan "));
+    assert.equal(controls.length, count);
+    await controls[0].props.onClick();
+    assert.equal(h.visible().length, count - 1);
+  }
+  assert.equal(h.saved.at(-1).length, 0);
+});
+
+test("cancelled, failed, and unauthorized service deletions preserve the existing catalog", async () => {
+  const h = app();
+  const remove = () => nodes(h.render()).find((node) => node.props["aria-label"]?.startsWith("Hapus layanan "));
+  h.setConfirmation(false);
+  await remove().props.onClick();
+  assert.equal(h.saved.length, 0);
+  h.setConfirmation(true);
+  h.setSaver(async () => {
+    throw new Error("Database offline");
+  });
+  await remove().props.onClick();
+  assert.equal(h.visible().length, 3);
+  assert.equal(h.saved.length, 0);
+  assert.ok(h.alerts.some((alert) => /Database offline/.test(alert.description)));
+  const readOnly = app(true);
+  const button = nodes(readOnly.render()).find((node) => node.props["aria-label"]?.startsWith("Hapus layanan "));
+  assert.equal(button.props.disabled, true);
+  await button.props.onClick();
+  assert.equal(readOnly.saved.length, 0);
+});
+
+test("deleting a custom service category removes the filter without deleting any service", async () => {
+  const h = app();
+  button(h.render(), "Konsultasi").props.onClick();
+  await find(h.render(), (node) => node.props["aria-label"] === "Hapus kategori Konsultasi").props.onClick();
+  assert.equal(h.saved.at(-1).length, services.length);
+  assert.equal(h.saved.at(-1).find((item) => item.id === "audit").category, "Layanan CITS");
+  assert.equal(button(h.render(), "Konsultasi"), undefined);
+  assert.equal(button(h.render(), "Semua").props["aria-pressed"], true);
 });

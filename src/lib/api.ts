@@ -201,7 +201,8 @@ export const citsApi = {
   async getAboutData() {
     const res = await fetch(`${API_URL}/about`, { cache: "no-store" });
     const json = await res.json();
-    return json.data || null;
+    if (!res.ok || !json?.success || !json.data) throw new Error(json.message || "Profil perusahaan gagal dimuat.");
+    return json.data;
   },
 
   async updateAboutData(data: any) {
@@ -236,7 +237,9 @@ export const citsApi = {
   async getClients() {
     const res = await fetch(`${API_URL}/clients`, { cache: "no-store" });
     const json = await res.json();
-    return json.data || [];
+    if (!res.ok || !json?.success || !Array.isArray(json.data))
+      throw new Error(json.message || "Daftar mitra gagal dimuat.");
+    return json.data;
   },
 
   async createClient(data: any) {
@@ -309,7 +312,8 @@ export const citsApi = {
   async getServices() {
     const res = await fetch(`${API_URL}/services`, { cache: "no-store" });
     const json = await res.json();
-    return json.data || [];
+    if (!res.ok || !json?.success || !Array.isArray(json.data)) throw new Error(json.message || "Layanan gagal dimuat.");
+    return json.data;
   },
 
   async updateServices(data: ServicePillar[]) {
@@ -328,7 +332,9 @@ export const citsApi = {
   async getPortfolio() {
     const res = await fetch(`${API_URL}/portfolio`, { cache: "no-store" });
     const json = await res.json();
-    return json.data || [];
+    if (!res.ok || !json?.success || !Array.isArray(json.data))
+      throw new Error(json.message || "Portofolio gagal dimuat.");
+    return json.data;
   },
 
   async updatePortfolio(data: any) {
@@ -337,7 +343,10 @@ export const citsApi = {
       headers: getHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    const result = await res.json();
+    if (!res.ok || !result?.success || !Array.isArray(result.data))
+      throw new Error(result.message || "Portofolio gagal disimpan.");
+    return result;
   },
 };
 

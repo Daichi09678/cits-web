@@ -263,7 +263,7 @@ export async function ensureDbReady(): Promise<void> {
   // Saat circuit breaker terbuka (database mati/salah kredensial), jangan ulangi
   // 11 statement migrasi di setiap request — itu sumber utama halaman terasa lama.
   if (dbIsDown()) return;
-  const schemaVersion = 6;
+  const schemaVersion = 8;
   if (globalThis._citsDbInitialized && globalThis._citsDbSchemaVersion === schemaVersion) return;
   if (globalThis._citsDbInitPromise) return globalThis._citsDbInitPromise;
 
@@ -288,6 +288,10 @@ export async function ensureDbReady(): Promise<void> {
       `ALTER TABLE landing_page_data ADD COLUMN IF NOT EXISTS clients_intro JSONB DEFAULT '{}'::jsonb`,
       `ALTER TABLE products ADD COLUMN IF NOT EXISTS show_on_home BOOLEAN DEFAULT TRUE`,
       `ALTER TABLE clients ADD COLUMN IF NOT EXISTS show_on_home BOOLEAN DEFAULT TRUE`,
+      // Uploaded logos are data URLs and cannot fit in the legacy VARCHAR(255).
+      `ALTER TABLE clients ALTER COLUMN logo TYPE TEXT`,
+      `ALTER TABLE products ADD COLUMN IF NOT EXISTS details TEXT NOT NULL DEFAULT ''`,
+      `ALTER TABLE products ADD COLUMN IF NOT EXISTS specifications JSONB NOT NULL DEFAULT '[]'::jsonb`,
     ];
 
     let allApplied = true;
@@ -379,7 +383,7 @@ export const DbRepo = {
       await ensureDbReady();
       try {
         const rows = await sql`
-          SELECT id, name, category, description, features, tags, icon, image, is_active, show_on_home, updated_at
+          SELECT id, name, category, description, details, specifications, features, tags, icon, image, is_active, show_on_home, updated_at
           FROM products ORDER BY created_at DESC;
         `;
         return rows.map((r: any) => ({
@@ -387,6 +391,8 @@ export const DbRepo = {
           name: r.name,
           category: r.category,
           description: r.description,
+          details: r.details || "",
+          specifications: asJson(r.specifications, []),
           features: asJson(r.features, []),
           tags: asJson(r.tags, []),
           icon: r.icon,
@@ -397,6 +403,7 @@ export const DbRepo = {
         }));
       } catch (e) {
         console.error("DB Error getAllProducts:", e);
+        throw e;
       }
     }
     return memoryDb.products;
@@ -414,19 +421,22 @@ export const DbRepo = {
 
   async createProduct(p: ProductItem): Promise<ProductItem> {
     const sql = getSql();
+    if (!sql) throw new Error("Database belum dikonfigurasi. Produk belum dapat disimpan.");
     if (sql) {
       await ensureDbReady();
       try {
         await sql`
-          INSERT INTO products (id, name, category, description, features, tags, icon, image, is_active, show_on_home, updated_at)
+          INSERT INTO products (id, name, category, description, details, specifications, features, tags, icon, image, is_active, show_on_home, updated_at)
           VALUES (
             ${p.id}, ${p.name}, ${p.category}, ${p.description},
+            ${p.details || ""}, ${jsonb(sql, p.specifications || [])},
             ${jsonb(sql, p.features || [])}, ${jsonb(sql, p.tags || [])},
             ${p.icon}, ${p.image || null}, ${p.isActive}, ${p.showOnHome !== false}, ${p.updatedAt}
           );
         `;
       } catch (e) {
         console.error("DB Error createProduct:", e);
+        throw e;
       }
     }
     memoryDb.products = [p, ...memoryDb.products.filter((x) => x.id !== p.id)];
@@ -435,6 +445,7 @@ export const DbRepo = {
 
   async updateProduct(id: string, updates: Partial<ProductItem>): Promise<ProductItem | null> {
     const sql = getSql();
+    if (!sql) throw new Error("Database belum dikonfigurasi. Produk belum dapat disimpan.");
     const current = await this.getProductById(id);
     if (!current) return null;
     const merged: ProductItem = {
@@ -451,6 +462,8 @@ export const DbRepo = {
           SET name = ${merged.name},
               category = ${merged.category},
               description = ${merged.description},
+              details = ${merged.details || ""},
+              specifications = ${jsonb(sql, merged.specifications || [])},
               features = ${jsonb(sql, merged.features || [])},
               tags = ${jsonb(sql, merged.tags || [])},
               icon = ${merged.icon},
@@ -462,6 +475,7 @@ export const DbRepo = {
         `;
       } catch (e) {
         console.error("DB Error updateProduct:", e);
+        throw e;
       }
     }
     memoryDb.products = memoryDb.products.map((p) => (p.id === id ? merged : p));
@@ -470,12 +484,14 @@ export const DbRepo = {
 
   async deleteProduct(id: string): Promise<boolean> {
     const sql = getSql();
+    if (!sql) throw new Error("Database belum dikonfigurasi. Produk belum dapat dihapus.");
     if (sql) {
       await ensureDbReady();
       try {
         await sql`DELETE FROM products WHERE id = ${id};`;
       } catch (e) {
         console.error("DB Error deleteProduct:", e);
+        throw e;
       }
     }
     memoryDb.products = memoryDb.products.filter((p) => p.id !== id);
@@ -786,6 +802,7 @@ export const DbRepo = {
         }
       } catch (e) {
         console.error("DB Error getAboutData:", e);
+        throw e;
       }
     }
     return memoryDb.aboutData;
@@ -844,6 +861,7 @@ export const DbRepo = {
         }));
       } catch (e) {
         console.error("DB Error getClients:", e);
+        throw e;
       }
     }
     return memoryDb.clients;
@@ -851,6 +869,7 @@ export const DbRepo = {
 
   async createClient(c: ClientPartner): Promise<ClientPartner> {
     const sql = getSql();
+    if (!sql) throw new Error("Database belum dikonfigurasi. Mitra belum dapat disimpan.");
     if (sql) {
       await ensureDbReady();
       try {
@@ -860,6 +879,7 @@ export const DbRepo = {
         `;
       } catch (e) {
         console.error("DB Error createClient:", e);
+        throw e;
       }
     }
     memoryDb.clients = [c, ...memoryDb.clients];
@@ -867,23 +887,26 @@ export const DbRepo = {
   },
 
   async updateClient(id: string, updates: Partial<ClientPartner>): Promise<ClientPartner | null> {
+    const sql = getSql();
+    if (!sql) throw new Error("Database belum dikonfigurasi. Mitra belum dapat disimpan.");
     const clients = await this.getClients();
     const current = clients.find((c) => c.id === id);
     if (!current) return null;
     const merged = { ...current, ...updates };
 
-    const sql = getSql();
     if (sql) {
       await ensureDbReady();
       try {
-        await sql`
+        const rows = await sql`
           UPDATE clients
           SET name = ${merged.name}, logo = ${merged.logo}, category = ${merged.category}, is_active = ${merged.isActive},
               show_on_home = ${merged.showOnHome !== false}
-          WHERE id = ${id};
+          WHERE id = ${id} RETURNING id;
         `;
+        if (!rows.length) return null;
       } catch (e) {
         console.error("DB Error updateClient:", e);
+        throw e;
       }
     }
     memoryDb.clients = memoryDb.clients.map((c) => (c.id === id ? merged : c));
@@ -892,12 +915,14 @@ export const DbRepo = {
 
   async deleteClient(id: string): Promise<boolean> {
     const sql = getSql();
+    if (!sql) throw new Error("Database belum dikonfigurasi. Mitra belum dapat dihapus.");
     if (sql) {
       await ensureDbReady();
       try {
         await sql`DELETE FROM clients WHERE id = ${id};`;
       } catch (e) {
         console.error("DB Error deleteClient:", e);
+        throw e;
       }
     }
     memoryDb.clients = memoryDb.clients.filter((c) => c.id !== id);
@@ -1027,10 +1052,11 @@ export const DbRepo = {
         const rows = await sql`SELECT data FROM services_data WHERE id = 'default' LIMIT 1;`;
         if (rows.length > 0) {
           const list = asJson<ServicePillar[]>(rows[0].data, []);
-          if (Array.isArray(list) && list.length > 0) return list;
+          if (Array.isArray(list)) return list;
         }
       } catch (e) {
         console.error("DB Error getServices:", e);
+        throw e;
       }
     }
     return memoryDb.services;
@@ -1065,10 +1091,11 @@ export const DbRepo = {
         const rows = await sql`SELECT data FROM portfolio_data WHERE id = 'default' LIMIT 1;`;
         if (rows.length > 0) {
           const list = asJson<CaseStudyItem[]>(rows[0].data, []);
-          if (Array.isArray(list) && list.length > 0) return list;
+          if (Array.isArray(list)) return list;
         }
       } catch (e) {
         console.error("DB Error getPortfolio:", e);
+        throw e;
       }
     }
     return memoryDb.portfolio;
@@ -1076,6 +1103,7 @@ export const DbRepo = {
 
   async updatePortfolio(data: CaseStudyItem[]): Promise<CaseStudyItem[]> {
     const sql = getSql();
+    if (!sql) throw new Error("Database belum dikonfigurasi. Portofolio belum dapat disimpan.");
     if (sql) {
       await ensureDbReady();
       try {
@@ -1086,6 +1114,7 @@ export const DbRepo = {
         `;
       } catch (e) {
         console.error("DB Error updatePortfolio:", e);
+        throw e;
       }
     }
     memoryDb.portfolio = data;

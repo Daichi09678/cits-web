@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import ServiceDetailsFields, {
   ServiceImageField,
   type ServiceDetailsForm,
@@ -8,7 +8,7 @@ import ServiceDetailsFields, {
 import ServicePhoto from "@/components/ui/ServicePhoto";
 import { resolveServiceCatalog } from "@/lib/serviceCatalog";
 import { useModalFocus } from "@/components/ui/useModalFocus";
-import { Edit, Plus, Trash2, X, Search, ChevronDown } from "lucide-react";
+import { Edit, Plus, Trash2, X, Search, ChevronDown, LoaderCircle } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
 import { canPerformAction } from "@/lib/internalAccess";
 import AdminTopbar from "@/components/admin/AdminTopbar";
@@ -18,6 +18,8 @@ import { ServicePillar } from "@/types/schema";
 import { getPillarIcon, PILLAR_ICON_OPTIONS, PillarIconOption } from "@/lib/serviceIcons";
 import ChipField from "@/components/admin/ChipField";
 import Pagination from "@/components/admin/Pagination";
+import { matchesCatalogQuery, serviceSearchFields } from "@/lib/catalogSearch";
+import ServiceCaseStudyPicker from "@/components/pages/admin-services/ServiceCaseStudyPicker";
 
 // Pilihan cepat kapabilitas layanan — cukup dicentang.
 const SERVICE_FEATURE_PRESETS = [
@@ -56,13 +58,14 @@ const csvToList = (value: string): string[] =>
     .map((item) => item.trim())
     .filter(Boolean);
 const listToCsv = (list: string[]): string => list.join(", ");
+const defaultServiceCategories = ["Software House", "IT Consultant", "IT Supplier", "Layanan CITS"];
 
 export default function AdminServicesPage() {
   const { session } = useAdminAuth();
   const canCreate = canPerformAction(session?.user, "services", "create");
   const canDelete = canPerformAction(session?.user, "services", "delete");
   const canEdit = canPerformAction(session?.user, "services", "edit");
-  const { services, actions } = useCitsStore();
+  const { services, caseStudies = [], actions } = useCitsStore();
   const dialog = useAdminDialog();
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
@@ -70,6 +73,9 @@ export default function AdminServicesPage() {
   const [categoryName, setCategoryName] = useState("");
   const [categoryServiceIds, setCategoryServiceIds] = useState<string[]>([]);
   const [categorySaving, setCategorySaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const deleting = useRef(false);
+  const categoryOperation = useRef(false);
   const [categoryError, setCategoryError] = useState("");
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
@@ -84,6 +90,7 @@ export default function AdminServicesPage() {
   const [formSla, setFormSla] = useState("");
   const [formFeatures, setFormFeatures] = useState("");
   const [formTags, setFormTags] = useState("");
+  const [formCaseStudyIds, setFormCaseStudyIds] = useState<string[]>([]);
   const [formIsActive, setFormIsActive] = useState(true);
   const [formShowOnHome, setFormShowOnHome] = useState(true);
   const [formDetails, setFormDetails] = useState<ServiceDetailsForm>({
@@ -131,6 +138,7 @@ export default function AdminServicesPage() {
     setFormFeatures(resolved.features.join("\n"));
     setFormCategory(pillar.category || resolved.category || "Layanan CITS");
     setFormTags((pillar.tags || resolved.tags || []).join(", "));
+    setFormCaseStudyIds(pillar.caseStudyIds || []);
     setFormDetails({
       image: pillar.image || "",
       details: resolved.details || "",
@@ -158,6 +166,7 @@ export default function AdminServicesPage() {
     setFormSla("");
     setFormFeatures("");
     setFormTags("");
+    setFormCaseStudyIds([]);
     setFormDetails({ image: "", details: "", techStack: "", caseStudies: "", deliverables: [] });
     setSaveError("");
     setFormIsActive(true);
@@ -194,6 +203,7 @@ export default function AdminServicesPage() {
       details: formDetails.details.trim(),
       techStack: lines(formDetails.techStack),
       caseStudies: lines(formDetails.caseStudies),
+      caseStudyIds: formCaseStudyIds,
       deliverables: formDetails.deliverables.map((item) => ({
         label: item.label.trim(),
         description: item.description.trim(),
@@ -217,28 +227,36 @@ export default function AdminServicesPage() {
   };
 
   const handleDeletePillar = async (id: string, title: string) => {
-    const confirmed = await dialog.confirm({
-      title: "Hapus pilar layanan?",
-      description: `Pilar layanan "${title}" akan dihapus dari daftar layanan dan tampilan front office.`,
-      confirmLabel: "Hapus Layanan",
-      variant: "danger",
-    });
-    if (confirmed) {
-      try {
-        await actions.saveServices(services.filter((s) => s.id !== id));
-      } catch (error) {
-        await dialog.alert({
-          title: "Layanan belum terhapus",
-          description: error instanceof Error ? error.message : "Coba kembali.",
-          variant: "danger",
-        });
-        return;
-      }
-      await dialog.alert({
-        title: "Pilar layanan dihapus",
-        description: `"${title}" berhasil dihapus dari daftar layanan.`,
-        variant: "success",
+    if (!canDelete || deleting.current || categorySaving || isSaving) return;
+    deleting.current = true;
+    try {
+      const confirmed = await dialog.confirm({
+        title: "Hapus pilar layanan?",
+        description: `Pilar layanan "${title}" akan dihapus dari daftar layanan dan tampilan front office.`,
+        confirmLabel: "Hapus Layanan",
+        variant: "danger",
       });
+      if (confirmed) {
+        setDeletingId(id);
+        try {
+          await actions.saveServices(services.filter((s) => s.id !== id));
+        } catch (error) {
+          await dialog.alert({
+            title: "Layanan belum terhapus",
+            description: error instanceof Error ? error.message : "Coba kembali.",
+            variant: "danger",
+          });
+          return;
+        }
+        await dialog.alert({
+          title: "Pilar layanan dihapus",
+          description: `"${title}" berhasil dihapus dari daftar layanan.`,
+          variant: "success",
+        });
+      }
+    } finally {
+      deleting.current = false;
+      setDeletingId(null);
     }
   };
 
@@ -258,7 +276,7 @@ export default function AdminServicesPage() {
   const query = search.trim().toLowerCase();
   const filteredServices = catalog.filter(
     (service) =>
-      [service.title, service.desc, ...(service.tags || [])].some((value) => value.toLowerCase().includes(query)) &&
+      matchesCatalogQuery(query, serviceSearchFields(service)) &&
       (categoryFilter === null || service.category === categoryFilter)
   );
   const hasFilters = !!search || categoryFilter !== null;
@@ -269,7 +287,7 @@ export default function AdminServicesPage() {
   };
   const saveCategory = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!canEdit || categorySaving) return;
+    if (!canEdit || categorySaving || categoryOperation.current || deleting.current) return;
     const name = categoryName.trim();
     if (!name || name.length > 100 || categoryServiceIds.length === 0) {
       setCategoryError("Isi nama kategori dan pilih minimal satu layanan.");
@@ -294,6 +312,40 @@ export default function AdminServicesPage() {
     } catch (error) {
       setCategoryError(error instanceof Error ? error.message : "Kategori gagal disimpan. Silakan coba lagi.");
     } finally {
+      setCategorySaving(false);
+    }
+  };
+  const deleteCategory = async (category: string) => {
+    if (!canEdit || categorySaving || categoryOperation.current || deleting.current) return;
+    categoryOperation.current = true;
+    try {
+      const confirmed = await dialog.confirm({
+        title: "Hapus kategori filter?",
+        description: `Kategori "${category}" dihapus dari filter. Layanan di dalamnya tetap tersimpan dan dipindahkan ke Layanan CITS.`,
+        confirmLabel: "Hapus Kategori",
+        variant: "danger",
+      });
+      if (!confirmed) return;
+      setCategorySaving(true);
+      await actions.saveServices(
+        services.map((service) =>
+          (service.category || "Layanan CITS") === category ? { ...service, category: "Layanan CITS" } : service
+        )
+      );
+      if (categoryFilter === category) setCategoryFilter(null);
+      await dialog.alert({
+        title: "Kategori dihapus",
+        description: "Kategori filter dihapus. Seluruh layanan tetap tersimpan.",
+        variant: "success",
+      });
+    } catch (cause) {
+      await dialog.alert({
+        title: "Kategori belum terhapus",
+        description: cause instanceof Error ? cause.message : "Kategori gagal disimpan. Silakan coba kembali.",
+        variant: "danger",
+      });
+    } finally {
+      categoryOperation.current = false;
       setCategorySaving(false);
     }
   };
@@ -331,21 +383,37 @@ export default function AdminServicesPage() {
               {/* Category Filter Pills */}
               <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full">
                 {[null, ...categories].map((cat) => (
-                  <button
+                  <div
                     key={cat === null ? "all" : `category:${cat}`}
-                    aria-pressed={categoryFilter === cat}
-                    onClick={() => {
-                      setCategoryFilter(cat);
-                      setPage(1);
-                    }}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
-                      categoryFilter === cat
-                        ? "bg-orange-600 text-white shadow-xs"
-                        : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
-                    }`}
+                    className="inline-flex shrink-0 items-center gap-0.5"
                   >
-                    {cat === null ? "Semua" : cat}
-                  </button>
+                    <button
+                      aria-pressed={categoryFilter === cat}
+                      onClick={() => {
+                        setCategoryFilter(cat);
+                        setPage(1);
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
+                        categoryFilter === cat
+                          ? "bg-orange-600 text-white shadow-xs"
+                          : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+                      }`}
+                    >
+                      {cat === null ? "Semua" : cat}
+                    </button>
+                    {canEdit && cat !== null && !defaultServiceCategories.includes(cat) && (
+                      <button
+                        type="button"
+                        disabled={categorySaving || deletingId !== null}
+                        aria-label={`Hapus kategori ${cat}`}
+                        title={`Hapus kategori ${cat}`}
+                        onClick={() => deleteCategory(cat)}
+                        className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-40 dark:hover:bg-red-500/10"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    )}
+                  </div>
                 ))}
                 {canEdit && (
                   <button
@@ -558,7 +626,7 @@ export default function AdminServicesPage() {
                       <td className="py-4 px-5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
-                            disabled={!canEdit || categorySaving}
+                            disabled={!canEdit || categorySaving || deletingId !== null}
                             onClick={() => openEditModal(prod.source)}
                             title="Edit Layanan"
                             aria-label={`Edit layanan ${prod.title}`}
@@ -566,17 +634,19 @@ export default function AdminServicesPage() {
                           >
                             <Edit className="w-4 h-4" />
                           </button>
-                          {services.length > 3 && (
-                            <button
-                              disabled={!canDelete || categorySaving}
-                              onClick={() => handleDeletePillar(prod.id, prod.title)}
-                              title="Hapus Layanan"
-                              aria-label={`Hapus layanan ${prod.title}`}
-                              className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-                            >
+                          <button
+                            disabled={!canDelete || categorySaving || deletingId !== null}
+                            onClick={() => handleDeletePillar(prod.id, prod.title)}
+                            title="Hapus Layanan"
+                            aria-label={`Hapus layanan ${prod.title}`}
+                            className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                          >
+                            {deletingId === prod.id ? (
+                              <LoaderCircle className="w-4 h-4 animate-spin" aria-label="Menghapus layanan" />
+                            ) : (
                               <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
+                            )}
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -631,340 +701,349 @@ export default function AdminServicesPage() {
                     {saveError}
                   </p>
                 )}
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {/* Nama Layanan */}
-                  <div>
-                    <label
-                      htmlFor="service-title"
-                      className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5"
-                    >
-                      Nama Layanan
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      maxLength={150}
-                      id="service-title"
-                      value={formTitle}
-                      onChange={(e) => setFormTitle(e.target.value)}
-                      placeholder="cth. Software House"
-                      className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    />
-                  </div>
-
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                    Kategori
-                    <input
-                      type="text"
-                      required
-                      maxLength={100}
-                      id="service-category"
-                      list="service-category-options"
-                      value={formCategory}
-                      onChange={(event) => setFormCategory(event.target.value)}
-                      placeholder="cth. Software House"
-                      className="mt-1.5 w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-normal text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    />
-                  </label>
-                </div>
-                <p className="text-[11px] leading-5 text-slate-500 dark:text-slate-400">
-                  Pilih kategori yang ada atau ketik kategori baru. Setelah layanan disimpan, kategori otomatis tersedia
-                  di filter.
-                </p>
-
-                <div>
-                  <label
-                    htmlFor="service-description"
-                    className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
-                  >
-                    Deskripsi Ringkas
-                  </label>
-                  <textarea
-                    rows={3}
-                    required
-                    id="service-description"
-                    value={formDesc}
-                    onChange={(e) => setFormDesc(e.target.value)}
-                    placeholder="Jelaskan ruang lingkup dan spesialisasi layanan ini..."
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  />
-                </div>
-
-                <ServiceImageField
-                  image={formDetails.image}
-                  name={formTitle}
-                  fallbackImage={fallbackImage}
-                  onChange={(image) => setFormDetails((current) => ({ ...current, image }))}
-                />
-                <div>
-                  <ChipField
-                    label="Fitur & Kapabilitas Layanan"
-                    hint="Centang poin yang termasuk dalam layanan ini, atau tulis sendiri."
-                    value={newlineToList(formFeatures)}
-                    onChange={(list) => setFormFeatures(listToNewline(list))}
-                    presets={SERVICE_FEATURE_PRESETS}
-                    placeholder="cth: Integrasi API / Interoperabilitas"
-                  />
-                </div>
-
-                <div>
-                  <ChipField
-                    label="Tags / Label"
-                    hint="Pilih label yang ada atau tambahkan label sendiri untuk pencarian dan pengelompokan layanan."
-                    value={csvToList(formTags)}
-                    onChange={(list) => setFormTags(listToCsv(list))}
-                    presets={tagPresets}
-                    placeholder="cth: Cloud, Integrasi Sistem, Audit TI"
-                    accent="emerald"
-                  />
-                </div>
-
-                {/* Baris 1: Ikon Layanan + Nama Layanan + Label Badge */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
-                  {/* Ikon Layanan Trigger Button */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
-                      Ikon Layanan
-                    </label>
-                    <button
-                      type="button"
-                      aria-label="Pilih ikon layanan"
-                      onClick={() => setIsIconPickerOpen(!isIconPickerOpen)}
-                      className={`w-full h-10 px-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer ${
-                        isIconPickerOpen
-                          ? "bg-orange-50 dark:bg-orange-500/15 border-orange-500 ring-2 ring-orange-500/20 text-orange-950 dark:text-orange-200"
-                          : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 hover:border-orange-400 dark:hover:border-orange-500/40 text-slate-900 dark:text-white"
-                      }`}
-                      title="Klik untuk memilih ikon pilar layanan"
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-6 h-6 rounded-lg bg-orange-500/15 dark:bg-orange-500/25 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
-                          {(() => {
-                            const CurrIcon = getPillarIcon(formIcon);
-                            return <CurrIcon className="w-3.5 h-3.5" />;
-                          })()}
-                        </div>
-                        <span className="text-xs font-semibold truncate">
-                          {PILLAR_ICON_OPTIONS.find((o) => o.name.toLowerCase() === formIcon.toLowerCase())?.label ||
-                            formIcon}
-                        </span>
-                      </div>
-                      <ChevronDown
-                        className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${
-                          isIconPickerOpen ? "rotate-180 text-orange-600 dark:text-orange-400" : ""
-                        }`}
+                <fieldset disabled={isSaving} className="min-w-0 space-y-5">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {/* Nama Layanan */}
+                    <div>
+                      <label
+                        htmlFor="service-title"
+                        className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5"
+                      >
+                        Nama Layanan
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        maxLength={150}
+                        id="service-title"
+                        value={formTitle}
+                        onChange={(e) => setFormTitle(e.target.value)}
+                        placeholder="cth. Software House"
+                        className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                       />
-                    </button>
-                  </div>
+                    </div>
 
-                  {/* Label Badge */}
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Kategori
+                      <input
+                        type="text"
+                        required
+                        maxLength={100}
+                        id="service-category"
+                        list="service-category-options"
+                        value={formCategory}
+                        onChange={(event) => setFormCategory(event.target.value)}
+                        placeholder="cth. Software House"
+                        className="mt-1.5 w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-normal text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      />
+                    </label>
+                  </div>
+                  <p className="text-[11px] leading-5 text-slate-500 dark:text-slate-400">
+                    Pilih kategori yang ada atau ketik kategori baru. Setelah layanan disimpan, kategori otomatis
+                    tersedia di filter.
+                  </p>
+
                   <div>
                     <label
-                      htmlFor="service-badge"
-                      className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5"
+                      htmlFor="service-description"
+                      className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
                     >
-                      Label Badge
+                      Deskripsi Ringkas
                     </label>
-                    <input
-                      type="text"
+                    <textarea
+                      rows={3}
                       required
-                      id="service-badge"
-                      value={formBadge}
-                      onChange={(e) => setFormBadge(e.target.value)}
-                      placeholder="cth. Pilar 01"
-                      className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      id="service-description"
+                      value={formDesc}
+                      onChange={(e) => setFormDesc(e.target.value)}
+                      placeholder="Jelaskan ruang lingkup dan spesialisasi layanan ini..."
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
-                </div>
 
-                {/* PEMILIH IKON TERPADU (Hanya terbuka saat diklik, tanpa scrollbar ganda & tanpa teks terpotong) */}
-                {isIconPickerOpen && (
-                  <div className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-[#121226] border border-orange-200/80 dark:border-orange-500/30 space-y-2.5 animate-in fade-in zoom-in-98 duration-150">
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                          Pilih Ikon Layanan
-                        </span>
-                        <span className="text-[10px] text-slate-400">(Klik ikon untuk langsung memilih)</span>
-                      </div>
+                  <ServiceImageField
+                    image={formDetails.image}
+                    name={formTitle}
+                    fallbackImage={fallbackImage}
+                    onChange={(image) => setFormDetails((current) => ({ ...current, image }))}
+                  />
+                  <div>
+                    <ChipField
+                      label="Fitur & Kapabilitas Layanan"
+                      hint="Centang poin yang termasuk dalam layanan ini, atau tulis sendiri."
+                      value={newlineToList(formFeatures)}
+                      onChange={(list) => setFormFeatures(listToNewline(list))}
+                      presets={SERVICE_FEATURE_PRESETS}
+                      placeholder="cth: Integrasi API / Interoperabilitas"
+                    />
+                  </div>
 
-                      <div className="relative w-full sm:w-48">
-                        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="text"
-                          value={iconSearch}
-                          onChange={(e) => setIconSearch(e.target.value)}
-                          placeholder="Cari ikon..."
-                          className="w-full pl-8 pr-7 py-1 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-[11px] text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-orange-500"
-                        />
-                        {iconSearch && (
-                          <button
-                            type="button"
-                            onClick={() => setIconSearch("")}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                  <div>
+                    <ChipField
+                      label="Tags / Label"
+                      hint="Pilih label yang ada atau tambahkan label sendiri untuk pencarian dan pengelompokan layanan."
+                      value={csvToList(formTags)}
+                      onChange={(list) => setFormTags(listToCsv(list))}
+                      presets={tagPresets}
+                      placeholder="cth: Cloud, Integrasi Sistem, Audit TI"
+                      accent="emerald"
+                    />
+                  </div>
 
-                    {/* Kategori Ikon (Rapi tanpa horizontal scrollbar) */}
-                    <div className="flex flex-wrap items-center gap-1 pt-0.5">
-                      {[
-                        { id: "Semua", label: "Semua" },
-                        { id: "Rekayasa & Software", label: "Software" },
-                        { id: "Infrastruktur & Cloud", label: "Cloud & Server" },
-                        { id: "Konsultansi & SPBE", label: "Konsultasi" },
-                        { id: "Keamanan & Dukungan", label: "Keamanan" },
-                      ].map((cat) => (
-                        <button
-                          key={cat.id}
-                          type="button"
-                          onClick={() => setIconCategoryFilter(cat.id)}
-                          className={`px-2.5 py-1 rounded-lg text-[10px] font-medium transition-all cursor-pointer ${
-                            iconCategoryFilter === cat.id
-                              ? "bg-orange-600 text-white font-semibold shadow-xs"
-                              : "bg-white dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200/80 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10"
-                          }`}
-                        >
-                          {cat.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Grid Ikon Lucide - Clean Square Buttons tanpa teks terpotong */}
-                    <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5 p-2 rounded-xl bg-white dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10 max-h-36 overflow-y-auto">
-                      {PILLAR_ICON_OPTIONS.filter((opt) => {
-                        if (iconCategoryFilter !== "Semua" && opt.category !== iconCategoryFilter) return false;
-                        if (
-                          iconSearch &&
-                          !opt.name.toLowerCase().includes(iconSearch.toLowerCase()) &&
-                          !opt.label.toLowerCase().includes(iconSearch.toLowerCase())
-                        )
-                          return false;
-                        return true;
-                      }).map((opt) => {
-                        const IconComp = opt.icon;
-                        const isSelected = formIcon.toLowerCase() === opt.name.toLowerCase();
-                        return (
-                          <button
-                            key={opt.name}
-                            type="button"
-                            onClick={() => {
-                              setFormIcon(opt.name);
-                              setIsIconPickerOpen(false);
-                            }}
-                            onMouseEnter={() => setHoveredIconOption(opt)}
-                            onMouseLeave={() => setHoveredIconOption(null)}
-                            className={`h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
-                              isSelected
-                                ? "bg-orange-600 text-white shadow-md shadow-orange-600/30 scale-105"
-                                : "text-slate-600 dark:text-slate-300 hover:bg-orange-50 dark:hover:bg-orange-500/15 hover:text-orange-600 dark:hover:text-orange-400 hover:scale-105"
-                            }`}
-                            title={`${opt.label} (${opt.name})`}
-                          >
-                            <IconComp className="w-4 h-4" />
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Footer Keterangan & Tombol Tutup */}
-                    <div className="flex items-center justify-between text-[11px] pt-1 text-slate-500 dark:text-slate-400">
-                      <div className="truncate pr-2">
-                        {hoveredIconOption ? (
-                          <span className="text-slate-900 dark:text-white font-medium">
-                            Ikon:{" "}
-                            <strong className="text-orange-600 dark:text-orange-400">{hoveredIconOption.label}</strong>{" "}
-                            ({hoveredIconOption.name})
-                          </span>
-                        ) : (
-                          <span>Arahkan kursor ke ikon untuk melihat fungsi & nama</span>
-                        )}
-                      </div>
+                  {/* Baris 1: Ikon Layanan + Nama Layanan + Label Badge */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                    {/* Ikon Layanan Trigger Button */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                        Ikon Layanan
+                      </label>
                       <button
                         type="button"
-                        onClick={() => setIsIconPickerOpen(false)}
-                        className="text-[10px] font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-white underline cursor-pointer shrink-0"
+                        aria-label="Pilih ikon layanan"
+                        onClick={() => setIsIconPickerOpen(!isIconPickerOpen)}
+                        className={`w-full h-10 px-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer ${
+                          isIconPickerOpen
+                            ? "bg-orange-50 dark:bg-orange-500/15 border-orange-500 ring-2 ring-orange-500/20 text-orange-950 dark:text-orange-200"
+                            : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 hover:border-orange-400 dark:hover:border-orange-500/40 text-slate-900 dark:text-white"
+                        }`}
+                        title="Klik untuk memilih ikon pilar layanan"
                       >
-                        Tutup
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-6 h-6 rounded-lg bg-orange-500/15 dark:bg-orange-500/25 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                            {(() => {
+                              const CurrIcon = getPillarIcon(formIcon);
+                              return <CurrIcon className="w-3.5 h-3.5" />;
+                            })()}
+                          </div>
+                          <span className="text-xs font-semibold truncate">
+                            {PILLAR_ICON_OPTIONS.find((o) => o.name.toLowerCase() === formIcon.toLowerCase())?.label ||
+                              formIcon}
+                          </span>
+                        </div>
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${
+                            isIconPickerOpen ? "rotate-180 text-orange-600 dark:text-orange-400" : ""
+                          }`}
+                        />
                       </button>
                     </div>
+
+                    {/* Label Badge */}
+                    <div>
+                      <label
+                        htmlFor="service-badge"
+                        className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5"
+                      >
+                        Label Badge
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        id="service-badge"
+                        value={formBadge}
+                        onChange={(e) => setFormBadge(e.target.value)}
+                        placeholder="cth. Pilar 01"
+                        className="w-full h-10 px-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      />
+                    </div>
                   </div>
-                )}
 
-                <div>
-                  <label
-                    htmlFor="service-sla"
-                    className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
-                  >
-                    Jaminan SLA / Metodologi
+                  {/* PEMILIH IKON TERPADU (Hanya terbuka saat diklik, tanpa scrollbar ganda & tanpa teks terpotong) */}
+                  {isIconPickerOpen && (
+                    <div className="p-3.5 rounded-2xl bg-slate-50/90 dark:bg-[#121226] border border-orange-200/80 dark:border-orange-500/30 space-y-2.5 animate-in fade-in zoom-in-98 duration-150">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                            Pilih Ikon Layanan
+                          </span>
+                          <span className="text-[10px] text-slate-400">(Klik ikon untuk langsung memilih)</span>
+                        </div>
+
+                        <div className="relative w-full sm:w-48">
+                          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="text"
+                            value={iconSearch}
+                            onChange={(e) => setIconSearch(e.target.value)}
+                            placeholder="Cari ikon..."
+                            className="w-full pl-8 pr-7 py-1 rounded-lg bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-[11px] text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                          />
+                          {iconSearch && (
+                            <button
+                              type="button"
+                              onClick={() => setIconSearch("")}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Kategori Ikon (Rapi tanpa horizontal scrollbar) */}
+                      <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                        {[
+                          { id: "Semua", label: "Semua" },
+                          { id: "Rekayasa & Software", label: "Software" },
+                          { id: "Infrastruktur & Cloud", label: "Cloud & Server" },
+                          { id: "Konsultansi & SPBE", label: "Konsultasi" },
+                          { id: "Keamanan & Dukungan", label: "Keamanan" },
+                        ].map((cat) => (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => setIconCategoryFilter(cat.id)}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-medium transition-all cursor-pointer ${
+                              iconCategoryFilter === cat.id
+                                ? "bg-orange-600 text-white font-semibold shadow-xs"
+                                : "bg-white dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200/80 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10"
+                            }`}
+                          >
+                            {cat.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Grid Ikon Lucide - Clean Square Buttons tanpa teks terpotong */}
+                      <div className="grid grid-cols-6 sm:grid-cols-8 gap-1.5 p-2 rounded-xl bg-white dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/10 max-h-36 overflow-y-auto">
+                        {PILLAR_ICON_OPTIONS.filter((opt) => {
+                          if (iconCategoryFilter !== "Semua" && opt.category !== iconCategoryFilter) return false;
+                          if (
+                            iconSearch &&
+                            !opt.name.toLowerCase().includes(iconSearch.toLowerCase()) &&
+                            !opt.label.toLowerCase().includes(iconSearch.toLowerCase())
+                          )
+                            return false;
+                          return true;
+                        }).map((opt) => {
+                          const IconComp = opt.icon;
+                          const isSelected = formIcon.toLowerCase() === opt.name.toLowerCase();
+                          return (
+                            <button
+                              key={opt.name}
+                              type="button"
+                              onClick={() => {
+                                setFormIcon(opt.name);
+                                setIsIconPickerOpen(false);
+                              }}
+                              onMouseEnter={() => setHoveredIconOption(opt)}
+                              onMouseLeave={() => setHoveredIconOption(null)}
+                              className={`h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                                isSelected
+                                  ? "bg-orange-600 text-white shadow-md shadow-orange-600/30 scale-105"
+                                  : "text-slate-600 dark:text-slate-300 hover:bg-orange-50 dark:hover:bg-orange-500/15 hover:text-orange-600 dark:hover:text-orange-400 hover:scale-105"
+                              }`}
+                              title={`${opt.label} (${opt.name})`}
+                            >
+                              <IconComp className="w-4 h-4" />
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Footer Keterangan & Tombol Tutup */}
+                      <div className="flex items-center justify-between text-[11px] pt-1 text-slate-500 dark:text-slate-400">
+                        <div className="truncate pr-2">
+                          {hoveredIconOption ? (
+                            <span className="text-slate-900 dark:text-white font-medium">
+                              Ikon:{" "}
+                              <strong className="text-orange-600 dark:text-orange-400">
+                                {hoveredIconOption.label}
+                              </strong>{" "}
+                              ({hoveredIconOption.name})
+                            </span>
+                          ) : (
+                            <span>Arahkan kursor ke ikon untuk melihat fungsi & nama</span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsIconPickerOpen(false)}
+                          className="text-[10px] font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-white underline cursor-pointer shrink-0"
+                        >
+                          Tutup
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <label
+                      htmlFor="service-sla"
+                      className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1"
+                    >
+                      Jaminan SLA / Metodologi
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      id="service-sla"
+                      value={formSla}
+                      onChange={(e) => setFormSla(e.target.value)}
+                      placeholder="Isi standar atau ketentuan dukungan yang berlaku untuk layanan ini"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    />
+                  </div>
+
+                  <ServiceDetailsFields value={formDetails} onChange={setFormDetails} />
+                  <ServiceCaseStudyPicker
+                    studies={caseStudies}
+                    value={formCaseStudyIds}
+                    onChange={setFormCaseStudyIds}
+                  />
+
+                  <label className="p-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 flex items-center justify-between gap-4 cursor-pointer">
+                    <span>
+                      <span className="block text-xs font-bold text-slate-900 dark:text-white">
+                        Tampilkan di Website Front Office
+                      </span>
+                      <span className="block text-[11px] text-slate-500">
+                        Jika tidak dicentang, layanan akan berstatus Non-Aktif (disembunyikan)
+                      </span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={formIsActive}
+                      onChange={(event) => setFormIsActive(event.target.checked)}
+                      className="w-5 h-5 accent-orange-600 rounded cursor-pointer shrink-0"
+                    />
                   </label>
-                  <input
-                    type="text"
-                    required
-                    id="service-sla"
-                    value={formSla}
-                    onChange={(e) => setFormSla(e.target.value)}
-                    placeholder="Isi standar atau ketentuan dukungan yang berlaku untuk layanan ini"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  />
-                </div>
 
-                <ServiceDetailsFields value={formDetails} onChange={setFormDetails} />
+                  <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
+                    <span>
+                      <span className="block text-xs font-bold text-slate-900 dark:text-white">
+                        Tampilkan di Beranda Utama
+                      </span>
+                      <span className="block text-[11px] text-slate-500 dark:text-slate-300">
+                        Centang agar layanan masuk ke section layanan unggulan di halaman utama.
+                      </span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={formShowOnHome}
+                      onChange={(event) => setFormShowOnHome(event.target.checked)}
+                      className="mt-0.5 h-5 w-5 cursor-pointer accent-orange-600"
+                    />
+                  </label>
 
-                <label className="p-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 flex items-center justify-between gap-4 cursor-pointer">
-                  <span>
-                    <span className="block text-xs font-bold text-slate-900 dark:text-white">
-                      Tampilkan di Website Front Office
-                    </span>
-                    <span className="block text-[11px] text-slate-500">
-                      Jika tidak dicentang, layanan akan berstatus Non-Aktif (disembunyikan)
-                    </span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={formIsActive}
-                    onChange={(event) => setFormIsActive(event.target.checked)}
-                    className="w-5 h-5 accent-orange-600 rounded cursor-pointer shrink-0"
-                  />
-                </label>
-
-                <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
-                  <span>
-                    <span className="block text-xs font-bold text-slate-900 dark:text-white">
-                      Tampilkan di Beranda Utama
-                    </span>
-                    <span className="block text-[11px] text-slate-500 dark:text-slate-300">
-                      Centang agar layanan masuk ke section layanan unggulan di halaman utama.
-                    </span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={formShowOnHome}
-                    onChange={(event) => setFormShowOnHome(event.target.checked)}
-                    className="mt-0.5 h-5 w-5 cursor-pointer accent-orange-600"
-                  />
-                </label>
-
-                <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setModalOpen(false)}
-                    disabled={isSaving}
-                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
-                  >
-                    Batal
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSaving}
-                    className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/25 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    {isSaving ? "Menyimpan..." : editingPillar ? "Simpan Perubahan" : "Tambahkan ke Katalog"}
-                  </button>
-                </div>
+                  <div className="pt-3 border-t border-slate-100 dark:border-white/10 flex items-center justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setModalOpen(false)}
+                      disabled={isSaving}
+                      className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSaving}
+                      className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/25 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      {isSaving ? "Menyimpan..." : editingPillar ? "Simpan Perubahan" : "Tambahkan ke Katalog"}
+                    </button>
+                  </div>
+                </fieldset>
               </form>
             </div>
           </div>

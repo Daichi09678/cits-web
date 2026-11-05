@@ -88,23 +88,41 @@ export function buildFeaturedCatalog(services: ServicePillar[], products: Produc
 
 /** Derive dependent choices from the current catalog, including when admin edits remove a choice. */
 export function filterFeaturedCatalog(items: FeaturedCatalogItem[], input: CatalogFilters) {
-  const categories = options(items.map((item) => item.category));
-  const category = categories.includes(input.category) ? input.category : "";
-  const words = normalize(input.query).split(" ").filter(Boolean);
-  const base = items.filter(
-    (item) => (!category || item.category === category) && words.every((word) => item.searchText.includes(word))
+  const query = normalize(input.query);
+  const words = query.split(" ").filter(Boolean);
+  const searched = items.filter((item) => words.every((word) => item.searchText.includes(word)));
+  // Validate against the saved catalog, not the query results: an incompatible
+  // search must show zero matches instead of silently removing the user's filters.
+  const category = items.some((item) => item.category === input.category) ? input.category : "";
+  const categorized = items.filter((item) => !category || item.category === category);
+  const capability = categorized.some((item) => item.features.includes(input.capability)) ? input.capability : "";
+  const capable = categorized.filter((item) => !capability || item.features.includes(capability));
+  const technology = capable.some((item) => item.technologies.includes(input.technology)) ? input.technology : "";
+  const base = searched.filter((item) => !category || item.category === category);
+  const categories = options([...searched.map((item) => item.category), category]);
+  const capabilities = options([...base.flatMap((item) => item.features), capability]);
+  const technologies = options([
+    ...base.filter((item) => !capability || item.features.includes(capability)).flatMap((item) => item.technologies),
+    technology,
+  ]);
+  const matches = base.filter(
+    (item) =>
+      (!capability || item.features.includes(capability)) && (!technology || item.technologies.includes(technology))
   );
-  const capabilities = options(base.flatMap((item) => item.features));
-  const capability = capabilities.includes(input.capability) ? input.capability : "";
-  const capable = base.filter((item) => !capability || item.features.includes(capability));
-  const technologies = options(capable.flatMap((item) => item.technologies));
-  const technology = technologies.includes(input.technology) ? input.technology : "";
+  // Prefer a matching product/service name over incidental matches in long descriptions.
+  const relevance = (item: FeaturedCatalogItem) => {
+    const title = normalize(item.title);
+    if (title === query) return 3;
+    if (title.includes(query)) return 2;
+    return words.every((word) => title.includes(word)) ? 1 : 0;
+  };
+  if (query) matches.sort((a, b) => relevance(b) - relevance(a));
   return {
     categories,
     capabilities,
     technologies,
     filters: { query: input.query, category, capability, technology },
-    matches: capable.filter((item) => !technology || item.technologies.includes(technology)),
+    matches,
   };
 }
 

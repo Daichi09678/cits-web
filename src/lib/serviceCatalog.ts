@@ -39,6 +39,7 @@ export function resolveServiceCatalog(services: ServicePillar[]): ServicePresent
         gradient: "from-orange-600 to-amber-500",
         techStack: service.techStack ?? [],
         caseStudies: service.caseStudies ?? [],
+        caseStudyIds: service.caseStudyIds ?? [],
         deliverables: service.deliverables ?? [],
       };
     });
@@ -48,8 +49,8 @@ export function parseServiceCatalog(
   input: unknown
 ): { ok: true; value: ServicePillar[] } | { ok: false; message: string } {
   const invalid = (message: string) => ({ ok: false as const, message });
-  if (!Array.isArray(input) || !input.length || input.length > 50)
-    return invalid("Isi katalog dengan 1 sampai 50 pilar layanan.");
+  if (!Array.isArray(input) || input.length > 50)
+    return invalid("Katalog layanan harus berupa daftar, maksimal 50 pilar layanan.");
   const result: ServicePillar[] = [];
   for (const entry of input) {
     if (!entry || typeof entry !== "object" || Array.isArray(entry))
@@ -59,14 +60,31 @@ export function parseServiceCatalog(
       if (typeof raw[field] !== "string" || !raw[field].trim() || raw[field].length > (field === "desc" ? 2000 : 150))
         return invalid("Judul, label, ikon, deskripsi, dan SLA wajib diisi sesuai batas panjangnya.");
     }
-    if (raw.category !== undefined && (typeof raw.category !== "string" || !raw.category.trim() || raw.category.length > 100))
+    if (
+      raw.category !== undefined &&
+      (typeof raw.category !== "string" || !raw.category.trim() || raw.category.length > 100)
+    )
       return invalid("Kategori layanan tidak valid.");
-    if (raw.tags !== undefined && (!Array.isArray(raw.tags) || raw.tags.length > 20 || raw.tags.some((value) => typeof value !== "string" || !value.trim() || value.length > 80)))
+    if (
+      raw.tags !== undefined &&
+      (!Array.isArray(raw.tags) ||
+        raw.tags.length > 20 ||
+        raw.tags.some((value) => typeof value !== "string" || !value.trim() || value.length > 80))
+    )
       return invalid("Tag layanan harus berupa teks, maksimal 20 tag.");
     if (raw.isActive !== undefined && typeof raw.isActive !== "boolean") return invalid("Status layanan tidak valid.");
-    if (raw.showOnHome !== undefined && typeof raw.showOnHome !== "boolean") return invalid("Status tampil di beranda tidak valid.");
+    if (raw.showOnHome !== undefined && typeof raw.showOnHome !== "boolean")
+      return invalid("Status tampil di beranda tidak valid.");
     if (raw.details !== undefined && (typeof raw.details !== "string" || raw.details.length > 8000))
       return invalid("Penjelasan lengkap maksimal 8.000 karakter.");
+    if (
+      raw.caseStudyIds !== undefined &&
+      (!Array.isArray(raw.caseStudyIds) ||
+        raw.caseStudyIds.length > 50 ||
+        raw.caseStudyIds.some((id) => typeof id !== "string" || !id.trim() || id.length > 100) ||
+        new Set(raw.caseStudyIds).size !== raw.caseStudyIds.length)
+    )
+      return invalid("Pilihan studi kasus tidak valid atau duplikat.");
     for (const field of ["features", "techStack", "caseStudies"] as const) {
       if (
         raw[field] !== undefined &&
@@ -123,7 +141,16 @@ export function parseServiceCatalog(
       isActive: raw.isActive !== false,
       showOnHome: raw.showOnHome !== false,
     } as ServicePillar;
-    for (const key of ["image", "details", "features", "tags", "techStack", "caseStudies", "deliverables"] as const) {
+    for (const key of [
+      "image",
+      "details",
+      "features",
+      "tags",
+      "techStack",
+      "caseStudies",
+      "caseStudyIds",
+      "deliverables",
+    ] as const) {
       if (raw[key] !== undefined) Object.assign(service, { [key]: raw[key] });
     }
     result.push(service);

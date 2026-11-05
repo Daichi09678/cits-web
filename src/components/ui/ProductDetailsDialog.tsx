@@ -9,7 +9,15 @@ import { consultationHref } from "@/lib/consultation";
 import { productDiscoveryQuestions } from "@/lib/productDetails";
 import type { ProductItem } from "@/types/schema";
 
-export default function ProductDetailsDialog({ product, onClose }: { product: ProductItem; onClose: () => void }) {
+export default function ProductDetailsDialog({
+  product,
+  onClose,
+  preview = false,
+}: {
+  product: ProductItem;
+  onClose: () => void;
+  preview?: boolean;
+}) {
   const ref = useModalFocus(true, onClose);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
   const features = [...new Set(product.features.filter(Boolean))];
@@ -34,7 +42,9 @@ export default function ProductDetailsDialog({ product, onClose }: { product: Pr
     >
       <div className="w-full max-w-4xl max-h-[92dvh] min-h-0 flex flex-col rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#16162c] shadow-2xl overflow-hidden">
         <header className="shrink-0 flex items-center justify-between gap-3 border-b border-slate-200 dark:border-white/10 px-4 py-3 sm:px-6">
-          <p className="text-sm font-bold text-slate-900 dark:text-white">Spesifikasi Produk</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-white">
+            {preview ? "Pratinjau Detail Produk" : "Spesifikasi Produk"}
+          </p>
           <button
             type="button"
             aria-label="Tutup jendela spesifikasi produk"
@@ -64,19 +74,51 @@ export default function ProductDetailsDialog({ product, onClose }: { product: Pr
                 {product.description}
               </p>
               {tags.length > 0 && (
-                <ul aria-label="Kapabilitas produk" className="mt-4 flex flex-wrap gap-2">
-                  {tags.map((tag) => (
-                    <li
-                      key={tag}
-                      className="max-w-full rounded-lg border border-slate-200 dark:border-white/10 px-2.5 py-1 text-xs text-slate-700 dark:text-slate-200"
-                    >
-                      {tag}
-                    </li>
-                  ))}
-                </ul>
+                <div className="mt-4">
+                  <h3 className="text-xs font-semibold text-slate-700 dark:text-slate-200">Tag / Kata Kunci</h3>
+                  <ul aria-label="Tag produk" className="mt-2 flex flex-wrap gap-2">
+                    {tags.map((tag) => (
+                      <li
+                        key={tag}
+                        className="max-w-full rounded-lg border border-slate-200 dark:border-white/10 px-2.5 py-1 text-xs text-slate-700 dark:text-slate-200"
+                      >
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
           </div>
+          {product.details && (
+            <section aria-labelledby="product-long-description-heading">
+              <h3 id="product-long-description-heading" className="text-sm font-bold text-slate-900 dark:text-white">
+                Penjelasan Lengkap
+              </h3>
+              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                {product.details}
+              </p>
+            </section>
+          )}
+          <section aria-labelledby="product-specifications-heading">
+            <h3 id="product-specifications-heading" className="text-sm font-bold text-slate-900 dark:text-white">
+              Spesifikasi Teknis
+            </h3>
+            {product.specifications?.length ? (
+              <dl className="mt-3 divide-y divide-slate-200 overflow-hidden rounded-xl border border-slate-200 dark:divide-white/10 dark:border-white/10">
+                {product.specifications.map((row, index) => (
+                  <div key={index} className="grid min-w-0 gap-2 px-4 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+                    <dt className="text-sm font-semibold text-slate-800 dark:text-slate-100">{row.name}</dt>
+                    <dd className="min-w-0 whitespace-pre-line text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                      {row.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Spesifikasi teknis belum dicantumkan.</p>
+            )}
+          </section>
           <section aria-labelledby="product-features-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 id="product-features-heading" className="font-bold text-slate-900 dark:text-white">
@@ -147,32 +189,38 @@ export default function ProductDetailsDialog({ product, onClose }: { product: Pr
           </details>
         </div>
         <footer className="shrink-0 border-t border-slate-200 dark:border-white/10 bg-white dark:bg-[#16162c] p-3 sm:px-6 sm:py-4">
-          <div className="grid grid-cols-2 gap-2 sm:gap-3">
-            <Link
-              href={consultationHref({
-                productId: product.id,
-                purpose: "discussion",
-                features: selectedFeatures,
-                source: "products",
-              })}
-              className="min-w-0 min-h-11 inline-flex items-center justify-center gap-2 rounded-xl bg-orange-700 hover:bg-orange-800 px-3 py-2.5 text-center text-xs sm:text-sm font-semibold text-white"
-            >
-              Konsultasi Produk
-              <ArrowRight className="hidden sm:block h-4 w-4 shrink-0" aria-hidden="true" />
-            </Link>
-            <Link
-              href={consultationHref({
-                productId: product.id,
-                purpose: "demo",
-                features: selectedFeatures,
-                source: "products",
-              })}
-              className="min-w-0 min-h-11 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 px-3 py-2.5 text-center text-xs sm:text-sm font-semibold text-slate-900 dark:text-white"
-            >
-              <Play className="hidden sm:block h-4 w-4 shrink-0" aria-hidden="true" />
-              Minta Demo
-            </Link>
-          </div>
+          {preview ? (
+            <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+              Pratinjau mengikuti isian produk. Tekan Simpan Perubahan pada form untuk memublikasikannya.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+              <Link
+                href={consultationHref({
+                  productId: product.id,
+                  purpose: "discussion",
+                  features: selectedFeatures,
+                  source: "products",
+                })}
+                className="min-w-0 min-h-11 inline-flex items-center justify-center gap-2 rounded-xl bg-orange-700 hover:bg-orange-800 px-3 py-2.5 text-center text-xs sm:text-sm font-semibold text-white"
+              >
+                Konsultasi Produk
+                <ArrowRight className="hidden sm:block h-4 w-4 shrink-0" aria-hidden="true" />
+              </Link>
+              <Link
+                href={consultationHref({
+                  productId: product.id,
+                  purpose: "demo",
+                  features: selectedFeatures,
+                  source: "products",
+                })}
+                className="min-w-0 min-h-11 inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 px-3 py-2.5 text-center text-xs sm:text-sm font-semibold text-slate-900 dark:text-white"
+              >
+                <Play className="hidden sm:block h-4 w-4 shrink-0" aria-hidden="true" />
+                Minta Demo
+              </Link>
+            </div>
+          )}
         </footer>
       </div>
     </div>

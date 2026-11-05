@@ -7,6 +7,7 @@ const serviceCatalog = load("lib/serviceCatalog.ts", { "@/data/serviceDetails": 
 const finder = load("lib/catalogFinder.ts", { "@/lib/serviceCatalog": serviceCatalog });
 const consultation = load("lib/consultation.ts", {}, { URLSearchParams });
 const defaults = finder.EMPTY_CATALOG_FILTERS;
+const { initialProducts } = load("data/initialData.ts");
 const service = (id, category, features, techStack = [], extra = {}) => ({
   id,
   title: id,
@@ -124,8 +125,69 @@ test("admin edits cannot leave stale categories, capabilities or selected featur
   assert.deepEqual(Array.from(finder.selectedCatalogFeatures(catalog[0], [], "Fitur Baru")), []);
 });
 
+test("each featured product is searchable by its saved name, features and tags with matching category choices", () => {
+  const catalog = finder.buildFeaturedCatalog([], initialProducts);
+  assert.equal(catalog.length, 6);
+  for (const product of initialProducts) {
+    for (const query of [product.name, product.features[0], product.tags[0]]) {
+      const result = finder.filterFeaturedCatalog(catalog, { ...defaults, query });
+      assert.ok(
+        result.matches.some((item) => item.productId === product.id),
+        query
+      );
+      assert.deepEqual(
+        Array.from(result.categories).sort(),
+        [...new Set(Array.from(result.matches, (item) => item.category))].sort()
+      );
+    }
+  }
+  const result = finder.filterFeaturedCatalog(catalog, { ...defaults, query: "  WEBSITE   cms  " });
+  assert.equal(result.matches.length, 1);
+  assert.equal(result.matches[0].title, "Website CMS & Portal Enterprise");
+  assert.deepEqual(Array.from(result.categories), ["Web"]);
+  assert.deepEqual(Array.from(result.capabilities).sort(), Array.from(result.matches[0].features).sort());
+  assert.deepEqual(Array.from(result.technologies).sort(), Array.from(result.matches[0].tags).sort());
+});
+
+test("search prioritizes product and service names over incidental description matches", () => {
+  const catalog = finder.buildFeaturedCatalog(
+    [
+      service("Audit", "Konsultasi", ["API"], [], { desc: "Integrasi portal web" }),
+      service("Portal Web", "Pengembangan", ["API"]),
+    ],
+    []
+  );
+  assert.deepEqual(
+    Array.from(
+      finder.filterFeaturedCatalog(catalog, { ...defaults, query: "portal web" }).matches,
+      (item) => item.title
+    ),
+    ["Portal Web", "Audit"]
+  );
+});
+
+test("incompatible searches retain chosen filters and show no matches instead of unrelated catalog entries", () => {
+  const catalog = finder.buildFeaturedCatalog(services, []);
+  const result = finder.filterFeaturedCatalog(catalog, {
+    ...defaults,
+    query: "audit",
+    capability: "Integrasi API",
+    technology: "React",
+  });
+  assert.equal(result.matches.length, 0);
+  assert.equal(result.filters.capability, "Integrasi API");
+  assert.equal(result.filters.technology, "React");
+  assert.ok(result.capabilities.includes("Integrasi API"));
+  assert.ok(result.technologies.includes("React"));
+  const cleared = finder.filterFeaturedCatalog(catalog, { ...result.filters, query: "" });
+  assert.deepEqual(
+    Array.from(cleared.matches, (item) => item.title),
+    ["Aplikasi"]
+  );
+});
+
 // Render with persistent hook state so the same event handlers used in the browser can be exercised.
-function mount(input = services) {
+function mount(input = services, products = []) {
   const state = [];
   let cursor = 0;
   const navigation = [];
@@ -156,7 +218,7 @@ function mount(input = services) {
   let currentInput = input;
   const render = () => {
     cursor = 0;
-    return Component({ services: currentInput, products: [], title: "Layanan dari admin" });
+    return Component({ services: currentInput, products, title: "Katalog dari admin" });
   };
   const find = (predicate, node = render()) => {
     if (!node || typeof node !== "object") return undefined;
@@ -177,6 +239,42 @@ function mount(input = services) {
     },
   };
 }
+
+test("product and service search keep selected filters, clear only the query and submit the matching item", () => {
+  for (const [input, products, query, category, capability, technology, parameter, expected] of [
+    [services, [], "audit", "Konsultasi", "Audit Keamanan", "ISO 27001", "service", "Audit"],
+    [
+      [],
+      initialProducts,
+      "website",
+      "Web",
+      "Manajemen konten WYSIWYG intuitif",
+      "CMS Kustom",
+      "product",
+      "cms-ecommerce",
+    ],
+  ]) {
+    const app = mount(input, products);
+    app.byId("category").props.onChange({ target: { value: category } });
+    app.byId("capability").props.onChange({ target: { value: capability } });
+    app.byId("technology").props.onChange({ target: { value: technology } });
+    app.byId("query").props.onChange({ target: { value: query } });
+    assert.equal(app.byId("capability").props.value, capability);
+    assert.equal(app.byId("technology").props.value, technology);
+    app.find((node) => node.type === "form").props.onSubmit({ preventDefault() {} });
+    const url = new URL(app.navigation.at(-1), "https://example.test");
+    assert.equal(url.searchParams.get(parameter), expected);
+    assert.deepEqual(url.searchParams.getAll("feature"), [capability]);
+    app.byId("query").props.onChange({ target: { value: "tidak ditemukan" } });
+    assert.equal(app.find((node) => node.type === "button" && node.props.type === "submit").props.disabled, true);
+    app
+      .find((node) => node.type === "button" && node.props["aria-label"]?.startsWith("Hapus pencarian"))
+      .props.onClick();
+    assert.equal(app.byId("query").props.value, "");
+    assert.equal(app.byId("technology").props.value, technology);
+    assert.equal(app.find((node) => node.type === "button" && node.props.type === "submit").props.disabled, false);
+  }
+});
 
 test("one form supports filtering, selecting needs and carrying the exact selection into consultation", () => {
   const app = mount();

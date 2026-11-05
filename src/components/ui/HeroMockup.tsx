@@ -31,12 +31,12 @@ export default function HeroMockup({ title, status, projects = [] }: HeroMockupP
               <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80 inline-block" />
               <span className="w-2.5 h-2.5 rounded-full bg-green-500/80 inline-block" />
             </div>
-            <span className="text-slate-800 dark:text-white text-xs font-bold whitespace-nowrap ml-1">
+            <span className="text-slate-800 dark:text-white text-xs font-bold truncate min-w-0 ml-1">
               {title ?? "CITS Enterprise System Portal"}
             </span>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 ml-2">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
@@ -100,18 +100,18 @@ export default function HeroMockup({ title, status, projects = [] }: HeroMockupP
 
           {/* Bottom Trust & Compliance Bar - Terintegrasi rapi di dalam card, bebas tabrakan/tertumpuk */}
           <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/80 dark:border-white/10 text-[11px]">
-            <div className="flex items-center gap-2 text-slate-800 dark:text-slate-100">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-slate-800 dark:text-slate-100 min-w-0">
               <div className="w-5 h-5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-3.5 h-3.5" />
               </div>
-              <span className="font-semibold truncate">Standar ISO & Pemerintah</span>
+              <span className="font-semibold truncate text-[10px] sm:text-[11px]">Standar ISO & Pemerintah</span>
             </div>
 
-            <div className="flex items-center gap-2 text-slate-800 dark:text-slate-100 justify-end">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-slate-800 dark:text-slate-100 justify-end min-w-0">
               <div className="w-5 h-5 rounded bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400 flex items-center justify-center shrink-0">
                 <Zap className="w-3.5 h-3.5" />
               </div>
-              <span className="font-semibold truncate">Dukungan Teknis 24/7</span>
+              <span className="font-semibold truncate text-[10px] sm:text-[11px]">Dukungan Teknis 24/7</span>
             </div>
           </div>
         </div>

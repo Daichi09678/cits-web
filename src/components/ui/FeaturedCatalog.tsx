@@ -151,15 +151,23 @@ export default function FeaturedCatalog({
                     id={id + "-query"}
                     type="search"
                     value={filters.query}
-                    onChange={(event) =>
-                      setFilters({ ...result.filters, query: event.target.value, capability: "", technology: "" })
-                    }
+                    onChange={(event) => setFilters({ ...result.filters, query: event.target.value })}
                     onKeyDown={(event) => {
                       if (event.key === "Enter") event.preventDefault();
                     }}
-                    placeholder={productsOnly ? "Cari produk atau fitur..." : "Aplikasi, SPBE, server..."}
-                    className="min-h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-3 text-sm font-normal text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 dark:border-white/10 dark:bg-[#1A1A2E] dark:text-white"
+                    placeholder={productsOnly ? "Cari produk atau fitur..." : "Cari layanan atau kapabilitas..."}
+                    className="min-h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm font-normal text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 dark:border-white/10 dark:bg-[#1A1A2E] dark:text-white"
                   />
+                  {filters.query && (
+                    <button
+                      type="button"
+                      aria-label={`Hapus pencarian ${itemLabel}`}
+                      onClick={() => setFilters({ ...result.filters, query: "" })}
+                      className="absolute right-0 top-0 flex h-full w-10 items-center justify-center rounded-r-lg text-slate-500 hover:text-orange-700 focus-visible:outline-2 focus-visible:outline-orange-600"
+                    >
+                      <X aria-hidden="true" className="h-4 w-4" />
+                    </button>
+                  )}
                 </span>
               </label>
               <label className={fieldLabelClass} htmlFor={id + "-category"}>
@@ -231,7 +239,7 @@ export default function FeaturedCatalog({
                           setFilters({
                             ...result.filters,
                             [key]: "",
-                            ...(key === "query" || key === "capability" ? { technology: "" } : {}),
+                            ...(key === "capability" ? { technology: "" } : {}),
                           });
                       }}
                       className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 px-2.5 py-1.5 text-[11px] font-medium text-orange-900 transition hover:bg-orange-100 focus-visible:outline-2 focus-visible:outline-orange-600 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-200"
@@ -254,7 +262,9 @@ export default function FeaturedCatalog({
                   aria-atomic="true"
                   className="rounded-full bg-slate-100 px-2.5 py-1 text-[13px] font-medium text-slate-600 dark:bg-white/5 dark:text-slate-300"
                 >
-                  {result.matches.length} tersedia
+                  {hasFilters
+                    ? `${result.matches.length} dari ${items.length} ${itemLabel}`
+                    : `${items.length} tersedia`}
                 </span>
               </div>
               <p className="mb-4 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
@@ -288,7 +298,7 @@ export default function FeaturedCatalog({
                           )}
                         </span>
                         <span className="min-w-0 flex-1">
-                          {result.categories.length > 1 && (
+                          {item.category && (
                             <span className="mb-1 block truncate text-[13px] font-semibold text-orange-800 dark:text-orange-300">
                               {item.category}
                             </span>

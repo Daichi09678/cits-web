@@ -7,13 +7,17 @@ import { caseStudyEvidence } from "@/data/caseStudyFacts";
 import { consultationHref } from "@/lib/consultation";
 import { useCitsStore } from "@/stores/citsStore";
 
-export default function CaseStudyDetail({ id }: { id: string }) {
+export default function CaseStudyDetail({ id, matchPortfolioTheme = false }: { id: string; matchPortfolioTheme?: boolean }) {
   const { caseStudies } = useCitsStore();
   const study = caseStudies.find((item) => item.id === id);
+  const pageBackground = matchPortfolioTheme ? "bg-white dark:bg-[#1A1A2E]" : "bg-white dark:bg-[#111827]";
+  const headerBackground = matchPortfolioTheme
+    ? "bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-[#1A1A2E] dark:to-slate-950"
+    : "bg-slate-50 dark:bg-[#0f172a]";
 
   if (!study) {
     return (
-      <main id="main-content" className="min-h-screen bg-white py-24 dark:bg-[#111827]">
+      <main id="main-content" className={`min-h-screen py-24 ${pageBackground}`}>
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300">
             <Briefcase className="h-6 w-6" />
@@ -41,10 +45,10 @@ export default function CaseStudyDetail({ id }: { id: string }) {
   return (
     <main
       id="main-content"
-      className="min-h-screen bg-white text-slate-900 transition-colors dark:bg-[#111827] dark:text-white"
+      className={`min-h-screen text-slate-900 transition-colors dark:text-white ${pageBackground}`}
     >
       {/* Header studi kasus */}
-      <section className="border-b border-slate-200 bg-slate-50 py-14 sm:py-16 dark:border-white/10 dark:bg-[#0f172a]">
+      <section className={`border-b border-slate-200 py-14 sm:py-16 dark:border-white/10 ${headerBackground}`}>
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <p className="text-sm text-slate-600 dark:text-slate-400">
             {study.sector}{" "}
@@ -317,7 +321,7 @@ export default function CaseStudyDetail({ id }: { id: string }) {
 
         {/* CTA */}
         <ScrollReveal>
-          <section className="mt-12 rounded-xl bg-slate-900 p-7 text-white sm:p-9 dark:bg-[#0b1220]">
+          <section className={`mt-12 rounded-xl bg-slate-900 p-7 text-white sm:p-9 ${matchPortfolioTheme ? "dark:bg-[#151528]" : "dark:bg-[#0b1220]"}`}>
             <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">
               Punya kebutuhan serupa di instansi Anda?
             </h2>

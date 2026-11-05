@@ -45,7 +45,7 @@ export default function Navbar() {
       }`}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 shrink-0">
           {/* Logo Mode Terang */}
           <Image
             src="/logo.webp"
@@ -69,7 +69,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <ul className="hidden lg:flex items-center gap-7">
+        <ul className="hidden lg:flex items-center gap-4 xl:gap-7">
           {navLinks.map((link) => (
             <li key={link.href}>
               <Link
@@ -105,7 +105,7 @@ export default function Navbar() {
         <div className="lg:hidden flex items-center gap-2">
           <ThemeToggle />
           <button
-            className="p-2 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
@@ -124,7 +124,7 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-white/95 dark:bg-[#1A1A2E]/95 backdrop-blur-md border-b border-gray-100 dark:border-white/10 overflow-hidden"
+            className="lg:hidden bg-white/95 dark:bg-[#1A1A2E]/95 backdrop-blur-md border-b border-gray-100 dark:border-white/10 overflow-y-auto max-h-[calc(100vh-4rem)]"
           >
             <ul className="px-4 py-4 space-y-1">
               {navLinks.map((link, i) => (

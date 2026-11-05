@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
 import { ProductItem } from "@/types/schema";
 import { badRequest, missingStringFields, readJsonBody } from "@/lib/http";
+import { parseProductPatch } from "@/lib/productValidation";
 
 export async function GET(req: Request) {
   try {
@@ -30,8 +31,22 @@ export async function POST(req: Request) {
     if (missing.length > 0) {
       return badRequest(`Data produk tidak lengkap: ${missing.join(", ")}.`);
     }
+    let fields: Partial<ProductItem>;
+    try {
+      fields = parseProductPatch(body);
+    } catch (error) {
+      return badRequest(error instanceof Error ? error.message : "Data produk tidak valid.");
+    }
     const newProduct: ProductItem = {
-      ...body,
+      name: fields.name!,
+      category: fields.category!,
+      description: fields.description!,
+      features: [],
+      tags: [],
+      icon: "Package",
+      details: "",
+      specifications: [],
+      ...fields,
       id: body.id || "prod-" + Date.now(),
       isActive: body.isActive !== false,
       updatedAt: new Date().toISOString(),

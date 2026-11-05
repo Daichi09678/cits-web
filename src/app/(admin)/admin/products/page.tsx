@@ -1,29 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import {
-  Package,
-  Plus,
-  Search,
-  Filter,
-  Edit,
-  Trash2,
-  CheckCircle2,
-  XCircle,
-  ExternalLink,
-  Sparkles,
-  X,
-  MessageSquare,
-  Smartphone,
-  FileText,
-  Vote,
-  Globe,
-  Archive,
-  Layers,
-  Image as ImageIcon,
-  Upload,
-  Camera,
-} from "lucide-react";
+import { Package, Plus, Search, Edit, Trash2, CheckCircle2, X, Image as ImageIcon, Upload } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
 import { canPerformAction } from "@/lib/internalAccess";
 import AdminTopbar from "@/components/admin/AdminTopbar";
@@ -32,6 +10,10 @@ import { useCitsStore } from "@/stores/citsStore";
 import { ProductItem } from "@/types/schema";
 import Pagination from "@/components/admin/Pagination";
 import ChipField from "@/components/admin/ChipField";
+import ProductSpecificationFields from "@/components/pages/admin-products/ProductSpecificationFields";
+import ProductDetailsDialog from "@/components/ui/ProductDetailsDialog";
+import ProductCategoryEditor from "@/components/pages/admin-products/ProductCategoryEditor";
+import { emptyProductFilters, filterProducts } from "@/lib/catalogSearch";
 
 // Pilihan cepat fitur/kapabilitas — dicentang saja, tidak perlu ditulis manual.
 const FEATURE_PRESETS = [
@@ -68,6 +50,7 @@ const csvToList = (value: string): string[] =>
     .map((item) => item.trim())
     .filter(Boolean);
 const listToCsv = (list: string[]): string => list.join(", ");
+const defaultCategories = ["Enterprise", "Government", "Mobile", "Web", "Communication"];
 
 export default function AdminProductsPage() {
   const { session } = useAdminAuth();
@@ -77,19 +60,25 @@ export default function AdminProductsPage() {
   const { products, actions } = useCitsStore();
   const dialog = useAdminDialog();
 
-  const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("All");
+  const [productFilters, setProductFilters] = useState({ ...emptyProductFilters });
+  const [categoryEditorOpen, setCategoryEditorOpen] = useState(false);
+  const [categorySaving, setCategorySaving] = useState(false);
+  const categoryPending = useRef(false);
+  const [previewProduct, setPreviewProduct] = useState<ProductItem | null>(null);
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
 
   const [saving, setSaving] = useState(false);
+  const [readingImage, setReadingImage] = useState(false);
   const [mutationError, setMutationError] = useState("");
 
   // Form State
   const [formName, setFormName] = useState("");
   const [formCategory, setFormCategory] = useState<ProductItem["category"]>("Enterprise");
   const [formDescription, setFormDescription] = useState("");
+  const [formDetails, setFormDetails] = useState("");
+  const [formSpecifications, setFormSpecifications] = useState<NonNullable<ProductItem["specifications"]>>([]);
   const [formFeatures, setFormFeatures] = useState("");
   const [formTags, setFormTags] = useState("");
   const [formIcon, setFormIcon] = useState("Package");
@@ -103,21 +92,28 @@ export default function AdminProductsPage() {
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
 
-    if (file.size > 3 * 1024 * 1024) {
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type) || file.size > 3 * 1024 * 1024) {
       void dialog.alert({
         title: "Ukuran foto terlalu besar",
-        description: "Ukuran foto maksimal 3 MB. Silakan pilih file yang lebih kecil.",
+        description: "Gunakan PNG, JPG, atau WebP maksimal 3 MB.",
         variant: "warning",
       });
       return;
     }
 
+    setReadingImage(true);
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
         setFormImage(event.target.result as string);
       }
+      setReadingImage(false);
+    };
+    reader.onerror = () => {
+      setReadingImage(false);
+      setMutationError("Foto gagal dibaca. Silakan pilih ulang.");
     };
     reader.readAsDataURL(file);
   };
@@ -136,6 +132,8 @@ export default function AdminProductsPage() {
     setFormName("");
     setFormCategory("Enterprise");
     setFormDescription("");
+    setFormDetails("");
+    setFormSpecifications([]);
     setFormFeatures("Integrasi API, Laporan Real-Time, Multi-User");
     setFormTags("Enterprise, Cloud, Secure");
     setFormIcon("Package");
@@ -148,10 +146,13 @@ export default function AdminProductsPage() {
 
   // Open Edit Modal
   const openEditModal = (prod: ProductItem) => {
+    setMutationError("");
     setEditingProduct(prod);
     setFormName(prod.name);
     setFormCategory(prod.category);
     setFormDescription(prod.description);
+    setFormDetails(prod.details || "");
+    setFormSpecifications((prod.specifications || []).map((row) => ({ ...row })));
     setFormFeatures(prod.features.join(", "));
     setFormTags(prod.tags.join(", "));
     setFormIcon(prod.icon || "Package");
@@ -165,7 +166,7 @@ export default function AdminProductsPage() {
   // Handle Form Submit
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (saving) return;
+    if (saving || readingImage) return;
     setSaving(true);
     setMutationError("");
     try {
@@ -183,10 +184,12 @@ export default function AdminProductsPage() {
           name: formName,
           category: formCategory,
           description: formDescription,
+          details: formDetails,
+          specifications: formSpecifications,
           features: featuresArr,
           tags: tagsArr,
           icon: formIcon,
-          image: formImage.trim() || undefined,
+          image: formImage.trim(),
           isActive: formIsActive,
           showOnHome: formShowOnHome,
         });
@@ -195,10 +198,12 @@ export default function AdminProductsPage() {
           name: formName,
           category: formCategory,
           description: formDescription,
+          details: formDetails,
+          specifications: formSpecifications,
           features: featuresArr,
           tags: tagsArr,
           icon: formIcon,
-          image: formImage.trim() || undefined,
+          image: formImage.trim(),
           isActive: formIsActive,
           showOnHome: formShowOnHome,
         });
@@ -220,16 +225,58 @@ export default function AdminProductsPage() {
   };
 
   // Filtered Products
-  const filteredProducts = products.filter((p) => {
-    const matchSearch =
-      p.name.toLowerCase().includes(search.toLowerCase()) || p.description.toLowerCase().includes(search.toLowerCase());
-    const matchCat = categoryFilter === "All" || p.category === categoryFilter;
-    return matchSearch && matchCat;
-  });
+  const filteredProducts = filterProducts(products, productFilters);
+  const deleteCategory = async (category: string) => {
+    if (!canEdit || categoryPending.current || categorySaving) return;
+    categoryPending.current = true;
+    try {
+      const confirmed = await dialog.confirm({
+        title: "Hapus kategori filter?",
+        description: `Kategori "${category}" dihapus dari filter. Produk di dalamnya tetap disimpan dan dipindahkan ke General.`,
+        confirmLabel: "Hapus Kategori",
+        variant: "danger",
+      });
+      if (!confirmed) return;
+      setCategorySaving(true);
+      for (const product of products.filter((item) => item.category === category))
+        await actions.updateProduct(product.id, { category: "General" });
+      if (productFilters.category === category) setProductFilters({ ...productFilters, category: "" });
+      await dialog.alert({
+        title: "Kategori dihapus",
+        description: "Kategori filter berhasil dihapus. Seluruh produk tetap tersimpan.",
+        variant: "success",
+      });
+    } catch (cause) {
+      await dialog.alert({
+        title: "Kategori belum selesai dihapus",
+        description: cause instanceof Error ? cause.message : "Coba kembali untuk menyelesaikan pemindahan kategori.",
+        variant: "danger",
+      });
+    } finally {
+      categoryPending.current = false;
+      setCategorySaving(false);
+    }
+  };
 
-  const categories = ["All", "Enterprise", "Government", "Mobile", "Web", "Communication"];
+  const categories = [...new Set([...defaultCategories, ...products.map((product) => product.category)])];
   const pageSize = 8;
-  const paginatedProducts = filteredProducts.slice((page - 1) * pageSize, page * pageSize);
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(filteredProducts.length / pageSize)));
+  const paginatedProducts = filteredProducts.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const draftProduct: ProductItem = {
+    id: editingProduct?.id || "preview",
+    name: formName || "Produk Baru",
+    category: formCategory,
+    description: formDescription,
+    details: formDetails,
+    specifications: formSpecifications,
+    features: csvToList(formFeatures),
+    tags: csvToList(formTags),
+    icon: formIcon,
+    image: formImage,
+    isActive: formIsActive,
+    showOnHome: formShowOnHome,
+    updatedAt: editingProduct?.updatedAt || new Date().toISOString(),
+  };
 
   return (
     <div className="flex-1 flex flex-col min-w-0">
@@ -239,53 +286,92 @@ export default function AdminProductsPage() {
       />
       <div className="p-6 md:p-8 max-w-7xl w-full mx-auto space-y-6">
         {/* Top Controls & Action Bar */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#151528] border border-slate-200/90 dark:border-white/10 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-          {/* Search & Filter */}
-          <div className="flex flex-wrap items-center gap-2.5 flex-1">
-            <div className="relative min-w-[240px] flex-1 max-w-sm">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                placeholder="Cari nama atau deskripsi produk..."
-                className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-            </div>
-
-            {/* Category Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => {
-                    setCategoryFilter(cat);
+        <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#151528] border border-slate-200/90 dark:border-white/10 shadow-xs space-y-4">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            {/* Search & Filter */}
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2.5">
+              <div className="relative w-full sm:min-w-[240px] flex-1 max-w-sm">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  aria-label="Cari produk"
+                  value={productFilters.query}
+                  onChange={(event) => {
+                    setProductFilters({ ...productFilters, query: event.target.value });
                     setPage(1);
                   }}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
-                    categoryFilter === cat
-                      ? "bg-orange-600 text-white shadow-xs"
-                      : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+                  placeholder="Cari nama atau deskripsi produk..."
+                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
+              </div>
+              <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-full">
+                {[null, ...categories].map((category) => (
+                  <div
+                    key={category === null ? "all" : `category:${category}`}
+                    className="inline-flex shrink-0 items-center gap-0.5"
+                  >
+                    <button
+                      aria-pressed={productFilters.category === (category ?? "")}
+                      onClick={() => {
+                        setProductFilters({ ...productFilters, category: category ?? "" });
+                        setPage(1);
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${productFilters.category === (category ?? "") ? "bg-orange-600 text-white shadow-xs" : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200"}`}
+                    >
+                      {category === null ? "All" : category}
+                    </button>
+                    {canEdit && category !== null && ![...defaultCategories, "General"].includes(category) && (
+                      <button
+                        type="button"
+                        disabled={categorySaving}
+                        aria-label={`Hapus kategori ${category}`}
+                        title={`Hapus kategori ${category}`}
+                        onClick={() => deleteCategory(category)}
+                        className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-40 dark:hover:bg-red-500/10"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {canEdit && (
+                  <button
+                    type="button"
+                    disabled={categorySaving}
+                    aria-expanded={categoryEditorOpen}
+                    aria-controls="product-category-editor"
+                    onClick={() => setCategoryEditorOpen((open) => !open)}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:border-orange-300 hover:text-orange-600 dark:border-white/10 dark:text-slate-300"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Tambah kategori
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
 
-          {/* Add Product Button */}
-          <button
-            disabled={!canCreate}
-            onClick={openAddModal}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25 transition-all shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Tambah Produk Baru</span>
-          </button>
+            {/* Add Product Button */}
+            <button
+              disabled={!canCreate || categorySaving}
+              onClick={openAddModal}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25 transition-all shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tambah Produk Baru</span>
+            </button>
+          </div>
+          {categoryEditorOpen && canEdit && (
+            <ProductCategoryEditor
+              products={products}
+              onSave={(id, category) => actions.updateProduct(id, { category })}
+              onBusyChange={setCategorySaving}
+              onClose={() => setCategoryEditorOpen(false)}
+              onSaved={(category) => {
+                setProductFilters({ ...productFilters, category });
+                setPage(1);
+              }}
+            />
+          )}
         </div>
 
         {/* Table Data Container */}
@@ -380,7 +466,7 @@ export default function AdminProductsPage() {
                       <td className="py-4 px-5 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <button
-                            disabled={!canEdit}
+                            disabled={!canEdit || categorySaving}
                             onClick={() => openEditModal(prod)}
                             title="Edit Produk"
                             className="p-2 rounded-xl text-slate-600 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30 transition-colors"
@@ -388,7 +474,7 @@ export default function AdminProductsPage() {
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
-                            disabled={!canDelete}
+                            disabled={!canDelete || categorySaving}
                             onClick={async () => {
                               const confirmed = await dialog.confirm({
                                 title: "Hapus produk?",
@@ -429,7 +515,7 @@ export default function AdminProductsPage() {
               </tbody>
             </table>
           </div>
-          <Pagination page={page} pageSize={pageSize} total={filteredProducts.length} onPageChange={setPage} />
+          <Pagination page={currentPage} pageSize={pageSize} total={filteredProducts.length} onPageChange={setPage} />
         </div>
 
         {/* Add / Edit Product Modal */}
@@ -437,35 +523,35 @@ export default function AdminProductsPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
             <div className="w-full max-w-xl max-h-[90vh] flex flex-col bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
               {/* Modal Header */}
-              <div className="px-6 py-5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between shrink-0">
-                <div>
+              <div className="px-6 py-5 border-b border-slate-100 dark:border-white/10 flex items-start justify-between gap-4 shrink-0">
+                <div className="min-w-0 space-y-1.5">
                   <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
                     {editingProduct ? "Edit Informasi Produk" : "Tambah Produk Baru"}
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs leading-relaxed text-slate-500">
                     Data yang disimpan akan langsung tampil di halaman Front Office CITS
                   </p>
                 </div>
                 <button
                   onClick={() => {
-                    if (!saving) setModalOpen(false);
+                    if (!saving && !readingImage) setModalOpen(false);
                   }}
-                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
+                  className="shrink-0 p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Modal Form */}
-              <form onSubmit={handleSave} className="p-6 space-y-4 overflow-y-auto">
+              <form onSubmit={handleSave} className="min-h-0 p-6 space-y-4 overflow-y-auto">
                 {mutationError && (
                   <p role="alert" className="text-xs text-red-600">
                     {mutationError}
                   </p>
                 )}
-                <fieldset disabled={saving} className="contents">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
+                <fieldset disabled={saving || readingImage} className="min-w-0 space-y-6">
+                  <div className="grid sm:grid-cols-2 gap-x-5 gap-y-4">
+                    <div className="min-w-0">
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                         Nama Produk
                       </label>
@@ -479,43 +565,26 @@ export default function AdminProductsPage() {
                       />
                     </div>
 
-                    <div>
+                    <div className="min-w-0">
                       <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                         Kategori
                       </label>
-                      <select
+                      <input
                         value={formCategory}
-                        onChange={(e) => setFormCategory(e.target.value as any)}
+                        required
+                        maxLength={100}
+                        list="product-category-options"
+                        onChange={(e) => setFormCategory(e.target.value)}
                         className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
-                      >
-                        <option
-                          value="Enterprise"
-                          className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                        >
-                          Enterprise
-                        </option>
-                        <option
-                          value="Government"
-                          className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                        >
-                          Government
-                        </option>
-                        <option value="Mobile" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                          Mobile
-                        </option>
-                        <option value="Web" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                          Web
-                        </option>
-                        <option
-                          value="Communication"
-                          className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
-                        >
-                          Communication
-                        </option>
-                        <option value="General" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
-                          General
-                        </option>
-                      </select>
+                      />
+                      <datalist id="product-category-options">
+                        {[...new Set([...categories, "General"])].map((category) => (
+                          <option key={category} value={category} />
+                        ))}
+                      </datalist>
+                      <p className="mt-1.5 text-[11px] leading-relaxed text-slate-500">
+                        Pilih kategori atau tulis kategori baru. Kategori tersimpan akan tersedia sebagai filter.
+                      </p>
                     </div>
                   </div>
 
@@ -534,10 +603,16 @@ export default function AdminProductsPage() {
                   </div>
 
                   {/* Foto / Gambar Produk */}
+                  <ProductSpecificationFields
+                    details={formDetails}
+                    specifications={formSpecifications}
+                    onDetails={setFormDetails}
+                    onSpecifications={setFormSpecifications}
+                  />
                   <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <ImageIcon className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <ImageIcon className="w-4 h-4 shrink-0 text-orange-600 dark:text-orange-400" />
                         <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                           Foto / Gambar Produk
                         </label>
@@ -612,7 +687,7 @@ export default function AdminProductsPage() {
                       </span>
                       <input
                         type="text"
-                        value={formImage}
+                        value={formImage.startsWith("data:") ? "" : formImage}
                         onChange={(e) => setFormImage(e.target.value)}
                         placeholder="cth: /services/software-house.webp atau https://..."
                         className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-[#121224] border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -644,8 +719,8 @@ export default function AdminProductsPage() {
                   </div>
 
                   {/* Status Aktif / Non-Aktif Checkbox */}
-                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 flex items-center justify-between">
-                    <div>
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 flex items-start justify-between gap-4">
+                    <div className="min-w-0 space-y-1.5 leading-relaxed">
                       <span className="block text-xs font-bold text-slate-900 dark:text-white">
                         Tampilkan di Website Front Office
                       </span>
@@ -657,12 +732,12 @@ export default function AdminProductsPage() {
                       type="checkbox"
                       checked={formIsActive}
                       onChange={(e) => setFormIsActive(e.target.checked)}
-                      className="w-5 h-5 accent-orange-600 rounded cursor-pointer"
+                      className="mt-0.5 w-5 h-5 shrink-0 accent-orange-600 rounded cursor-pointer"
                     />
                   </div>
 
                   <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
-                    <span>
+                    <span className="min-w-0 space-y-1.5 leading-relaxed">
                       <span className="block text-xs font-bold text-slate-900 dark:text-white">
                         Tampilkan di Beranda Utama
                       </span>
@@ -674,16 +749,23 @@ export default function AdminProductsPage() {
                       type="checkbox"
                       checked={formShowOnHome}
                       onChange={(e) => setFormShowOnHome(e.target.checked)}
-                      className="mt-0.5 h-5 w-5 cursor-pointer accent-orange-600"
+                      className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-orange-600"
                     />
                   </label>
 
                   {/* Modal Buttons */}
-                  <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-white/10">
+                  <div className="pt-5 flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 dark:border-white/10">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewProduct(draftProduct)}
+                      className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 dark:border-white/15 dark:text-slate-200"
+                    >
+                      Pratinjau Detail
+                    </button>
                     <button
                       type="button"
                       onClick={() => {
-                        if (!saving) setModalOpen(false);
+                        if (!saving && !readingImage) setModalOpen(false);
                       }}
                       className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5"
                     >
@@ -693,13 +775,22 @@ export default function AdminProductsPage() {
                       type="submit"
                       className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25"
                     >
-                      {editingProduct ? "Simpan Perubahan" : "Tambahkan ke Katalog"}
+                      {saving
+                        ? "Menyimpan..."
+                        : readingImage
+                          ? "Membaca foto..."
+                          : editingProduct
+                            ? "Simpan Perubahan"
+                            : "Tambahkan ke Katalog"}
                     </button>
                   </div>
                 </fieldset>
               </form>
             </div>
           </div>
+        )}
+        {previewProduct && (
+          <ProductDetailsDialog product={previewProduct} preview onClose={() => setPreviewProduct(null)} />
         )}
       </div>
     </div>

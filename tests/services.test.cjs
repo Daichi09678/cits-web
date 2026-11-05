@@ -86,10 +86,12 @@ test("public service details retain the card layout with saved content or honest
     "@/stores/citsStore": { useCitsStore: () => ({ services }) },
     "@/lib/serviceIcons": { getPillarIcon: () => () => null },
     "@/lib/serviceCatalog": catalog,
+    "@/components/pages/services/ServiceCaseStudyLinks": { default: () => null },
   }).default;
   const detailsHtml = () => renderToStaticMarkup(React.createElement(Page))
     .split('data-testid="service-details"')[1].split('id="alur-kerja"')[0];
   const populated = detailsHtml();
+  assert.doesNotMatch(renderToStaticMarkup(React.createElement(Page)), /public-service-query|type="search"/);
   for (const text of [service.title, service.desc, service.details, service.techStack[0], service.caseStudies[0], service.deliverables[0].description, service.sla])
     assert.ok(populated.includes(text), text);
   assert.doesNotMatch(populated, /Resmi &amp; Sah|Dukungan tim tenaga ahli|SPIPISE|Pasca-BAST/);

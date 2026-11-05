@@ -12,6 +12,7 @@ export interface ServicePresentation {
   tags: string[];
   techStack: string[];
   caseStudies: string[];
+  caseStudyIds?: string[];
   deliverables: {
     label: string;
     description: string;

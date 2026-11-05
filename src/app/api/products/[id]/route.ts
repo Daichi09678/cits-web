@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/apiAuth";
 import { NextResponse } from "next/server";
 import { DbRepo } from "@/lib/db";
 import { badRequest, readJsonBody } from "@/lib/http";
+import { parseProductPatch } from "@/lib/productValidation";
 
 export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -27,7 +28,13 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
     if (!body || typeof body !== "object" || Array.isArray(body)) {
       return badRequest("Data produk tidak valid.");
     }
-    const updated = await DbRepo.updateProduct(id, body);
+    let fields;
+    try {
+      fields = parseProductPatch(body);
+    } catch (error) {
+      return badRequest(error instanceof Error ? error.message : "Data produk tidak valid.");
+    }
+    const updated = await DbRepo.updateProduct(id, fields);
     if (!updated) {
       return NextResponse.json({ success: false, message: "Produk tidak ditemukan." }, { status: 404 });
     }

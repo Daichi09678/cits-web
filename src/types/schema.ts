@@ -1,8 +1,10 @@
 export interface ProductItem {
   id: string;
   name: string;
-  category: "Enterprise" | "Government" | "Mobile" | "Web" | "Communication" | "General";
+  category: string;
   description: string;
+  details?: string;
+  specifications?: { name: string; value: string }[];
   features: string[];
   tags: string[];
   icon: string; // nama icon lucide: MessageSquare, Smartphone, FileText, Vote, Globe, Archive, Server, Database, Shield
@@ -128,6 +130,7 @@ export interface ServicePillar {
   details?: string;
   techStack?: string[];
   caseStudies?: string[];
+  caseStudyIds?: string[];
   deliverables?: { label: string; description: string }[];
   isActive?: boolean;
   showOnHome?: boolean;

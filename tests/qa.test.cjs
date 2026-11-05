@@ -68,6 +68,7 @@ test("private reads and content mutations refuse anonymous callers before access
         "@/lib/http": http,
         "@/lib/consultation": consultation,
         "@/lib/serviceCatalog": serviceCatalog,
+        "@/lib/productValidation": load("lib/productValidation.ts"),
         "@/lib/internalAccess": load("lib/internalAccess.ts"),
         "@/lib/db": {
           DbRepo: new Proxy(
@@ -195,6 +196,7 @@ test("invalid deal changes cannot partially update the read status", async () =>
 
 test("public product listings do not expose inactive products, while authenticated admins can request them", async () => {
   const route = load("app/api/products/route.ts", {
+    "@/lib/productValidation": load("lib/productValidation.ts"),
     "next/server": { NextResponse },
     "@/lib/apiAuth": auth,
     "@/lib/http": http,

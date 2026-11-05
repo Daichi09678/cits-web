@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { Handshake, Plus, CheckCircle2, Trash2, Edit, X, Search, Building2, Upload, Check } from "lucide-react";
+import { Plus, CheckCircle2, Trash2, Edit, X, Search, Building2, Upload } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
 import { canPerformAction } from "@/lib/internalAccess";
 import AdminTopbar from "@/components/admin/AdminTopbar";
@@ -27,6 +27,7 @@ export default function AdminClientsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [saving, setSaving] = useState(false);
+  const [readingLogo, setReadingLogo] = useState(false);
   const [mutationError, setMutationError] = useState("");
 
   // Form State
@@ -56,11 +57,23 @@ export default function AdminClientsPage() {
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type) || file.size > 3 * 1024 * 1024) {
+      setMutationError("Gunakan logo PNG, JPG, atau WebP maksimal 3 MB.");
+      return;
+    }
+    setReadingLogo(true);
+    setMutationError("");
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
         setFormLogo(event.target.result as string);
       }
+      setReadingLogo(false);
+    };
+    reader.onerror = () => {
+      setReadingLogo(false);
+      setMutationError("Logo gagal dibaca. Silakan pilih kembali.");
     };
     reader.readAsDataURL(file);
   };
@@ -89,7 +102,7 @@ export default function AdminClientsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (saving) return;
+    if (saving || readingLogo) return;
     setSaving(true);
     setMutationError("");
     try {
@@ -289,33 +302,33 @@ export default function AdminClientsPage() {
         {/* Modal Add / Edit Client */}
         {modalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-            <div className="w-full max-w-md bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between">
-                <div>
+            <div className="w-full min-w-0 max-w-lg max-h-[90dvh] flex flex-col bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
+              <div className="shrink-0 px-6 py-5 border-b border-slate-100 dark:border-white/10 flex items-start justify-between gap-4">
+                <div className="min-w-0 space-y-1.5">
                   <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
                     {editingClient ? "Edit Mitra Institusi" : "Tambah Mitra Baru"}
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs leading-relaxed text-slate-500">
                     Logo akan langsung tampil di slider mitra beranda dan portofolio
                   </p>
                 </div>
                 <button
                   onClick={() => {
-                    if (!saving) setModalOpen(false);
+                    if (!saving && !readingLogo) setModalOpen(false);
                   }}
-                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
+                  className="shrink-0 p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <form onSubmit={handleSave} className="p-6 space-y-4 text-xs">
+              <form onSubmit={handleSave} className="min-h-0 overflow-y-auto p-5 sm:p-6 space-y-4 text-xs">
                 {mutationError && (
                   <p role="alert" className="text-xs text-red-600">
                     {mutationError}
                   </p>
                 )}
-                <fieldset disabled={saving} className="contents">
+                <fieldset disabled={saving || readingLogo} className="min-w-0 space-y-6">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                       Nama Kementerian / Institusi
@@ -336,7 +349,7 @@ export default function AdminClientsPage() {
                     </label>
                     <select
                       value={formCategory}
-                      onChange={(e) => setFormCategory(e.target.value as any)}
+                      onChange={(e) => setFormCategory(e.target.value as ClientPartner["category"])}
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
                     >
                       <option value="Kementerian" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
@@ -360,7 +373,7 @@ export default function AdminClientsPage() {
                       Foto / Logo Kementerian & Mitra
                     </label>
 
-                    <div className="p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center gap-4">
+                    <div className="min-w-0 p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex flex-wrap items-start gap-4">
                       <div className="w-16 h-16 rounded-xl bg-white dark:bg-[#1A1A2E] border border-slate-200/80 dark:border-white/10 p-2 flex items-center justify-center shrink-0 shadow-xs">
                         {formLogo ? (
                           <Image
@@ -375,26 +388,26 @@ export default function AdminClientsPage() {
                           <Building2 className="w-8 h-8 text-slate-400" />
                         )}
                       </div>
-                      <div className="flex-1 space-y-2">
+                      <div className="min-w-0 flex-1 basis-44 space-y-3">
                         <input
                           type="file"
                           ref={fileInputRef}
-                          accept="image/*"
+                          accept="image/png,image/jpeg,image/webp"
                           onChange={handleLogoUpload}
                           className="hidden"
                         />
                         <button
                           type="button"
                           onClick={() => fileInputRef.current?.click()}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 font-bold text-[11px] cursor-pointer transition-colors"
+                          className="inline-flex max-w-full items-center gap-2 px-3 py-2 rounded-lg bg-orange-50 dark:bg-orange-950/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 font-bold text-[11px] leading-relaxed cursor-pointer transition-colors"
                         >
                           <Upload className="w-3.5 h-3.5" />
                           <span>Unggah Foto dari Komputer</span>
                         </button>
                         <input
                           type="text"
-                          required
-                          value={formLogo}
+                          value={formLogo.startsWith("data:") ? "" : formLogo}
+                          required={!formLogo.startsWith("data:")}
                           onChange={(e) => setFormLogo(e.target.value)}
                           placeholder="/clients/kemenhub.webp atau URL gambar"
                           className="w-full px-3 py-1.5 rounded-lg bg-white dark:bg-[#1A1A2E] border border-slate-200 dark:border-white/10 text-[11px] text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-orange-500 font-mono"
@@ -448,13 +461,13 @@ export default function AdminClientsPage() {
                   </div>
 
                   {/* Active Checkbox */}
-                  <div className="flex items-center gap-2 pt-1">
+                  <div className="flex items-start gap-3 pt-1 leading-relaxed">
                     <input
                       type="checkbox"
                       id="clientActiveCheckModal"
                       checked={formIsActive}
                       onChange={(e) => setFormIsActive(e.target.checked)}
-                      className="w-4 h-4 accent-orange-600 rounded cursor-pointer"
+                      className="mt-0.5 w-4 h-4 shrink-0 accent-orange-600 rounded cursor-pointer"
                     />
                     <label
                       htmlFor="clientActiveCheckModal"
@@ -465,7 +478,7 @@ export default function AdminClientsPage() {
                   </div>
 
                   <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
-                    <span>
+                    <span className="min-w-0 space-y-1.5 leading-relaxed">
                       <span className="block text-xs font-bold text-slate-900 dark:text-white">
                         Tampilkan di Beranda Utama
                       </span>
@@ -485,7 +498,7 @@ export default function AdminClientsPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        if (!saving) setModalOpen(false);
+                        if (!saving && !readingLogo) setModalOpen(false);
                       }}
                       className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer"
                     >
@@ -495,7 +508,13 @@ export default function AdminClientsPage() {
                       type="submit"
                       className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 cursor-pointer"
                     >
-                      {editingClient ? "Simpan Perubahan" : "Tambahkan Mitra"}
+                      {saving
+                        ? "Menyimpan..."
+                        : readingLogo
+                          ? "Membaca logo..."
+                          : editingClient
+                            ? "Simpan Perubahan"
+                            : "Tambahkan Mitra"}
                     </button>
                   </div>
                 </fieldset>

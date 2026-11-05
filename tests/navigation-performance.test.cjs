@@ -6,6 +6,14 @@ function app() {
   const storage = new Map(),
     calls = {},
     events = [];
+  const timers = new Map();
+  const listeners = new Map();
+  const snapshots = {};
+  const document = {
+    hidden: false,
+    addEventListener: (name, fn) => listeners.set(name, fn),
+    removeEventListener: (name) => listeners.delete(name),
+  };
   const keys = {
     products: "products",
     contactInfo: "contact",
@@ -33,6 +41,7 @@ function app() {
       async () => {
         calls[method] = (calls[method] || 0) + 1;
         await wait;
+        if (method in snapshots) return snapshots[method];
         return ["getContactInfo", "getAboutData", "getLandingData"].includes(method)
           ? { title: method }
           : [{ id: method }];
@@ -51,7 +60,18 @@ function app() {
       "@/lib/audio": {},
     },
     {
-      window: { dispatchEvent: (event) => events.push(event.type) },
+      window: {
+        dispatchEvent: (event) => events.push(event.type),
+        addEventListener: document.addEventListener,
+        removeEventListener: document.removeEventListener,
+      },
+      document,
+      setInterval: (fn) => {
+        const id = Symbol();
+        timers.set(id, fn);
+        return id;
+      },
+      clearInterval: (id) => timers.delete(id),
       localStorage: { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) },
       Event: class {
         constructor(type) {
@@ -60,7 +80,7 @@ function app() {
       },
     }
   );
-  return { ...store, storage, calls, events, finish };
+  return { ...store, storage, calls, events, finish, timers, listeners, document, snapshots };
 }
 
 test("header, sidebar and page share seven requests and one content notification during navigation", async () => {
@@ -106,6 +126,32 @@ test("repeated local reads reuse parsed content until the stored JSON changes", 
   state.storage.set("products", JSON.stringify([{ id: "b" }]));
   assert.equal(state.CitsStore.getProducts()[0].id, "b");
   assert.notEqual(first, state.CitsStore.getProducts());
+});
+
+test("open public pages share one refresh and receive external client edits and deletions", async () => {
+  const state = app();
+  state.finish();
+  await state.syncContentFromBackend();
+  const stopHeader = state.startContentRefresh();
+  const stopPage = state.startContentRefresh();
+  assert.equal(state.timers.size, 1);
+  state.snapshots.getClients = [{ id: "client", name: "Renamed partner", logo: "/new-logo.webp" }];
+  state.listeners.get("focus")();
+  await state.syncContentFromBackend();
+  assert.equal(state.CitsStore.getClients()[0].logo, "/new-logo.webp");
+  state.snapshots.getClients = [];
+  [...state.timers.values()][0]();
+  await state.syncContentFromBackend();
+  assert.equal(state.CitsStore.getClients().length, 0);
+  const requests = state.calls.getClients;
+  state.document.hidden = true;
+  [...state.timers.values()][0]();
+  assert.equal(state.calls.getClients, requests);
+  stopHeader();
+  assert.equal(state.timers.size, 1);
+  stopPage();
+  assert.equal(state.timers.size, 0);
+  assert.equal(state.listeners.size, 0);
 });
 
 test("navigation feedback follows the real Link pending state without a fullscreen overlay or timers", () => {
