@@ -124,3 +124,54 @@ npm run verify          # typecheck + lint + test + format:check
 - Branch: `feat/<ringkas>`, `fix/<ringkas>`, `refactor/<ringkas>`, `chore/<ringkas>`.
 - Commit: `type(scope): ringkasan` — contoh `fix(inbox): hapus pesan lebih dari 30 hari`.
 - Dilarang push ke `main` tanpa review. Jangan commit file `.env*` atau build artifact.
+
+### Branch frontend per area
+
+Branch berikut dibuat dari snapshot `bc8cde2` pada branch `feat/service-details-consultation`.
+Semua branch berisi aplikasi lengkap; tabel ini menentukan fokus pekerjaan, bukan pembatas akses file.
+
+| Branch              | Area utama                                                            |
+| ------------------- | --------------------------------------------------------------------- |
+| `feat/fe-home`      | Beranda: `src/app/(public)/page.tsx`                                  |
+| `feat/fe-about`     | Tentang kami: `src/app/(public)/about/`                               |
+| `feat/fe-services`  | Layanan: `src/app/(public)/services/`                                 |
+| `feat/fe-products`  | Produk: `src/app/(public)/products/`                                  |
+| `feat/fe-portfolio` | Portofolio dan detail: `src/app/(public)/portfolio/`                  |
+| `feat/fe-team`      | Direktori tim: `src/app/(public)/team/`                               |
+| `feat/fe-contact`   | Kontak: `src/app/(public)/contact/`                                   |
+| `feat/fe-admin`     | Dashboard: `src/app/(admin)/` dan `src/components/admin/`             |
+| `feat/fe-shared`    | Layout, navbar, footer, tema, CSS global, dan komponen lintas halaman |
+
+Contoh mengerjakan beranda dari folder `frontend`:
+
+```bash
+git status
+git switch feat/fe-home
+# Edit beranda dan komponen khusus beranda.
+npm run verify
+git add "src/app/(public)/page.tsx"
+git commit -m "fix(home): rapikan tampilan beranda"
+```
+
+Simpan perubahan dengan commit pada branch yang sesuai sebelum berpindah branch.
+Perubahan yang belum di-commit dapat ikut terbawa ketika menjalankan `git switch`.
+Tambahkan hanya file yang berkaitan dengan perubahan, termasuk komponen dan tes jika diubah.
+
+Branch memisahkan riwayat pekerjaan. Setelah perubahan digabung, komponen bersama tetap
+memengaruhi semua halaman yang menggunakannya. Untuk membatasi dampak perubahan:
+
+- Tempatkan komponen khusus halaman di `src/components/pages/<area>/`, misalnya
+  `src/components/pages/home/`. Komponen lama boleh dipindahkan secara bertahap saat dikerjakan;
+  periksa seluruh pemakainya sebelum memindahkan atau mengubah perilakunya.
+- Gunakan CSS Module atau class lokal pada komponen untuk style khusus halaman.
+  Hindari mengubah selector global demi memperbaiki satu halaman.
+- Untuk perubahan khusus satu pemakai komponen bersama, gunakan prop/varian dengan
+  perilaku default yang tetap sama untuk pemakai lain, atau buat komponen khusus halaman.
+- Kerjakan perubahan yang memang berlaku lintas halaman pada `feat/fe-shared` dan
+  periksa halaman yang memakai komponen tersebut, termasuk tampilan mobile dan tema.
+- Perubahan data melalui admin atau sumber data bersama tetap dapat muncul di beberapa halaman;
+  branch Git tidak memisahkan database maupun konten.
+
+Setiap perubahan tetap melalui review sebelum digabung ke `main`. Setelah perubahan bersama
+digabung, perbarui branch halaman dengan `git merge main` agar tidak tertinggal.
+Untuk memublikasikan branch baru, gunakan `git push -u origin <nama-branch>`.
