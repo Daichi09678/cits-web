@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import {
   ArrowRight,
   Check,
@@ -29,7 +29,7 @@ import type { ConsultationPurpose, ProductItem, ServicePillar } from "@/types/sc
 type FeaturedCatalogProps = {
   services: ServicePillar[];
   products: ProductItem[];
-  title?: string;
+  title?: ReactNode;
   subtitle?: string;
   anchorId?: string;
   bottomCtaText?: string;

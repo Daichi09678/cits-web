@@ -39,7 +39,7 @@ export default function TeamSection({
             id="team-heading"
             className="text-[28px] font-bold leading-tight tracking-tight text-slate-900 md:text-[32px] dark:text-white"
           >
-            Tim Profesional di Balik <span className="text-orange-600 dark:text-orange-400">Solusi CITS</span>
+            Tim Profesional di Balik Solusi <span className="text-orange-600 dark:text-orange-400">CITS</span>
           </Heading>
           <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-300">
             Didukung oleh para ahli di bidang teknologi informasi, manajemen proyek, dan pengembangan bisnis untuk

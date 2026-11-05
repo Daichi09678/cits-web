@@ -16,6 +16,18 @@ import { initialLandingPageData, defaultSectionVisibility } from "@/data/initial
 import FeaturedCatalog from "@/components/ui/FeaturedCatalog";
 import ManagedTeamSection from "@/components/ui/ManagedTeamSection";
 
+function HighlightCits({ text }: { text: string }) {
+  return text.split(/\b(CITS)\b/g).map((part, index) =>
+    part === "CITS" ? (
+      <span key={index} className="text-orange-600 dark:text-orange-400">
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
+}
+
 export default function Home() {
   const {
     landingData,
@@ -85,7 +97,7 @@ export default function Home() {
 
                 <ScrollReveal delay={0.1}>
                   <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-dark dark:text-white tracking-tight leading-[1.15]">
-                    {hero.headlinePrefix ?? "Ciptakan Solusi"}
+                    <HighlightCits text={hero.headlinePrefix ?? "Ciptakan Solusi"} />
                     <br />
                     {hero.typewriterWords.length > 0 && <TypewriterText words={hero.typewriterWords} />}
                   </h1>
@@ -173,7 +185,7 @@ export default function Home() {
           products={[]}
           bottomCtaText={servicesIntro.bottomCtaText}
           bottomCtaLink={servicesIntro.bottomCtaLink}
-          title={servicesIntro.title}
+          title={<HighlightCits text={servicesIntro.title ?? "Temukan solusi untuk kebutuhan Anda"} />}
           subtitle={servicesIntro.subtitle}
         />
       )}
@@ -184,7 +196,7 @@ export default function Home() {
           anchorId="temukan-produk"
           services={[]}
           products={featuredProducts}
-          title={productsIntro.title ?? "Produk Unggulan CITS"}
+          title={<HighlightCits text={productsIntro.title ?? "Produk Unggulan CITS"} />}
           subtitle={
             productsIntro.subtitle ??
             "Platform kesistemanan yang telah teruji melayani jutaan transaksi data di berbagai kementerian dan institusi nasional."
@@ -202,7 +214,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <ScrollReveal>
               <p className="text-center text-xs md:text-sm text-gray-700 dark:text-white/90 uppercase tracking-widest mb-8 font-semibold">
-                {clientsIntro?.title ?? "Dipercaya oleh Kementerian, BUMN, dan Lembaga Nasional"}
+                <HighlightCits text={clientsIntro?.title ?? "Dipercaya oleh Kementerian, BUMN, dan Lembaga Nasional"} />
               </p>
             </ScrollReveal>
             <Marquee items={marqueeList} speed={45} />
@@ -220,7 +232,7 @@ export default function Home() {
             <ScrollReveal>
 
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-dark dark:text-white tracking-tight leading-tight">
-                {cta.title ?? "Siap Mengakselerasi Sistem Informasi Perusahaan Anda?"}
+                <HighlightCits text={cta.title ?? "Siap Mengakselerasi Sistem Informasi Perusahaan Anda?"} />
               </h2>
               <p className="mt-5 text-gray-700 dark:text-white/85 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
                 {cta.subtitle}
