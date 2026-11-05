@@ -13,11 +13,12 @@ const Card = load("components/ui/TeamMemberCard.tsx", {
 const Section = load("components/ui/TeamSection.tsx", {
   "react/jsx-runtime": require("react/jsx-runtime"),
   "next/link": { default: (props) => React.createElement("a", props) },
-  "lucide-react": { ArrowRight: () => null },
+  "lucide-react": { ArrowRight: () => null, Users: () => null },
   "./TeamMemberCard": { default: Card },
+  "@/lib/teamDirectory": load("lib/teamDirectory.ts", { "@/lib/team": load("lib/team.ts") }),
 }).default;
 
-test("team preview uses only eligible members, sorts without mutating data, and limits the result to four", () => {
+test("homepage shows eligible members in saved order without mutating data", () => {
   const members = [6, 5, 4, 3, 2, 1].map((order) => ({
     id: `test-${order}`,
     name: `Anggota Uji ${order}`,
@@ -31,9 +32,10 @@ test("team preview uses only eligible members, sorts without mutating data, and 
   const before = structuredClone(members);
   const html = renderToStaticMarkup(React.createElement(Section, { members }));
   assert.deepEqual(members, before);
-  assert.equal((html.match(/<article/g) || []).length, 4);
+  assert.equal((html.match(/<article/g) || []).length, 5);
   for (const order of [3, 4, 5, 6]) assert.ok(html.includes(`Anggota Uji ${order}`));
-  for (const name of ["Anggota Uji 1", "Anggota Uji 2", "Anggota Uji Tanpa Urutan"]) assert.ok(!html.includes(name));
+  for (const name of ["Anggota Uji 1", "Anggota Uji 2"]) assert.ok(!html.includes(name));
+  assert.ok(html.includes("Anggota Uji Tanpa Urutan"));
   assert.ok(html.indexOf("Anggota Uji 3") < html.indexOf("Anggota Uji 4"));
   const optionalFlags = renderToStaticMarkup(React.createElement(Section, { members: [members.at(-1)] }));
   assert.ok(optionalFlags.includes("Anggota Uji Tanpa Urutan"));
@@ -63,20 +65,37 @@ test("team section never invents identities, and missing photos use a plain plac
   assert.match(withPhoto, /object-cover object-top/);
 });
 
-test("full team listing includes every published active member beyond the four-person homepage preview", () => {
-  const members = Array.from({ length: 6 }, (_, index) => ({
+test("full team listing includes every published active member", () => {
+  const members = Array.from({ length: 12 }, (_, index) => ({
     id: `member-${index}`,
     name: `Anggota Uji ${index}`,
     position: "Teknisi",
     photoUrl: null,
-    displayOrder: 6 - index,
+    displayOrder: 12 - index,
     isActive: index !== 0,
     showOnHomepage: true,
   }));
   const html = renderToStaticMarkup(React.createElement(Section, { members, showAll: true }));
-  assert.equal((html.match(/<article/g) || []).length, 5);
+  assert.equal((html.match(/<article/g) || []).length, 11);
   assert.doesNotMatch(html, /Anggota Uji 0/);
-  assert.ok(html.indexOf("Anggota Uji 5") < html.indexOf("Anggota Uji 1"));
+  assert.ok(html.indexOf(">Anggota Uji 11<") < html.indexOf(">Anggota Uji 1<"));
   assert.match(html, /<h1/);
   assert.match(html, /href="\/#team"/);
+});
+
+test("homepage displays only the first eight eligible members in one responsive grid", () => {
+  const members = load("data/teamMembers.ts").demoTeamMembers;
+  const before = structuredClone(members);
+  const expected = [...members].sort((a, b) => a.displayOrder - b.displayOrder);
+  const html = renderToStaticMarkup(React.createElement(Section, { members }));
+  assert.deepEqual(structuredClone(members), before);
+  assert.equal((html.match(/<article/g) || []).length, 8);
+  assert.match(html, /grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4/);
+  assert.doesNotMatch(html, /aria-labelledby="homepage-team-group-/);
+  for (const [index, member] of expected.entries()) {
+    assert.equal(html.includes(member.name), index < 8);
+    if (index > 0 && index < 8) assert.ok(html.indexOf(expected[index - 1].name) < html.indexOf(member.name));
+  }
+  assert.equal((html.match(/<h3/g) || []).length, 8);
+  assert.match(html, /href="\/team"/);
 });
