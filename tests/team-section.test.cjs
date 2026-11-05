@@ -13,7 +13,7 @@ const Card = load("components/ui/TeamMemberCard.tsx", {
 const Section = load("components/ui/TeamSection.tsx", {
   "react/jsx-runtime": require("react/jsx-runtime"),
   "next/link": { default: (props) => React.createElement("a", props) },
-  "lucide-react": { ArrowRight: () => null, Users: () => null },
+  "lucide-react": { ArrowRight: () => null },
   "./TeamMemberCard": { default: Card },
   "@/lib/teamDirectory": load("lib/teamDirectory.ts", { "@/lib/team": load("lib/team.ts") }),
 }).default;

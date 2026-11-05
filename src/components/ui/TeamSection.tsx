@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Users } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { groupTeamMembers } from "@/lib/teamDirectory";
 import TeamMemberCard, { type TeamMember } from "./TeamMemberCard";
 
@@ -35,13 +35,9 @@ export default function TeamSection({
     >
       <div className="mx-auto max-w-[1200px] px-6 md:px-8">
         <div className="mx-auto mb-10 max-w-3xl text-center lg:mb-14">
-          <span className="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[11px] font-bold uppercase tracking-widest text-orange-700 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-300">
-            <Users aria-hidden="true" className="h-3.5 w-3.5" />
-            Tim Kami
-          </span>
           <Heading
             id="team-heading"
-            className="mt-4 text-[28px] font-bold leading-tight tracking-tight text-slate-900 md:text-[32px] dark:text-white"
+            className="text-[28px] font-bold leading-tight tracking-tight text-slate-900 md:text-[32px] dark:text-white"
           >
             Tim Profesional di Balik <span className="text-orange-600 dark:text-orange-400">Solusi CITS</span>
           </Heading>

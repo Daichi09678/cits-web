@@ -18,7 +18,6 @@ export default function TeamMemberCard({
     .map((word) => word[0])
     .join("")
     .toUpperCase();
-  const teamName = member.teamName?.trim();
 
   return (
     <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-[#E2E8F0] bg-white transition-all duration-300 hover:-translate-y-1 hover:border-orange-300 hover:shadow-lg hover:shadow-orange-600/10 dark:border-white/10 dark:bg-[#1A1A2E] dark:hover:border-orange-500/40 dark:hover:shadow-black/30">
@@ -42,11 +41,6 @@ export default function TeamMemberCard({
             </span>
             <span className="text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">Foto belum tersedia</span>
           </div>
-        )}
-        {teamName && (
-          <span className="absolute left-3 top-3 max-w-[calc(100%-1.5rem)] truncate rounded-full border border-white/70 bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-slate-700 backdrop-blur dark:border-white/10 dark:bg-[#0F1320]/85 dark:text-slate-200">
-            {teamName}
-          </span>
         )}
       </div>
       <div className="flex min-h-[7.5rem] flex-1 flex-col p-5">
