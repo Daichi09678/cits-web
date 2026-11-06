@@ -156,7 +156,12 @@ export default function ServicesPage() {
 
   const displayServices = resolveServiceCatalog(storeServices);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
-  const activeSection = selectedSection ?? displayServices[0]?.id;
+  const activeSection =
+    selectedSection &&
+    (displayServices.some((item) => item.id === selectedSection) ||
+      ["alur-kerja", "skema-kerjasama"].includes(selectedSection))
+      ? selectedSection
+      : displayServices[0]?.id;
   const navigationItems = [
     ...displayServices.map((item) => ({ id: item.id, label: item.category })),
     { id: "alur-kerja", label: "Alur Metodologi" },

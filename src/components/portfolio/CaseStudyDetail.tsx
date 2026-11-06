@@ -1,15 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, Briefcase, Building2, CheckCircle2, Cpu, ExternalLink, FileText, Layers, Lightbulb, ShieldCheck, Target } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  Briefcase,
+  Building2,
+  CheckCircle2,
+  Cpu,
+  ExternalLink,
+  FileText,
+  Layers,
+  Lightbulb,
+  ShieldCheck,
+  Target,
+} from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import { caseStudyEvidence } from "@/data/caseStudyFacts";
 import { consultationHref } from "@/lib/consultation";
 import { useCitsStore } from "@/stores/citsStore";
 
-export default function CaseStudyDetail({ id, matchPortfolioTheme = false }: { id: string; matchPortfolioTheme?: boolean }) {
+export default function CaseStudyDetail({
+  id,
+  matchPortfolioTheme = false,
+}: {
+  id: string;
+  matchPortfolioTheme?: boolean;
+}) {
   const { caseStudies } = useCitsStore();
-  const study = caseStudies.find((item) => item.id === id);
+  const study = caseStudies.find((item) => item.id === id && item.isActive !== false);
   const pageBackground = matchPortfolioTheme ? "bg-white dark:bg-[#1A1A2E]" : "bg-white dark:bg-[#111827]";
   const headerBackground = matchPortfolioTheme
     ? "bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-[#1A1A2E] dark:to-slate-950"
@@ -74,9 +93,7 @@ export default function CaseStudyDetail({ id, matchPortfolioTheme = false }: { i
                 <Building2 className="h-6 w-6 shrink-0 text-orange-700 dark:text-orange-300" />
               )}
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold   text-slate-500 dark:text-slate-400">
-                  Klien
-                </p>
+                <p className="text-[10px] font-semibold   text-slate-500 dark:text-slate-400">Klien</p>
                 <p className="truncate text-xs font-bold text-slate-800 sm:text-sm dark:text-slate-100">
                   {study.client}
                 </p>
@@ -87,7 +104,6 @@ export default function CaseStudyDetail({ id, matchPortfolioTheme = false }: { i
               className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-orange-700 px-5 py-2.5 text-sm font-bold text-white   transition hover:bg-orange-800"
             >
               Konsultasi Kebutuhan Serupa
-              
             </Link>
             <Link
               href="/portfolio"
@@ -107,10 +123,7 @@ export default function CaseStudyDetail({ id, matchPortfolioTheme = false }: { i
             aria-labelledby="impact-heading"
             className="rounded-xl border border-slate-200 bg-slate-50/70 p-6 sm:p-8 dark:border-white/10 dark:bg-white/[0.03]"
           >
-            <h2
-              id="impact-heading"
-              className="text-xs font-bold   text-orange-800 dark:text-orange-300"
-            >
+            <h2 id="impact-heading" className="text-xs font-bold   text-orange-800 dark:text-orange-300">
               Dampak Terukur
             </h2>
             <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -166,9 +179,7 @@ export default function CaseStudyDetail({ id, matchPortfolioTheme = false }: { i
                     key={fact.label}
                     className="rounded-xl border border-slate-200 bg-white p-5 transition hover:border-orange-300 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-orange-500/40"
                   >
-                    <dt className="text-[11px] font-semibold   text-slate-500 dark:text-slate-400">
-                      {fact.label}
-                    </dt>
+                    <dt className="text-[11px] font-semibold   text-slate-500 dark:text-slate-400">{fact.label}</dt>
                     <dd className="mt-1.5 text-lg font-extrabold text-slate-900 dark:text-white">{fact.value}</dd>
                     <dd className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">{fact.detail}</dd>
                   </div>
@@ -244,8 +255,7 @@ export default function CaseStudyDetail({ id, matchPortfolioTheme = false }: { i
               </h2>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {study.techStack.map((tech) => (
-                  <span key={tech} className="text-xs leading-relaxed text-slate-600 dark:text-slate-300"
-                  >
+                  <span key={tech} className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                     {tech}
                   </span>
                 ))}
@@ -280,10 +290,7 @@ export default function CaseStudyDetail({ id, matchPortfolioTheme = false }: { i
               aria-labelledby="sources-heading"
               className="mt-12 rounded-xl border border-slate-200 bg-slate-50/70 p-6 sm:p-8 dark:border-white/10 dark:bg-white/[0.03]"
             >
-              <h2
-                id="sources-heading"
-                className="text-sm font-bold   text-slate-700 dark:text-slate-200"
-              >
+              <h2 id="sources-heading" className="text-sm font-bold   text-slate-700 dark:text-slate-200">
                 Sumber &amp; Referensi
               </h2>
               <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
@@ -321,7 +328,9 @@ export default function CaseStudyDetail({ id, matchPortfolioTheme = false }: { i
 
         {/* CTA */}
         <ScrollReveal>
-          <section className={`mt-12 rounded-xl bg-slate-900 p-7 text-white sm:p-9 ${matchPortfolioTheme ? "dark:bg-[#151528]" : "dark:bg-[#0b1220]"}`}>
+          <section
+            className={`mt-12 rounded-xl bg-slate-900 p-7 text-white sm:p-9 ${matchPortfolioTheme ? "dark:bg-[#151528]" : "dark:bg-[#0b1220]"}`}
+          >
             <h2 className="text-xl font-extrabold tracking-tight sm:text-2xl">
               Punya kebutuhan serupa di instansi Anda?
             </h2>
@@ -335,7 +344,6 @@ export default function CaseStudyDetail({ id, matchPortfolioTheme = false }: { i
                 className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-orange-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-orange-700"
               >
                 Mulai Konsultasi
-                
               </Link>
               <Link
                 href="/portfolio"
@@ -366,7 +374,6 @@ export default function CaseStudyDetail({ id, matchPortfolioTheme = false }: { i
                   <p className="mt-1.5 line-clamp-2 text-sm font-bold text-slate-900 dark:text-white">{item.title}</p>
                   <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 group-hover:text-orange-700 dark:text-slate-400 dark:group-hover:text-orange-300">
                     Buka detail
-                    
                   </span>
                 </Link>
               ))}

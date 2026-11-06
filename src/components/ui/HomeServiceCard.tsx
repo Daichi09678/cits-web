@@ -30,7 +30,10 @@ export default function HomeServiceCard({ service, wide = false }: { service: Se
             {service.category}
           </span>
           {service.tags.slice(0, 4).map((tag) => (
-            <span key={tag} className="rounded-full border border-orange-200 px-2.5 py-1 text-[11px] font-medium text-orange-800 dark:border-orange-800/60 dark:text-orange-300">
+            <span
+              key={tag}
+              className="rounded-full border border-orange-200 px-2.5 py-1 text-[11px] font-medium text-orange-800 dark:border-orange-800/60 dark:text-orange-300"
+            >
               {tag}
             </span>
           ))}

@@ -42,10 +42,16 @@ test("edited service photos and full details override the defaults on both publi
 });
 test("legacy and custom services never inherit template claims and use only matching illustrations", () => {
   for (const id of ["pillar-1", "pillar-2", "pillar-3", "custom-service"]) {
-    const data = catalog.resolveServiceCatalog([{
-      id, title: "Judul tersimpan", badge: "Label tersimpan", icon: "Code2",
-      desc: "Deskripsi tersimpan", sla: "Ketentuan tersimpan",
-    }])[0];
+    const data = catalog.resolveServiceCatalog([
+      {
+        id,
+        title: "Judul tersimpan",
+        badge: "Label tersimpan",
+        icon: "Code2",
+        desc: "Deskripsi tersimpan",
+        sla: "Ketentuan tersimpan",
+      },
+    ])[0];
     assert.equal(data.title, "Judul tersimpan");
     assert.equal(data.description, "Deskripsi tersimpan");
     assert.equal(data.slaNote, "Ketentuan tersimpan");
@@ -56,8 +62,7 @@ test("legacy and custom services never inherit template claims and use only matc
       "pillar-3": "/services/it-supplier.webp",
     };
     assert.equal(data.image, illustrations[id] ?? "");
-    for (const key of ["features", "techStack", "caseStudies", "deliverables"])
-      assert.equal(data[key].length, 0);
+    for (const key of ["features", "techStack", "caseStudies", "deliverables"]) assert.equal(data[key].length, 0);
   }
   assert.equal(catalog.resolveServiceCatalog([{ ...service, isActive: false }]).length, 0);
 });
@@ -88,17 +93,35 @@ test("public service details retain the card layout with saved content or honest
     "@/lib/serviceCatalog": catalog,
     "@/components/pages/services/ServiceCaseStudyLinks": { default: () => null },
   }).default;
-  const detailsHtml = () => renderToStaticMarkup(React.createElement(Page))
-    .split('data-testid="service-details"')[1].split('id="alur-kerja"')[0];
+  const detailsHtml = () =>
+    renderToStaticMarkup(React.createElement(Page))
+      .split('data-testid="service-details"')[1]
+      .split('id="alur-kerja"')[0];
   const populated = detailsHtml();
   assert.doesNotMatch(renderToStaticMarkup(React.createElement(Page)), /public-service-query|type="search"/);
-  for (const text of [service.title, service.desc, service.details, service.techStack[0], service.caseStudies[0], service.deliverables[0].description, service.sla])
+  for (const text of [
+    service.title,
+    service.desc,
+    service.details,
+    service.techStack[0],
+    service.caseStudies[0],
+    service.deliverables[0].description,
+    service.sla,
+  ])
     assert.ok(populated.includes(text), text);
   assert.doesNotMatch(populated, /Resmi &amp; Sah|Dukungan tim tenaga ahli|SPIPISE|Pasca-BAST/);
-  services = [{ id: "pillar-1", title: "Layanan kosong", badge: "", icon: "Code2", desc: "Ringkas", sla: "", image: "" }];
+  services = [
+    { id: "pillar-1", title: "Layanan kosong", badge: "", icon: "Code2", desc: "Ringkas", sla: "", image: "" },
+  ];
   const empty = detailsHtml();
   assert.doesNotMatch(empty, /99\.9|24\/7|Resmi &amp; Sah|<img/);
-  for (const heading of ["Tentang Layanan Ini", "Cakupan Solusi", "Standar Teknologi", "Contoh Implementasi", "Deliverable &amp; Jaminan Kualitas"])
+  for (const heading of [
+    "Tentang Layanan Ini",
+    "Cakupan Solusi",
+    "Standar Teknologi",
+    "Contoh Implementasi",
+    "Deliverable &amp; Jaminan Kualitas",
+  ])
     assert.ok(empty.includes(heading), heading);
   assert.match(empty, /Gambar layanan belum tersedia/);
   assert.match(empty, /Informasi hasil layanan dan jaminan kualitas belum tersedia/);

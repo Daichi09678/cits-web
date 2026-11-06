@@ -245,16 +245,31 @@ test("native dialog lifecycle supplies modal focus handling and respects Escape 
   let effect;
   const calls = [];
   const dialog = { showModal: () => calls.push("open"), close: () => calls.push("close") };
-  const Surface = load("components/admin/AdminDialogSurface.tsx", {
-    react: {
-      useEffect: (callback) => {
-        effect = callback;
+  class FocusTarget {
+    isConnected = true;
+    focus() {
+      calls.push("restore-focus");
+    }
+  }
+  const Surface = load(
+    "components/admin/AdminDialogSurface.tsx",
+    {
+      react: {
+        useEffect: (callback) => {
+          effect = callback;
+        },
+        useRef: () => ({ current: dialog }),
       },
-      useRef: () => ({ current: dialog }),
+      "react/jsx-runtime": jsx,
     },
-    "react/jsx-runtime": jsx,
-  }).default;
-  const tree = Surface({ labelledBy: "test-title", onClose: () => calls.push("dismiss"), children: "Content" });
+    { document: { activeElement: new FocusTarget() }, HTMLElement: FocusTarget }
+  ).default;
+  const tree = Surface({
+    labelledBy: "test-title",
+    onClose: () => calls.push("dismiss"),
+    children: "Content",
+    initialFocusRef: { current: { focus: () => calls.push("focus-cancel") } },
+  });
   assert.equal(tree.type, "dialog");
   assert.equal(tree.props["aria-labelledby"], "test-title");
   const cleanup = effect();
@@ -263,5 +278,5 @@ test("native dialog lifecycle supplies modal focus handling and respects Escape 
   tree.props.onClick({ target, currentTarget: target, clientX: 40, clientY: 40 });
   tree.props.onClick({ target, currentTarget: target, clientX: 0, clientY: 0 });
   cleanup();
-  assert.deepEqual(calls, ["open", "prevent", "dismiss", "dismiss", "close"]);
+  assert.deepEqual(calls, ["open", "focus-cancel", "prevent", "dismiss", "dismiss", "close", "restore-focus"]);
 });

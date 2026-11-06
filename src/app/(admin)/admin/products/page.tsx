@@ -6,6 +6,7 @@ import { useAdminAuth } from "@/lib/auth";
 import { canPerformAction } from "@/lib/internalAccess";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
+import CatalogDeleteDetails from "@/components/admin/CatalogDeleteDetails";
 import { useCitsStore } from "@/stores/citsStore";
 import { ProductItem } from "@/types/schema";
 import Pagination from "@/components/admin/Pagination";
@@ -478,8 +479,18 @@ export default function AdminProductsPage() {
                             onClick={async () => {
                               const confirmed = await dialog.confirm({
                                 title: "Hapus produk?",
-                                description: `Produk "${prod.name}" akan dihapus permanen dari katalog dan tampilan front office.`,
-                                confirmLabel: "Hapus Produk",
+                                description: "Periksa produk berikut sebelum menghapusnya dari katalog.",
+                                details: (
+                                  <CatalogDeleteDetails
+                                    kind="produk"
+                                    name={prod.name}
+                                    category={prod.category}
+                                    isActive={prod.isActive}
+                                    showOnHome={prod.showOnHome !== false}
+                                    featureCount={prod.features.length}
+                                  />
+                                ),
+                                confirmLabel: "Hapus produk",
                                 variant: "danger",
                               });
                               if (confirmed) {

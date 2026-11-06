@@ -33,6 +33,7 @@ export default function AboutSectionFields({
   const section = definition.sections.find((item) => item.key === sectionKey)!;
   const field = (key: string, hint?: string) => {
     const spec = section.fields.find((item) => item.key === key)!;
+    if (spec.hidden) return null;
     return (
       <AboutField
         key={key}
@@ -48,10 +49,11 @@ export default function AboutSectionFields({
     <div className="space-y-6">
       {sectionKey === "about-hero-heading" ? (
         <>
-          <AboutFieldGroup title="Informasi Utama">
-            {[1, 2, 3, 4].map((index) => field(`about_hero_text_${index}`))}
-          </AboutFieldGroup>
           <AboutFieldGroup title="Logo Perusahaan">
+            <p className="text-xs leading-relaxed text-slate-500 sm:col-span-2 dark:text-slate-400">
+              Logo ini digunakan di navigasi dan footer seluruh halaman front office, termasuk beranda, serta bagian
+              profil di halaman Tentang Kami. Perubahan diterapkan setelah Simpan Perubahan.
+            </p>
             {[false, true].map((dark) => {
               const srcKey = dark ? "about_hero_src_7" : "about_hero_src_5";
               const altKey = dark ? "about_hero_alt_8" : "about_hero_alt_6";
@@ -68,6 +70,24 @@ export default function AboutSectionFields({
               );
             })}
           </AboutFieldGroup>
+          <div className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-slate-200 p-4 dark:border-white/10">
+            <p className="min-w-0 flex-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+              Logo terang dan gelap disimpan terpisah. Jika memakai satu logo untuk kedua tema, salin logo utama ke tema
+              gelap lalu tekan Simpan Perubahan.
+            </p>
+            <button
+              type="button"
+              className={aboutSecondaryButton}
+              onClick={() =>
+                onTexts({
+                  about_hero_src_7: content.texts.about_hero_src_5,
+                  about_hero_alt_8: content.texts.about_hero_alt_6,
+                })
+              }
+            >
+              Samakan logo kedua tema
+            </button>
+          </div>
           <AboutField
             label="Deskripsi Pembuka"
             hint="Teks yang menjelaskan tentang perusahaan di bagian pembuka halaman."

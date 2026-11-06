@@ -13,7 +13,7 @@ export interface PublicPageContent {
 }
 export interface PublicPageDefinition {
   title: string;
-  sections: { key: string; title: string; fields: { key: string; label: string; kind: string }[] }[];
+  sections: { key: string; title: string; fields: { key: string; label: string; kind: string; hidden?: boolean }[] }[];
   texts: Record<string, string>;
   collections: Record<string, { title: string; section: string; items: ContentRecord[] }>;
 }

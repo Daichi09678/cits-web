@@ -7,8 +7,7 @@ const { load } = require("./helpers/load.cjs");
 const initial = load("data/initialData.ts", {});
 const facts = load("data/caseStudyFacts.ts", {});
 
-const wrap = ({ children, animate, transition, whileHover, ...props }) =>
-  React.createElement("div", props, children);
+const wrap = ({ children, animate, transition, whileHover, ...props }) => React.createElement("div", props, children);
 const link = ({ href, children, ...props }) => React.createElement("a", { href, ...props }, children);
 
 test("setiap fakta studi kasus terhubung ke proyek portofolio yang ada", () => {
@@ -77,4 +76,26 @@ test("kartu klien pada mockup beranda menautkan langsung ke halaman detail studi
   assert.match(html, /href="\/portfolio\/ktp-el"/);
   assert.match(html, /href="\/portfolio\/simlala"/);
   assert.match(html, /Lihat detail studi kasus Kemendagri RI/);
+});
+
+test("direct study URLs stop displaying a project when the admin unpublishes or deletes it", () => {
+  let studies = [{ ...initial.initialCaseStudies[0], title: "Proyek tersimpan untuk audit" }];
+  const Detail = load("components/portfolio/CaseStudyDetail.tsx", {
+    react: React,
+    "react/jsx-runtime": require("react/jsx-runtime"),
+    "next/link": { default: link },
+    "lucide-react": require("lucide-react"),
+    "@/components/animations/ScrollReveal": { default: wrap },
+    "@/data/caseStudyFacts": facts,
+    "@/lib/consultation": { consultationHref: () => "/contact" },
+    "@/stores/citsStore": { useCitsStore: () => ({ caseStudies: studies }) },
+  }).default;
+  const id = studies[0].id;
+  const render = () => renderToStaticMarkup(React.createElement(Detail, { id }));
+  assert.match(render(), /Proyek tersimpan untuk audit/);
+  studies[0].isActive = false;
+  assert.match(render(), /Studi kasus tidak ditemukan/);
+  assert.doesNotMatch(render(), /Proyek tersimpan untuk audit/);
+  studies = [];
+  assert.match(render(), /Studi kasus tidak ditemukan/);
 });

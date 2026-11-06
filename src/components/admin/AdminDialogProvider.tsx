@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, Info, ShieldAlert, X, type LucideIcon } from "lucide-react";
+import AdminDialogSurface from "./AdminDialogSurface";
 
 export type AdminDialogVariant = "danger" | "warning" | "success" | "info";
 
@@ -11,6 +12,8 @@ export interface AdminConfirmOptions {
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: AdminDialogVariant;
+  /** Detailed catalog confirmations use a quiet, scrollable native dialog. */
+  details?: React.ReactNode;
 }
 
 export interface AdminAlertOptions {
@@ -72,6 +75,7 @@ const VARIANTS: Record<
 export default function AdminDialogProvider({ children }: { children: React.ReactNode }) {
   const [dialog, setDialog] = useState<DialogState | null>(null);
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
 
   const confirm = useCallback((options: AdminConfirmOptions) => {
@@ -102,7 +106,7 @@ export default function AdminDialogProvider({ children }: { children: React.Reac
       if (event.key === "Escape") close(false);
     };
     window.addEventListener("keydown", onKeyDown);
-    confirmButtonRef.current?.focus();
+    if (dialog.mode !== "confirm" || !dialog.options.details) confirmButtonRef.current?.focus();
 
     return () => {
       document.body.style.overflow = previousOverflow;
@@ -121,68 +125,114 @@ export default function AdminDialogProvider({ children }: { children: React.Reac
     <AdminDialogContext.Provider value={value}>
       {children}
 
-      {dialog && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 animate-admin-backdrop bg-slate-950/60 backdrop-blur-sm"
-            onClick={() => close(false)}
-            aria-hidden="true"
-          />
-
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={titleId}
-            className={`relative w-full max-w-md animate-admin-dialog rounded-3xl border bg-white p-6 shadow-2xl dark:bg-[#151528] ${styles.ringClass}`}
-          >
+      {dialog?.mode === "confirm" && dialog.options.details ? (
+        <AdminDialogSurface
+          labelledBy={titleId}
+          onClose={() => close(false)}
+          widthClassName="w-[min(480px,calc(100vw-32px))]"
+          initialFocusRef={cancelButtonRef}
+        >
+          <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-white/10">
+            <h2 id={titleId} className="text-base font-semibold text-slate-900 dark:text-white">
+              {dialog.options.title}
+            </h2>
             <button
               type="button"
               onClick={() => close(false)}
               aria-label="Tutup dialog"
-              className="absolute right-4 top-4 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-white"
+              className="-mr-2 -mt-1 flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-orange-600 dark:hover:bg-white/5"
             >
-              <X className="h-4 w-4" />
+              <X className="size-4" />
             </button>
+          </header>
+          <div className="min-h-0 overflow-y-auto overscroll-contain px-5 py-5 text-sm leading-relaxed [overflow-wrap:anywhere]">
+            {dialog.options.description && (
+              <p className="mb-4 text-slate-600 dark:text-slate-300">{dialog.options.description}</p>
+            )}
+            {dialog.options.details}
+          </div>
+          <footer className="flex shrink-0 flex-col-reverse gap-2 border-t border-slate-200 px-5 py-4 sm:flex-row sm:justify-end dark:border-white/10">
+            <button
+              ref={cancelButtonRef}
+              type="button"
+              onClick={() => close(false)}
+              className="min-h-11 rounded-lg border border-slate-300 px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 dark:border-white/15 dark:text-slate-200 dark:hover:bg-white/5"
+            >
+              {dialog.options.cancelLabel || "Batal"}
+            </button>
+            <button
+              type="button"
+              onClick={() => close(true)}
+              className={`min-h-11 rounded-lg px-4 text-sm font-medium text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 ${styles.buttonClass}`}
+            >
+              {dialog.options.confirmLabel || "Hapus"}
+            </button>
+          </footer>
+        </AdminDialogSurface>
+      ) : (
+        dialog && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div
+              className="absolute inset-0 animate-admin-backdrop bg-slate-950/60 backdrop-blur-sm"
+              onClick={() => close(false)}
+              aria-hidden="true"
+            />
 
             <div
-              className={`flex h-12 w-12 items-center justify-center rounded-2xl ${styles.iconClass}`}
-              aria-hidden="true"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={titleId}
+              className={`relative w-full max-w-md animate-admin-dialog rounded-3xl border bg-white p-6 shadow-2xl dark:bg-[#151528] ${styles.ringClass}`}
             >
-              <Icon className="h-6 w-6" />
-            </div>
+              <button
+                type="button"
+                onClick={() => close(false)}
+                aria-label="Tutup dialog"
+                className="absolute right-4 top-4 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-white/10 dark:hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
 
-            <h2 id={titleId} className="mt-4 pr-6 text-base font-extrabold text-slate-900 dark:text-white">
-              {dialog.options.title}
-            </h2>
-
-            {dialog.options.description && (
-              <div className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-                {dialog.options.description}
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-2xl ${styles.iconClass}`}
+                aria-hidden="true"
+              >
+                <Icon className="h-6 w-6" />
               </div>
-            )}
 
-            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              {isConfirm && (
-                <button
-                  type="button"
-                  onClick={() => close(false)}
-                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-[11px] font-bold text-slate-700 transition-colors hover:bg-slate-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5"
-                >
-                  {dialog.options.cancelLabel || "Batal"}
-                </button>
+              <h2 id={titleId} className="mt-4 pr-6 text-base font-extrabold text-slate-900 dark:text-white">
+                {dialog.options.title}
+              </h2>
+
+              {dialog.options.description && (
+                <div className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                  {dialog.options.description}
+                </div>
               )}
 
-              <button
-                ref={confirmButtonRef}
-                type="button"
-                onClick={() => close(true)}
-                className={`inline-flex items-center justify-center gap-1.5 rounded-xl px-5 py-2.5 text-[11px] font-bold text-white shadow-md transition-colors ${styles.buttonClass}`}
-              >
-                {isConfirm ? dialog.options.confirmLabel || "Ya, Lanjutkan" : dialog.options.okLabel || "Mengerti"}
-              </button>
+              <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                {isConfirm && (
+                  <button
+                    type="button"
+                    onClick={() => close(false)}
+                    className="rounded-xl border border-slate-200 px-4 py-2.5 text-[11px] font-bold text-slate-700 transition-colors hover:bg-slate-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5"
+                  >
+                    {dialog.options.cancelLabel || "Batal"}
+                  </button>
+                )}
+
+                <button
+                  ref={confirmButtonRef}
+                  type="button"
+                  onClick={() => close(true)}
+                  className={`inline-flex items-center justify-center gap-1.5 rounded-xl px-5 py-2.5 text-[11px] font-bold text-white shadow-md transition-colors ${styles.buttonClass}`}
+                >
+                  {isConfirm ? dialog.options.confirmLabel || "Ya, Lanjutkan" : dialog.options.okLabel || "Mengerti"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        )
       )}
     </AdminDialogContext.Provider>
   );

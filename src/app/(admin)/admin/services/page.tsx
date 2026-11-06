@@ -13,6 +13,7 @@ import { useAdminAuth } from "@/lib/auth";
 import { canPerformAction } from "@/lib/internalAccess";
 import AdminTopbar from "@/components/admin/AdminTopbar";
 import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
+import CatalogDeleteDetails from "@/components/admin/CatalogDeleteDetails";
 import { useCitsStore } from "@/stores/citsStore";
 import { ServicePillar } from "@/types/schema";
 import { getPillarIcon, PILLAR_ICON_OPTIONS, PillarIconOption } from "@/lib/serviceIcons";
@@ -230,10 +231,22 @@ export default function AdminServicesPage() {
     if (!canDelete || deleting.current || categorySaving || isSaving) return;
     deleting.current = true;
     try {
+      const service = services.find((item) => item.id === id);
+      if (!service) return;
       const confirmed = await dialog.confirm({
-        title: "Hapus pilar layanan?",
-        description: `Pilar layanan "${title}" akan dihapus dari daftar layanan dan tampilan front office.`,
-        confirmLabel: "Hapus Layanan",
+        title: "Hapus layanan?",
+        description: "Periksa layanan berikut sebelum menghapusnya dari katalog.",
+        details: (
+          <CatalogDeleteDetails
+            kind="layanan"
+            name={service.title}
+            category={service.category}
+            isActive={service.isActive !== false}
+            showOnHome={service.showOnHome !== false}
+            featureCount={service.features?.length ?? 0}
+          />
+        ),
+        confirmLabel: "Hapus layanan",
         variant: "danger",
       });
       if (confirmed) {

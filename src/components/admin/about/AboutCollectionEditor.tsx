@@ -77,7 +77,7 @@ export default function AboutCollectionEditor({
           </div>
           <div className="grid min-w-0 gap-4 sm:grid-cols-2">
             {Object.entries(shape)
-              .filter(([field]) => field !== "id")
+              .filter(([field]) => field !== "id" && field !== "badge")
               .map(([field, initial]) => {
                 const options =
                   field === "icon"

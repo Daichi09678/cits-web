@@ -23,11 +23,23 @@ export default function Pagination({
         Menampilkan {start}–{end} dari {total} data
       </span>
       <div className="flex items-center gap-1">
-        <button type="button" disabled={currentPage === 1} onClick={() => onPageChange(currentPage - 1)} className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:border-orange-400 hover:text-orange-600 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:text-slate-300">
+        <button
+          type="button"
+          disabled={currentPage === 1}
+          onClick={() => onPageChange(currentPage - 1)}
+          className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:border-orange-400 hover:text-orange-600 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:text-slate-300"
+        >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="min-w-20 text-center font-semibold text-slate-700 dark:text-slate-200">Halaman {currentPage} / {pageCount}</span>
-        <button type="button" disabled={currentPage === pageCount} onClick={() => onPageChange(currentPage + 1)} className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:border-orange-400 hover:text-orange-600 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:text-slate-300">
+        <span className="min-w-20 text-center font-semibold text-slate-700 dark:text-slate-200">
+          Halaman {currentPage} / {pageCount}
+        </span>
+        <button
+          type="button"
+          disabled={currentPage === pageCount}
+          onClick={() => onPageChange(currentPage + 1)}
+          className="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:border-orange-400 hover:text-orange-600 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/10 dark:text-slate-300"
+        >
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>

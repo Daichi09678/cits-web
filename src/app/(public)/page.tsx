@@ -9,12 +9,13 @@ import FloatingShapes from "@/components/animations/FloatingShapes";
 import TypewriterText from "@/components/animations/TypewriterText";
 import HeroMockup from "@/components/ui/HeroMockup";
 import GridPattern from "@/components/ui/GridPattern";
-import GradientText from "@/components/ui/GradientText";
 import Marquee from "@/components/ui/Marquee";
 import { useCitsStore } from "@/stores/citsStore";
 import { initialLandingPageData, defaultSectionVisibility } from "@/data/initialData";
 import FeaturedCatalog from "@/components/ui/FeaturedCatalog";
 import ManagedTeamSection from "@/components/ui/ManagedTeamSection";
+import AboutHomeHighlights from "@/components/ui/AboutHomeHighlights";
+import { useCompanyContent } from "@/components/layout/CompanyBrand";
 
 export default function Home() {
   const {
@@ -24,7 +25,9 @@ export default function Home() {
     services: storeServices,
     activeProducts,
     activeCaseStudies,
+    aboutData,
   } = useCitsStore();
+  const companyContent = useCompanyContent();
   const currentLanding = landingData || initialLandingPageData;
   const visibility = { ...defaultSectionVisibility, ...currentLanding.sectionVisibility };
   const hero = { ...initialLandingPageData.hero, ...currentLanding.hero };
@@ -77,14 +80,12 @@ export default function Home() {
           <ParticleNetwork />
           <FloatingShapes />
           <GridPattern />
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-            <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          <div className="relative w-full min-w-0 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 md:py-28">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
               {/* Left Headline */}
-              <div className={hero.showMockup !== false ? "lg:col-span-7" : "lg:col-span-12 max-w-3xl"}>
-
-
+              <div className={hero.showMockup !== false ? "min-w-0 lg:col-span-7" : "min-w-0 lg:col-span-12 max-w-3xl"}>
                 <ScrollReveal delay={0.1}>
-                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-dark dark:text-white tracking-tight leading-[1.15]">
+                  <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-dark dark:text-white tracking-tight leading-[1.15] [overflow-wrap:anywhere]">
                     {hero.headlinePrefix ?? "Ciptakan Solusi"}
                     <br />
                     {hero.typewriterWords.length > 0 && <TypewriterText words={hero.typewriterWords} />}
@@ -98,10 +99,10 @@ export default function Home() {
                 </ScrollReveal>
 
                 <ScrollReveal delay={0.3}>
-                  <div className="mt-8 flex flex-wrap gap-4 items-center">
+                  <div className="mt-8 flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4 sm:items-center">
                     <Link
                       href={hero.primaryCtaLink ?? "/contact"}
-                      className="group px-7 py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-lg shadow-orange-600/25 hover:shadow-xl hover:shadow-orange-600/35 flex items-center gap-2.5 text-sm"
+                      className="group px-7 py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-lg shadow-orange-600/25 hover:shadow-xl hover:shadow-orange-600/35 flex items-center justify-center gap-2.5 text-sm"
                     >
                       {hero.primaryCtaText ?? "Konsultasi Sekarang"}
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -109,7 +110,7 @@ export default function Home() {
 
                     <Link
                       href={hero.secondaryCtaLink ?? "/products"}
-                      className="px-7 py-3.5 border-2 border-gray-200 dark:border-white/20 hover:border-orange-600 dark:hover:border-orange-400 text-gray-700 dark:text-white hover:text-orange-700 dark:hover:text-orange-400 font-semibold rounded-xl transition-all bg-white/70 dark:bg-white/10 backdrop-blur-sm text-sm shadow-sm"
+                      className="px-7 py-3.5 border-2 border-gray-200 dark:border-white/20 hover:border-orange-600 dark:hover:border-orange-400 text-gray-700 dark:text-white hover:text-orange-700 dark:hover:text-orange-400 font-semibold rounded-xl transition-all bg-white/70 dark:bg-white/10 backdrop-blur-sm text-center text-sm shadow-sm"
                     >
                       {hero.secondaryCtaText ?? "Eksplorasi Produk"}
                     </Link>
@@ -121,7 +122,7 @@ export default function Home() {
                     {hero.trustBadges &&
                       hero.trustBadges.map((badge, idx) => (
                         <div key={idx} className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
                           <span>{badge}</span>
                         </div>
                       ))}
@@ -131,9 +132,14 @@ export default function Home() {
 
               {/* Right Interactive Mockup */}
               {hero.showMockup !== false && (
-                <div className="lg:col-span-5">
+                <div className="min-w-0 lg:col-span-5">
                   <ScrollReveal direction="right" delay={0.2}>
-                    <HeroMockup title={hero.mockupTitle} status={hero.mockupStatus} projects={activeCaseStudies} />
+                    <HeroMockup
+                      title={hero.mockupTitle}
+                      status={hero.mockupStatus}
+                      description={hero.mockupDescription}
+                      projects={activeCaseStudies}
+                    />
                   </ScrollReveal>
                 </div>
               )}
@@ -184,7 +190,15 @@ export default function Home() {
           anchorId="temukan-produk"
           services={[]}
           products={featuredProducts}
-          title={productsIntro.title ?? "Produk Unggulan CITS"}
+          title={(productsIntro.title ?? "Produk Unggulan CITS").split(/(CITS)/g).map((part, index) =>
+            part === "CITS" ? (
+              <span key={index} className="text-orange-700 dark:text-orange-400">
+                CITS
+              </span>
+            ) : (
+              part
+            )
+          )}
           subtitle={
             productsIntro.subtitle ??
             "Platform kesistemanan yang telah teruji melayani jutaan transaksi data di berbagai kementerian dan institusi nasional."
@@ -194,6 +208,7 @@ export default function Home() {
         />
       )}
       <ManagedTeamSection />
+      <AboutHomeHighlights content={companyContent} aboutData={aboutData} />
 
       {/* Client Logos Marquee */}
       {visibility.clients !== false && marqueeList.length > 0 && (
@@ -218,7 +233,6 @@ export default function Home() {
           <GridPattern className="opacity-60" />
           <div className="relative max-w-4xl mx-auto px-4 text-center">
             <ScrollReveal>
-
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-dark dark:text-white tracking-tight leading-tight">
                 {cta.title ?? "Siap Mengakselerasi Sistem Informasi Perusahaan Anda?"}
               </h2>

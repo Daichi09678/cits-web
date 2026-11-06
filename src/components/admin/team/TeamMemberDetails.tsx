@@ -65,11 +65,11 @@ export default function TeamMemberDetails({
   onEdit: () => void;
 }) {
   const info = [
-    ["Kelompok tim", member.teamName || "Belum dikelompokkan"],
+    ["Tim", member.teamName || "Belum ditentukan"],
     ["Urutan tampil", String(member.displayOrder ?? 0)],
     [
       "Ditampilkan di beranda",
-      member.isActive !== false && member.showOnHomepage !== false ? "Ya, sesuai urutan (maksimal 4 anggota)" : "Tidak",
+      member.isActive !== false && member.showOnHomepage !== false ? "Ya, sesuai urutan (maksimal 8 anggota)" : "Tidak",
     ],
     ["Tanggal ditambahkan", memberDate(member, "createdAt")],
     ["Terakhir diperbarui", memberDate(member, "updatedAt")],
@@ -93,6 +93,12 @@ export default function TeamMemberDetails({
             </div>
           ))}
         </dl>
+        <section className="border-t border-slate-200 pt-4 dark:border-white/10">
+          <h3 className="text-sm font-semibold">Tentang anggota</h3>
+          <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-slate-300 [overflow-wrap:anywhere]">
+            {member.description?.trim() || "Deskripsi anggota belum ditambahkan."}
+          </p>
+        </section>
         {member.isDemo && (
           <p className="text-xs text-slate-600 dark:text-slate-300">Data contoh, bukan anggota resmi.</p>
         )}

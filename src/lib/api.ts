@@ -312,7 +312,8 @@ export const citsApi = {
   async getServices() {
     const res = await fetch(`${API_URL}/services`, { cache: "no-store" });
     const json = await res.json();
-    if (!res.ok || !json?.success || !Array.isArray(json.data)) throw new Error(json.message || "Layanan gagal dimuat.");
+    if (!res.ok || !json?.success || !Array.isArray(json.data))
+      throw new Error(json.message || "Layanan gagal dimuat.");
     return json.data;
   },
 

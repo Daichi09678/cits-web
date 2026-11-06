@@ -54,7 +54,8 @@ export const caseStudyEvidence: Record<string, CaseStudyEvidence> = {
       {
         label: "Lembaga pengguna berhak akses verifikasi",
         value: "6.444 lembaga",
-        detail: "Per Februari 2024, naik dari 6.144 lembaga pada 2023; setiap lembaga menandatangani PKS pemanfaatan data.",
+        detail:
+          "Per Februari 2024, naik dari 6.144 lembaga pada 2023; setiap lembaga menandatangani PKS pemanfaatan data.",
       },
       {
         label: "Dasar hukum NIK sebagai basis layanan",

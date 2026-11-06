@@ -61,6 +61,17 @@ test("team grouping accepts an optional trimmed name and rejects malformed names
     assert.equal(team.parseTeamMember({ ...input, teamName }).ok, false);
 });
 
+test("team descriptions support paragraphs, explicit clearing, and legacy members while rejecting malformed content", () => {
+  const description = "  Memimpin pengembangan aplikasi.\n\nBerfokus pada integrasi layanan.  ";
+  assert.equal(team.parseTeamMember({ ...input, description }).value.description, description.trim());
+  assert.equal(team.parseTeamMember({ ...input, description: "  " }).value.description, "");
+  assert.equal(team.parseTeamMember(input).value.description, undefined);
+  assert.equal(team.parseTeamMember({ ...input, description: "a".repeat(3000) }).ok, true);
+  for (const description of [null, [], {}, 12, "a".repeat(3001)]) {
+    assert.equal(team.parseTeamMember({ ...input, description }).ok, false);
+  }
+});
+
 function routes(repo, auth) {
   const overrides = {
     "next/server": { NextResponse },
@@ -72,7 +83,7 @@ function routes(repo, auth) {
   return { list: load("app/api/team/route.ts", overrides), item: load("app/api/team/[id]/route.ts", overrides) };
 }
 
-test("team API preserves the editable team name on create and update", async () => {
+test("team API preserves team, new positions and descriptions on create, edit and explicit clearing", async () => {
   const auth = createTestAuth();
   const token = auth.issueAdminToken({ sub: "admin", email: "admin@example.test", name: "Admin", role: "superadmin" });
   let stored;
@@ -89,13 +100,39 @@ test("team API preserves the editable team name on create and update", async () 
     },
     auth
   );
-  const created = await handler.list.POST(request("POST", token, { ...input, teamName: " Konsultasi TI " }));
+  const created = await handler.list.POST(
+    request("POST", token, {
+      ...input,
+      teamName: " Konsultasi TI ",
+      position: " Jabatan Baru ",
+      description: " Deskripsi awal. ",
+    })
+  );
   assert.equal(created.status, 201);
   assert.equal(stored.teamName, "Konsultasi TI");
-  assert.equal((await created.json()).data.teamName, "Konsultasi TI");
-  const updated = await handler.item.PUT(request("PUT", token, { ...input, teamName: "Manajemen Proyek" }), context);
+  assert.equal(stored.position, "Jabatan Baru");
+  const createdMember = (await created.json()).data;
+  assert.equal(createdMember.teamName, "Konsultasi TI");
+  assert.equal(createdMember.description, "Deskripsi awal.");
+  const updated = await handler.item.PUT(
+    request("PUT", token, {
+      ...input,
+      teamName: "Manajemen Proyek",
+      description: "Deskripsi diperbarui.\nParagraf kedua.",
+    }),
+    context
+  );
   assert.equal(updated.status, 200);
   assert.equal(stored.teamName, "Manajemen Proyek");
+  assert.equal((await updated.json()).data.description, "Deskripsi diperbarui.\nParagraf kedua.");
+  const cleared = await handler.item.PUT(
+    request("PUT", token, { ...input, teamName: "Manajemen Proyek", description: "" }),
+    context
+  );
+  assert.equal((await cleared.json()).data.description, "");
+  const invalidDescription = await handler.item.PUT(request("PUT", token, { ...input, description: 12 }), context);
+  assert.equal(invalidDescription.status, 400);
+  assert.equal(stored.description, "");
   const invalid = await handler.list.POST(request("POST", token, { ...input, teamName: 10 }));
   assert.equal(invalid.status, 400);
   assert.equal(stored.teamName, "Manajemen Proyek");
@@ -244,9 +281,14 @@ test("team repository requires durable persistence and supports an empty team", 
     "@/data/teamMembers": load("data/teamMembers.ts"),
   }).TeamRepo;
   assert.equal((await repo.list()).length, 0);
-  const member = await repo.create(input);
+  const member = await repo.create({ ...input, description: "Keahlian integrasi sistem." });
   assert.ok(member.id.startsWith("team-"));
-  assert.equal((await repo.update(member.id, { ...input, name: "Updated" })).name, "Updated");
+  assert.equal((await repo.list())[0].description, "Keahlian integrasi sistem.");
+  const changed = await repo.update(member.id, { ...input, name: "Updated", description: "Pengalaman terbaru." });
+  assert.equal(changed.name, "Updated");
+  assert.equal((await repo.list())[0].description, "Pengalaman terbaru.");
+  await repo.update(member.id, { ...input, description: "" });
+  assert.equal((await repo.list())[0].description, "");
   assert.equal(await repo.remove(member.id), true);
   assert.equal((await repo.list()).length, 0);
 });

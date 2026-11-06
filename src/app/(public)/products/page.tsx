@@ -4,7 +4,23 @@ import { useState } from "react";
 import Link from "next/link";
 import ProductPhoto from "@/components/ui/ProductPhoto";
 import { consultationHref } from "@/lib/consultation";
-import { Truck, Package, FileText, Map, MessageSquare, Globe, Smartphone, BarChart3, CheckCircle2, ShieldCheck, Layers, Cpu, ArrowRight, ChevronRight, Award } from "lucide-react";
+import {
+  Truck,
+  Package,
+  FileText,
+  Map,
+  MessageSquare,
+  Globe,
+  Smartphone,
+  BarChart3,
+  CheckCircle2,
+  ShieldCheck,
+  Layers,
+  Cpu,
+  ArrowRight,
+  ChevronRight,
+  Award,
+} from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import type { ProductItem } from "@/types/schema";
 import ProductDetailsDialog from "@/components/ui/ProductDetailsDialog";
@@ -97,12 +113,14 @@ export default function ProductsPage() {
   const { activeProducts } = useCitsStore();
   const categories = ["Semua Produk", ...new Set(activeProducts.map((product) => product.category))];
   const [selectedCategory, setSelectedCategory] = useState<string>("Semua Produk");
-  const [activeModalProduct, setActiveModalProduct] = useState<ProductItem | null>(null);
+  const [selectedModalProduct, setActiveModalProduct] = useState<ProductItem | null>(null);
+  const activeModalProduct = activeProducts.find((product) => product.id === selectedModalProduct?.id);
+  const effectiveCategory = categories.includes(selectedCategory) ? selectedCategory : "Semua Produk";
 
   const filteredProducts =
-    selectedCategory === "Semua Produk"
+    effectiveCategory === "Semua Produk"
       ? activeProducts
-      : activeProducts.filter((p) => p.category === selectedCategory);
+      : activeProducts.filter((p) => p.category === effectiveCategory);
 
   return (
     <main id="main-content" className="min-h-screen">
@@ -115,8 +133,6 @@ export default function ProductsPage() {
         <GridPattern className="opacity-90" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
-
-
             <h1
               id="products-hero-heading"
               className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-dark dark:text-white tracking-tight leading-[1.15]"
@@ -142,7 +158,7 @@ export default function ProductsPage() {
               aria-label="Filter Kategori Produk"
             >
               {categories.map((cat) => {
-                const isActive = selectedCategory === cat;
+                const isActive = effectiveCategory === cat;
                 return (
                   <button
                     key={cat}
@@ -283,7 +299,6 @@ export default function ProductsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-16">
-
               <h2 id="licensing-heading" className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white">
                 Model Penerapan & Lisensi <GradientText>Fleksibel</GradientText>
               </h2>
@@ -299,7 +314,6 @@ export default function ProductsPage() {
               <ScrollReveal key={item.title} delay={idx * 0.12} className="h-full">
                 <div className="p-7 sm:p-8 rounded-3xl bg-white dark:bg-[#16162c] border border-gray-200 dark:border-white/10 hover:border-orange-500/40 transition-all shadow-sm h-full flex flex-col justify-between">
                   <div>
-
                     <h3 className="text-xl font-extrabold text-dark dark:text-white">{item.title}</h3>
                     <p className="mt-3 text-xs md:text-sm text-gray-700 dark:text-white/80 leading-relaxed">
                       {item.desc}
@@ -344,7 +358,6 @@ export default function ProductsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-16">
-
               <h2 id="advantages-heading" className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white">
                 Mengapa Memilih Platform Produk <GradientText>CITS Indonesia?</GradientText>
               </h2>
@@ -370,7 +383,6 @@ export default function ProductsPage() {
                         {adv.description}
                       </p>
                     </div>
-
                   </div>
                 </ScrollReveal>
               );
@@ -387,7 +399,6 @@ export default function ProductsPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
             <div className="p-8 md:p-14 rounded-3xl bg-gradient-to-br from-slate-50 via-orange-50/30 to-slate-50 dark:from-[#151528] dark:via-[#1E1710] dark:to-[#151528] border border-orange-200/60 dark:border-orange-900/30 shadow-lg">
-
               <h2
                 id="products-cta-heading"
                 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-dark dark:text-white tracking-tight"

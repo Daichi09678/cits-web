@@ -18,7 +18,7 @@ const runtime = {
 const wrap = ({ children }) => React.createElement("div", null, children);
 const empty = () => null;
 
-function renderPage(page, content, study = null) {
+function renderPage(page, content, study = null, aboutProfile = initial.initialAboutData) {
   const Component = load(`app/(public)/${page}/page.tsx`, {
     ...runtime,
     react: study ? { ...React, useState: (initial) => [initial === null ? study : initial, () => {}] } : React,
@@ -37,9 +37,15 @@ function renderPage(page, content, study = null) {
         React.createElement("div", null, testimonials.map((item) => item.quote).join(" | ")),
     },
     "@/stores/citsStore": {
-      useCitsStore: () => ({ aboutData: initial.initialAboutData, caseStudies: initial.initialCaseStudies }),
+      useCitsStore: () => ({
+        aboutData: aboutProfile,
+        caseStudies: study
+          ? initial.initialCaseStudies.map((item) => (item.id === study.id ? study : item))
+          : initial.initialCaseStudies,
+      }),
     },
     "@/lib/publicPageContentClient": { usePublicPageContent: () => ({ content }) },
+    "@/components/layout/CompanyBrand": { useCompanyContent: () => content },
     "@/lib/publicPageContent": contentLib,
   }).default;
   return renderToStaticMarkup(React.createElement(Component));
@@ -64,7 +70,7 @@ test("every About and Portfolio section has editable fields and all list editors
   }
 });
 
-test("About displays edited badges, logo, legal status, history, governance and final partnership text", () => {
+test("About displays edited company identity, history, governance and final partnership text without decorative badges", () => {
   const data = fullContent("about");
   editText("about", data, "Kepatuhan SPBE & Keamanan Siber", "Standar keamanan baru");
   editText("about", data, "Legalitas Resmi", "Legalitas terverifikasi");
@@ -85,8 +91,6 @@ test("About displays edited badges, logo, legal status, history, governance and 
   data.collections.governancePillars[0].items = ["Poin legalitas baru"];
   const html = renderPage("about", data);
   for (const text of [
-    "Standar keamanan baru",
-    "Legalitas terverifikasi",
     "Nama perusahaan baru",
     "Mari membangun bersama",
     "Jadwalkan pertemuan",
@@ -97,6 +101,91 @@ test("About displays edited badges, logo, legal status, history, governance and 
   ])
     assert.ok(html.includes(text), text);
   assert.doesNotMatch(html, /Pendirian CV CITS Indonesia/);
+  assert.doesNotMatch(html, /Standar keamanan baru|Legalitas terverifikasi/);
+});
+
+test("every editable About text, logo, alt description and destination is rendered from saved content", () => {
+  const data = fullContent("about");
+  const fields = contentLib
+    .pageDefinition("about")
+    .sections.flatMap((section) => section.fields)
+    .filter((field) => !field.hidden);
+  for (const field of fields) {
+    data.texts[field.key] =
+      field.kind === "image"
+        ? `/test/${field.key}.png`
+        : field.kind === "link"
+          ? `/contact?field=${field.key}`
+          : `saved_${field.key}`;
+  }
+  const html = renderPage("about", data);
+  for (const { key } of fields) {
+    const value = data.texts[key];
+    assert.ok(html.includes(value), `Saved field is not displayed: ${key}`);
+  }
+  const profile = clone(initial.initialAboutData);
+  profile.title = "Judul profil tersimpan";
+  profile.subtitle = "Subjudul profil tersimpan";
+  profile.story = "Cerita profil tersimpan";
+  profile.vision = "Visi profil tersimpan";
+  profile.mission = ["Misi tersimpan: Keterangan misi tersimpan"];
+  profile.stats = [{ value: "75+", label: "Capaian tersimpan", description: "Keterangan capaian tersimpan" }];
+  const profiled = renderPage("about", data, null, profile);
+  for (const text of [
+    profile.title,
+    profile.subtitle,
+    profile.story,
+    profile.vision,
+    "Misi tersimpan",
+    "Keterangan misi tersimpan",
+    ...Object.values(profile.stats[0]),
+  ]) {
+    assert.ok(profiled.includes(text), text);
+  }
+});
+
+test("About section DOM order follows the saved order and hides only the selected section", () => {
+  const data = fullContent("about");
+  data.order.reverse();
+  data.visibility["values-heading"] = false;
+  const html = renderPage("about", data);
+  let previous = -1;
+  for (const key of data.order) {
+    const position = html.indexOf(`aria-labelledby="${key}"`);
+    if (key === "values-heading") assert.equal(position, -1);
+    else {
+      assert.ok(position > previous, key);
+      previous = position;
+    }
+  }
+});
+
+test("removed About tags stay hidden without deleting or rejecting legacy saved content", () => {
+  const data = fullContent("about");
+  const retired = contentLib
+    .pageDefinition("about")
+    .sections.flatMap((section) => section.fields)
+    .filter((field) => field.hidden);
+  for (const field of retired) data.texts[field.key] = `retired_${field.key}`;
+  assert.doesNotThrow(() => contentLib.parsePublicPageContent("about", data));
+  const html = renderPage("about", data);
+  for (const field of retired) assert.ok(!html.includes(`retired_${field.key}`));
+});
+
+test("Portfolio section order and visibility follow the saved admin configuration", () => {
+  const data = fullContent("portfolio");
+  data.order.reverse();
+  data.visibility["metrics-heading"] = false;
+  const html = renderPage("portfolio", data);
+  let previous = -1;
+  for (const key of data.order) {
+    const index = html.indexOf(`aria-labelledby="${key}"`);
+    if (key === "metrics-heading") assert.equal(index, -1);
+    else {
+      assert.ok(index > previous, key);
+      previous = index;
+    }
+  }
 });
 
 test("Portfolio displays edited introduction, impact metrics, testimonials and bottom consultation text", () => {

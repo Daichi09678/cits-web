@@ -109,6 +109,7 @@ function page(readOnly = false) {
       "@/lib/auth": { useAdminAuth: () => ({ session: { user: {} } }) },
       "@/lib/internalAccess": { canPerformAction: () => !readOnly },
       "@/components/admin/AdminTopbar": { default: () => null },
+      "@/components/admin/CatalogDeleteDetails": load("components/admin/CatalogDeleteDetails.tsx", runtime),
       "@/components/admin/AdminDialogProvider": {
         useAdminDialog: () => ({
           confirm: async () => confirmed,

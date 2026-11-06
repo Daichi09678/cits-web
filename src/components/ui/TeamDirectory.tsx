@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Search, Users } from "lucide-react";
 import TeamDirectoryCard from "@/components/ui/TeamDirectoryCard";
+import TeamProfileDialog from "@/components/pages/team/TeamProfileDialog";
 import { useTeamMembers } from "@/lib/teamClient";
 import { groupTeamMembers, publicTeamMembers, searchTeamMembers } from "@/lib/teamDirectory";
 import type { TeamMember } from "@/lib/team";
@@ -18,7 +19,9 @@ export function TeamDirectory({ members, loading, error, onRetry }: TeamDirector
   const [query, setQuery] = useState("");
   const [position, setPosition] = useState("");
   const [teamName, setTeamName] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const published = publicTeamMembers(members);
+  const selectedMember = published.find((member) => member.id === selectedId);
   const teamNames = [
     ...new Set(published.map((member) => member.teamName).filter((name): name is string => Boolean(name))),
   ];
@@ -104,7 +107,7 @@ export function TeamDirectory({ members, loading, error, onRetry }: TeamDirector
                     htmlFor="team-group"
                     className="mb-2 block text-xs font-semibold text-slate-700 dark:text-slate-200"
                   >
-                    Kelompok tim
+                    Tim
                   </label>
                   <select
                     id="team-group"
@@ -220,7 +223,7 @@ export function TeamDirectory({ members, loading, error, onRetry }: TeamDirector
                     </div>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                       {group.members.map((member) => (
-                        <TeamDirectoryCard key={member.id} member={member} />
+                        <TeamDirectoryCard key={member.id} member={member} onSelect={() => setSelectedId(member.id)} />
                       ))}
                     </div>
                   </section>
@@ -249,6 +252,7 @@ export function TeamDirectory({ members, loading, error, onRetry }: TeamDirector
           </p>
         )}
       </div>
+      {selectedMember && <TeamProfileDialog member={selectedMember} onClose={() => setSelectedId(null)} />}
     </section>
   );
 }

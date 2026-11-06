@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import ThemeToggle from "@/components/layout/ThemeToggle";
+import { CompanyLogo } from "@/components/layout/CompanyBrand";
 
 const navLinks = [
   { href: "/", label: "Beranda" },
@@ -45,27 +45,8 @@ export default function Navbar() {
       }`}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-        <Link href="/" className="flex items-center gap-2 shrink-0">
-          {/* Logo Mode Terang */}
-          <Image
-            src="/logo.webp"
-            alt="CITS Indonesia"
-            width={160}
-            height={48}
-            unoptimized
-            className="h-10 w-auto block dark:hidden"
-            priority
-          />
-          {/* Logo Putih Mode Gelap */}
-          <Image
-            src="/logo-dark.webp"
-            alt="CITS Indonesia"
-            width={160}
-            height={48}
-            unoptimized
-            className="h-10 w-auto hidden dark:block"
-            priority
-          />
+        <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="Beranda CITS Indonesia">
+          <CompanyLogo location="navbar" />
         </Link>
 
         {/* Desktop Navigation */}

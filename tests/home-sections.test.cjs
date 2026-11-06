@@ -224,6 +224,7 @@ function renderHome(landingData, overrides = {}) {
     "@/components/ui/AboutHomeHighlights": { default: () => null },
     "@/components/ui/ManagedTeamSection": { default: () => null },
     "@/lib/publicPageContentClient": { usePublicPageContent: () => ({ content: {} }) },
+    "@/components/layout/CompanyBrand": { useCompanyContent: () => ({}) },
     "@/components/ui/Marquee": {
       default: ({ items }) => React.createElement("div", null, items.map((item) => item.name).join(", ")),
     },

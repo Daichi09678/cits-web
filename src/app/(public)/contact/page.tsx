@@ -9,7 +9,24 @@ import ConsultationRequirementsFields, {
 import { consultationPurpose, consultationSource, CONSULTATION_SOURCES } from "@/lib/consultation";
 import { resolveServiceCatalog } from "@/lib/serviceCatalog";
 import type { ConsultationPurpose, ConsultationSource } from "@/types/schema";
-import { MapPin, Phone, Mail, Send, Building2, Clock, ShieldCheck, CheckCircle2, ExternalLink, MessageSquare, HelpCircle, Check, User, Copy, CheckCheck, ChevronDown } from "lucide-react";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Send,
+  Building2,
+  Clock,
+  ShieldCheck,
+  CheckCircle2,
+  ExternalLink,
+  MessageSquare,
+  HelpCircle,
+  Check,
+  User,
+  Copy,
+  CheckCheck,
+  ChevronDown,
+} from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import GradientText from "@/components/ui/GradientText";
 import GridPattern from "@/components/ui/GridPattern";
@@ -17,6 +34,7 @@ import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { useCitsStore } from "@/stores/citsStore";
+import { contactPresentation } from "@/lib/contactPresentation";
 
 const serviceOptions = [
   "Pengembangan Perangkat Lunak (Software House)",
@@ -74,6 +92,7 @@ function ContactPageContent({
   initialReference: string;
 }) {
   const { contactInfo, actions, services, activeProducts, activeCaseStudies } = useCitsStore();
+  const { mapUrl, mapEmbedUrl, whatsappUrl } = contactPresentation(contactInfo);
   const [referenceId, setReferenceId] = useState(initialReference);
   const selectedPortfolio = activeCaseStudies.find((item) => item.id === referenceId);
   const [submitted, setSubmitted] = useState(false);
@@ -96,13 +115,12 @@ function ContactPageContent({
   const effectiveServiceOptions = [
     ...new Set([
       ...services.filter((service) => service.isActive !== false).map((service) => service.title),
-      ...(contactInfo.customServices?.length ? contactInfo.customServices : serviceOptions),
+      ...(contactInfo.customServices ?? serviceOptions),
       ...(selectedService ? [selectedService] : []),
     ]),
   ];
 
-  const effectiveFaqs =
-    contactInfo.faqs && contactInfo.faqs.length > 0 ? contactInfo.faqs.filter((f) => f.isActive !== false) : faqs;
+  const effectiveFaqs = contactInfo.faqs?.filter((f) => f.isActive !== false) ?? faqs;
 
   const announcement = contactInfo.announcement;
 
@@ -166,8 +184,6 @@ function ContactPageContent({
         <GridPattern className="opacity-100" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
-
-
             <h1
               id="contact-hero-heading"
               className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-dark dark:text-white tracking-tight leading-[1.2]"
@@ -219,7 +235,6 @@ function ContactPageContent({
             <div className="lg:col-span-5 space-y-6">
               <ScrollReveal>
                 <div>
-
                   <h3 className="mt-3 text-2xl md:text-3xl font-extrabold text-dark dark:text-white">
                     Hubungi Kantor CITS
                   </h3>
@@ -329,16 +344,32 @@ function ContactPageContent({
                   </div>
                 </ScrollReveal>
 
+                {whatsappUrl && (
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-slate-50 p-5 hover:border-orange-400 dark:border-white/10 dark:bg-[#16162c]"
+                  >
+                    <MessageSquare className="size-5 shrink-0 text-orange-700 dark:text-orange-400" />
+                    <span className="min-w-0 text-sm">
+                      <span className="block font-semibold">WhatsApp</span>
+                      <span className="mt-1 block break-words text-slate-600 dark:text-slate-300">
+                        {contactInfo.emergencyPhone}
+                      </span>
+                    </span>
+                  </a>
+                )}
                 {/* Interactive Google Maps Card */}
                 <ScrollReveal delay={0.25}>
                   <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-sm bg-slate-100 dark:bg-slate-900">
                     <div className="p-3 bg-slate-50 dark:bg-[#16162c] border-b border-gray-200 dark:border-white/10 flex items-center justify-between text-xs">
                       <span className="font-semibold text-dark dark:text-white flex items-center gap-1.5">
                         <MapPin className="w-3.5 h-3.5 text-orange-700 dark:text-orange-400" />
-                        Peta Lokasi Kantor Wisma Mampang
+                        Peta Lokasi Kantor
                       </span>
                       <a
-                        href="https://maps.google.com/?q=CV+CITS+Indonesia+Wisma+Mampang"
+                        href={mapUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-[11px] font-semibold text-orange-700 dark:text-orange-400 hover:underline"
@@ -349,14 +380,14 @@ function ContactPageContent({
                     </div>
                     <div className="h-48 w-full">
                       <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d991.5!2d106.8260758!3d-6.2423607!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e68e7af73d3dd95%3A0x66f83299f875bb2a!2sCV%20CITS%20Indonesia!5e0!3m2!1sid!2sid!4v1700000000000"
+                        src={mapEmbedUrl}
                         width="100%"
                         height="100%"
                         style={{ border: 0 }}
                         allowFullScreen
                         loading="lazy"
                         referrerPolicy="no-referrer-when-downgrade"
-                        title="Lokasi Kantor CITS Indonesia di Wisma Mampang"
+                        title="Lokasi Kantor CITS Indonesia"
                       />
                     </div>
                   </div>
@@ -738,7 +769,6 @@ function ContactPageContent({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal>
             <div className="text-center max-w-3xl mx-auto mb-16">
-
               <h2 id="faq-heading" className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white">
                 Informasi & <GradientText>Tanya Jawab</GradientText>
               </h2>

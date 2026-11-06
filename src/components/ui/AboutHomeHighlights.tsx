@@ -58,6 +58,26 @@ export default function AboutHomeHighlights({
     }
   };
   const order = content.order?.length ? content.order : definition.sections.map((section) => section.key);
+  const heading = (key: string) => {
+    if (key === "about-hero-heading") return aboutData?.title || "Profil Perusahaan";
+    const prefix = {
+      "vision-mission-heading": "vision_mission",
+      "values-heading": "values",
+      "milestones-heading": "milestones",
+      "awards-heading": "awards",
+      "governance-heading": "governance",
+      "about-cta-heading": "about_cta",
+    }[key];
+    return prefix
+      ? joinText(
+          [
+            content.texts[`${prefix}_text_2`],
+            ...(key === "about-cta-heading" ? [] : [content.texts[`${prefix}_text_3`]]),
+          ],
+          " "
+        )
+      : "";
+  };
   const enabled = order
     .map((key) => definition.sections.find((section) => section.key === key))
     .filter(
@@ -97,7 +117,7 @@ export default function AboutHomeHighlights({
                 key={section.key}
                 className="flex h-full flex-col rounded-xl border border-[#E2E8F0] bg-white p-5 transition hover:border-orange-300 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-orange-500/40"
               >
-                <h3 className="text-base font-bold text-[#0F172A] dark:text-white">{section.title}</h3>
+                <h3 className="text-base font-bold text-[#0F172A] dark:text-white">{heading(section.key)}</h3>
                 {section.snippets.map((text, index) => (
                   <p
                     key={index}

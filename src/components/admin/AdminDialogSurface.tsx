@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 
 /** Native modal behavior provides focus containment, Escape, and focus restoration. */
 export default function AdminDialogSurface({
@@ -8,20 +8,27 @@ export default function AdminDialogSurface({
   labelledBy,
   onClose,
   widthClassName = "w-[min(900px,calc(100vw-48px))]",
+  initialFocusRef,
 }: {
   children: React.ReactNode;
   labelledBy: string;
   onClose: () => void;
   widthClassName?: string;
+  initialFocusRef?: RefObject<HTMLElement | null>;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
+    const previousFocus = document.activeElement;
     dialog.showModal();
-    return () => dialog.close();
-  }, []);
+    initialFocusRef?.current?.focus();
+    return () => {
+      dialog.close();
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
+    };
+  }, [initialFocusRef]);
 
   return (
     <dialog

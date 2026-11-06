@@ -89,6 +89,9 @@ function app(readOnly = false) {
       },
       "@/lib/internalAccess": load("lib/internalAccess.ts"),
       "@/components/admin/AdminTopbar": { default: () => null },
+      "@/components/admin/CatalogDeleteDetails": load("components/admin/CatalogDeleteDetails.tsx", {
+        "react/jsx-runtime": require("react/jsx-runtime"),
+      }),
       "@/components/admin/AdminDialogProvider": {
         useAdminDialog: () => ({
           alert(value) {

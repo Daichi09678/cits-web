@@ -6,25 +6,29 @@ export const publicPageDefinitions = {
     sections: [
       {
         key: "about-hero-heading",
-        title: "Profil, Badge, Logo & Tombol Pembuka",
+        title: "Profil, Logo & Tombol Pembuka",
         fields: [
           {
             key: "about_hero_text_1",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
           {
             key: "about_hero_text_2",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
           {
             key: "about_hero_text_3",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
           {
             key: "about_hero_text_4",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -55,6 +59,7 @@ export const publicPageDefinitions = {
           },
           {
             key: "about_hero_text_10",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -86,6 +91,7 @@ export const publicPageDefinitions = {
         fields: [
           {
             key: "vision_mission_text_1",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -106,6 +112,7 @@ export const publicPageDefinitions = {
           },
           {
             key: "vision_mission_text_5",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -141,6 +148,7 @@ export const publicPageDefinitions = {
           },
           {
             key: "vision_mission_text_12",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -162,6 +170,7 @@ export const publicPageDefinitions = {
         fields: [
           {
             key: "values_text_1",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -182,6 +191,7 @@ export const publicPageDefinitions = {
           },
           {
             key: "values_text_5",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -193,6 +203,7 @@ export const publicPageDefinitions = {
         fields: [
           {
             key: "milestones_text_1",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -219,6 +230,7 @@ export const publicPageDefinitions = {
         fields: [
           {
             key: "awards_text_1",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -239,6 +251,7 @@ export const publicPageDefinitions = {
           },
           {
             key: "awards_text_5",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -250,6 +263,7 @@ export const publicPageDefinitions = {
         fields: [
           {
             key: "governance_text_1",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -270,6 +284,7 @@ export const publicPageDefinitions = {
           },
           {
             key: "governance_text_5",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -281,6 +296,7 @@ export const publicPageDefinitions = {
         fields: [
           {
             key: "about_cta_text_1",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -726,6 +742,7 @@ export const publicPageDefinitions = {
         fields: [
           {
             key: "portfolio_hero_text_1",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -746,16 +763,19 @@ export const publicPageDefinitions = {
           },
           {
             key: "portfolio_hero_text_5",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
           {
             key: "portfolio_hero_text_6",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
           {
             key: "portfolio_hero_text_7",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -797,6 +817,7 @@ export const publicPageDefinitions = {
         fields: [
           {
             key: "flagship_text_1",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -817,6 +838,7 @@ export const publicPageDefinitions = {
           },
           {
             key: "flagship_text_5",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -853,6 +875,7 @@ export const publicPageDefinitions = {
         fields: [
           {
             key: "case_studies_list_text_1",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -903,6 +926,7 @@ export const publicPageDefinitions = {
           },
           {
             key: "case_studies_list_text_11",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -959,6 +983,7 @@ export const publicPageDefinitions = {
         fields: [
           {
             key: "metrics_text_1",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -990,6 +1015,7 @@ export const publicPageDefinitions = {
         fields: [
           {
             key: "testimonials_text_1",
+            hidden: true,
             label: "Label",
             kind: "text",
           },
@@ -1016,6 +1042,7 @@ export const publicPageDefinitions = {
         fields: [
           {
             key: "portfolio_cta_text_1",
+            hidden: true,
             label: "Label",
             kind: "text",
           },

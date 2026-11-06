@@ -350,9 +350,7 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
                 <span className="font-semibold">{searchResults.length} ditemukan</span>
               </div>
               {searchResults.length === 0 ? (
-                <div className="py-6 text-center text-xs text-slate-500">
-                  Tidak ditemukan data yang sesuai.
-                </div>
+                <div className="py-6 text-center text-xs text-slate-500">Tidak ditemukan data yang sesuai.</div>
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-white/5 pt-1">
                   {searchResults.map((item) => {

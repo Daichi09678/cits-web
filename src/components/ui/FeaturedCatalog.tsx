@@ -29,7 +29,7 @@ import type { ConsultationPurpose, ProductItem, ServicePillar } from "@/types/sc
 type FeaturedCatalogProps = {
   services: ServicePillar[];
   products: ProductItem[];
-  title?: string;
+  title?: React.ReactNode;
   subtitle?: string;
   anchorId?: string;
   bottomCtaText?: string;

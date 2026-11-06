@@ -8,10 +8,11 @@ import type { CaseStudyItem } from "@/types/schema";
 interface HeroMockupProps {
   title?: string;
   status?: string;
+  description?: string;
   projects?: CaseStudyItem[];
 }
 
-export default function HeroMockup({ title, status, projects = [] }: HeroMockupProps) {
+export default function HeroMockup({ title, status, description, projects = [] }: HeroMockupProps) {
   return (
     <div className="relative w-full max-w-xl mx-auto">
       {/* Ambient subtle shadow */}
@@ -49,12 +50,13 @@ export default function HeroMockup({ title, status, projects = [] }: HeroMockupP
 
         {/* Dashboard Body */}
         <div className="p-4 sm:p-5 space-y-4">
+          {description && <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">{description}</p>}
           {/* Main Services Console - Fokus Status Layanan Publik CITS */}
           <div className="rounded-xl bg-slate-50/90 dark:bg-[#121222] border border-slate-200/80 dark:border-white/10 p-3.5 sm:p-4 space-y-3">
             {/* Header Status Layanan */}
-            <div className="flex items-center justify-between text-[11px] sm:text-xs pb-2 border-b border-slate-200 dark:border-white/10">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] sm:text-xs pb-2 border-b border-slate-200 dark:border-white/10">
               <span className="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-bold">
-                <span className="w-2 h-2 rounded-full bg-orange-500" />
+                <span className="w-2 h-2 shrink-0 rounded-full bg-orange-500" />
                 <span>Monitoring Layanan Terpadu Instansi</span>
               </span>
               <span className="text-emerald-700 dark:text-emerald-400 text-[10px] sm:text-[11px] font-bold flex items-center gap-1">
@@ -85,7 +87,7 @@ export default function HeroMockup({ title, status, projects = [] }: HeroMockupP
                         <p className="truncate text-[11px] text-slate-600 dark:text-slate-300">{project.title}</p>
                       </div>
                     </div>
-                    <div className="shrink-0 text-right">
+                    <div className="max-w-[40%] shrink-0 text-right [overflow-wrap:anywhere]">
                       <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
                         {project.measurableImpact.highlightValue}
                       </p>
@@ -99,19 +101,19 @@ export default function HeroMockup({ title, status, projects = [] }: HeroMockupP
           </div>
 
           {/* Bottom Trust & Compliance Bar - Terintegrasi rapi di dalam card, bebas tabrakan/tertumpuk */}
-          <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/80 dark:border-white/10 text-[11px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-200/80 dark:border-white/10 text-[11px]">
             <div className="flex items-center gap-1.5 sm:gap-2 text-slate-800 dark:text-slate-100 min-w-0">
               <div className="w-5 h-5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-3.5 h-3.5" />
               </div>
-              <span className="font-semibold truncate text-[10px] sm:text-[11px]">Standar ISO & Pemerintah</span>
+              <span className="font-semibold text-[11px]">Standar ISO & Pemerintah</span>
             </div>
 
-            <div className="flex items-center gap-1.5 sm:gap-2 text-slate-800 dark:text-slate-100 justify-end min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-slate-800 dark:text-slate-100 sm:justify-end min-w-0">
               <div className="w-5 h-5 rounded bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400 flex items-center justify-center shrink-0">
                 <Zap className="w-3.5 h-3.5" />
               </div>
-              <span className="font-semibold truncate text-[10px] sm:text-[11px]">Dukungan Teknis 24/7</span>
+              <span className="font-semibold text-[11px]">Dukungan Teknis 24/7</span>
             </div>
           </div>
         </div>

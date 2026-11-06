@@ -3,19 +3,22 @@
 import { useId, useState, type ChangeEvent, type FormEvent } from "react";
 import { Upload } from "lucide-react";
 import { citsApi } from "@/lib/api";
-import { isTeamPhotoUrl, parseTeamMember, type TeamMemberInput } from "@/lib/team";
+import { isTeamPhotoUrl, parseTeamMember, type TeamMember, type TeamMemberInput } from "@/lib/team";
 import TeamDialog, { teamButton, teamField, teamPrimary, teamSecondary } from "./TeamDialog";
 import { TeamPhoto } from "./TeamMemberDetails";
+import TeamAssignmentSelect from "./TeamAssignmentSelect";
 
 type Draft = TeamMemberInput & { id?: string };
 
 export default function TeamMemberEditor({
   initial,
+  members,
   titleId,
   onSave,
   onClose,
 }: {
   initial: Draft;
+  members: readonly TeamMember[];
   titleId: string;
   onSave: (value: TeamMemberInput, id?: string) => Promise<void>;
   onClose: () => void;
@@ -159,32 +162,48 @@ export default function TeamMemberEditor({
                   className={teamField}
                 />
               </label>
-              <label htmlFor={`${id}-position`} className="block text-xs font-medium sm:col-span-2">
-                Jabatan <span className="text-red-700 dark:text-red-300">*</span>
-                <input
-                  id={`${id}-position`}
-                  name="position"
-                  required
-                  maxLength={160}
-                  value={draft.position}
-                  onChange={(event) => setDraft({ ...draft, position: event.target.value })}
-                  placeholder="Contoh: Project Manager"
-                  className={teamField}
+              <TeamAssignmentSelect
+                id={`${id}-position`}
+                label="Jabatan"
+                required
+                maxLength={160}
+                value={draft.position}
+                options={members.map((member) => member.position)}
+                onChange={(position) => setDraft({ ...draft, position })}
+                newLabel="Tambah jabatan baru"
+                newFieldLabel="Jabatan baru"
+                placeholder="Contoh: Project Manager"
+              />
+              <TeamAssignmentSelect
+                id={`${id}-team`}
+                label="Tim"
+                maxLength={100}
+                value={draft.teamName ?? ""}
+                options={members.map((member) => member.teamName ?? "")}
+                onChange={(teamName) => setDraft({ ...draft, teamName })}
+                newLabel="Tambah tim baru"
+                newFieldLabel="Nama tim baru"
+                placeholder="Contoh: Pengembangan Aplikasi"
+              />
+              <label htmlFor={`${id}-description`} className="block text-xs font-medium sm:col-span-2">
+                Tentang anggota <span className="font-normal text-slate-600 dark:text-slate-300">(opsional)</span>
+                <textarea
+                  id={`${id}-description`}
+                  name="description"
+                  rows={5}
+                  maxLength={3000}
+                  value={draft.description ?? ""}
+                  onChange={(event) => setDraft({ ...draft, description: event.target.value })}
+                  placeholder="Ceritakan peran, keahlian, pengalaman, atau fokus pekerjaan anggota ini."
+                  className={teamField + " resize-y leading-6"}
+                  aria-describedby={`${id}-description-help`}
                 />
-              </label>
-              <label htmlFor={`${id}-team`} className="block text-xs font-medium sm:col-span-2">
-                Kelompok Tim
-                <input
-                  id={`${id}-team`}
-                  name="teamName"
-                  maxLength={100}
-                  value={draft.teamName ?? ""}
-                  onChange={(event) => setDraft({ ...draft, teamName: event.target.value })}
-                  placeholder="Contoh: Pengembangan Aplikasi"
-                  className={teamField}
-                />
-                <span className="mt-2 block text-xs font-normal leading-5 text-slate-600 dark:text-slate-300">
-                  Gunakan nama yang sama untuk anggota dalam satu tim.
+                <span
+                  id={`${id}-description-help`}
+                  className="mt-2 block text-xs font-normal leading-5 text-slate-600 dark:text-slate-300"
+                >
+                  Ditampilkan pada detail profil di halaman Tim.{" "}
+                  {(draft.description ?? "").length.toLocaleString("id-ID")}/3.000 karakter.
                 </span>
               </label>
               <label htmlFor={`${id}-order`} className="block text-xs font-medium">

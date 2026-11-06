@@ -130,8 +130,7 @@ export async function verifyAdminCredential(userId: string, password: string): P
     // Fail-closed adalah perilaku default (dan diuji di tests/qa.test.cjs).
     // Untuk pengembangan tanpa database, login dengan kata sandi bawaan bisa
     // diaktifkan eksplisit lewat ALLOW_DEFAULT_ADMIN_FALLBACK=1 di .env lokal.
-    const allowDefaultFallback =
-      typeof process !== "undefined" && process.env?.ALLOW_DEFAULT_ADMIN_FALLBACK === "1";
+    const allowDefaultFallback = typeof process !== "undefined" && process.env?.ALLOW_DEFAULT_ADMIN_FALLBACK === "1";
 
     if (allowDefaultFallback) {
       console.warn(

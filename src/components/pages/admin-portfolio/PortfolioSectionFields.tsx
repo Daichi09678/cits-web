@@ -58,42 +58,48 @@ export default function PortfolioSectionFields({
   return (
     <div className="space-y-7">
       <div className="grid min-w-0 gap-x-6 gap-y-5 sm:grid-cols-2">
-        {section.fields.map((field) => {
-          const id = `portfolio-field-${field.key}`;
-          return (
-            <label
-              key={field.key}
-              htmlFor={id}
-              className={`block min-w-0 text-[13px] font-semibold text-slate-800 dark:text-slate-100 ${field.kind === "textarea" ? "sm:col-span-2" : ""}`}
-            >
-              {labels[field.key] || field.label}
-              {field.kind !== "link" && (
-                <span className="mt-1 block text-xs font-normal leading-relaxed text-slate-500 dark:text-slate-400">
-                  Contoh: {definition.texts[field.key]}
-                </span>
-              )}
-              {field.kind === "textarea" ? (
-                <textarea
-                  id={id}
-                  rows={3}
-                  maxLength={8000}
-                  value={data.texts[field.key]}
-                  onChange={(event) => onChange({ ...data, texts: { ...data.texts, [field.key]: event.target.value } })}
-                  className={fieldClass}
-                />
-              ) : (
-                <input
-                  id={id}
-                  required={field.kind === "link"}
-                  maxLength={8000}
-                  value={data.texts[field.key]}
-                  onChange={(event) => onChange({ ...data, texts: { ...data.texts, [field.key]: event.target.value } })}
-                  className={fieldClass}
-                />
-              )}
-            </label>
-          );
-        })}
+        {section.fields
+          .filter((field) => !field.hidden)
+          .map((field) => {
+            const id = `portfolio-field-${field.key}`;
+            return (
+              <label
+                key={field.key}
+                htmlFor={id}
+                className={`block min-w-0 text-[13px] font-semibold text-slate-800 dark:text-slate-100 ${field.kind === "textarea" ? "sm:col-span-2" : ""}`}
+              >
+                {labels[field.key] || field.label}
+                {field.kind !== "link" && (
+                  <span className="mt-1 block text-xs font-normal leading-relaxed text-slate-500 dark:text-slate-400">
+                    Contoh: {definition.texts[field.key]}
+                  </span>
+                )}
+                {field.kind === "textarea" ? (
+                  <textarea
+                    id={id}
+                    rows={3}
+                    maxLength={8000}
+                    value={data.texts[field.key]}
+                    onChange={(event) =>
+                      onChange({ ...data, texts: { ...data.texts, [field.key]: event.target.value } })
+                    }
+                    className={fieldClass}
+                  />
+                ) : (
+                  <input
+                    id={id}
+                    required={field.kind === "link"}
+                    maxLength={8000}
+                    value={data.texts[field.key]}
+                    onChange={(event) =>
+                      onChange({ ...data, texts: { ...data.texts, [field.key]: event.target.value } })
+                    }
+                    className={fieldClass}
+                  />
+                )}
+              </label>
+            );
+          })}
       </div>
       {Object.entries(definition.collections)
         .filter(([, schema]) => schema.section === sectionKey)

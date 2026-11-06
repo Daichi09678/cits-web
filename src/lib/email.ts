@@ -26,7 +26,9 @@ function getSmtpConfig(): { host: string; port: number; user: string; pass: stri
   const rawPass = (process.env.SMTP_PASS || "").trim();
   // App Password Gmail sering ditempel dalam empat grup yang dipisahkan spasi.
   const normalizedPass = host.toLowerCase().includes("gmail") ? rawPass.replace(/\s+/g, "") : rawPass;
-  const isPlaceholder = ["your-app-password", "your_password", "changeme", "change-me"].includes(normalizedPass.toLowerCase());
+  const isPlaceholder = ["your-app-password", "your_password", "changeme", "change-me"].includes(
+    normalizedPass.toLowerCase()
+  );
   return { host, port: Number(process.env.SMTP_PORT) || 587, user, pass: isPlaceholder ? "" : normalizedPass };
 }
 
@@ -117,9 +119,10 @@ export async function sendPasswordResetEmail(params: {
     return { sent: true };
   } catch (error: unknown) {
     const smtpError = error as { code?: string; responseCode?: number; message?: string };
-    const message = smtpError.code === "EAUTH" || smtpError.responseCode === 535
-      ? "Login SMTP ditolak Gmail (535). Gunakan Google App Password 16 karakter untuk akun SMTP_USER, bukan kata sandi Gmail biasa, lalu restart server."
-      : smtpError.message || "Gagal mengirim email.";
+    const message =
+      smtpError.code === "EAUTH" || smtpError.responseCode === 535
+        ? "Login SMTP ditolak Gmail (535). Gunakan Google App Password 16 karakter untuk akun SMTP_USER, bukan kata sandi Gmail biasa, lalu restart server."
+        : smtpError.message || "Gagal mengirim email.";
     console.error("❌ Gagal mengirim email reset kata sandi:", message);
     return { sent: false, reason: message };
   }
@@ -194,9 +197,10 @@ export async function sendContactNotificationEmail(
     console.log(`✅ Notifikasi email berhasil dikirim ke ${toEmail}`);
     return { sent: true };
   } catch (error: any) {
-    const reason = error?.code === "EAUTH" || error?.responseCode === 535
-      ? "Login SMTP ditolak Gmail (535). Periksa SMTP_USER dan gunakan Google App Password 16 karakter."
-      : error?.message || "Gagal mengirim notifikasi email.";
+    const reason =
+      error?.code === "EAUTH" || error?.responseCode === 535
+        ? "Login SMTP ditolak Gmail (535). Periksa SMTP_USER dan gunakan Google App Password 16 karakter."
+        : error?.message || "Gagal mengirim notifikasi email.";
     console.error("❌ Gagal mengirim notifikasi email:", reason);
     return { sent: false, reason };
   }

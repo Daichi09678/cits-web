@@ -644,7 +644,7 @@ export default function AdminLandingPage() {
                           type="text"
                           value={word}
                           onChange={(e) => handleTypewriterChange(idx, e.target.value)}
-                          className="flex-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-white/15 bg-slate-50 dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-orange-500 font-semibold"
+                          className="min-w-0 flex-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-white/15 bg-slate-50 dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-orange-500 font-semibold"
                           placeholder={`Kata ke-${idx + 1}`}
                         />
                         {formData.hero.typewriterWords.length > 1 && (
@@ -784,7 +784,7 @@ export default function AdminLandingPage() {
                           type="text"
                           value={badge}
                           onChange={(e) => handleTrustBadgeChange(idx, e.target.value)}
-                          className="flex-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-white/15 bg-slate-50 dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+                          className="min-w-0 flex-1 px-3 py-2 rounded-lg border border-slate-300 dark:border-white/15 bg-slate-50 dark:bg-white/5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
                         />
                         <button
                           type="button"

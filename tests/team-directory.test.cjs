@@ -67,6 +67,7 @@ const { TeamDirectory } = load("components/ui/TeamDirectory.tsx", {
   "react/jsx-runtime": require("react/jsx-runtime"),
   "lucide-react": { Search: () => null, Users: () => null },
   "@/components/ui/TeamDirectoryCard": { default: Card },
+  "@/components/pages/team/TeamProfileDialog": { default: () => null },
   "@/lib/teamClient": {},
   "@/lib/teamDirectory": directory,
 });
@@ -117,8 +118,10 @@ test("directory renders four saved team groups and six editable profiles per gro
   assert.equal((html.match(/<article/g) || []).length, 24);
   assert.equal((html.match(/aria-labelledby="team-group-heading-/g) || []).length, 4);
   assert.equal((html.match(/>6 anggota</g) || []).length, 4);
-  assert.match(html, /Kelompok tim/);
+  assert.match(html, />Tim</);
+  assert.doesNotMatch(html, /Kelompok tim/);
   assert.match(html, /4 tim/);
   assert.match(html, /24 anggota ditampilkan/);
   assert.equal((html.match(/<h4/g) || []).length, 24);
+  assert.equal((html.match(/aria-haspopup="dialog"/g) || []).length, 24);
 });

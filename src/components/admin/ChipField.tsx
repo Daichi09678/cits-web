@@ -85,7 +85,9 @@ export default function ChipField({
   return (
     <div className="space-y-2.5">
       <div>
-        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">{label}</label>
+        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+          {label}
+        </label>
         {hint && <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">{hint}</p>}
       </div>
 

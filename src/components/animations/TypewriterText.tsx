@@ -62,14 +62,14 @@ export default function TypewriterText({
   }, [currentText, isDeleting, isPaused, currentWordIndex, words, typingSpeed, deletingSpeed, pauseDuration]);
 
   return (
-    <span className="inline-flex items-center min-h-[1.15em]">
+    <span className="inline min-h-[1.15em] [overflow-wrap:anywhere]">
       <span
         className={`text-orange-700 dark:text-orange-400 bg-gradient-to-r from-orange-600 to-brand dark:from-brand dark:to-orange-400 bg-clip-text [-webkit-text-fill-color:transparent] ${className}`}
       >
         {currentText || "\u00A0"}
       </span>
       <span
-        className={`inline-block w-[3px] sm:w-[4px] h-[0.85em] ml-1 bg-brand rounded-full align-middle animate-pulse ${cursorClassName}`}
+        className={`inline-block w-[3px] sm:w-[4px] h-[0.85em] ml-1 bg-brand rounded-full align-baseline animate-pulse ${cursorClassName}`}
         aria-hidden="true"
       />
     </span>

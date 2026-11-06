@@ -16,6 +16,7 @@ const blank: TeamMemberInput = {
   name: "",
   position: "",
   teamName: "",
+  description: "",
   photoUrl: null,
   displayOrder: 0,
   isActive: true,
@@ -90,8 +91,8 @@ export default function AdminTeamPage() {
                 Anggota Tim
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-                Beranda menampilkan maksimal empat anggota aktif sesuai urutan yang Anda tentukan. Gunakan data dan foto
-                resmi tim.
+                Beranda menampilkan maksimal delapan anggota aktif sesuai urutan yang Anda tentukan. Gunakan data dan
+                foto resmi tim.
               </p>
             </div>
             {canCreate && (
@@ -321,7 +322,7 @@ export default function AdminTeamPage() {
           </div>
         </section>
       </div>
-      {draft && <TeamMemberEditor initial={draft} titleId={titleId} onSave={save} onClose={close} />}
+      {draft && <TeamMemberEditor initial={draft} members={members} titleId={titleId} onSave={save} onClose={close} />}
       {detail && (
         <TeamMemberDetails
           member={members.find((member) => member.id === detail.id) ?? detail}

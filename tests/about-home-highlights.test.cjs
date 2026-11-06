@@ -15,6 +15,7 @@ const Component = load("components/ui/AboutHomeHighlights.tsx", {
 }).default;
 
 const aboutData = {
+  title: "Profil perusahaan dari admin",
   story: "Profil resmi perusahaan yang dikelola oleh admin.",
   vision: "Visi perusahaan dari admin.",
   mission: ["Misi perusahaan dari admin."],
@@ -41,15 +42,15 @@ test("hanya section yang dicentang untuk beranda yang tampil, mengikuti urutan t
   assert.doesNotMatch(html, /Tentang CITS<|lucide-sparkles/);
 
   // urutan mengikuti data.order (keys[0] lebih dulu dari keys[1])
-  const first = html.indexOf(escapeHtml(definitions.publicPageDefinitions.about.sections[0].title));
-  const second = html.indexOf(escapeHtml(definitions.publicPageDefinitions.about.sections[1].title));
+  const first = html.indexOf(escapeHtml(aboutData.title));
+  const second = html.indexOf(escapeHtml(`${data.texts.vision_mission_text_2} ${data.texts.vision_mission_text_3}`));
   assert.ok(first >= 0 && second >= 0 && first < second, "urutan section harus mengikuti data.order");
 
   // section yang disembunyikan dari halaman Tentang Kami tidak ikut tampil di beranda
   data.visibility[keys[0]] = false;
   const hidden = render(data);
-  assert.ok(!hidden.includes(escapeHtml(definitions.publicPageDefinitions.about.sections[0].title)));
-  assert.ok(hidden.includes(escapeHtml(definitions.publicPageDefinitions.about.sections[1].title)));
+  assert.ok(!hidden.includes(escapeHtml(aboutData.title)));
+  assert.ok(hidden.includes(escapeHtml(`${data.texts.vision_mission_text_2} ${data.texts.vision_mission_text_3}`)));
 });
 
 test("urutan section yang diubah admin dipakai di beranda", () => {
@@ -60,8 +61,8 @@ test("urutan section yang diubah admin dipakai di beranda", () => {
   const reversed = [...data.order].reverse();
   data.order = reversed;
   const html = render(data);
-  const first = html.indexOf(escapeHtml(definitions.publicPageDefinitions.about.sections[1].title));
-  const second = html.indexOf(escapeHtml(definitions.publicPageDefinitions.about.sections[0].title));
+  const first = html.indexOf(escapeHtml(`${data.texts.vision_mission_text_2} ${data.texts.vision_mission_text_3}`));
+  const second = html.indexOf(escapeHtml(aboutData.title));
   assert.ok(first >= 0 && second >= 0 && first < second);
 });
 
