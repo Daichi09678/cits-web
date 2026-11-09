@@ -54,6 +54,8 @@ test("footer publishes edited company/contact content and only the current activ
   ])
     assert.ok(html.includes(value), value);
   assert.match(html, /href="\/services#new-service"/);
+  assert.match(html, /href="\/about#tim-kami"/);
+  assert.doesNotMatch(html, /Hiring|Karier|Kebijakan Privasi|Syarat &amp; Ketentuan|href="\/team"/);
   assert.doesNotMatch(html, /Layanan nonaktif|6281239719677|Pengembangan Perangkat Lunak/);
   const cleared = renderFooter([], { ...contact, emergencyPhone: "" });
   assert.doesNotMatch(cleared, /wa\.me|Layanan terbaru|Layanan nonaktif/);

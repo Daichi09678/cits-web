@@ -215,8 +215,8 @@ export const initialAboutData: AboutData = {
   ],
   stats: [
     {
-      label: "Tahun Pengalaman",
-      value: "18+",
+      label: "Berdiri Sejak",
+      value: "2006",
       description: "Rekam jejak teruji sejak 2006 di berbagai sektor industri dan pemerintahan",
     },
     {
@@ -368,12 +368,7 @@ export const initialLandingPageData: LandingPageData = {
     mockupTitle: "Pilihan Proyek CITS",
     mockupDescription: "Kenali kebutuhan dan solusi yang dikerjakan CITS melalui portofolio berikut.",
   },
-  highlights: [
-    { label: "Tahun Berpengalaman", value: "19+", isActive: true },
-    { label: "Proyek Selesai", value: "50+", isActive: true },
-    { label: "Kementerian & Lembaga", value: "15+", isActive: true },
-    { label: "Tim Profesional", value: "30+", isActive: true },
-  ],
+  highlights: initialAboutData.stats.map(({ label, value }) => ({ label, value, isActive: true })),
   servicesIntro: {
     badge: "Pilar Layanan Utama",
     title: "Solusi yang Siap Dipakai dan Dikembangkan",

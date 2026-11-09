@@ -91,8 +91,8 @@ export default function AdminTeamPage() {
                 Anggota Tim
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-                Beranda menampilkan maksimal delapan anggota aktif sesuai urutan yang Anda tentukan. Gunakan data dan
-                foto resmi tim.
+                Anggota aktif yang dipublikasikan tampil di bagian Tim pada halaman Tentang Kami sesuai urutan. Gunakan
+                data dan foto resmi untuk setiap profil yang dipublikasikan.
               </p>
             </div>
             {canCreate && (

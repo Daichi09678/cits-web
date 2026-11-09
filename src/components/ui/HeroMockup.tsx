@@ -12,7 +12,7 @@ interface HeroMockupProps {
   projects?: CaseStudyItem[];
 }
 
-export default function HeroMockup({ title, status, description, projects = [] }: HeroMockupProps) {
+export default function HeroMockup({ title, description, projects = [] }: HeroMockupProps) {
   return (
     <div className="relative w-full max-w-xl mx-auto">
       {/* Ambient subtle shadow */}
@@ -38,12 +38,8 @@ export default function HeroMockup({ title, status, description, projects = [] }
           </div>
 
           <div className="flex items-center gap-2 shrink-0 ml-2">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-            </span>
             <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold whitespace-nowrap">
-              {status ?? "Sistem Aktif"}
+              Studi Kasus
             </span>
           </div>
         </div>
@@ -57,11 +53,11 @@ export default function HeroMockup({ title, status, description, projects = [] }
             <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] sm:text-xs pb-2 border-b border-slate-200 dark:border-white/10">
               <span className="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-bold">
                 <span className="w-2 h-2 shrink-0 rounded-full bg-orange-500" />
-                <span>Monitoring Layanan Terpadu Instansi</span>
+                <span>Pengalaman & Solusi CITS</span>
               </span>
               <span className="text-emerald-700 dark:text-emerald-400 text-[10px] sm:text-[11px] font-bold flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Normal
+                Portofolio
               </span>
             </div>
 
@@ -106,14 +102,14 @@ export default function HeroMockup({ title, status, description, projects = [] }
               <div className="w-5 h-5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-3.5 h-3.5" />
               </div>
-              <span className="font-semibold text-[11px]">Standar ISO & Pemerintah</span>
+              <span className="font-semibold text-[11px]">Kenali pengalaman kami</span>
             </div>
 
             <div className="flex items-center gap-1.5 sm:gap-2 text-slate-800 dark:text-slate-100 sm:justify-end min-w-0">
               <div className="w-5 h-5 rounded bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400 flex items-center justify-center shrink-0">
                 <Zap className="w-3.5 h-3.5" />
               </div>
-              <span className="font-semibold text-[11px]">Dukungan Teknis 24/7</span>
+              <span className="font-semibold text-[11px]">Diskusikan kebutuhan Anda</span>
             </div>
           </div>
         </div>

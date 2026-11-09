@@ -138,7 +138,7 @@ test("team API preserves team, new positions and descriptions on create, edit an
   assert.equal(stored.teamName, "Manajemen Proyek");
 });
 
-test("public team responses hide inactive and unpublished members; admin listing requires team view permission", async () => {
+test("public team responses retain demo labels while hiding inactive and unpublished members", async () => {
   const auth = createTestAuth();
   const handler = routes(
     {
@@ -146,15 +146,18 @@ test("public team responses hide inactive and unpublished members; admin listing
         { ...input, id: "public" },
         { ...input, id: "inactive", isActive: false },
         { ...input, id: "hidden", showOnHomepage: false },
+        { ...input, id: "demo", isDemo: true },
       ],
     },
     auth
   );
   const response = await handler.list.GET(request("GET"));
+  const publicMembers = (await response.json()).data;
   assert.deepEqual(
-    (await response.json()).data.map((member) => member.id),
-    ["public"]
+    publicMembers.map((member) => member.id),
+    ["public", "demo"]
   );
+  assert.equal(publicMembers.find((member) => member.id === "demo").isDemo, true);
   assert.equal((await handler.list.GET(request("GET", null, undefined, "/api/team?admin=1"))).status, 401);
   const denied = auth.issueAdminToken({
     sub: "denied",
@@ -172,7 +175,9 @@ test("public team responses hide inactive and unpublished members; admin listing
     permissions: { team: ["view"] },
   });
   const all = await handler.list.GET(request("GET", viewer, undefined, "/api/team?admin=1"));
-  assert.equal((await all.json()).data.length, 3);
+  const adminMembers = (await all.json()).data;
+  assert.equal(adminMembers.length, 4);
+  assert.equal(adminMembers.find((member) => member.id === "demo").isDemo, true);
 });
 
 test("team create, edit, and delete each enforce permissions before reaching persistence", async () => {

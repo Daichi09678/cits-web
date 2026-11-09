@@ -198,7 +198,8 @@ export function homeSectionPatch(page: HomeEditorPage, data: LandingPageData): H
   }
   if (page === "about") {
     (patch.hero as Record<string, unknown>).showMockup = data.hero.showMockup !== false;
-    patch.highlights = data.highlights;
+    // Legacy highlights remain readable for compatibility; company statistics
+    // are now edited only through the About profile, not this homepage form.
     visibility.highlights = data.sectionVisibility?.highlights !== false;
   }
   return { ...patch, sectionVisibility: visibility };

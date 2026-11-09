@@ -40,6 +40,7 @@ test("homepage forms submit only their own sections, preserving explicit empty t
   assert.equal(patch.hero.badgeText, "");
   assert.deepEqual(Array.from(patch.hero.typewriterWords), ["Baru"]);
   assert.equal(patch.sectionVisibility.hero, false);
+  assert.equal("highlights" in patch, false, "homepage edits must not resave a conflicting statistics snapshot");
   assert.equal(patch.cta.title, data.cta.title); // Homepage settings are centralized on About.
   assert.equal(config.homeSectionPatch("products", data).hero, undefined);
 });
@@ -284,6 +285,25 @@ test("all selected products appear on the homepage, including selections after t
   const products = Array.from({ length: 7 }, (_, index) => product(`pilihan-${index + 1}`, true));
   const html = renderHome(initial.initialLandingPageData, { activeProducts: products });
   for (const item of products) assert.ok(html.includes(`data-product-id="${item.id}"`));
+});
+
+test("homepage uses the company profile statistics verbatim and links to the integrated team", () => {
+  const landing = structuredClone(initial.initialLandingPageData);
+  landing.highlights = [{ label: "Old conflicting number", value: "9999+" }];
+  const profile = {
+    ...initial.initialAboutData,
+    stats: [
+      { label: "Berdiri Sejak", value: "2006" },
+      { label: "Proyek terkonfirmasi", value: "123+" },
+      { label: "Ketersediaan", value: "99.9%" },
+    ],
+  };
+  const html = renderHome(landing, { aboutData: profile });
+  for (const value of ["2006", "123+", "99.9%", "Proyek terkonfirmasi"]) assert.ok(html.includes(value));
+  assert.doesNotMatch(html, /Old conflicting number|9999\+/);
+  assert.match(html, /href="\/about#tim-kami"/);
+  const cleared = renderHome(landing, { aboutData: { ...profile, stats: [] } });
+  assert.doesNotMatch(cleared, /Proyek terkonfirmasi|9999\+/);
 });
 
 test("database failures preserve the last saved homepage data", async () => {

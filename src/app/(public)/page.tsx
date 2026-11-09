@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, ArrowUpRight } from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
-import Counter from "@/components/animations/Counter";
 import ParticleNetwork from "@/components/animations/ParticleNetwork";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import TypewriterText from "@/components/animations/TypewriterText";
@@ -11,9 +10,8 @@ import HeroMockup from "@/components/ui/HeroMockup";
 import GridPattern from "@/components/ui/GridPattern";
 import Marquee from "@/components/ui/Marquee";
 import { useCitsStore } from "@/stores/citsStore";
-import { initialLandingPageData, defaultSectionVisibility } from "@/data/initialData";
+import { initialAboutData, initialLandingPageData, defaultSectionVisibility } from "@/data/initialData";
 import FeaturedCatalog from "@/components/ui/FeaturedCatalog";
-import ManagedTeamSection from "@/components/ui/ManagedTeamSection";
 import AboutHomeHighlights from "@/components/ui/AboutHomeHighlights";
 import { useCompanyContent } from "@/components/layout/CompanyBrand";
 
@@ -31,8 +29,10 @@ export default function Home() {
   const currentLanding = landingData || initialLandingPageData;
   const visibility = { ...defaultSectionVisibility, ...currentLanding.sectionVisibility };
   const hero = { ...initialLandingPageData.hero, ...currentLanding.hero };
-  const highlights = currentLanding.highlights || initialLandingPageData.highlights;
-  const activeHighlights = highlights.filter((h) => h.isActive !== false);
+  // Company statistics have one CMS source: Tentang Kami > Statistik Pencapaian.
+  const activeHighlights = (aboutData ?? initialAboutData).stats.filter(
+    (item) => item.label.trim() && item.value.trim()
+  );
   const servicesIntro = { ...initialLandingPageData.servicesIntro, ...currentLanding.servicesIntro };
   const productsIntro = { ...initialLandingPageData.productsIntro, ...currentLanding.productsIntro };
   const clientsIntro = { ...initialLandingPageData.clientsIntro, ...currentLanding.clientsIntro };
@@ -155,15 +155,12 @@ export default function Home() {
           <FloatingShapes />
           <GridPattern className="opacity-60" />
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div
-              className={`grid grid-cols-2 ${["md:grid-cols-1", "md:grid-cols-2", "md:grid-cols-3", "md:grid-cols-4"][Math.min(activeHighlights.length, 4) - 1]} gap-8 text-center`}
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
               {activeHighlights.map((item) => (
                 <div key={item.label} className="p-3">
-                  <Counter
-                    value={item.value}
-                    className="text-3xl sm:text-4xl md:text-5xl font-black text-orange-600 dark:text-orange-400 tracking-tight"
-                  />
+                  <p className="text-3xl sm:text-4xl md:text-5xl font-black text-orange-600 dark:text-orange-400 tracking-tight break-words">
+                    {item.value}
+                  </p>
                   <p className="mt-2 text-xs sm:text-sm font-semibold text-gray-700 dark:text-white">{item.label}</p>
                 </div>
               ))}
@@ -207,8 +204,18 @@ export default function Home() {
           bottomCtaLink={productsIntro.bottomCtaLink ?? "/products"}
         />
       )}
-      <ManagedTeamSection />
       <AboutHomeHighlights content={companyContent} aboutData={aboutData} />
+      {visibility.highlights !== false && (
+        <div id="team" className="scroll-mt-24 bg-white px-4 py-8 text-center dark:bg-[#1A1A2E]">
+          <Link
+            href="/about#tim-kami"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold text-orange-700 hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 dark:text-orange-400 dark:hover:bg-orange-500/10"
+          >
+            Kenali Tim CITS Indonesia
+            <ArrowRight aria-hidden="true" className="size-4" />
+          </Link>
+        </div>
+      )}
 
       {/* Client Logos Marquee */}
       {visibility.clients !== false && marqueeList.length > 0 && (

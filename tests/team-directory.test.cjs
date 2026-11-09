@@ -82,12 +82,13 @@ const render = (props = {}) =>
     })
   );
 
-test("directory renders editable member data and role choices without exposing hidden members", () => {
+test("directory displays members directly without search controls or hidden members", () => {
   const html = render();
   assert.equal((html.match(/<article/g) || []).length, 2);
   assert.match(html, /2 anggota ditampilkan/);
   assert.match(html, /Menampilkan 2 dari 2 anggota/);
-  assert.match(html, /value="Engineer"/);
+  assert.match(html, /Engineer/);
+  assert.doesNotMatch(html, /role="search"|<select|Cari atau filter anggota tim|Profil berlabel Data contoh/);
   assert.doesNotMatch(html, /Private|Internal|Data contoh/);
   const updated = render({ members: [{ ...members[0], name: "Nama diperbarui", position: "Jabatan diperbarui" }] });
   assert.match(updated, /Nama diperbarui/);
@@ -95,8 +96,10 @@ test("directory renders editable member data and role choices without exposing h
   assert.doesNotMatch(updated, /Rina|Engineer/);
 });
 
-test("directory distinguishes sample data, loading, errors and a real empty roster", () => {
-  assert.match(render({ members: [{ ...members[0], isDemo: true }] }), /bukan profil anggota resmi/);
+test("directory retains members without demo tags and handles loading, errors and an empty roster", () => {
+  const demo = render({ members: [{ ...members[0], isDemo: true }] });
+  assert.match(demo, /Rina/);
+  assert.doesNotMatch(demo, /Data contoh|bukan profil anggota resmi/);
   const loading = render({ members: [], loading: true });
   assert.match(loading, /Memuat informasi tim/);
   assert.doesNotMatch(loading, /belum tersedia|anggota ditampilkan/);
@@ -118,7 +121,7 @@ test("directory renders four saved team groups and six editable profiles per gro
   assert.equal((html.match(/<article/g) || []).length, 24);
   assert.equal((html.match(/aria-labelledby="team-group-heading-/g) || []).length, 4);
   assert.equal((html.match(/>6 anggota</g) || []).length, 4);
-  assert.match(html, />Tim</);
+  assert.doesNotMatch(html, /<select|Cari atau filter anggota tim|Profil berlabel Data contoh/);
   assert.doesNotMatch(html, /Kelompok tim/);
   assert.match(html, /4 tim/);
   assert.match(html, /24 anggota ditampilkan/);

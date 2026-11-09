@@ -32,10 +32,10 @@ test("public profile uses the selected member's saved identity, team and descrip
   assert.match(html, /Tutup detail profil/);
 });
 
-test("legacy profiles have honest empty descriptions, while sample identities stay labelled", () => {
+test("profiles retain empty-description fallbacks without a visible demo tag", () => {
   assert.match(render(), /Deskripsi anggota ini belum tersedia/);
   assert.match(render({ description: "  " }), /Deskripsi anggota ini belum tersedia/);
   assert.match(render({ teamName: "" }), /Tim: Belum ditentukan/);
-  assert.match(render({ isDemo: true }), /bukan profil anggota resmi/);
+  assert.doesNotMatch(render({ isDemo: true }), /Data contoh|bukan profil anggota resmi/);
   assert.doesNotMatch(render(), /bukan profil anggota resmi/);
 });

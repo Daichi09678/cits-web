@@ -32,6 +32,7 @@ function renderPage(page, content, study = null, aboutProfile = initial.initialA
     "@/components/ui/GridPattern": { default: empty },
     "@/components/animations/FloatingShapes": { default: empty },
     "@/components/ui/SpotlightCard": { default: wrap },
+    "@/components/pages/about/AboutTeamSection": { default: empty },
     "@/components/ui/TestimonialSlider": {
       default: ({ testimonials }) =>
         React.createElement("div", null, testimonials.map((item) => item.quote).join(" | ")),

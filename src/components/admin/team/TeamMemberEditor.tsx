@@ -249,7 +249,7 @@ export default function TeamMemberEditor({
                 onChange={(event) => setDraft({ ...draft, showOnHomepage: event.target.checked })}
                 className="h-4 w-4 accent-[#F45100]"
               />
-              Tampilkan di beranda
+              Tampilkan di Tentang Kami
             </label>
             <details className="border-t border-slate-200 dark:border-white/10 pt-4">
               <summary className="cursor-pointer text-xs font-medium text-slate-600 dark:text-slate-300">
@@ -272,7 +272,7 @@ export default function TeamMemberEditor({
                   onChange={(event) => setDraft({ ...draft, isDemo: event.target.checked })}
                   className="h-4 w-4 accent-[#F45100]"
                 />
-                Data contoh (bukan anggota resmi)
+                Data contoh (penanda untuk pengelolaan admin)
               </label>
             </details>
           </fieldset>

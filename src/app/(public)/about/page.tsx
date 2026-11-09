@@ -26,6 +26,7 @@ import SpotlightCard from "@/components/ui/SpotlightCard";
 import { useCitsStore } from "@/stores/citsStore";
 import { useCompanyContent } from "@/components/layout/CompanyBrand";
 import { pageCollection } from "@/lib/publicPageContent";
+import AboutTeamSection from "@/components/pages/about/AboutTeamSection";
 
 interface ValueItem {
   letter: string;
@@ -692,7 +693,10 @@ export default function AboutPage() {
       className="min-h-screen bg-white dark:bg-dark text-slate-900 dark:text-white transition-colors [overflow-wrap:anywhere]"
     >
       {content.order.map((key) => (
-        <Fragment key={key}>{sections[key]}</Fragment>
+        <Fragment key={key}>
+          {key === "about-cta-heading" && <AboutTeamSection />}
+          {sections[key]}
+        </Fragment>
       ))}
     </main>
   );

@@ -10,12 +10,11 @@ import { CompanyLogo } from "@/components/layout/CompanyBrand";
 
 const navLinks = [
   { href: "/", label: "Beranda" },
+  { href: "/about", label: "Tentang Kami" },
+  { href: "/portfolio", label: "Portofolio" },
   { href: "/services", label: "Layanan" },
   { href: "/products", label: "Produk" },
-  { href: "/portfolio", label: "Portofolio" },
-  { href: "/team", label: "Tim" },
-  { href: "/about", label: "Tentang Kami" },
-  { href: "/contact", label: "Kontak" },
+  { href: "/contact", label: "Hubungi Kami" },
 ];
 
 export default function Navbar() {
@@ -38,10 +37,12 @@ export default function Navbar() {
   return (
     <motion.header
       initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5 }}
-      className={`sticky top-0 z-50 transition-all duration-300 bg-white/95 dark:bg-[#1A1A2E]/95 backdrop-blur-md border-b border-transparent ${
-        scrolled ? "shadow-md dark:border-white/10" : ""
+      animate={{ y: scrolled ? 12 : 0 }}
+      transition={{ duration: 0.35 }}
+      className={`sticky top-0 z-50 w-full mx-auto shrink-0 overflow-hidden transition-[max-width,border-radius,box-shadow,border-color] duration-300 ease-out motion-reduce:transition-none bg-white/95 dark:bg-[#1A1A2E]/95 backdrop-blur-md border ${
+        scrolled
+          ? "max-w-[calc(100%_-_1.5rem)] sm:max-w-[calc(100%_-_3rem)] xl:max-w-6xl rounded-2xl border-gray-200/80 dark:border-white/15 shadow-lg shadow-black/10"
+          : "max-w-full rounded-none border-transparent"
       }`}
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
@@ -105,7 +106,7 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-white/95 dark:bg-[#1A1A2E]/95 backdrop-blur-md border-b border-gray-100 dark:border-white/10 overflow-y-auto max-h-[calc(100vh-4rem)]"
+            className="lg:hidden bg-white/95 dark:bg-[#1A1A2E]/95 backdrop-blur-md border-t border-gray-100 dark:border-white/10 overflow-y-auto max-h-[calc(100dvh-6rem)]"
           >
             <ul className="px-4 py-4 space-y-1">
               {navLinks.map((link, i) => (

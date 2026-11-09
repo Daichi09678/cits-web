@@ -33,7 +33,7 @@ import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
 import { DEFAULT_FOCUS_EXPLANATION, resolveFocusItems } from "@/lib/focusContent";
 
 export default function AdminLandingPage() {
-  const { landingData, clients, actions } = useCitsStore();
+  const { landingData, clients, aboutData, actions } = useCitsStore();
   const dialog = useAdminDialog();
 
   // Client Management States inside Landing Page
@@ -256,27 +256,6 @@ export default function AdminLandingPage() {
       ...prev,
       hero: { ...prev.hero, trustBadges: prev.hero.trustBadges.filter((_, i) => i !== index) },
     }));
-  };
-
-  // Handlers for Highlights / Stats
-  const handleStatChange = (index: number, field: "label" | "value" | "isActive", val: any) => {
-    const updated = [...formData.highlights];
-    updated[index] = { ...updated[index], [field]: val };
-    setFormData({ ...formData, highlights: updated });
-  };
-
-  const addStatItem = () => {
-    setFormData((prev) => ({
-      ...prev,
-      highlights: [...prev.highlights, { label: "Indikator Baru", value: "100+", isActive: true }],
-    }));
-  };
-
-  const removeStatItem = (index: number) => {
-    setFormData((prev) => {
-      if (prev.highlights.length <= 1) return prev;
-      return { ...prev, highlights: prev.highlights.filter((_, i) => i !== index) };
-    });
   };
 
   // Service Card 4 FOCUS helpers
@@ -896,83 +875,26 @@ export default function AdminLandingPage() {
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <BarChart3 className="w-4 h-4 text-orange-600" />
-                    <span>Statistik Angka Capaian (Counter Section)</span>
+                    <span>Statistik Perusahaan</span>
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    Setiap counter angka bisa diaktifkan/dinonaktifkan secara individual atau ditambah baru.
+                    Beranda mengikuti Statistik Pencapaian di Tentang Kami agar angka selalu konsisten.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={addStatItem}
+                <Link
+                  href="/admin/about"
                   className="px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Statistik</span>
-                </button>
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Kelola di Tentang Kami</span>
+                </Link>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                {formData.highlights.map((stat, idx) => (
-                  <div
-                    key={idx}
-                    className={`p-4 rounded-2xl border transition-all space-y-3 relative group ${
-                      stat.isActive !== false
-                        ? "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10"
-                        : "bg-slate-100/60 dark:bg-white/5 border-dashed border-slate-300 dark:border-white/10 opacity-70"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <button
-                        type="button"
-                        onClick={() => handleStatChange(idx, "isActive", stat.isActive === false ? true : false)}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold cursor-pointer ${
-                          stat.isActive !== false
-                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                            : "bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-400"
-                        }`}
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${stat.isActive !== false ? "bg-emerald-500" : "bg-slate-400"}`}
-                        />
-                        <span>{stat.isActive !== false ? "Aktif" : "Non-aktif"}</span>
-                      </button>
-
-                      {formData.highlights.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeStatItem(idx)}
-                          className="text-slate-400 hover:text-red-500 p-1 cursor-pointer"
-                          title="Hapus counter ini"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">
-                        Angka / Nilai (Counter)
-                      </label>
-                      <input
-                        type="text"
-                        value={stat.value}
-                        onChange={(e) => handleStatChange(idx, "value", e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-lg font-black text-orange-600 dark:text-orange-400 focus:outline-none"
-                        placeholder="e.g. 19+"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500 mb-1">Label Keterangan</label>
-                      <input
-                        type="text"
-                        value={stat.label}
-                        onChange={(e) => handleStatChange(idx, "label", e.target.value)}
-                        className="w-full px-3 py-1.5 rounded-lg border border-slate-300 dark:border-white/15 bg-white dark:bg-white/5 text-xs text-slate-800 dark:text-white font-semibold focus:outline-none"
-                        placeholder="e.g. Tahun Berpengalaman"
-                      />
-                    </div>
+                {aboutData.stats.map((stat, idx) => (
+                  <div key={idx} className="space-y-2 rounded-2xl border border-slate-200 p-4 dark:border-white/10">
+                    <p className="text-lg font-black text-orange-600 dark:text-orange-400">{stat.value}</p>
+                    <p className="text-xs font-semibold text-slate-800 dark:text-white">{stat.label}</p>
                   </div>
                 ))}
               </div>

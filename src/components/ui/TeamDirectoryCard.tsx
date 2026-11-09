@@ -4,29 +4,27 @@ import type { TeamMember } from "@/lib/team";
 
 export default function TeamDirectoryCard({ member, onSelect }: { member: TeamMember; onSelect: () => void }) {
   return (
-    <article className="relative flex h-full min-w-0 items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 transition-colors duration-150 hover:border-orange-300 hover:bg-orange-50/20 dark:border-white/10 dark:bg-transparent dark:hover:border-orange-400/40">
-      <div className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#FFF0E5] text-orange-600 dark:bg-orange-500/10 dark:text-orange-400">
+    <article className="relative flex h-full min-h-32 min-w-0 items-stretch gap-4 overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors duration-150 hover:border-orange-300 hover:bg-orange-50/20 dark:border-white/10 dark:bg-transparent dark:hover:border-orange-400/40">
+      <div className="relative flex w-24 shrink-0 items-center justify-center overflow-hidden bg-[#FFF0E5] text-orange-600 sm:w-28 dark:bg-orange-500/10 dark:text-orange-400">
         {member.photoUrl ? (
           <Image
             src={member.photoUrl}
             alt={`Foto ${member.name}`}
             fill
             unoptimized
-            sizes="44px"
+            sizes="(min-width: 640px) 112px, 96px"
             className="object-cover object-top"
           />
         ) : (
-          <UserRound aria-hidden="true" className="size-7" strokeWidth={1.5} />
+          <UserRound aria-hidden="true" className="size-10" strokeWidth={1.5} />
         )}
       </div>
-      <div className="min-w-0 py-0.5">
-        <h4 className="break-words text-sm font-bold leading-snug text-[#0F172A] sm:text-base dark:text-white">
+      <div className="flex min-w-0 flex-1 flex-col justify-center py-4 pr-4">
+        <h4 className="break-words text-base font-bold leading-snug text-[#0F172A] sm:text-lg dark:text-white">
           {member.name}
         </h4>
-        <p className="mt-0.5 break-words text-xs leading-relaxed text-slate-600 sm:text-sm dark:text-slate-300">
-          {member.position}
-        </p>
-        <span className="mt-1.5 block text-xs font-medium text-orange-700 dark:text-orange-400">Lihat profil</span>
+        <p className="mt-1 break-words text-sm leading-relaxed text-slate-600 dark:text-slate-300">{member.position}</p>
+        <span className="mt-2 block text-sm font-medium text-orange-700 dark:text-orange-400">Lihat profil</span>
       </div>
       <button
         type="button"

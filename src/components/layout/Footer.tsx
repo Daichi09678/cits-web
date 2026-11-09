@@ -74,7 +74,10 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/team" className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors block">
+                <Link
+                  href="/about#tim-kami"
+                  className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors block"
+                >
                   Tim Kami
                 </Link>
               </li>
@@ -92,17 +95,6 @@ export default function Footer() {
                   className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors block"
                 >
                   Portofolio
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/about"
-                  className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors inline-flex items-center gap-1.5"
-                >
-                  <span>Karier</span>
-                  <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.2 rounded font-medium">
-                    Hiring
-                  </span>
                 </Link>
               </li>
               <li>
@@ -182,12 +174,6 @@ export default function Footer() {
           <p>&copy; {new Date().getFullYear()} CITS Indonesia. Seluruh hak cipta dilindungi.</p>
 
           <div className="flex items-center gap-5">
-            <Link href="/about" className="hover:text-slate-800 dark:hover:text-slate-200 transition-colors">
-              Kebijakan Privasi
-            </Link>
-            <Link href="/about" className="hover:text-slate-800 dark:hover:text-slate-200 transition-colors">
-              Syarat & Ketentuan
-            </Link>
             <button
               type="button"
               onClick={scrollToTop}

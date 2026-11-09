@@ -3,7 +3,7 @@
 import { useAdminAuth } from "@/lib/auth";
 import { canPerformAction } from "@/lib/internalAccess";
 import { useState } from "react";
-import { Home, Plus, Save, Trash2 } from "lucide-react";
+import { Home, Save } from "lucide-react";
 import { useCitsStore } from "@/stores/citsStore";
 import { initialLandingPageData } from "@/data/initialData";
 import { HOME_SECTIONS, homeSectionPatch, type HomeEditorPage } from "@/lib/homeSections";
@@ -170,81 +170,10 @@ export default function HomeSectionEditor({ page }: { page: HomeEditorPage }) {
                 />
                 Tampilkan statistik di Beranda
               </label>
-              {data.highlights.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 p-3 dark:border-white/10"
-                >
-                  <label className="min-w-32 flex-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Label statistik
-                    <input
-                      className={fieldClass}
-                      maxLength={150}
-                      value={item.label}
-                      onChange={(event) =>
-                        change({
-                          ...data,
-                          highlights: data.highlights.map((entry, i) =>
-                            i === index ? { ...entry, label: event.target.value } : entry
-                          ),
-                        })
-                      }
-                    />
-                  </label>
-                  <label className="w-28 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    Nilai
-                    <input
-                      className={fieldClass}
-                      maxLength={50}
-                      value={item.value}
-                      onChange={(event) =>
-                        change({
-                          ...data,
-                          highlights: data.highlights.map((entry, i) =>
-                            i === index ? { ...entry, value: event.target.value } : entry
-                          ),
-                        })
-                      }
-                    />
-                  </label>
-                  <label className="flex items-center gap-2 py-2.5 text-xs text-slate-700 dark:text-slate-300">
-                    <input
-                      type="checkbox"
-                      checked={item.isActive !== false}
-                      onChange={(event) =>
-                        change({
-                          ...data,
-                          highlights: data.highlights.map((entry, i) =>
-                            i === index ? { ...entry, isActive: event.target.checked } : entry
-                          ),
-                        })
-                      }
-                      className="h-4 w-4 accent-orange-600"
-                    />
-                    Tampilkan
-                  </label>
-                  <button
-                    type="button"
-                    aria-label={`Hapus statistik ${index + 1}`}
-                    className="p-2.5 text-rose-600"
-                    onClick={() => change({ ...data, highlights: data.highlights.filter((_, i) => i !== index) })}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-              {data.highlights.length < 12 && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    change({ ...data, highlights: [...data.highlights, { label: "", value: "", isActive: true }] })
-                  }
-                  className="inline-flex items-center gap-2 text-xs font-bold text-orange-700 dark:text-orange-300"
-                >
-                  <Plus className="h-4 w-4" />
-                  Tambah statistik
-                </button>
-              )}
+              <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+                Angka dan label mengikuti Statistik Pencapaian pada bagian Profil Perusahaan di halaman Tentang Kami.
+                Ubah statistik di sana agar Beranda dan Tentang Kami selalu menampilkan informasi yang sama.
+              </p>
             </div>
           )}
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4 dark:border-white/10">

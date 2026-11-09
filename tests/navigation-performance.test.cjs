@@ -9,6 +9,7 @@ function app() {
   const timers = new Map();
   const listeners = new Map();
   const snapshots = {};
+  const delays = {};
   const document = {
     hidden: false,
     addEventListener: (name, fn) => listeners.set(name, fn),
@@ -41,6 +42,7 @@ function app() {
       async () => {
         calls[method] = (calls[method] || 0) + 1;
         await wait;
+        if (method in delays) await delays[method];
         if (method in snapshots) return snapshots[method];
         return ["getContactInfo", "getAboutData", "getLandingData"].includes(method)
           ? { title: method }
@@ -80,8 +82,31 @@ function app() {
       },
     }
   );
-  return { ...store, storage, calls, events, finish, timers, listeners, document, snapshots };
+  return { ...store, storage, calls, events, finish, timers, listeners, document, snapshots, delays };
 }
+
+test("ready content appears while another API is still pending", async () => {
+  const state = app();
+  let finishPortfolio;
+  state.delays.getPortfolio = new Promise((resolve) => {
+    finishPortfolio = resolve;
+  });
+  let completed = false;
+  const pending = state.syncContentFromBackend().then(() => {
+    completed = true;
+  });
+  state.finish();
+  await new Promise(setImmediate);
+  assert.equal(completed, false);
+  assert.equal(state.storage.has("landing"), true);
+  assert.equal(state.storage.has("products"), true);
+  assert.equal(state.storage.has("portfolio"), false);
+  assert.deepEqual(state.events, ["cits-data-updated"]);
+  finishPortfolio();
+  await pending;
+  assert.equal(state.storage.has("portfolio"), true);
+  assert.equal(state.events.length, 2);
+});
 
 test("header, sidebar and page share seven requests and one content notification during navigation", async () => {
   const state = app();

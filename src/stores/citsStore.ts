@@ -557,23 +557,37 @@ export function syncContentFromBackend(force = false): Promise<void> {
   backendSync = record;
   record.promise = Promise.resolve()
     .then(async () => {
-      const results = await Promise.allSettled(entries.map(([, fetchData]) => fetchData()));
-      if (backendSync !== record || contentSessionKey() !== key) return;
-      let changed = false;
-      results.forEach((result, index) => {
-        const [storageKey, , isArray] = entries[index];
-        if (result.status !== "fulfilled" || !result.value || (isArray && !Array.isArray(result.value))) {
-          record.ttl = 5000;
-          return;
-        }
-        // A completed admin save takes precedence over an older in-flight read.
-        if (readStorage(storageKey) !== before[index]) return;
-        const raw = JSON.stringify(result.value);
-        if (raw === before[index]) return;
-        cacheStorage(storageKey, raw);
-        changed = true;
-      });
-      if (changed) window.dispatchEvent(new Event("cits-data-updated"));
+      let notificationPending = false;
+      await Promise.allSettled(
+        entries.map(async ([storageKey, fetchData, isArray], index) => {
+          try {
+            const value = await fetchData();
+            if (backendSync !== record || contentSessionKey() !== key) return;
+            if (!value || (isArray && !Array.isArray(value))) {
+              record.ttl = 5000;
+              return;
+            }
+            // Publish each ready section without waiting for the slowest API.
+            // A completed admin save takes precedence over an older in-flight read.
+            if (readStorage(storageKey) !== before[index]) return;
+            const raw = JSON.stringify(value);
+            if (raw === before[index]) return;
+            cacheStorage(storageKey, raw);
+            // Batch responses that finish together into one consumer update.
+            if (!notificationPending) {
+              notificationPending = true;
+              void Promise.resolve().then(() => {
+                notificationPending = false;
+                if (backendSync === record && contentSessionKey() === key) {
+                  window.dispatchEvent(new Event("cits-data-updated"));
+                }
+              });
+            }
+          } catch {
+            record.ttl = 5000;
+          }
+        })
+      );
     })
     .catch((error) => {
       record.ttl = 5000;

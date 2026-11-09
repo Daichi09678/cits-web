@@ -83,34 +83,34 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [overflow-wrap:anywhere]">
         <div className="grid sm:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
-          <div className="flex flex-col items-center gap-3.5 border-b border-slate-200 bg-gradient-to-b from-orange-50 via-orange-50/70 to-orange-50/30 px-5 py-6 text-center sm:items-start sm:border-r sm:border-b-0 sm:text-left dark:border-white/10 dark:from-orange-500/10 dark:via-orange-500/[0.05] dark:to-transparent">
-            <div className="relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-[#FFF0E5] text-orange-600 ring-1 ring-orange-200/80 dark:bg-orange-500/10 dark:text-orange-400 dark:ring-orange-400/20">
+          <div className="flex min-w-0 flex-col gap-4 border-b border-slate-200 bg-orange-50/40 text-left sm:border-r sm:border-b-0 dark:border-white/10 dark:bg-orange-500/[0.04]">
+            <div className="relative flex aspect-[4/3] w-full shrink-0 items-center justify-center overflow-hidden bg-[#FFF0E5] text-orange-600 sm:aspect-square dark:bg-orange-500/10 dark:text-orange-400">
               {member.photoUrl ? (
                 <Image
                   src={member.photoUrl}
                   alt={`Foto ${member.name}`}
                   fill
                   unoptimized
-                  sizes="80px"
+                  sizes="(min-width: 640px) 260px, calc(100vw - 34px)"
                   className="object-cover object-top"
                 />
               ) : (
-                <UserRound aria-hidden="true" className="size-10" strokeWidth={1.5} />
+                <UserRound aria-hidden="true" className="size-20" strokeWidth={1.5} />
               )}
             </div>
-            <div className="min-w-0">
+            <div className="min-w-0 px-5">
               <h2
                 id={titleId}
-                className="text-lg font-bold leading-snug tracking-tight text-[#0F172A] sm:text-xl dark:text-white"
+                className="text-xl font-bold leading-snug tracking-tight text-[#0F172A] sm:text-2xl dark:text-white"
               >
                 {member.name}
               </h2>
-              <p className="mt-1.5 text-sm font-semibold leading-relaxed text-orange-700 dark:text-orange-400">
+              <p className="mt-2 text-base font-semibold leading-relaxed text-orange-700 dark:text-orange-400">
                 {member.position}
               </p>
             </div>
-            <p className="flex max-w-full items-start gap-1.5 rounded-lg border border-slate-200 bg-white/80 px-2.5 py-2 text-left text-xs font-medium leading-snug text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
-              <Users aria-hidden="true" className="mt-0.5 size-3 shrink-0 text-orange-600 dark:text-orange-400" />
+            <p className="mx-5 mb-5 flex max-w-full items-start gap-2 rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-left text-sm font-medium leading-snug text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+              <Users aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-orange-600 dark:text-orange-400" />
               <span className="min-w-0 break-words">Tim: {teamName || "Belum ditentukan"}</span>
             </p>
           </div>
@@ -118,7 +118,7 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
             <section aria-labelledby={`${titleId}-about`}>
               <div className="flex items-center gap-2">
                 <span aria-hidden="true" className="h-4 w-1 shrink-0 rounded-full bg-orange-600 dark:bg-orange-400" />
-                <h3 id={`${titleId}-about`} className="min-w-0 text-base font-bold text-[#0F172A] dark:text-white">
+                <h3 id={`${titleId}-about`} className="min-w-0 text-lg font-bold text-[#0F172A] dark:text-white">
                   Tentang {member.name}
                 </h3>
               </div>
@@ -126,7 +126,7 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
                 {description ? (
                   <p
                     id={descriptionId}
-                    className="whitespace-pre-line text-sm leading-7 text-slate-700 dark:text-slate-200"
+                    className="whitespace-pre-line text-base leading-7 text-slate-700 dark:text-slate-200"
                   >
                     {description}
                   </p>
@@ -150,11 +150,6 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
                 )}
               </div>
             </section>
-            {member.isDemo && (
-              <p className="mt-5 flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-800 dark:bg-amber-400/10 dark:text-amber-200">
-                Data contoh untuk preview, bukan profil anggota resmi CITS Indonesia.
-              </p>
-            )}
           </div>
         </div>
       </div>

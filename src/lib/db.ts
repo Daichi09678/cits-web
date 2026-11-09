@@ -751,7 +751,7 @@ export const DbRepo = {
         await sql`
           INSERT INTO contact_info (id, company_name, address, phone, email, working_hours, maps_url, emergency_phone, faqs, custom_services, announcement, updated_at)
           VALUES (
-            'default', 'CV CITS Indonesia', ${info.address}, ${info.phone},
+            'default', 'PT Cipta Integrasi Teknologi Solusi', ${info.address}, ${info.phone},
             ${info.email}, ${info.workingHours}, ${info.mapsUrl || null},
             ${info.emergencyPhone || null},
             ${jsonb(sql, info.faqs || initialContactInfo.faqs || [])},

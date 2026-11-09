@@ -68,8 +68,8 @@ export default function TeamMemberDetails({
     ["Tim", member.teamName || "Belum ditentukan"],
     ["Urutan tampil", String(member.displayOrder ?? 0)],
     [
-      "Ditampilkan di beranda",
-      member.isActive !== false && member.showOnHomepage !== false ? "Ya, sesuai urutan (maksimal 8 anggota)" : "Tidak",
+      "Ditampilkan di Tentang Kami",
+      member.isActive !== false && member.showOnHomepage !== false ? "Ya, sesuai urutan" : "Tidak",
     ],
     ["Tanggal ditambahkan", memberDate(member, "createdAt")],
     ["Terakhir diperbarui", memberDate(member, "updatedAt")],
