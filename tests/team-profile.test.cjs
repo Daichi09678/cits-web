@@ -10,7 +10,10 @@ const Profile = load("components/pages/team/TeamProfileDialog.tsx", {
   "next/image": {
     default: ({ fill: _fill, unoptimized: _unoptimized, ...props }) => React.createElement("img", props),
   },
-  "lucide-react": { UserRound: () => null, X: () => null },
+  "next/link": {
+    default: ({ children, href, ...props }) => React.createElement("a", { href, ...props }, children),
+  },
+  "lucide-react": { FileText: () => null, UserRound: () => null, Users: () => null, X: () => null },
 }).default;
 
 const member = { id: "member-1", name: "Rina", position: "Lead Engineer", teamName: "Platform", photoUrl: null };
