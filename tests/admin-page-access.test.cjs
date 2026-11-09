@@ -29,6 +29,15 @@ function render(relative, { user = internal, pathname = "/admin", loading = fals
     "@/components/admin/AdminShell": { useAdminShell: () => ({ closeMobile: noop }) },
     "@/components/admin/AdminTopbar": { default: () => null },
     "@/components/admin/UserAvatar": { default: () => null },
+    "@/lib/cn": load("lib/cn.ts"),
+    "@/components/ui/Badge": load("components/ui/Badge.tsx", {
+      "react/jsx-runtime": require("react/jsx-runtime"),
+      "@/lib/cn": load("lib/cn.ts"),
+    }),
+    "@/components/ui/Button": load("components/ui/Button.tsx", {
+      "react/jsx-runtime": require("react/jsx-runtime"),
+      "@/lib/cn": load("lib/cn.ts"),
+    }),
     "./AdminPageTransitionLoader": load("components/admin/AdminPageTransitionLoader.tsx", {
       "react/jsx-runtime": require("react/jsx-runtime"),
       "next/link": { useLinkStatus: () => ({ pending: false }) },
@@ -48,7 +57,7 @@ function sidebarLinks(user) {
 
 test("sidebar shows only assigned pages while keeping dashboard and settings", () => {
   const { html, links } = sidebarLinks(internal);
-  assert.deepEqual(links, ["/admin", "/admin/products", "/admin/settings"]);
+  assert.deepEqual(links, ["/admin", "/admin/products", "/admin/settings", "/admin/profile"]);
   assert.doesNotMatch(html, /Informasi Perusahaan|Layanan CITS|Portofolio Kami|Hubungi Kami/);
   assert.match(html, /Produk &amp; Layanan/);
   assert.doesNotMatch(html, /Hanya dapat dilihat/);
@@ -57,7 +66,7 @@ test("sidebar shows only assigned pages while keeping dashboard and settings", (
 test("empty or missing internal permissions hide content pages and empty sidebar groups", () => {
   for (const user of [{ role: "Admin Internal", pageAccess: [] }, { role: "Admin Internal" }]) {
     const { html, links } = sidebarLinks(user);
-    assert.deepEqual(links, ["/admin", "/admin/settings"]);
+    assert.deepEqual(links, ["/admin", "/admin/settings", "/admin/profile"]);
     assert.doesNotMatch(html, /Produk &amp; Layanan|Informasi Perusahaan/);
     assert.match(html, /Pengaturan/);
   }
@@ -66,8 +75,19 @@ test("empty or missing internal permissions hide content pages and empty sidebar
 
 test("superadmin retains every sidebar page without explicit page assignments", () => {
   const { links } = sidebarLinks(superadmin);
-  assert.equal(links.length, access.EDITABLE_PAGES.length + 2);
+  assert.equal(links.length, access.EDITABLE_PAGES.length + 3);
   for (const page of access.EDITABLE_PAGES) assert.ok(links.includes(page.href));
+});
+
+test("sidebar carries the signed-in identity at the bottom and is the only profile entry point", () => {
+  const { html } = render("components/admin/AdminSidebar.tsx", {
+    user: { ...internal, name: "Ayu Lestari", email: "ayu@cits.id", jobTitle: "Staf Konten" },
+  });
+  assert.match(html, /Ayu Lestari/);
+  assert.match(html, /ayu@cits.id/);
+  assert.match(html, /Staf Konten/);
+  assert.match(html, /href="\/admin\/profile"/);
+  assert.doesNotMatch(html, /Live Content Sync/);
 });
 
 test("direct URLs to unassigned pages redirect without mounting their content", () => {

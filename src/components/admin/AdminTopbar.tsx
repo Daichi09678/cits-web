@@ -9,7 +9,6 @@ import {
   Sun,
   Moon,
   Menu,
-  UserRound,
   X,
   Package,
   Cpu,
@@ -23,7 +22,6 @@ import { useCitsStore } from "@/stores/citsStore";
 import { useAdminShell } from "@/components/admin/AdminShell";
 import { useAdminAuth } from "@/lib/auth";
 import { canAccessPage, type PageKey } from "@/lib/internalAccess";
-import UserAvatar from "@/components/admin/UserAvatar";
 
 interface AdminTopbarProps {
   title: string;
@@ -67,12 +65,10 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
   const canSeeInbox = canAccessPage(session?.user, "contact");
 
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
 
-  const profileRef = useRef<HTMLDivElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
@@ -82,9 +78,6 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
   // Close menus on outside click
   useEffect(() => {
     function onPointerDown(event: MouseEvent) {
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
-        setShowProfile(false);
-      }
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
         setShowSearchDropdown(false);
       }
@@ -407,10 +400,7 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
         {canSeeInbox && (
           <div className="relative">
             <button
-              onClick={() => {
-                setShowNotifications((value) => !value);
-                setShowProfile(false);
-              }}
+              onClick={() => setShowNotifications((value) => !value)}
               title="Notifikasi Pesan"
               className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors relative"
               aria-label="Notifications"
@@ -463,68 +453,6 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
             )}
           </div>
         )}
-
-        {/* Profil Saya di Header */}
-        <div className="relative" ref={profileRef}>
-          <button
-            type="button"
-            onClick={() => {
-              setShowProfile((value) => !value);
-              setShowNotifications(false);
-            }}
-            title="Buka profil saya"
-            aria-label="Buka profil saya"
-            aria-haspopup="menu"
-            aria-expanded={showProfile}
-            className="flex items-center justify-center rounded-full border border-slate-200 bg-white p-1 transition-colors hover:border-orange-300 hover:bg-orange-50/60 dark:border-white/10 dark:bg-white/5 dark:hover:border-orange-500/40 dark:hover:bg-orange-500/10 cursor-pointer"
-          >
-            <UserAvatar
-              src={session?.user.avatar}
-              name={session?.user.name || "Administrator"}
-              size={32}
-              textClassName="text-[10px]"
-            />
-          </button>
-
-          {showProfile && (
-            <div
-              role="menu"
-              className="absolute right-0 z-50 mt-2 w-[min(19rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-900/10 animate-in fade-in zoom-in-95 duration-150 dark:border-white/10 dark:bg-[#1A1A2E] dark:shadow-black/40"
-            >
-              <div className="flex items-center gap-3 border-b border-slate-100 p-4 dark:border-white/10">
-                <UserAvatar
-                  src={session?.user.avatar}
-                  name={session?.user.name || "Administrator"}
-                  size={44}
-                  className="ring-2 ring-orange-100 dark:ring-orange-500/20"
-                  textClassName="text-sm"
-                />
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-extrabold text-slate-900 dark:text-white">
-                    {session?.user.name || "Administrator"}
-                  </p>
-                  <p className="truncate text-[10px] text-slate-500 dark:text-slate-400">
-                    {session?.user.email || "admin@cits.id"}
-                  </p>
-                  <span className="mt-1 inline-flex rounded-full bg-orange-50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-orange-700 dark:bg-orange-500/10 dark:text-orange-300">
-                    {session?.user.jobTitle || session?.user.role || "Admin"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-1.5">
-                <Link
-                  href="/admin/profile"
-                  onClick={() => setShowProfile(false)}
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-white/5 dark:hover:text-white"
-                >
-                  <UserRound className="h-4 w-4 text-orange-500" />
-                  Profil Saya
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Mobile Search Modal Dialog */}

@@ -25,6 +25,10 @@ import { useAdminAuth } from "@/lib/auth";
 import { useCitsStore } from "@/stores/citsStore";
 import { useAdminShell } from "@/components/admin/AdminShell";
 import { canAccessPage, type PageKey } from "@/lib/internalAccess";
+import { cn } from "@/lib/cn";
+import Badge, { type BadgeTone, type BadgeVariant } from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import UserAvatar from "@/components/admin/UserAvatar";
 import AdminPageTransitionLoader from "./AdminPageTransitionLoader";
 
 interface NavItem {
@@ -34,7 +38,9 @@ interface NavItem {
   exact?: boolean;
   pageKey?: PageKey;
   badge?: string;
-  badgeColor?: string;
+  badgeTone?: BadgeTone;
+  badgeVariant?: BadgeVariant;
+  badgePulse?: boolean;
 }
 
 interface NavGroup {
@@ -91,7 +97,7 @@ export default function AdminSidebar() {
           icon: Package,
           pageKey: "products",
           badge: `${activeProductsCount} Aktif`,
-          badgeColor: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
+          badgeTone: "success",
         },
         {
           title: "Layanan CITS",
@@ -122,7 +128,7 @@ export default function AdminSidebar() {
           icon: Briefcase,
           pageKey: "portfolio",
           badge: `${activeCaseStudiesCount} Kasus`,
-          badgeColor: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 font-semibold",
+          badgeTone: "info",
         },
         {
           title: "Mitra Klien",
@@ -136,7 +142,9 @@ export default function AdminSidebar() {
           icon: Mail,
           pageKey: "contact",
           badge: unreadMessagesCount > 0 ? `${unreadMessagesCount} Baru` : undefined,
-          badgeColor: "bg-orange-500 text-white font-bold animate-pulse",
+          badgeTone: "accent",
+          badgeVariant: "solid",
+          badgePulse: true,
         },
       ],
     },
@@ -206,9 +214,9 @@ export default function AdminSidebar() {
                   className="h-8 w-auto hidden dark:block"
                   priority
                 />
-                <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-950/60 border border-orange-200 dark:border-orange-800/60 px-2 py-0.5 rounded-md uppercase tracking-wider">
+                <Badge tone="accent" size="sm" shape="rounded" className="uppercase tracking-wider">
                   {roleLabel}
-                </span>
+                </Badge>
               </div>
               <span className="block text-[11px] text-slate-700 dark:text-slate-300 font-medium">
                 Sistem Manajemen Konten
@@ -291,15 +299,14 @@ export default function AdminSidebar() {
                         </div>
 
                         {item.badge ? (
-                          <span
-                            className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
-                              isActive
-                                ? "bg-white/20 text-white"
-                                : item.badgeColor || "bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300"
-                            }`}
+                          <Badge
+                            tone={item.badgeTone ?? "neutral"}
+                            variant={isActive ? "inverse" : (item.badgeVariant ?? "soft")}
+                            size="sm"
+                            className={cn("shrink-0", item.badgePulse && "animate-pulse")}
                           >
                             {item.badge}
-                          </span>
+                          </Badge>
                         ) : null}
                       </Link>
                     );
@@ -311,28 +318,49 @@ export default function AdminSidebar() {
         </div>
 
         {/* Bottom User Profile & Logout */}
-        <div className="p-3 border-t border-slate-100 dark:border-white/5 space-y-3">
-          {/* Shopeers-style banner card */}
-          <div className="p-3 rounded-2xl bg-gradient-to-br from-orange-500/10 via-amber-500/5 to-transparent border border-orange-200/60 dark:border-orange-500/20">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-              <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">Live Content Sync</span>
-            </div>
-            <p className="text-[10px] text-slate-700 dark:text-slate-200 leading-snug">
-              Perubahan data di Back Office otomatis terhubung langsung ke Front Office.
-            </p>
-          </div>
+        <div className="p-3 border-t border-slate-100 dark:border-white/5 space-y-2">
+          {/* Identitas pengguna: satu-satunya pintu ke halaman profil admin. */}
+          {session?.user ? (
+            <Link
+              href="/admin/profile"
+              title="Buka profil saya"
+              className="group flex items-center gap-3 rounded-2xl border border-slate-200/80 bg-white px-3 py-2.5 transition-colors hover:border-orange-300 hover:bg-orange-50/70 dark:border-white/10 dark:bg-white/5 dark:hover:border-orange-500/40 dark:hover:bg-orange-500/10"
+            >
+              <UserAvatar
+                src={session.user.avatar}
+                name={session.user.name || "Administrator"}
+                size={36}
+                textClassName="text-[11px]"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-bold text-slate-900 dark:text-white">
+                  {session.user.name || "Administrator"}
+                </p>
+                <p className="truncate text-[10px] font-semibold text-orange-700 dark:text-orange-400">
+                  {session.user.jobTitle || roleLabel}
+                </p>
+                <p className="truncate text-[10px] text-slate-500 dark:text-slate-400">
+                  {session.user.email || "admin@cits.id"}
+                </p>
+              </div>
+              <ChevronRight
+                aria-hidden="true"
+                className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-hover:translate-x-0.5"
+              />
+            </Link>
+          ) : null}
 
-          {/* Logout tanpa keterangan profil — profil dipindah ke header */}
-          <button
+          <Button
+            variant="danger-soft"
+            size="md"
             onClick={handleLogout}
             title="Keluar dari Admin"
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-700 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:border-rose-900/40 dark:hover:bg-rose-950/30 dark:hover:text-rose-300"
             aria-label="Logout"
+            className="w-full"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4" aria-hidden="true" />
             Keluar dari Akun
-          </button>
+          </Button>
         </div>
       </aside>
     </>

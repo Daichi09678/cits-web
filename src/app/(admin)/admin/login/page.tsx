@@ -21,6 +21,7 @@ import { useAdminAuth } from "@/lib/auth";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 import GridPattern from "@/components/ui/GridPattern";
 import AdminModal from "@/components/admin/AdminModal";
+import Badge from "@/components/ui/Badge";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -133,10 +134,10 @@ export default function AdminLoginPage() {
               />
             </div>
 
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-900 dark:text-orange-300 border border-orange-200/80 dark:border-orange-800/60 text-[11px] font-bold tracking-wide uppercase shadow-2xs">
+            <Badge tone="accent" size="md" className="uppercase tracking-wide shadow-2xs">
               <ShieldCheck className="w-3.5 h-3.5 text-orange-700 dark:text-orange-400" />
               <span>Back Office • Sistem Kontrol CMS</span>
-            </div>
+            </Badge>
 
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
               Autentikasi Administrator
@@ -266,7 +267,7 @@ export default function AdminLoginPage() {
           <div className="pt-4 border-t border-slate-200 dark:border-white/10 text-center space-y-1.5">
             <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
               <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-              <span>CV CITS Indonesia • Wisma Mampang Lt. 5</span>
+              <span>PT Cipta Integrasi Teknologi Solusi • CITS Indonesia</span>
             </div>
             <p className="text-[10px] text-slate-400 dark:text-slate-500">
               Sistem Terproteksi IDDS & SPBE. Akses terbatas hanya untuk staf berwenang.
