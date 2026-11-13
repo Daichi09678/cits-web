@@ -24,6 +24,11 @@ export default function TeamDirectoryCard({ member, onSelect }: { member: TeamMe
           {member.name}
         </h4>
         <p className="mt-1 break-words text-sm leading-relaxed text-slate-600 dark:text-slate-300">{member.position}</p>
+        {member.isDemo && (
+          <span className="mt-1.5 inline-flex w-fit items-center rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-800 uppercase dark:bg-amber-500/15 dark:text-amber-300">
+            Data contoh
+          </span>
+        )}
         <span className="mt-2 block text-sm font-medium text-orange-700 dark:text-orange-400">Lihat profil</span>
       </div>
       <button

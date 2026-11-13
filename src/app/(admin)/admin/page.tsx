@@ -6,7 +6,6 @@ import {
   Package,
   Mail,
   Building2,
-  ShieldCheck,
   Plus,
   ArrowRight,
   ExternalLink,
@@ -15,7 +14,7 @@ import {
   Sparkles,
   TrendingUp,
 } from "lucide-react";
-import AdminTopbar from "@/components/admin/AdminTopbar";
+import AdminTopbar from "@/components/pages/admin/AdminTopbar";
 import MetricCard from "@/components/admin/MetricCard";
 import { useCitsStore } from "@/stores/citsStore";
 import { useAdminAuth } from "@/lib/auth";
@@ -82,11 +81,11 @@ export default function AdminDashboardPage() {
           )}
 
           <MetricCard
-            title="Status Kesiapan Sistem"
-            value="99.9%"
-            change="Stabil"
-            subtitle="High Availability SLA CITS"
-            icon={ShieldCheck}
+            title="Produk di Beranda"
+            value={products.filter((product) => product.showOnHome && product.isActive !== false).length}
+            change="Tayang"
+            subtitle="Section produk unggulan front office"
+            icon={Sparkles}
             iconColor="bg-indigo-100 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400"
           />
         </div>

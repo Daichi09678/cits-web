@@ -24,6 +24,7 @@ export function TeamDirectory({ members, loading, error, onRetry }: TeamDirector
   ];
   const groups = groupTeamMembers(published);
   const unavailable = Boolean(error && published.length === 0);
+  const hasDemoProfiles = published.some((member) => member.isDemo === true);
 
   return (
     <section
@@ -105,6 +106,15 @@ export function TeamDirectory({ members, loading, error, onRetry }: TeamDirector
             <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
               Menampilkan {published.length} dari {published.length} anggota
             </p>
+            {hasDemoProfiles && (
+              <p
+                role="note"
+                className="mb-5 rounded-xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+              >
+                Sebagian profil di bawah masih berupa <strong>data contoh</strong> untuk pengembangan tampilan, bukan
+                data resmi anggota tim CITS.
+              </p>
+            )}
             <div className="space-y-7 sm:space-y-8">
               {groups.map((group, index) => (
                 <section key={group.name} aria-labelledby={`team-group-heading-${index}`}>

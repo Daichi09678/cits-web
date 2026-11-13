@@ -24,7 +24,7 @@ import GridPattern from "@/components/ui/GridPattern";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import { useCitsStore } from "@/stores/citsStore";
-import { useCompanyContent } from "@/components/layout/CompanyBrand";
+import { useCompanyContent } from "@/components/pages/public/CompanyBrand";
 import { pageCollection } from "@/lib/publicPageContent";
 import AboutTeamSection from "@/components/pages/about/AboutTeamSection";
 

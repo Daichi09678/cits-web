@@ -20,12 +20,9 @@ import {
   CheckCircle2,
   ExternalLink,
   MessageSquare,
-  HelpCircle,
-  Check,
   User,
   Copy,
   CheckCheck,
-  ChevronDown,
 } from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import GradientText from "@/components/ui/GradientText";
@@ -33,8 +30,10 @@ import GridPattern from "@/components/ui/GridPattern";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import CustomSelect from "@/components/ui/CustomSelect";
+import Input from "@/components/ui/Input";
 import { useCitsStore } from "@/stores/citsStore";
 import { contactPresentation } from "@/lib/contactPresentation";
+import FaqChat from "@/components/pages/contact/FaqChat";
 
 const serviceOptions = [
   "Pengembangan Perangkat Lunak (Software House)",
@@ -110,7 +109,6 @@ function ContactPageContent({
   ]);
   const selectedFeatures = requestedFeatures.filter((feature) => availableFeatures.has(feature));
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   const effectiveServiceOptions = [
     ...new Set([
@@ -141,10 +139,6 @@ function ContactPageContent({
     } catch {
       setCopiedKey(null);
     }
-  };
-
-  const toggleFaq = (index: number) => {
-    setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
 
   return (
@@ -509,7 +503,7 @@ function ContactPageContent({
                             <div>
                               <label
                                 htmlFor="contact-nama"
-                                className="block text-xs font-bold text-gray-800 dark:text-white/90 mb-1.5"
+                                className="block text-sm font-bold text-gray-800 dark:text-white/90 mb-1.5"
                               >
                                 Nama Lengkap <span className="text-red-600">*</span>
                               </label>
@@ -517,14 +511,15 @@ function ContactPageContent({
                                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-white/40 pointer-events-none">
                                   <User className="w-4 h-4" />
                                 </div>
-                                <input
+                                <Input
                                   id="contact-nama"
                                   name="nama"
                                   type="text"
                                   required
                                   value={formName}
                                   onChange={(e) => setFormName(e.target.value)}
-                                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
+                                  withIcon
+                                  fieldSize="md"
                                   placeholder="cth. Ir. Budi Santoso"
                                 />
                               </div>
@@ -533,7 +528,7 @@ function ContactPageContent({
                             <div>
                               <label
                                 htmlFor="contact-instansi"
-                                className="block text-xs font-bold text-gray-800 dark:text-white/90 mb-1.5"
+                                className="block text-sm font-bold text-gray-800 dark:text-white/90 mb-1.5"
                               >
                                 Instansi / Perusahaan <span className="text-red-600">*</span>
                               </label>
@@ -541,14 +536,15 @@ function ContactPageContent({
                                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-white/40 pointer-events-none">
                                   <Building2 className="w-4 h-4" />
                                 </div>
-                                <input
+                                <Input
                                   id="contact-instansi"
                                   name="instansi"
                                   type="text"
                                   required
                                   value={formCompany}
                                   onChange={(e) => setFormCompany(e.target.value)}
-                                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
+                                  withIcon
+                                  fieldSize="md"
                                   placeholder="cth. Kementerian / BUMN / PT"
                                 />
                               </div>
@@ -560,7 +556,7 @@ function ContactPageContent({
                             <div>
                               <label
                                 htmlFor="contact-email"
-                                className="block text-xs font-bold text-gray-800 dark:text-white/90 mb-1.5"
+                                className="block text-sm font-bold text-gray-800 dark:text-white/90 mb-1.5"
                               >
                                 Email Resmi / Dinas <span className="text-red-600">*</span>
                               </label>
@@ -568,14 +564,15 @@ function ContactPageContent({
                                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-white/40 pointer-events-none">
                                   <Mail className="w-4 h-4" />
                                 </div>
-                                <input
+                                <Input
                                   id="contact-email"
                                   name="email"
                                   type="email"
                                   required
                                   value={formEmail}
                                   onChange={(e) => setFormEmail(e.target.value)}
-                                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
+                                  withIcon
+                                  fieldSize="md"
                                   placeholder="nama@instansi.go.id"
                                 />
                               </div>
@@ -584,7 +581,7 @@ function ContactPageContent({
                             <div>
                               <label
                                 htmlFor="contact-telepon"
-                                className="block text-xs font-bold text-gray-800 dark:text-white/90 mb-1.5"
+                                className="block text-sm font-bold text-gray-800 dark:text-white/90 mb-1.5"
                               >
                                 Nomor Telepon / WhatsApp <span className="text-red-600">*</span>
                               </label>
@@ -592,14 +589,15 @@ function ContactPageContent({
                                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-white/40 pointer-events-none">
                                   <Phone className="w-4 h-4" />
                                 </div>
-                                <input
+                                <Input
                                   id="contact-telepon"
                                   name="telepon"
                                   type="tel"
                                   required
                                   value={formPhone}
                                   onChange={(e) => setFormPhone(e.target.value)}
-                                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-sm"
+                                  withIcon
+                                  fieldSize="md"
                                   placeholder="0812-xxxx-xxxx"
                                 />
                               </div>
@@ -610,7 +608,7 @@ function ContactPageContent({
                           <div>
                             <label
                               id="service-select-label"
-                              className="block text-xs font-bold text-gray-800 dark:text-white/90 mb-1.5"
+                              className="block text-sm font-bold text-gray-800 dark:text-white/90 mb-1.5"
                             >
                               Pilar Layanan yang Dibutuhkan
                             </label>
@@ -626,7 +624,7 @@ function ContactPageContent({
                           <div>
                             <label
                               id="product-select-label"
-                              className="block text-xs font-bold text-gray-800 dark:text-white/90 mb-1.5"
+                              className="block text-sm font-bold text-gray-800 dark:text-white/90 mb-1.5"
                             >
                               Produk yang Ingin Dikonsultasikan
                             </label>
@@ -642,7 +640,7 @@ function ContactPageContent({
                               value={selectedProductId}
                               onChange={setSelectedProductId}
                             />
-                            <p className="mt-2 text-xs text-gray-600 dark:text-white/70">
+                            <p className="mt-2 text-sm text-gray-600 dark:text-white/70">
                               Anda dapat memilih layanan, produk, atau keduanya sesuai kebutuhan.
                             </p>
                           </div>
@@ -654,7 +652,7 @@ function ContactPageContent({
                             onFeaturesChange={setRequestedFeatures}
                           />
                           {initialSource !== "contact" && (
-                            <p className="text-xs text-slate-600 dark:text-slate-300">
+                            <p className="text-sm text-slate-600 dark:text-slate-300">
                               Konsultasi dari halaman {CONSULTATION_SOURCES[initialSource]}.
                             </p>
                           )}
@@ -671,7 +669,7 @@ function ContactPageContent({
                                   <h4 className="font-bold text-slate-900 dark:text-white">
                                     {selectedPortfolio.title}
                                   </h4>
-                                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                                  <p className="text-sm text-slate-600 dark:text-slate-300">
                                     {selectedPortfolio.client} · {selectedPortfolio.servicePillar}
                                   </p>
                                   <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
@@ -699,7 +697,7 @@ function ContactPageContent({
                           <div>
                             <label
                               htmlFor="contact-pesan"
-                              className="block text-xs font-bold text-gray-800 dark:text-white/90 mb-1.5"
+                              className="block text-sm font-bold text-gray-800 dark:text-white/90 mb-1.5"
                             >
                               Detail Masalah & Kebutuhan Anda <span className="text-red-600">*</span>
                             </label>
@@ -726,7 +724,7 @@ function ContactPageContent({
                             />
                             <label
                               htmlFor="contact-consent"
-                              className="text-xs text-gray-700 dark:text-white/80 leading-normal cursor-pointer select-none"
+                              className="text-sm text-gray-700 dark:text-white/80 leading-normal cursor-pointer select-none"
                             >
                               Saya menyetujui data formulir ini digunakan oleh CITS Indonesia untuk keperluan komunikasi
                               teknis dan penyusunan proposal konsultasi.
@@ -764,61 +762,34 @@ function ContactPageContent({
         </div>
       </section>
 
-      {/* 3. FAQ SECTION (IDDS Inquiries Accordion with Smooth Interactivity) */}
+      {/* 3. FAQ SECTION — asisten tanya jawab berbasis pertanyaan yang tersedia.
+          Layout 5/7 kolom mengikuti section formulir di atasnya agar lebar kartu identik. */}
       <section aria-labelledby="faq-heading" className="py-16 md:py-24 bg-gray-50 dark:bg-[#151528] transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ScrollReveal>
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <h2 id="faq-heading" className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white">
-                Informasi & <GradientText>Tanya Jawab</GradientText>
-              </h2>
-              <p className="mt-4 text-gray-700 dark:text-white/85 text-base leading-relaxed">
-                Jawaban atas pertanyaan yang sering diajukan seputar tata kelola kerja sama, proses pengadaan, dan
-                kepatuhan sistem bersama CITS Indonesia.
-              </p>
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+            <div className="lg:col-span-5">
+              <ScrollReveal>
+                <div>
+                  <h2 id="faq-heading" className="text-3xl md:text-4xl font-extrabold text-dark dark:text-white">
+                    Informasi & <GradientText>Tanya Jawab</GradientText>
+                  </h2>
+                  <p className="mt-3 text-gray-700 dark:text-white/85 text-sm md:text-base leading-relaxed">
+                    Jawaban atas pertanyaan yang sering diajukan seputar tata kelola kerja sama, proses pengadaan, dan
+                    kepatuhan sistem bersama CITS Indonesia.
+                  </p>
+                  <p className="mt-4 text-xs text-gray-600 dark:text-white/70 leading-relaxed">
+                    Pilih salah satu pertanyaan yang tersedia, atau tulis pertanyaan Anda sendiri — asisten akan
+                    menjawab dari daftar jawaban resmi CITS.
+                  </p>
+                </div>
+              </ScrollReveal>
             </div>
-          </ScrollReveal>
 
-          <div className="max-w-4xl mx-auto space-y-4">
-            {effectiveFaqs.map((faq, idx) => {
-              const isOpen = openFaqIndex === idx;
-              return (
-                <ScrollReveal key={faq.question} delay={idx * 0.06}>
-                  <div className="rounded-2xl bg-white dark:bg-[#16162c] border border-gray-200 dark:border-white/10 hover:border-orange-500/40 transition-all shadow-sm overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={() => toggleFaq(idx)}
-                      className="w-full p-6 text-left flex items-center justify-between gap-4 cursor-pointer focus:outline-none"
-                      aria-expanded={isOpen}
-                    >
-                      <div className="flex items-center gap-3.5">
-                        <div className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0">
-                          <HelpCircle className="w-4 h-4" />
-                        </div>
-                        <h3 className="font-extrabold text-dark dark:text-white text-base">{faq.question}</h3>
-                      </div>
-                      <ChevronDown
-                        className={`w-5 h-5 text-gray-500 dark:text-white/60 transition-transform duration-300 shrink-0 ${
-                          isOpen ? "rotate-180 text-orange-600 dark:text-orange-400" : ""
-                        }`}
-                      />
-                    </button>
-
-                    {isOpen && (
-                      <div className="px-6 pb-6 pt-1 border-t border-gray-150 dark:border-white/10">
-                        <p className="pl-12 text-xs md:text-sm text-gray-700 dark:text-white/85 leading-relaxed">
-                          {faq.answer}
-                        </p>
-                        <div className="mt-4 pl-12 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-400">
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Informasi Resmi Terverifikasi</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </ScrollReveal>
-              );
-            })}
+            <div className="lg:col-span-7">
+              <ScrollReveal direction="right" className="h-full">
+                <FaqChat faqs={effectiveFaqs} />
+              </ScrollReveal>
+            </div>
           </div>
         </div>
       </section>

@@ -4,8 +4,9 @@ import { useState, useRef } from "react";
 import { Package, Plus, Search, Edit, Trash2, CheckCircle2, X, Image as ImageIcon, Upload } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
 import { canPerformAction } from "@/lib/internalAccess";
-import AdminTopbar from "@/components/admin/AdminTopbar";
-import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
+import AdminTopbar from "@/components/pages/admin/AdminTopbar";
+import AdminModal from "@/components/pages/admin/AdminModal";
+import { useAdminDialog } from "@/components/pages/admin/AdminDialogProvider";
 import CatalogDeleteDetails from "@/components/admin/CatalogDeleteDetails";
 import { useCitsStore } from "@/stores/citsStore";
 import { ProductItem } from "@/types/schema";
@@ -279,6 +280,12 @@ export default function AdminProductsPage() {
     updatedAt: editingProduct?.updatedAt || new Date().toISOString(),
   };
 
+  // Modal tidak boleh ditutup saat proses simpan atau pembacaan foto berjalan.
+  const handleCloseModal = () => {
+    if (saving || readingImage) return;
+    setModalOpen(false);
+  };
+
   return (
     <div className="flex-1 flex flex-col min-w-0">
       <AdminTopbar
@@ -530,276 +537,256 @@ export default function AdminProductsPage() {
         </div>
 
         {/* Add / Edit Product Modal */}
-        {modalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-            <div className="w-full max-w-xl max-h-[90vh] flex flex-col bg-white dark:bg-[#16162D] rounded-3xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
-              {/* Modal Header */}
-              <div className="px-6 py-5 border-b border-slate-100 dark:border-white/10 flex items-start justify-between gap-4 shrink-0">
-                <div className="min-w-0 space-y-1.5">
-                  <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
-                    {editingProduct ? "Edit Informasi Produk" : "Tambah Produk Baru"}
-                  </h3>
-                  <p className="text-xs leading-relaxed text-slate-500">
-                    Data yang disimpan akan langsung tampil di halaman Front Office CITS
+        <AdminModal
+          open={modalOpen}
+          onClose={handleCloseModal}
+          title={editingProduct ? "Edit Informasi Produk" : "Tambah Produk Baru"}
+          description="Data yang disimpan akan langsung tampil di halaman Front Office CITS"
+          size="xl"
+        >
+          {/* Modal Form */}
+          <form onSubmit={handleSave} className="space-y-4">
+            {mutationError && (
+              <p role="alert" className="text-xs text-red-600">
+                {mutationError}
+              </p>
+            )}
+            <fieldset disabled={saving || readingImage} className="min-w-0 space-y-6">
+              <div className="grid sm:grid-cols-2 gap-x-5 gap-y-4">
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                    Nama Produk
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    placeholder="Contoh: Portal Satu Data"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+
+                <div className="min-w-0">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                    Kategori
+                  </label>
+                  <input
+                    value={formCategory}
+                    required
+                    maxLength={100}
+                    list="product-category-options"
+                    onChange={(e) => setFormCategory(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
+                  />
+                  <datalist id="product-category-options">
+                    {[...new Set([...categories, "General"])].map((category) => (
+                      <option key={category} value={category} />
+                    ))}
+                  </datalist>
+                  <p className="mt-1.5 text-[11px] leading-relaxed text-slate-500">
+                    Pilih kategori atau tulis kategori baru. Kategori tersimpan akan tersedia sebagai filter.
                   </p>
                 </div>
-                <button
-                  onClick={() => {
-                    if (!saving && !readingImage) setModalOpen(false);
-                  }}
-                  className="shrink-0 p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
-                >
-                  <X className="w-5 h-5" />
-                </button>
               </div>
 
-              {/* Modal Form */}
-              <form onSubmit={handleSave} className="min-h-0 p-6 space-y-4 overflow-y-auto">
-                {mutationError && (
-                  <p role="alert" className="text-xs text-red-600">
-                    {mutationError}
-                  </p>
-                )}
-                <fieldset disabled={saving || readingImage} className="min-w-0 space-y-6">
-                  <div className="grid sm:grid-cols-2 gap-x-5 gap-y-4">
-                    <div className="min-w-0">
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                        Nama Produk
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formName}
-                        onChange={(e) => setFormName(e.target.value)}
-                        placeholder="Contoh: Portal Satu Data"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      />
-                    </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                  Deskripsi Lengkap
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  value={formDescription}
+                  onChange={(e) => setFormDescription(e.target.value)}
+                  placeholder="Jelaskan fungsi, keunggulan, dan manfaat produk untuk instansi..."
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                ></textarea>
+              </div>
 
-                    <div className="min-w-0">
-                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                        Kategori
-                      </label>
-                      <input
-                        value={formCategory}
-                        required
-                        maxLength={100}
-                        list="product-category-options"
-                        onChange={(e) => setFormCategory(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 cursor-pointer"
-                      />
-                      <datalist id="product-category-options">
-                        {[...new Set([...categories, "General"])].map((category) => (
-                          <option key={category} value={category} />
-                        ))}
-                      </datalist>
-                      <p className="mt-1.5 text-[11px] leading-relaxed text-slate-500">
-                        Pilih kategori atau tulis kategori baru. Kategori tersimpan akan tersedia sebagai filter.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
-                      Deskripsi Lengkap
+              {/* Foto / Gambar Produk */}
+              <ProductSpecificationFields
+                details={formDetails}
+                specifications={formSpecifications}
+                onDetails={setFormDetails}
+                onSpecifications={setFormSpecifications}
+              />
+              <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <ImageIcon className="w-4 h-4 shrink-0 text-orange-600 dark:text-orange-400" />
+                    <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                      Foto / Gambar Produk
                     </label>
-                    <textarea
-                      rows={3}
-                      required
-                      value={formDescription}
-                      onChange={(e) => setFormDescription(e.target.value)}
-                      placeholder="Jelaskan fungsi, keunggulan, dan manfaat produk untuk instansi..."
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    ></textarea>
                   </div>
+                  {formImage && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Hapus Foto
+                    </button>
+                  )}
+                </div>
 
-                  {/* Foto / Gambar Produk */}
-                  <ProductSpecificationFields
-                    details={formDetails}
-                    specifications={formSpecifications}
-                    onDetails={setFormDetails}
-                    onSpecifications={setFormSpecifications}
-                  />
-                  <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 space-y-3">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <ImageIcon className="w-4 h-4 shrink-0 text-orange-600 dark:text-orange-400" />
-                        <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                          Foto / Gambar Produk
-                        </label>
-                      </div>
-                      {formImage && (
-                        <button
-                          type="button"
-                          onClick={handleRemoveImage}
-                          className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:text-rose-700 flex items-center gap-1 cursor-pointer transition-colors"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          Hapus Foto
-                        </button>
-                      )}
+                {/* Preview jika sudah ada foto */}
+                {formImage ? (
+                  <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-[#121224] p-3 flex items-center gap-3.5 shadow-2xs">
+                    <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/20 shrink-0">
+                      <img src={formImage} alt="Preview Foto Produk" className="w-full h-full object-cover" />
                     </div>
-
-                    {/* Preview jika sudah ada foto */}
-                    {formImage ? (
-                      <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 bg-white dark:bg-[#121224] p-3 flex items-center gap-3.5 shadow-2xs">
-                        <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/20 shrink-0">
-                          <img src={formImage} alt="Preview Foto Produk" className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-1 min-w-0 space-y-1.5">
-                          <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                            <CheckCircle2 className="w-4 h-4 shrink-0" />
-                            <span>Foto Produk Berhasil Dipilih</span>
-                          </div>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate font-mono">
-                            {formImage.startsWith("data:") ? "Foto diunggah dari perangkat lokal (Base64)" : formImage}
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-[11px] font-bold text-slate-700 dark:text-white transition-colors cursor-pointer inline-flex items-center gap-1.5"
-                          >
-                            <Upload className="w-3 h-3" />
-                            Ganti Foto
-                          </button>
-                        </div>
+                    <div className="flex-1 min-w-0 space-y-1.5">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                        <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        <span>Foto Produk Berhasil Dipilih</span>
                       </div>
-                    ) : (
-                      /* Dropzone unggah file */
-                      <div
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate font-mono">
+                        {formImage.startsWith("data:") ? "Foto diunggah dari perangkat lokal (Base64)" : formImage}
+                      </p>
+                      <button
+                        type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-5 rounded-xl border-2 border-dashed border-slate-300 dark:border-white/15 hover:border-orange-500/60 dark:hover:border-orange-500/60 bg-white dark:bg-[#151528] transition-all text-center cursor-pointer group"
+                        className="px-3 py-1 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-[11px] font-bold text-slate-700 dark:text-white transition-colors cursor-pointer inline-flex items-center gap-1.5"
                       >
-                        <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
-                          <Upload className="w-5 h-5" />
-                        </div>
-                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                          Klik untuk Pilih / Unggah Foto Produk
-                        </p>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                          Mendukung format PNG, JPG, atau WebP (Maksimal 3 MB)
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Input File Tersembunyi */}
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/png,image/jpeg,image/webp,image/jpg"
-                      onChange={handleImageFileChange}
-                      className="hidden"
-                    />
-
-                    {/* Opsi alternatif: Input URL / Path */}
-                    <div className="pt-1">
-                      <span className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">
-                        Atau masukkan Path / URL Gambar:
-                      </span>
-                      <input
-                        type="text"
-                        value={formImage.startsWith("data:") ? "" : formImage}
-                        onChange={(e) => setFormImage(e.target.value)}
-                        placeholder="cth: /services/software-house.webp atau https://..."
-                        className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-[#121224] border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      />
+                        <Upload className="w-3 h-3" />
+                        Ganti Foto
+                      </button>
                     </div>
                   </div>
-
-                  <div>
-                    <ChipField
-                      label="Fitur & Kapabilitas Produk"
-                      hint="Centang kapabilitas yang tersedia, atau tulis sendiri lalu tekan Enter."
-                      value={csvToList(formFeatures)}
-                      onChange={(list) => setFormFeatures(listToCsv(list))}
-                      presets={FEATURE_PRESETS}
-                      placeholder="cth: Laporan Real-Time, REST API"
-                    />
-                  </div>
-
-                  <div>
-                    <ChipField
-                      label="Tag / Kata Kunci"
-                      hint="Dipakai untuk pencarian dan pengelompokan produk."
-                      value={csvToList(formTags)}
-                      onChange={(list) => setFormTags(listToCsv(list))}
-                      presets={TAG_PRESETS}
-                      placeholder="cth: SPBE, GovTech, ISO 27001"
-                      accent="emerald"
-                    />
-                  </div>
-
-                  {/* Status Aktif / Non-Aktif Checkbox */}
-                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 flex items-start justify-between gap-4">
-                    <div className="min-w-0 space-y-1.5 leading-relaxed">
-                      <span className="block text-xs font-bold text-slate-900 dark:text-white">
-                        Tampilkan di Website Front Office
-                      </span>
-                      <span className="block text-[11px] text-slate-500">
-                        Jika tidak dicentang, produk akan berstatus Non-Aktif (disembunyikan)
-                      </span>
+                ) : (
+                  /* Dropzone unggah file */
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-5 rounded-xl border-2 border-dashed border-slate-300 dark:border-white/15 hover:border-orange-500/60 dark:hover:border-orange-500/60 bg-white dark:bg-[#151528] transition-all text-center cursor-pointer group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                      <Upload className="w-5 h-5" />
                     </div>
-                    <input
-                      type="checkbox"
-                      checked={formIsActive}
-                      onChange={(e) => setFormIsActive(e.target.checked)}
-                      className="mt-0.5 w-5 h-5 shrink-0 accent-orange-600 rounded cursor-pointer"
-                    />
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      Klik untuk Pilih / Unggah Foto Produk
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      Mendukung format PNG, JPG, atau WebP (Maksimal 3 MB)
+                    </p>
                   </div>
+                )}
 
-                  <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
-                    <span className="min-w-0 space-y-1.5 leading-relaxed">
-                      <span className="block text-xs font-bold text-slate-900 dark:text-white">
-                        Tampilkan di Beranda Utama
-                      </span>
-                      <span className="block text-[11px] text-slate-500 dark:text-slate-300">
-                        Centang agar produk muncul pada section produk unggulan di halaman utama.
-                      </span>
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={formShowOnHome}
-                      onChange={(e) => setFormShowOnHome(e.target.checked)}
-                      className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-orange-600"
-                    />
-                  </label>
+                {/* Input File Tersembunyi */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/jpg"
+                  onChange={handleImageFileChange}
+                  className="hidden"
+                />
 
-                  {/* Modal Buttons */}
-                  <div className="pt-5 flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 dark:border-white/10">
-                    <button
-                      type="button"
-                      onClick={() => setPreviewProduct(draftProduct)}
-                      className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 dark:border-white/15 dark:text-slate-200"
-                    >
-                      Pratinjau Detail
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!saving && !readingImage) setModalOpen(false);
-                      }}
-                      className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5"
-                    >
-                      Batal
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25"
-                    >
-                      {saving
-                        ? "Menyimpan..."
-                        : readingImage
-                          ? "Membaca foto..."
-                          : editingProduct
-                            ? "Simpan Perubahan"
-                            : "Tambahkan ke Katalog"}
-                    </button>
-                  </div>
-                </fieldset>
-              </form>
-            </div>
-          </div>
-        )}
+                {/* Opsi alternatif: Input URL / Path */}
+                <div className="pt-1">
+                  <span className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">
+                    Atau masukkan Path / URL Gambar:
+                  </span>
+                  <input
+                    type="text"
+                    value={formImage.startsWith("data:") ? "" : formImage}
+                    onChange={(e) => setFormImage(e.target.value)}
+                    placeholder="cth: /services/software-house.webp atau https://..."
+                    className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-[#121224] border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <ChipField
+                  label="Fitur & Kapabilitas Produk"
+                  hint="Centang kapabilitas yang tersedia, atau tulis sendiri lalu tekan Enter."
+                  value={csvToList(formFeatures)}
+                  onChange={(list) => setFormFeatures(listToCsv(list))}
+                  presets={FEATURE_PRESETS}
+                  placeholder="cth: Laporan Real-Time, REST API"
+                />
+              </div>
+
+              <div>
+                <ChipField
+                  label="Tag / Kata Kunci"
+                  hint="Dipakai untuk pencarian dan pengelompokan produk."
+                  value={csvToList(formTags)}
+                  onChange={(list) => setFormTags(listToCsv(list))}
+                  presets={TAG_PRESETS}
+                  placeholder="cth: SPBE, GovTech, ISO 27001"
+                  accent="emerald"
+                />
+              </div>
+
+              {/* Status Aktif / Non-Aktif Checkbox */}
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 flex items-start justify-between gap-4">
+                <div className="min-w-0 space-y-1.5 leading-relaxed">
+                  <span className="block text-xs font-bold text-slate-900 dark:text-white">
+                    Tampilkan di Website Front Office
+                  </span>
+                  <span className="block text-[11px] text-slate-500">
+                    Jika tidak dicentang, produk akan berstatus Non-Aktif (disembunyikan)
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={formIsActive}
+                  onChange={(e) => setFormIsActive(e.target.checked)}
+                  className="mt-0.5 w-5 h-5 shrink-0 accent-orange-600 rounded cursor-pointer"
+                />
+              </div>
+
+              <label className="flex cursor-pointer items-start justify-between gap-4 rounded-xl border border-orange-200/80 bg-orange-50/50 p-3.5 dark:border-orange-500/20 dark:bg-orange-500/10">
+                <span className="min-w-0 space-y-1.5 leading-relaxed">
+                  <span className="block text-xs font-bold text-slate-900 dark:text-white">
+                    Tampilkan di Beranda Utama
+                  </span>
+                  <span className="block text-[11px] text-slate-500 dark:text-slate-300">
+                    Centang agar produk muncul pada section produk unggulan di halaman utama.
+                  </span>
+                </span>
+                <input
+                  type="checkbox"
+                  checked={formShowOnHome}
+                  onChange={(e) => setFormShowOnHome(e.target.checked)}
+                  className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer accent-orange-600"
+                />
+              </label>
+
+              {/* Modal Buttons */}
+              <div className="pt-5 flex flex-wrap items-center justify-end gap-3 border-t border-slate-100 dark:border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setPreviewProduct(draftProduct)}
+                  className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 dark:border-white/15 dark:text-slate-200"
+                >
+                  Pratinjau Detail
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25"
+                >
+                  {saving
+                    ? "Menyimpan..."
+                    : readingImage
+                      ? "Membaca foto..."
+                      : editingProduct
+                        ? "Simpan Perubahan"
+                        : "Tambahkan ke Katalog"}
+                </button>
+              </div>
+            </fieldset>
+          </form>
+        </AdminModal>
         {previewProduct && (
           <ProductDetailsDialog product={previewProduct} preview onClose={() => setPreviewProduct(null)} />
         )}

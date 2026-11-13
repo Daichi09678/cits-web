@@ -96,10 +96,11 @@ test("directory displays members directly without search controls or hidden memb
   assert.doesNotMatch(updated, /Rina|Engineer/);
 });
 
-test("directory retains members without demo tags and handles loading, errors and an empty roster", () => {
+test("directory marks demo profiles and handles loading, errors and an empty roster", () => {
   const demo = render({ members: [{ ...members[0], isDemo: true }] });
   assert.match(demo, /Rina/);
-  assert.doesNotMatch(demo, /Data contoh|bukan profil anggota resmi/);
+  // Profil contoh harus dikenali sebagai data contoh, bukan tampil seperti staf resmi.
+  assert.match(demo, /data contoh/i);
   const loading = render({ members: [], loading: true });
   assert.match(loading, /Memuat informasi tim/);
   assert.doesNotMatch(loading, /belum tersedia|anggota ditampilkan/);

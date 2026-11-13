@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -17,9 +18,11 @@ import {
   Mail,
   Compass,
   ChevronRight,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { useCitsStore } from "@/stores/citsStore";
-import { useAdminShell } from "@/components/admin/AdminShell";
+import { useAdminShell } from "@/components/pages/admin/AdminShell";
 import { useAdminAuth } from "@/lib/auth";
 import { canAccessPage, type PageKey } from "@/lib/internalAccess";
 
@@ -68,10 +71,16 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [activeSearchIndex, setActiveSearchIndex] = useState(-1);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
+  const mobileSearchTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileSearchWasOpen = useRef(false);
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const notificationTriggerRef = useRef<HTMLButtonElement>(null);
 
   const unreadMessages = messages.filter((m) => m.status === "unread");
 
@@ -80,6 +89,7 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
     function onPointerDown(event: MouseEvent) {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
         setShowSearchDropdown(false);
+        setActiveSearchIndex(-1);
       }
     }
     document.addEventListener("mousedown", onPointerDown);
@@ -107,12 +117,62 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  // Focus input when mobile search opens
+  // Fokus awal, penguncian scroll, dan pemulihan fokus untuk pencarian mobile.
   useEffect(() => {
     if (showMobileSearch) {
-      setTimeout(() => mobileInputRef.current?.focus(), 50);
+      mobileSearchWasOpen.current = true;
+      const previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      const timer = window.setTimeout(() => mobileInputRef.current?.focus(), 50);
+      return () => {
+        window.clearTimeout(timer);
+        document.body.style.overflow = previousOverflow;
+      };
+    }
+
+    if (mobileSearchWasOpen.current) {
+      mobileSearchWasOpen.current = false;
+      mobileSearchTriggerRef.current?.focus();
     }
   }, [showMobileSearch]);
+
+  // Jaga opsi aktif tetap terlihat di dalam panel hasil.
+  useEffect(() => {
+    if (activeSearchIndex < 0 || typeof document === "undefined") return;
+    document.getElementById(`admin-search-option-${activeSearchIndex}`)?.scrollIntoView({ block: "nearest" });
+  }, [activeSearchIndex]);
+
+  // Sinkronkan status layar penuh (termasuk saat keluar lewat Esc browser).
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const sync = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    sync();
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
+
+  // Panel notifikasi: tutup saat klik di luar atau Escape, lalu kembalikan fokus ke tombol.
+  useEffect(() => {
+    if (!showNotifications || typeof document === "undefined") return;
+
+    const onPointerDown = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setShowNotifications(false);
+      notificationTriggerRef.current?.focus();
+    };
+
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [showNotifications]);
 
   // Search Results computation
   const searchResults = useMemo<AdminSearchResult[]>(() => {
@@ -253,6 +313,16 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
     router.push(href);
   };
 
+  // Toggle Fullscreen (layar penuh)
+  const toggleFullscreen = () => {
+    if (typeof document === "undefined") return;
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+      return;
+    }
+    void document.documentElement.requestFullscreen?.();
+  };
+
   // Toggle Dark Mode
   const toggleDarkMode = () => {
     if (typeof document !== "undefined") {
@@ -295,6 +365,7 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
         {/* Mobile Search Button (< 768px) */}
         <button
           type="button"
+          ref={mobileSearchTriggerRef}
           onClick={() => setShowMobileSearch(true)}
           className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors shrink-0"
           title="Cari data"
@@ -309,12 +380,46 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
           <input
             ref={searchInputRef}
             type="search"
+            role="combobox"
+            aria-expanded={showSearchDropdown && searchQuery.trim().length > 0}
+            aria-controls="admin-search-results"
+            aria-autocomplete="list"
+            aria-label="Cari data, produk, pesan"
+            aria-activedescendant={activeSearchIndex >= 0 ? `admin-search-option-${activeSearchIndex}` : undefined}
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
+              setActiveSearchIndex(-1);
               setShowSearchDropdown(true);
             }}
             onFocus={() => setShowSearchDropdown(true)}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowDown") {
+                event.preventDefault();
+                setShowSearchDropdown(true);
+                setActiveSearchIndex((index) =>
+                  searchResults.length === 0 ? -1 : Math.min(index + 1, searchResults.length - 1)
+                );
+                return;
+              }
+              if (event.key === "ArrowUp") {
+                event.preventDefault();
+                setActiveSearchIndex((index) => Math.max(index - 1, 0));
+                return;
+              }
+              if (event.key === "Enter" && activeSearchIndex >= 0) {
+                const target = searchResults[activeSearchIndex];
+                if (target) {
+                  event.preventDefault();
+                  handleNavigate(target.href);
+                }
+                return;
+              }
+              if (event.key === "Escape") {
+                setShowSearchDropdown(false);
+                setActiveSearchIndex(-1);
+              }
+            }}
             placeholder="Cari data, produk, pesan..."
             className="w-full pl-9 pr-12 py-2 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all"
           />
@@ -323,8 +428,10 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
               type="button"
               onClick={() => {
                 setSearchQuery("");
+                setActiveSearchIndex(-1);
                 searchInputRef.current?.focus();
               }}
+              aria-label="Hapus pencarian"
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
             >
               <X className="w-3.5 h-3.5" />
@@ -337,7 +444,12 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
 
           {/* Desktop Search Results Dropdown */}
           {showSearchDropdown && searchQuery.trim() && (
-            <div className="absolute left-0 right-0 mt-2 bg-white dark:bg-[#1A1A2E] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 p-2 z-50 max-h-80 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+            <div
+              id="admin-search-results"
+              role="listbox"
+              aria-label="Hasil pencarian"
+              className="absolute left-0 right-0 mt-2 bg-white dark:bg-[#1A1A2E] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 p-2 z-50 max-h-80 overflow-y-auto animate-in fade-in zoom-in-95 duration-150"
+            >
               <div className="px-3 py-1.5 border-b border-slate-100 dark:border-white/10 flex items-center justify-between text-[11px] text-slate-500">
                 <span>Hasil untuk &ldquo;{searchQuery}&rdquo;</span>
                 <span className="font-semibold">{searchResults.length} ditemukan</span>
@@ -346,14 +458,20 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
                 <div className="py-6 text-center text-xs text-slate-500">Tidak ditemukan data yang sesuai.</div>
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-white/5 pt-1">
-                  {searchResults.map((item) => {
+                  {searchResults.map((item, index) => {
                     const Icon = item.icon;
+                    const isActive = index === activeSearchIndex;
                     return (
                       <button
                         key={item.id}
+                        id={`admin-search-option-${index}`}
+                        role="option"
+                        aria-selected={isActive}
                         type="button"
                         onClick={() => handleNavigate(item.href)}
-                        className="w-full text-left p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex items-center gap-2.5 cursor-pointer"
+                        className={`w-full text-left p-2 rounded-xl transition-colors flex items-center gap-2.5 cursor-pointer ${
+                          isActive ? "bg-orange-50 dark:bg-orange-500/10" : "hover:bg-slate-50 dark:hover:bg-white/5"
+                        }`}
                       >
                         <div
                           className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${item.badgeClass}`}
@@ -385,6 +503,18 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
           )}
         </div>
 
+        {/* Fullscreen Toggle */}
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          title={isFullscreen ? "Keluar dari layar penuh" : "Tampilkan layar penuh"}
+          aria-label={isFullscreen ? "Keluar dari layar penuh" : "Tampilkan layar penuh"}
+          aria-pressed={isFullscreen}
+          className="hidden sm:inline-flex p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
+        >
+          {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+        </button>
+
         {/* Dark Mode Toggle */}
         <button
           onClick={toggleDarkMode}
@@ -398,12 +528,17 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
 
         {/* Notifications Bell */}
         {canSeeInbox && (
-          <div className="relative">
+          <div className="relative" ref={notificationRef}>
             <button
+              ref={notificationTriggerRef}
+              type="button"
               onClick={() => setShowNotifications((value) => !value)}
               title="Notifikasi Pesan"
               className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors relative"
-              aria-label="Notifications"
+              aria-label="Notifikasi pesan masuk"
+              aria-haspopup="true"
+              aria-expanded={showNotifications}
+              aria-controls="admin-notifications"
             >
               <Bell className="w-4 h-4" />
               {unreadMessages.length > 0 && (
@@ -413,7 +548,10 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
 
             {/* Notifications Dropdown */}
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-2rem))] bg-white dark:bg-[#1A1A2E] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 p-4 z-50 animate-in fade-in zoom-in-95 duration-150">
+              <div
+                id="admin-notifications"
+                className="absolute right-0 mt-2 w-[min(20rem,calc(100vw-2rem))] bg-white dark:bg-[#1A1A2E] rounded-2xl shadow-xl border border-slate-200 dark:border-white/10 p-4 z-50 animate-in fade-in zoom-in-95 duration-150"
+              >
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
                   <span className="text-xs font-bold text-slate-900 dark:text-white">
                     Pesan Masuk ({unreadMessages.length})
@@ -455,90 +593,96 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
         )}
       </div>
 
-      {/* Mobile Search Modal Dialog */}
-      {showMobileSearch && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Pencarian Admin"
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col p-4 md:hidden"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowMobileSearch(false);
-          }}
-        >
-          <div className="bg-white dark:bg-[#1A1A2E] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="flex items-center px-4 py-3 border-b border-slate-200 dark:border-white/10">
-              <Search className="w-4 h-4 text-slate-400 mr-2.5 shrink-0" />
-              <input
-                ref={mobileInputRef}
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari data, produk, pesan..."
-                className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => setShowMobileSearch(false)}
-                className="p-1 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white ml-2"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {/* Mobile Search Modal Dialog — portal ke body agar tidak terpotong backdrop-blur header */}
+      {showMobileSearch &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Pencarian Admin"
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col p-4 md:hidden"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowMobileSearch(false);
+            }}
+          >
+            <div className="bg-white dark:bg-[#1A1A2E] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col max-h-[85vh]">
+              <div className="flex items-center px-4 py-3 border-b border-slate-200 dark:border-white/10">
+                <Search className="w-4 h-4 text-slate-400 mr-2.5 shrink-0" />
+                <input
+                  ref={mobileInputRef}
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cari data, produk, pesan..."
+                  className="w-full bg-transparent text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowMobileSearch(false)}
+                  aria-label="Tutup pencarian"
+                  className="p-1 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white ml-2"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-            <div className="flex-1 overflow-y-auto p-2">
-              {!searchQuery.trim() ? (
-                <div className="py-8 text-center text-xs text-slate-500">
-                  Ketik kata kunci untuk mencari data produk, layanan, portofolio, klien, atau pesan.
-                </div>
-              ) : searchResults.length === 0 ? (
-                <div className="py-8 text-center text-xs text-slate-500">
-                  Tidak ditemukan hasil untuk &ldquo;{searchQuery}&rdquo;.
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  <div className="px-3 py-1 text-[11px] font-semibold text-slate-400">
-                    {searchResults.length} hasil ditemukan
+              <div className="flex-1 overflow-y-auto p-2">
+                {!searchQuery.trim() ? (
+                  <div className="py-8 text-center text-xs text-slate-500">
+                    Ketik kata kunci untuk mencari data produk, layanan, portofolio, klien, atau pesan.
                   </div>
-                  {searchResults.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => handleNavigate(item.href)}
-                        className="w-full text-left p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex items-center gap-3 cursor-pointer"
-                      >
-                        <div
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${item.badgeClass}`}
+                ) : searchResults.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-slate-500">
+                    Tidak ditemukan hasil untuk &ldquo;{searchQuery}&rdquo;.
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <div className="px-3 py-1 text-[11px] font-semibold text-slate-400">
+                      {searchResults.length} hasil ditemukan
+                    </div>
+                    {searchResults.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => handleNavigate(item.href)}
+                          className="w-full text-left p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex items-center gap-3 cursor-pointer"
                         >
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                              {item.title}
-                            </span>
-                            <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded shrink-0 ${item.badgeClass}`}>
-                              {item.category}
-                            </span>
+                          <div
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${item.badgeClass}`}
+                          >
+                            <Icon className="w-4 h-4" />
                           </div>
-                          {item.subtitle && (
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
-                              {item.subtitle}
-                            </p>
-                          )}
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                                {item.title}
+                              </span>
+                              <span
+                                className={`text-[9px] font-bold px-1.5 py-0.2 rounded shrink-0 ${item.badgeClass}`}
+                              >
+                                {item.category}
+                              </span>
+                            </div>
+                            {item.subtitle && (
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                {item.subtitle}
+                              </p>
+                            )}
+                          </div>
+                          <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </header>
   );
 }

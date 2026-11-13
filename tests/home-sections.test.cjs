@@ -225,7 +225,7 @@ function renderHome(landingData, overrides = {}) {
     "@/components/ui/AboutHomeHighlights": { default: () => null },
     "@/components/ui/ManagedTeamSection": { default: () => null },
     "@/lib/publicPageContentClient": { usePublicPageContent: () => ({ content: {} }) },
-    "@/components/layout/CompanyBrand": { useCompanyContent: () => ({}) },
+    "@/components/pages/public/CompanyBrand": { useCompanyContent: () => ({}) },
     "@/components/ui/Marquee": {
       default: ({ items }) => React.createElement("div", null, items.map((item) => item.name).join(", ")),
     },
@@ -287,7 +287,7 @@ test("all selected products appear on the homepage, including selections after t
   for (const item of products) assert.ok(html.includes(`data-product-id="${item.id}"`));
 });
 
-test("homepage uses the company profile statistics verbatim and links to the integrated team", () => {
+test("homepage uses the company profile statistics verbatim without a duplicate team CTA", () => {
   const landing = structuredClone(initial.initialLandingPageData);
   landing.highlights = [{ label: "Old conflicting number", value: "9999+" }];
   const profile = {
@@ -301,7 +301,9 @@ test("homepage uses the company profile statistics verbatim and links to the int
   const html = renderHome(landing, { aboutData: profile });
   for (const value of ["2006", "123+", "99.9%", "Proyek terkonfirmasi"]) assert.ok(html.includes(value));
   assert.doesNotMatch(html, /Old conflicting number|9999\+/);
-  assert.match(html, /href="\/about#tim-kami"/);
+  // Tombol "Kenali Tim CITS Indonesia" sudah dihapus dari beranda.
+  assert.doesNotMatch(html, /href="\/about#tim-kami"/);
+  assert.doesNotMatch(html, /Kenali Tim CITS Indonesia/);
   const cleared = renderHome(landing, { aboutData: { ...profile, stats: [] } });
   assert.doesNotMatch(cleared, /Proyek terkonfirmasi|9999\+/);
 });

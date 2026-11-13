@@ -123,10 +123,10 @@ function inbox() {
     {
       "@/components/admin/ContactInboxRow": { default: Row },
       "@/components/admin/ConsultationDetailModal": { default: () => null },
-      "@/components/admin/AdminDialogSurface": { default: () => null },
-      "@/components/admin/AdminTopbar": { default: Topbar },
+      "@/components/pages/admin/AdminDialogSurface": { default: () => null },
+      "@/components/pages/admin/AdminTopbar": { default: Topbar },
       "@/components/admin/Pagination": { default: () => null },
-      "@/components/admin/AdminDialogProvider": { useAdminDialog: () => ({ alert() {} }) },
+      "@/components/pages/admin/AdminDialogProvider": { useAdminDialog: () => ({ alert() {} }) },
       "@/lib/auth": { useAdminAuth: () => ({ session: { user: { role: "Super Admin" } } }) },
       "@/lib/internalAccess": load("lib/internalAccess.ts"),
       "@/lib/audio": { playNewMessageSound() {} },

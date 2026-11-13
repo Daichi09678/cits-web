@@ -186,7 +186,7 @@ test("active internal sessions refresh promptly, react to permission events, and
   };
   let next = { ...user, permissions: { products: ["view", "edit"] } };
   const Sync = load(
-    "components/admin/AdminSessionSync.tsx",
+    "components/pages/admin/AdminSessionSync.tsx",
     {
       react: {
         useEffect: (fn) => {

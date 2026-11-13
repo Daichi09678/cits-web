@@ -18,9 +18,9 @@ import {
   Send,
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
-import ThemeToggle from "@/components/layout/ThemeToggle";
+import ThemeToggle from "@/components/pages/public/ThemeToggle";
 import GridPattern from "@/components/ui/GridPattern";
-import AdminModal from "@/components/admin/AdminModal";
+import AdminModal from "@/components/pages/admin/AdminModal";
 import Badge from "@/components/ui/Badge";
 
 export default function AdminLoginPage() {

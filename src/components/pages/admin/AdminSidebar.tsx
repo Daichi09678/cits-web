@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
@@ -23,12 +23,12 @@ import {
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
 import { useCitsStore } from "@/stores/citsStore";
-import { useAdminShell } from "@/components/admin/AdminShell";
+import { useAdminShell } from "@/components/pages/admin/AdminShell";
 import { canAccessPage, type PageKey } from "@/lib/internalAccess";
 import { cn } from "@/lib/cn";
 import Badge, { type BadgeTone, type BadgeVariant } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
-import UserAvatar from "@/components/admin/UserAvatar";
+import UserAvatar from "@/components/pages/admin/UserAvatar";
 import AdminPageTransitionLoader from "./AdminPageTransitionLoader";
 
 interface NavItem {
@@ -54,6 +54,50 @@ export default function AdminSidebar() {
   const { session, logout } = useAdminAuth();
   const { products, messages, caseStudies } = useCitsStore();
   const { collapsed, toggleCollapsed, mobileOpen, closeMobile } = useAdminShell();
+
+  const drawerWasOpen = useRef(false);
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches
+  );
+
+  // Lacak breakpoint agar `inert` mengikuti kondisi yang benar-benar tersembunyi:
+  // desktop → collapsed, mobile/tablet → drawer tertutup.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const query = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+
+  const sidebarHidden = isDesktop ? collapsed : !mobileOpen;
+
+  // Kunci scroll halaman selama drawer mobile terbuka.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (isDesktop || !mobileOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isDesktop, mobileOpen]);
+
+  // Kembalikan fokus ke tombol pembuka saat drawer ditutup.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (mobileOpen) {
+      drawerWasOpen.current = true;
+      return;
+    }
+    if (!drawerWasOpen.current) return;
+    drawerWasOpen.current = false;
+    const trigger = Array.from(document.querySelectorAll<HTMLElement>('[aria-controls="admin-sidebar"]')).find(
+      (element) => element.offsetParent !== null
+    );
+    trigger?.focus();
+  }, [mobileOpen]);
 
   // Drawer mobile selalu tertutup saat berpindah halaman.
   useEffect(() => {
@@ -186,53 +230,57 @@ export default function AdminSidebar() {
       <aside
         id="admin-sidebar"
         aria-label="Navigasi Back Office"
-        aria-hidden={!mobileOpen && collapsed ? true : undefined}
-        className={`fixed top-0 left-0 z-40 flex h-screen w-64 flex-col justify-between overflow-y-auto bg-white dark:bg-[#151528] border-r border-slate-200/90 dark:border-white/10 select-none transition-transform duration-300 ease-in-out will-change-transform ${
+        aria-hidden={sidebarHidden || undefined}
+        inert={sidebarHidden}
+        className={`fixed top-0 left-0 z-40 flex h-dvh w-64 flex-col justify-between overflow-y-auto bg-white dark:bg-[#151528] border-r border-slate-200/90 dark:border-white/10 select-none transition-transform duration-300 ease-in-out will-change-transform ${
           mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         } ${collapsed ? "lg:-translate-x-full" : "lg:translate-x-0"}`}
       >
         {/* Top Header & Brand */}
         <div>
           <div className="relative p-4 border-b border-slate-100 dark:border-white/5">
-            <Link href="/admin" className="block pr-9">
-              <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mb-1.5">
-                <Image
-                  src="/logo.webp"
-                  alt="CITS Indonesia"
-                  width={130}
-                  height={38}
-                  unoptimized
-                  className="h-8 w-auto block dark:hidden"
-                  priority
-                />
-                <Image
-                  src="/logo-dark.webp"
-                  alt="CITS Indonesia"
-                  width={130}
-                  height={38}
-                  unoptimized
-                  className="h-8 w-auto hidden dark:block"
-                  priority
-                />
-                <Badge tone="accent" size="sm" shape="rounded" className="uppercase tracking-wider">
-                  {roleLabel}
-                </Badge>
-              </div>
-              <span className="block text-[11px] text-slate-700 dark:text-slate-300 font-medium">
-                Sistem Manajemen Konten
-              </span>
-            </Link>
+            <div className="pr-9">
+              <Link href="/admin" className="block">
+                <div className="flex items-center flex-wrap gap-x-2 gap-y-1 mb-1.5">
+                  <Image
+                    src="/logo.webp"
+                    alt="CITS Indonesia"
+                    width={130}
+                    height={38}
+                    unoptimized
+                    className="h-8 w-auto block dark:hidden"
+                    priority
+                  />
+                  <Image
+                    src="/logo-dark.webp"
+                    alt="CITS Indonesia"
+                    width={130}
+                    height={38}
+                    unoptimized
+                    className="h-8 w-auto hidden dark:block"
+                    priority
+                  />
+                </div>
+              </Link>
 
-            {/* Tutup drawer di mobile */}
-            <button
-              type="button"
-              onClick={closeMobile}
-              title="Tutup menu"
-              aria-label="Tutup menu navigasi"
-              className="lg:hidden absolute right-3 top-3.5 p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/10 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
+              {/* Judul + tombol tutup drawer berdampingan */}
+              <div className="flex items-center gap-1.5">
+                <Link href="/admin" className="block text-[11px] text-slate-700 dark:text-slate-300 font-medium">
+                  Sistem Manajemen Konten
+                </Link>
+
+                {/* Tutup drawer di mobile */}
+                <button
+                  type="button"
+                  onClick={closeMobile}
+                  title="Tutup menu"
+                  aria-label="Tutup menu navigasi"
+                  className="lg:hidden shrink-0 p-0.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/10 transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
 
             {/* Collapse sidebar di desktop */}
             <button
@@ -242,7 +290,7 @@ export default function AdminSidebar() {
               aria-label="Sembunyikan sidebar"
               aria-controls="admin-sidebar"
               aria-expanded={!collapsed}
-              className="hidden lg:inline-flex absolute right-3 top-3.5 p-1.5 rounded-lg text-slate-500 hover:text-orange-600 hover:bg-orange-50 dark:text-slate-300 dark:hover:text-orange-400 dark:hover:bg-orange-500/10 transition-colors"
+              className="hidden lg:inline-flex absolute right-3 top-12 p-1.5 rounded-lg text-slate-500 hover:text-orange-600 hover:bg-orange-50 dark:text-slate-300 dark:hover:text-orange-400 dark:hover:bg-orange-500/10 transition-colors"
             >
               <PanelLeftClose className="w-4 h-4" />
             </button>

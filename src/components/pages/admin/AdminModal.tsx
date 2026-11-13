@@ -24,6 +24,9 @@ const SIZE_CLASS: Record<ModalSize, string> = {
   "3xl": "max-w-3xl",
 };
 
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export default function AdminModal({
   open,
   onClose,
@@ -35,6 +38,8 @@ export default function AdminModal({
 }: AdminModalProps) {
   const titleId = useId();
   const onCloseRef = useRef(onClose);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -43,16 +48,66 @@ export default function AdminModal({
   useEffect(() => {
     if (!open) return;
 
+    // Simpan fokus asal agar bisa dikembalikan saat modal ditutup.
+    previouslyFocused.current = document.activeElement as HTMLElement | null;
+
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
+    // Fokus awal ke kontrol pertama di dalam dialog. Dijalankan langsung
+    // (bukan lewat requestAnimationFrame) karena rAF bisa ditahan browser
+    // saat tab tidak aktif sehingga fokus tidak pernah berpindah.
+    const node = dialogRef.current;
+    if (node) {
+      const target = node.querySelector<HTMLElement>(FOCUSABLE_SELECTOR) ?? node;
+      target.focus();
+    }
+
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onCloseRef.current();
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        onCloseRef.current();
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const node = dialogRef.current;
+      if (!node) return;
+
+      const items = Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
+        (element) => element.offsetParent !== null || element === document.activeElement
+      );
+
+      if (items.length === 0) {
+        event.preventDefault();
+        node.focus();
+        return;
+      }
+
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+
+      if (event.shiftKey) {
+        if (!active || active === first || !node.contains(active)) {
+          event.preventDefault();
+          last.focus();
+        }
+        return;
+      }
+
+      if (!active || active === last || !node.contains(active)) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-    window.addEventListener("keydown", onKeyDown);
+
+    window.addEventListener("keydown", onKeyDown, true);
 
     return () => {
       document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keydown", onKeyDown, true);
+      previouslyFocused.current?.focus?.();
     };
   }, [open]);
 
@@ -67,10 +122,12 @@ export default function AdminModal({
       />
 
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`relative flex max-h-[92vh] w-full ${SIZE_CLASS[size]} animate-admin-dialog flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-white/10 dark:bg-[#151528]`}
+        tabIndex={-1}
+        className={`relative flex max-h-[92vh] w-full ${SIZE_CLASS[size]} animate-admin-dialog flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl outline-none dark:border-white/10 dark:bg-[#151528]`}
       >
         <div className="flex shrink-0 items-start gap-3 border-b border-slate-100 p-5 dark:border-white/5">
           {Icon && (

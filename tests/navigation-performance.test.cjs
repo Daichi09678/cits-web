@@ -183,7 +183,7 @@ test("navigation feedback follows the real Link pending state without a fullscre
   const React = require("react");
   const { renderToStaticMarkup } = require("react-dom/server");
   let pending = false;
-  const Indicator = load("components/admin/AdminPageTransitionLoader.tsx", {
+  const Indicator = load("components/pages/admin/AdminPageTransitionLoader.tsx", {
     "react/jsx-runtime": require("react/jsx-runtime"),
     "next/link": { useLinkStatus: () => ({ pending }) },
   }).default;

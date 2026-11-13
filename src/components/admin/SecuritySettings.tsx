@@ -15,7 +15,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
-import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
+import { useAdminDialog } from "@/components/pages/admin/AdminDialogProvider";
 import { changeAdminPassword, sendAdminResetLink } from "@/lib/passwordApi";
 import { passwordStrength, validateNewPassword } from "@/lib/password";
 import { fetchInternalAccounts } from "@/lib/internalAccountsApi";

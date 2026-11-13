@@ -4,11 +4,11 @@ import Link from "next/link";
 import { ArrowUp, ArrowUpRight } from "lucide-react";
 import { useCitsStore } from "@/stores/citsStore";
 import { initialContactInfo } from "@/data/initialData";
-import { CompanyLogo } from "@/components/layout/CompanyBrand";
+import { CompanyLogo } from "@/components/pages/public/CompanyBrand";
 import { contactPresentation } from "@/lib/contactPresentation";
 
 export default function Footer() {
-  const { contactInfo: storeContact, services, aboutData } = useCitsStore();
+  const { contactInfo: storeContact, aboutData } = useCitsStore();
   const contact = storeContact || initialContactInfo;
 
   const scrollToTop = () => {
@@ -20,12 +20,12 @@ export default function Footer() {
   const { whatsappUrl, mapUrl } = contactPresentation(contact);
 
   return (
-    <footer className="bg-slate-50 dark:bg-[#121222] border-t border-slate-200/80 dark:border-white/10 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10">
+    <footer className="bg-white dark:bg-[#121222] border-t border-slate-200/80 dark:border-white/10 transition-colors">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
         {/* Main 4-Column Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-10">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:gap-16">
           {/* Kolom 1: Profil & Identitas Perusahaan (Span 4) */}
-          <div className="lg:col-span-4 space-y-4">
+          <div className="space-y-5">
             <Link href="/" className="inline-block" aria-label="CITS Indonesia">
               <CompanyLogo location="footer" />
             </Link>
@@ -37,81 +37,10 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Kolom 2: Layanan & Solusi (Span 3) */}
-          <div className="lg:col-span-3 space-y-3">
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Layanan Utama</h4>
-            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-              {services
-                .filter((service) => service.isActive !== false)
-                .map((service) => (
-                  <li key={service.id}>
-                    <Link
-                      href={`/services#${encodeURIComponent(service.id)}`}
-                      className="block transition-colors hover:text-orange-600 dark:hover:text-orange-400"
-                    >
-                      {service.title}
-                    </Link>
-                  </li>
-                ))}
-            </ul>
-          </div>
-
-          {/* Kolom 3: Tautan Cepat & Karier (Span 2) */}
-          <div className="lg:col-span-2 space-y-3">
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Tautan Cepat</h4>
-            <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
-              <li>
-                <Link href="/" className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors block">
-                  Beranda
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/about"
-                  className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors block"
-                >
-                  Tentang Kami
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/about#tim-kami"
-                  className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors block"
-                >
-                  Tim Kami
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/products"
-                  className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors block"
-                >
-                  Katalog Produk
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/portfolio"
-                  className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors block"
-                >
-                  Portofolio
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors block"
-                >
-                  Kontak
-                </Link>
-              </li>
-            </ul>
-          </div>
-
           {/* Kolom 4: Hubungi Kami & WhatsApp (Span 3) */}
-          <div className="lg:col-span-3 space-y-3">
+          <div className="space-y-4">
             <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Hubungi Kami</h4>
-            <div className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+            <div className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
               <p className="leading-relaxed text-xs sm:text-sm">
                 {contact.address || "Gedung Wisma Mampang, Lantai 5, Jl. Mampang Prapatan No. 1, Jakarta Selatan 12790"}
               </p>
@@ -127,7 +56,7 @@ export default function Footer() {
                 </a>
               </div>
 
-              <div className="pt-1 space-y-1 text-xs sm:text-sm">
+              <div className="pt-2 space-y-1.5 text-xs sm:text-sm">
                 <p>
                   <a
                     href={`tel:${(contact.phone || "02139719677").replace(/[^0-9]/g, "")}`}
@@ -151,7 +80,7 @@ export default function Footer() {
 
               {/* Tombol WhatsApp Elegan */}
               {whatsappUrl && (
-                <div className="pt-2">
+                <div className="pt-3">
                   <a
                     href={whatsappUrl}
                     target="_blank"
@@ -170,7 +99,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar: Copyright & Legalitas */}
-        <div className="border-t border-slate-200 dark:border-white/10 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
+        <div className="border-t border-slate-200 dark:border-white/10 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
           <p>&copy; {new Date().getFullYear()} CITS Indonesia. Seluruh hak cipta dilindungi.</p>
 
           <div className="flex items-center gap-5">

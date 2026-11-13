@@ -7,7 +7,7 @@ const { load } = require("./helpers/load.cjs");
 const runtime = { react: React, "react/jsx-runtime": require("react/jsx-runtime") };
 
 test("public navigation prioritizes the company profile and includes only available destinations", () => {
-  const Navbar = load("components/layout/Navbar.tsx", {
+  const Navbar = load("components/pages/public/Navbar.tsx", {
     ...runtime,
     "next/link": { default: (props) => React.createElement("a", props) },
     "next/navigation": { usePathname: () => "/about" },
@@ -19,8 +19,8 @@ test("public navigation prioritizes the company profile and includes only availa
       AnimatePresence: ({ children }) => children,
     },
     "lucide-react": { Menu: () => null, X: () => null },
-    "@/components/layout/ThemeToggle": { default: () => null },
-    "@/components/layout/CompanyBrand": { CompanyLogo: () => null },
+    "@/components/pages/public/ThemeToggle": { default: () => null },
+    "@/components/pages/public/CompanyBrand": { CompanyLogo: () => null },
   }).default;
   const html = renderToStaticMarkup(React.createElement(Navbar));
   const links = [...html.matchAll(/<li><a href="([^"]+)"[^>]*>([^<]+)/g)].map((match) => [match[1], match[2]]);

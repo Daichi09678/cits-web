@@ -46,7 +46,7 @@ function renderPage(page, content, study = null, aboutProfile = initial.initialA
       }),
     },
     "@/lib/publicPageContentClient": { usePublicPageContent: () => ({ content }) },
-    "@/components/layout/CompanyBrand": { useCompanyContent: () => content },
+    "@/components/pages/public/CompanyBrand": { useCompanyContent: () => content },
     "@/lib/publicPageContent": contentLib,
   }).default;
   return renderToStaticMarkup(React.createElement(Component));

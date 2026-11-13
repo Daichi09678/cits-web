@@ -9,7 +9,7 @@ const contentLib = load("lib/publicPageContent.ts", { "@/data/publicPageContent"
 function renderBrand(texts) {
   let subscriptions = 0;
   const content = contentLib.resolvePublicPageContent("about", { texts });
-  const { default: Provider, CompanyLogo } = load("components/layout/CompanyBrand.tsx", {
+  const { default: Provider, CompanyLogo } = load("components/pages/public/CompanyBrand.tsx", {
     react: React,
     "react/jsx-runtime": require("react/jsx-runtime"),
     "next/image": {

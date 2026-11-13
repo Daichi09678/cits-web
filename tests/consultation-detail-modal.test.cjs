@@ -64,7 +64,9 @@ function modal(overrides = {}) {
     },
     "react/jsx-runtime": jsx,
     "lucide-react": icons,
-    "./AdminDialogSurface": { default: ({ children }) => React.createElement("div", { role: "dialog" }, children) },
+    "@/components/pages/admin/AdminDialogSurface": {
+      default: ({ children }) => React.createElement("div", { role: "dialog" }, children),
+    },
     "./MessageConsultationDetails": { default: Details },
     "@/lib/date": load("lib/date.ts"),
   }).default;
@@ -252,7 +254,7 @@ test("native dialog lifecycle supplies modal focus handling and respects Escape 
     }
   }
   const Surface = load(
-    "components/admin/AdminDialogSurface.tsx",
+    "components/pages/admin/AdminDialogSurface.tsx",
     {
       react: {
         useEffect: (callback) => {

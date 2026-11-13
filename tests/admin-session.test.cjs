@@ -82,7 +82,7 @@ function auth(globals) {
 function sync(globals, AdminAuth, getMe) {
   const effects = [];
   const component = load(
-    "components/admin/AdminSessionSync.tsx",
+    "components/pages/admin/AdminSessionSync.tsx",
     {
       react: { useEffect: (callback) => effects.push(callback) },
       "next/navigation": { usePathname: () => "/admin" },
@@ -204,9 +204,9 @@ test("admin layout redirects unauthenticated visitors and leaves login available
       "react/jsx-runtime": require("react/jsx-runtime"),
       "next/navigation": { usePathname: () => pathname, useRouter: () => ({ replace: (url) => redirects.push(url) }) },
       "@/lib/auth": { useAdminAuth: () => ({ isAuthenticated: false, loading: false }) },
-      "@/components/admin/AdminShell": {},
-      "@/components/admin/RealtimeNotificationToast": {},
-      "@/components/admin/AdminPageTransitionLoader": {},
+      "@/components/pages/admin/AdminShell": {},
+      "@/components/pages/admin/RealtimeNotificationToast": {},
+      "@/components/pages/admin/AdminPageTransitionLoader": {},
     }).default;
     const output = component({ children: "content" });
     if (pathname === "/admin/login") {

@@ -28,9 +28,9 @@ import {
   UserRound,
   type LucideIcon,
 } from "lucide-react";
-import AdminTopbar from "@/components/admin/AdminTopbar";
-import UserAvatar from "@/components/admin/UserAvatar";
-import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
+import AdminTopbar from "@/components/pages/admin/AdminTopbar";
+import UserAvatar from "@/components/pages/admin/UserAvatar";
+import { useAdminDialog } from "@/components/pages/admin/AdminDialogProvider";
 import { useAdminAuth } from "@/lib/auth";
 import { fetchAdminProfile, saveAdminProfile } from "@/lib/profileApi";
 import {

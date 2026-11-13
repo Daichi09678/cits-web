@@ -1,7 +1,7 @@
 "use client";
 import ContactInboxRow from "@/components/admin/ContactInboxRow";
 import ConsultationDetailModal from "@/components/admin/ConsultationDetailModal";
-import AdminDialogSurface from "@/components/admin/AdminDialogSurface";
+import AdminDialogSurface from "@/components/pages/admin/AdminDialogSurface";
 import { consultationSummary } from "@/lib/consultation";
 
 import { useState } from "react";
@@ -37,8 +37,8 @@ import {
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
 import { canPerformAction } from "@/lib/internalAccess";
-import AdminTopbar from "@/components/admin/AdminTopbar";
-import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
+import AdminTopbar from "@/components/pages/admin/AdminTopbar";
+import { useAdminDialog } from "@/components/pages/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
 import { ContactMessage, DealStage, ContactFaqItem } from "@/types/schema";
 import { playNewMessageSound } from "@/lib/audio";

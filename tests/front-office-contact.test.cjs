@@ -25,12 +25,12 @@ test("contact channels use the saved office address and WhatsApp number, includi
 });
 
 function renderFooter(services, info = contact) {
-  const Footer = load("components/layout/Footer.tsx", {
+  const Footer = load("components/pages/public/Footer.tsx", {
     react: React,
     "react/jsx-runtime": require("react/jsx-runtime"),
     "lucide-react": require("lucide-react"),
     "next/link": { default: ({ children, ...props }) => React.createElement("a", props, children) },
-    "@/components/layout/CompanyBrand": { CompanyLogo: () => null },
+    "@/components/pages/public/CompanyBrand": { CompanyLogo: () => null },
     "@/lib/contactPresentation": presentation,
     "@/data/initialData": { initialContactInfo: contact },
     "@/stores/citsStore": {
@@ -40,7 +40,7 @@ function renderFooter(services, info = contact) {
   return renderToStaticMarkup(React.createElement(Footer));
 }
 
-test("footer publishes edited company/contact content and only the current active service catalog", () => {
+test("footer publishes edited company/contact content without duplicating navbar navigation", () => {
   const html = renderFooter([
     { id: "new-service", title: "Layanan terbaru", isActive: true },
     { id: "hidden-service", title: "Layanan nonaktif", isActive: false },
@@ -48,15 +48,17 @@ test("footer publishes edited company/contact content and only the current activ
   for (const value of [
     "Profil tersimpan dari admin",
     "baru@example.test",
-    "Layanan terbaru",
     "Kantor Baru, Bandung &amp; Jakarta",
     "6281234567890",
   ])
     assert.ok(html.includes(value), value);
-  assert.match(html, /href="\/services#new-service"/);
-  assert.match(html, /href="\/about#tim-kami"/);
+  // Navigasi halaman sudah ada di navbar — footer tidak boleh mengulanginya.
+  assert.doesNotMatch(html, /href="\/services#new-service"/);
+  assert.doesNotMatch(html, /href="\/about#tim-kami"/);
+  assert.doesNotMatch(html, /href="\/(products|portfolio|contact|about)"/);
+  assert.doesNotMatch(html, /Layanan terbaru|Layanan nonaktif|Layanan Utama|Tautan Cepat/);
   assert.doesNotMatch(html, /Hiring|Karier|Kebijakan Privasi|Syarat &amp; Ketentuan|href="\/team"/);
-  assert.doesNotMatch(html, /Layanan nonaktif|6281239719677|Pengembangan Perangkat Lunak/);
+  assert.doesNotMatch(html, /6281239719677|Pengembangan Perangkat Lunak/);
   const cleared = renderFooter([], { ...contact, emergencyPhone: "" });
   assert.doesNotMatch(cleared, /wa\.me|Layanan terbaru|Layanan nonaktif/);
 });

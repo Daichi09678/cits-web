@@ -13,7 +13,7 @@ import { useCitsStore } from "@/stores/citsStore";
 import { initialAboutData, initialLandingPageData, defaultSectionVisibility } from "@/data/initialData";
 import FeaturedCatalog from "@/components/ui/FeaturedCatalog";
 import AboutHomeHighlights from "@/components/ui/AboutHomeHighlights";
-import { useCompanyContent } from "@/components/layout/CompanyBrand";
+import { useCompanyContent } from "@/components/pages/public/CompanyBrand";
 
 export default function Home() {
   const {
@@ -205,17 +205,6 @@ export default function Home() {
         />
       )}
       <AboutHomeHighlights content={companyContent} aboutData={aboutData} />
-      {visibility.highlights !== false && (
-        <div id="team" className="scroll-mt-24 bg-white px-4 py-8 text-center dark:bg-[#1A1A2E]">
-          <Link
-            href="/about#tim-kami"
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-3 text-sm font-semibold text-orange-700 hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 dark:text-orange-400 dark:hover:bg-orange-500/10"
-          >
-            Kenali Tim CITS Indonesia
-            <ArrowRight aria-hidden="true" className="size-4" />
-          </Link>
-        </div>
-      )}
 
       {/* Client Logos Marquee */}
       {visibility.clients !== false && marqueeList.length > 0 && (

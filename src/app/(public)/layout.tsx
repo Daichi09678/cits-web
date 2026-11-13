@@ -1,6 +1,6 @@
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import CompanyBrandProvider from "@/components/layout/CompanyBrand";
+import Navbar from "@/components/pages/public/Navbar";
+import Footer from "@/components/pages/public/Footer";
+import CompanyBrandProvider from "@/components/pages/public/CompanyBrand";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (

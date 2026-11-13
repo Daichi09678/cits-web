@@ -17,9 +17,9 @@ import {
 } from "lucide-react";
 import { useAdminAuth } from "@/lib/auth";
 import { canPerformAction } from "@/lib/internalAccess";
-import AdminTopbar from "@/components/admin/AdminTopbar";
+import AdminTopbar from "@/components/pages/admin/AdminTopbar";
 import PortfolioEditor from "@/components/pages/admin-portfolio/PortfolioEditor";
-import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
+import { useAdminDialog } from "@/components/pages/admin/AdminDialogProvider";
 import { useCitsStore } from "@/stores/citsStore";
 import { CaseStudyItem } from "@/types/schema";
 

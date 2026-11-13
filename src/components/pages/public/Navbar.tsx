@@ -5,8 +5,8 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
-import ThemeToggle from "@/components/layout/ThemeToggle";
-import { CompanyLogo } from "@/components/layout/CompanyBrand";
+import ThemeToggle from "@/components/pages/public/ThemeToggle";
+import { CompanyLogo } from "@/components/pages/public/CompanyBrand";
 
 const navLinks = [
   { href: "/", label: "Beranda" },

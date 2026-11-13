@@ -108,9 +108,12 @@ function page(readOnly = false) {
       react: state.react,
       "@/lib/auth": { useAdminAuth: () => ({ session: { user: {} } }) },
       "@/lib/internalAccess": { canPerformAction: () => !readOnly },
-      "@/components/admin/AdminTopbar": { default: () => null },
+      "@/components/pages/admin/AdminTopbar": { default: () => null },
+      "@/components/pages/admin/AdminModal": {
+        default: ({ open, children }) => (open ? children : null),
+      },
       "@/components/admin/CatalogDeleteDetails": load("components/admin/CatalogDeleteDetails.tsx", runtime),
-      "@/components/admin/AdminDialogProvider": {
+      "@/components/pages/admin/AdminDialogProvider": {
         useAdminDialog: () => ({
           confirm: async () => confirmed,
           alert: async (value) => {

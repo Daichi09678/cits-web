@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
 import { CheckCircle2, Key, RefreshCw } from "lucide-react";
-import AdminTopbar from "@/components/admin/AdminTopbar";
+import AdminTopbar from "@/components/pages/admin/AdminTopbar";
 import SecuritySettings from "@/components/admin/SecuritySettings";
-import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
+import { useAdminDialog } from "@/components/pages/admin/AdminDialogProvider";
 import AccountsSettings from "@/components/admin/settings/AccountsSettings";
 import SettingsTabs, { type SettingsTab } from "@/components/admin/settings/SettingsTabs";
 import { settingsFont } from "@/components/admin/settings/typography";

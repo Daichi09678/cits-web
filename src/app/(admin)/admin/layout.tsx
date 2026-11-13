@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import AdminShell from "@/components/admin/AdminShell";
-import RealtimeNotificationToast from "@/components/admin/RealtimeNotificationToast";
+import AdminShell from "@/components/pages/admin/AdminShell";
+import RealtimeNotificationToast from "@/components/pages/admin/RealtimeNotificationToast";
 import { useAdminAuth } from "@/lib/auth";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

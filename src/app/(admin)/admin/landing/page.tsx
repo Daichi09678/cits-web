@@ -25,11 +25,11 @@ import {
   X,
   Check,
 } from "lucide-react";
-import AdminTopbar from "@/components/admin/AdminTopbar";
+import AdminTopbar from "@/components/pages/admin/AdminTopbar";
 import { useCitsStore } from "@/stores/citsStore";
 import { LandingPageData, SectionVisibility, ClientPartner } from "@/types/schema";
 import { initialLandingPageData, defaultSectionVisibility } from "@/data/initialData";
-import { useAdminDialog } from "@/components/admin/AdminDialogProvider";
+import { useAdminDialog } from "@/components/pages/admin/AdminDialogProvider";
 import { DEFAULT_FOCUS_EXPLANATION, resolveFocusItems } from "@/lib/focusContent";
 
 export default function AdminLandingPage() {

@@ -15,7 +15,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import AdminDialogSurface from "./AdminDialogSurface";
+import AdminDialogSurface from "@/components/pages/admin/AdminDialogSurface";
 import MessageConsultationDetails from "./MessageConsultationDetails";
 import { formatMessageDate, formatMessageRelative, formatMessageTime } from "@/lib/date";
 import type { ContactMessage, DealStage } from "@/types/schema";

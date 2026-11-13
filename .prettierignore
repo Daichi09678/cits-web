@@ -7,3 +7,6 @@ package-lock.json
 *.tsbuildinfo
 next-env.d.ts
 public
+
+# Dokumen audit/catatan non-kode
+Pasted markdown.md

@@ -1,6 +1,6 @@
 "use client";
 
-import AdminTopbar from "@/components/admin/AdminTopbar";
+import AdminTopbar from "@/components/pages/admin/AdminTopbar";
 import AboutContentEditor from "@/components/admin/about/AboutContentEditor";
 
 export default function AdminAboutPage() {

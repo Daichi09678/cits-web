@@ -26,9 +26,9 @@ function render(relative, { user = internal, pathname = "/admin", loading = fals
     "@/stores/citsStore": {
       useCitsStore: () => ({ products, messages, clients: [], caseStudies: [], actions: {} }),
     },
-    "@/components/admin/AdminShell": { useAdminShell: () => ({ closeMobile: noop }) },
-    "@/components/admin/AdminTopbar": { default: () => null },
-    "@/components/admin/UserAvatar": { default: () => null },
+    "@/components/pages/admin/AdminShell": { useAdminShell: () => ({ closeMobile: noop }) },
+    "@/components/pages/admin/AdminTopbar": { default: () => null },
+    "@/components/pages/admin/UserAvatar": { default: () => null },
     "@/lib/cn": load("lib/cn.ts"),
     "@/components/ui/Badge": load("components/ui/Badge.tsx", {
       "react/jsx-runtime": require("react/jsx-runtime"),
@@ -38,7 +38,7 @@ function render(relative, { user = internal, pathname = "/admin", loading = fals
       "react/jsx-runtime": require("react/jsx-runtime"),
       "@/lib/cn": load("lib/cn.ts"),
     }),
-    "./AdminPageTransitionLoader": load("components/admin/AdminPageTransitionLoader.tsx", {
+    "./AdminPageTransitionLoader": load("components/pages/admin/AdminPageTransitionLoader.tsx", {
       "react/jsx-runtime": require("react/jsx-runtime"),
       "next/link": { useLinkStatus: () => ({ pending: false }) },
     }),
@@ -50,7 +50,7 @@ function render(relative, { user = internal, pathname = "/admin", loading = fals
 }
 
 function sidebarLinks(user) {
-  const { html } = render("components/admin/AdminSidebar.tsx", { user });
+  const { html } = render("components/pages/admin/AdminSidebar.tsx", { user });
   const links = [...new Set([...html.matchAll(/href="(\/admin[^\"]*)"/g)].map((match) => match[1]))];
   return { html, links };
 }
@@ -80,7 +80,7 @@ test("superadmin retains every sidebar page without explicit page assignments", 
 });
 
 test("sidebar carries the signed-in identity at the bottom and is the only profile entry point", () => {
-  const { html } = render("components/admin/AdminSidebar.tsx", {
+  const { html } = render("components/pages/admin/AdminSidebar.tsx", {
     user: { ...internal, name: "Ayu Lestari", email: "ayu@cits.id", jobTitle: "Staf Konten" },
   });
   assert.match(html, /Ayu Lestari/);
@@ -95,7 +95,7 @@ test("direct URLs to unassigned pages redirect without mounting their content", 
   const deniedPaths = access.EDITABLE_PAGES.filter((page) => page.key !== "products").map((page) => page.href);
   deniedPaths.push("/admin/landing", "/admin/landing/detail", "/admin/services/detail");
   for (const pathname of deniedPaths) {
-    const { html, redirects } = render("components/admin/PageAccessGate.tsx", {
+    const { html, redirects } = render("components/pages/admin/PageAccessGate.tsx", {
       pathname,
       children: React.createElement(ForbiddenContent),
     });
@@ -113,7 +113,7 @@ test("assigned pages, dashboard, profile, and settings remain available to inter
     "/admin/settings",
     "/admin/settings/security",
   ]) {
-    const { html, redirects } = render("components/admin/PageAccessGate.tsx", {
+    const { html, redirects } = render("components/pages/admin/PageAccessGate.tsx", {
       pathname,
       children: React.createElement("button", null, "Konten diizinkan"),
     });
@@ -121,7 +121,7 @@ test("assigned pages, dashboard, profile, and settings remain available to inter
     assert.deepEqual(redirects, []);
   }
   for (const pathname of access.EDITABLE_PAGES.map((page) => page.href)) {
-    const { html } = render("components/admin/PageAccessGate.tsx", {
+    const { html } = render("components/pages/admin/PageAccessGate.tsx", {
       user: superadmin,
       pathname,
       children: "Akses penuh",
@@ -132,7 +132,7 @@ test("assigned pages, dashboard, profile, and settings remain available to inter
 
 test("loading or absent authentication cannot render protected content", () => {
   for (const options of [{ user: null }, { loading: true }, { loading: true, user: null }]) {
-    const { html, redirects } = render("components/admin/PageAccessGate.tsx", {
+    const { html, redirects } = render("components/pages/admin/PageAccessGate.tsx", {
       ...options,
       children: "Konten rahasia",
     });

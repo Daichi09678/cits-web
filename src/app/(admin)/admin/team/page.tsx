@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import { Eye, Pencil, Plus, Search, Trash2 } from "lucide-react";
-import AdminTopbar from "@/components/admin/AdminTopbar";
+import AdminTopbar from "@/components/pages/admin/AdminTopbar";
 import TeamDialog, { teamButton, teamPrimary, teamSecondary } from "@/components/admin/team/TeamDialog";
 import TeamMemberEditor from "@/components/admin/team/TeamMemberEditor";
 import TeamMemberDetails, { TeamPhoto, TeamStatus } from "@/components/admin/team/TeamMemberDetails";
