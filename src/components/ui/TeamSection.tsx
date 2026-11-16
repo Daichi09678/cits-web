@@ -1,3 +1,4 @@
+import Button from "@/components/ui/Button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { groupTeamMembers } from "@/lib/teamDirectory";
@@ -61,13 +62,15 @@ export default function TeamSection({
               {loading ? "Memuat informasi tim..." : "Informasi tim belum dapat dimuat."}
             </p>
             {!loading && onRetry && (
-              <button
+              <Button
+                variant="unstyled"
+                size="none"
                 type="button"
                 onClick={onRetry}
                 className="mt-4 min-h-11 cursor-pointer rounded-lg bg-[#F4511E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#DC3F0C] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600"
               >
                 Coba lagi
-              </button>
+              </Button>
             )}
           </div>
         ) : featuredMembers.length > 0 && !showAll ? (

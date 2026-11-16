@@ -16,7 +16,9 @@ function browser() {
   const document = new EventTarget();
   document.visibilityState = "visible";
   const intervals = new Set();
-  window.setInterval = (callback) => {
+  const intervalDelays = [];
+  window.setInterval = (callback, delay) => {
+    intervalDelays.push(delay);
     intervals.add(callback);
     return callback;
   };
@@ -26,6 +28,7 @@ function browser() {
     document,
     Event,
     intervals,
+    intervalDelays,
     localStorage: {
       getItem: (key) => values.get(key) ?? null,
       setItem: (key, value) => values.set(key, value),
@@ -194,6 +197,133 @@ test("temporary session endpoint failures preserve credentials for retry", async
   assert.equal(calls, 2);
   assert.equal(AdminAuth.isAuthenticated(), true);
   cleanup();
+});
+
+test("session polling uses 30 seconds, skips hidden tabs, and revalidates immediately on return", async () => {
+  const globals = browser();
+  const { AdminAuth } = auth(globals);
+  let calls = 0;
+  const cleanup = sync(globals, AdminAuth, async () => {
+    calls++;
+    return { success: true, user: session.user };
+  });
+  await settle();
+  assert.deepEqual(globals.intervalDelays, [30_000]);
+  assert.equal(calls, 1);
+  const poll = [...globals.intervals][0];
+  poll();
+  await settle();
+  assert.equal(calls, 2);
+  globals.document.visibilityState = "hidden";
+  poll();
+  globals.window.dispatchEvent(new Event("focus"));
+  globals.window.dispatchEvent(new Event("cits-permissions-changed"));
+  await settle();
+  assert.equal(calls, 2);
+  globals.document.visibilityState = "visible";
+  globals.document.dispatchEvent(new Event("visibilitychange"));
+  await settle();
+  assert.equal(calls, 3);
+  cleanup();
+  globals.window.dispatchEvent(new Event("focus"));
+  globals.window.dispatchEvent(new Event("cits-permissions-changed"));
+  globals.document.dispatchEvent(new Event("visibilitychange"));
+  poll();
+  await settle();
+  assert.equal(calls, 3);
+  assert.equal(globals.intervals.size, 0);
+});
+
+test("a session mounted in the background waits until the tab becomes visible", async () => {
+  const globals = browser();
+  globals.document.visibilityState = "hidden";
+  const { AdminAuth } = auth(globals);
+  let calls = 0;
+  const cleanup = sync(globals, AdminAuth, async () => {
+    calls++;
+    return { success: true, user: session.user };
+  });
+  await settle();
+  assert.equal(calls, 0);
+  globals.document.visibilityState = "visible";
+  globals.window.dispatchEvent(new Event("pageshow"));
+  await settle();
+  assert.equal(calls, 1);
+  cleanup();
+});
+
+test("permission changes during a request queue one fresh check without overlapping calls", async () => {
+  const globals = browser();
+  const { AdminAuth } = auth(globals);
+  let calls = 0;
+  let complete;
+  const cleanup = sync(globals, AdminAuth, () => {
+    calls++;
+    if (calls === 1)
+      return new Promise((resolve) => {
+        complete = resolve;
+      });
+    return Promise.resolve({ success: true, user: { ...session.user, permissions: {} } });
+  });
+  globals.window.dispatchEvent(new Event("focus"));
+  [...globals.intervals][0]();
+  globals.window.dispatchEvent(new Event("cits-permissions-changed"));
+  globals.window.dispatchEvent(new Event("cits-permissions-changed"));
+  assert.equal(calls, 1);
+  complete({ success: true, user: { ...session.user, permissions: { products: ["view", "edit"] } } });
+  await settle();
+  assert.equal(calls, 2);
+  assert.equal(JSON.stringify(AdminAuth.getSession().user.permissions), "{}");
+  const unrelatedStorage = new Event("storage");
+  unrelatedStorage.key = "unrelated-key";
+  globals.window.dispatchEvent(unrelatedStorage);
+  assert.equal(calls, 2);
+  cleanup();
+});
+
+test("switching tokens queues verification of the new session and discards the old response", async () => {
+  const globals = browser();
+  const { AdminAuth } = auth(globals);
+  const tokens = [];
+  let complete;
+  const cleanup = sync(globals, AdminAuth, (token) => {
+    tokens.push(token);
+    if (tokens.length === 1)
+      return new Promise((resolve) => {
+        complete = resolve;
+      });
+    return Promise.resolve({ success: true, user: { ...session.user, name: "New account" } });
+  });
+  globals.localStorage.setItem(tokenKey, "token-b");
+  const changed = new Event("storage");
+  changed.key = tokenKey;
+  globals.window.dispatchEvent(changed);
+  complete({ success: false, status: 401 });
+  await settle();
+  assert.deepEqual(tokens, ["token-a", "token-b"]);
+  assert.equal(AdminAuth.getSession().user.name, "New account");
+  assert.equal(globals.localStorage.getItem(tokenKey), "token-b");
+  cleanup();
+});
+
+test("unmounting discards late responses and any queued permission refresh", async () => {
+  const globals = browser();
+  const { AdminAuth } = auth(globals);
+  let complete;
+  let calls = 0;
+  const cleanup = sync(globals, AdminAuth, () => {
+    calls++;
+    return new Promise((resolve) => {
+      complete = resolve;
+    });
+  });
+  globals.window.dispatchEvent(new Event("cits-permissions-changed"));
+  cleanup();
+  complete({ success: false, status: 401 });
+  await settle();
+  assert.equal(calls, 1);
+  assert.equal(AdminAuth.isAuthenticated(), true);
+  assert.equal(globals.intervals.size, 0);
 });
 
 test("admin layout redirects unauthenticated visitors and leaves login available", () => {

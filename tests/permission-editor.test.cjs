@@ -234,7 +234,7 @@ test("active internal sessions refresh promptly, react to permission events, and
   const stop = effect();
   await flush();
   assert.deepEqual(plain(user.permissions), { products: ["view", "edit"] });
-  assert.equal(intervalMs, 3000);
+  assert.equal(intervalMs, 30_000);
   next = { ...next, permissions: { products: ["view"] } };
   interval();
   await flush();

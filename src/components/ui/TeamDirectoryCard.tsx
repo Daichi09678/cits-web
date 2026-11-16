@@ -1,3 +1,4 @@
+import Button from "@/components/ui/Button";
 import Image from "next/image";
 import { UserRound } from "lucide-react";
 import type { TeamMember } from "@/lib/team";
@@ -31,7 +32,9 @@ export default function TeamDirectoryCard({ member, onSelect }: { member: TeamMe
         )}
         <span className="mt-2 block text-sm font-medium text-orange-700 dark:text-orange-400">Lihat profil</span>
       </div>
-      <button
+      <Button
+        variant="unstyled"
+        size="none"
         type="button"
         onClick={onSelect}
         aria-label={`Lihat profil ${member.name}`}

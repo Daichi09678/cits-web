@@ -89,6 +89,9 @@ function app(readOnly = false) {
       },
       "@/lib/internalAccess": load("lib/internalAccess.ts"),
       "@/components/pages/admin/AdminTopbar": { default: () => null },
+      "@/components/pages/admin/AdminDialogSurface": {
+        default: ({ children }) => React.createElement("div", null, children),
+      },
       "@/components/admin/CatalogDeleteDetails": load("components/admin/CatalogDeleteDetails.tsx", {
         "react/jsx-runtime": require("react/jsx-runtime"),
       }),

@@ -212,6 +212,15 @@ function mount(input = services, products = []) {
     "next/navigation": { useRouter: () => ({ push: (href) => navigation.push(href) }) },
     "@/components/ui/ProductPhoto": { default: ({ name }) => React.createElement("span", null, name) },
     "@/components/ui/ServicePhoto": { default: ({ name }) => React.createElement("span", null, name) },
+    "@/components/pages/public/PublicSelect": {
+      default: load("components/pages/public/PublicSelect.tsx", {
+        react: React,
+        "react/jsx-runtime": require("react/jsx-runtime"),
+        "react-dom": require("react-dom"),
+        "lucide-react": require("lucide-react"),
+        "./PublicSelect.module.css": { default: {} },
+      }).default,
+    },
     "@/lib/catalogFinder": finder,
     "@/lib/consultation": consultation,
   }).default;
@@ -255,9 +264,9 @@ test("product and service search keep selected filters, clear only the query and
     ],
   ]) {
     const app = mount(input, products);
-    app.byId("category").props.onChange({ target: { value: category } });
-    app.byId("capability").props.onChange({ target: { value: capability } });
-    app.byId("technology").props.onChange({ target: { value: technology } });
+    app.byId("category").props.onChange(category);
+    app.byId("capability").props.onChange(capability);
+    app.byId("technology").props.onChange(technology);
     app.byId("query").props.onChange({ target: { value: query } });
     assert.equal(app.byId("capability").props.value, capability);
     assert.equal(app.byId("technology").props.value, technology);
@@ -279,12 +288,12 @@ test("product and service search keep selected filters, clear only the query and
 test("one form supports filtering, selecting needs and carrying the exact selection into consultation", () => {
   const app = mount();
   assert.equal((renderToStaticMarkup(app.render()).match(/<form/g) || []).length, 1);
-  app.byId("category").props.onChange({ target: { value: "Konsultasi" } });
+  app.byId("category").props.onChange("Konsultasi");
   const html = renderToStaticMarkup(app.render());
   assert.match(html, /data-featured-item="service-Audit"/);
   assert.doesNotMatch(html, /data-featured-item="service-Aplikasi"/);
-  app.byId("capability").props.onChange({ target: { value: "Audit Keamanan" } });
-  app.byId("purpose").props.onChange({ target: { value: "quotation" } });
+  app.byId("capability").props.onChange("Audit Keamanan");
+  app.byId("purpose").props.onChange("quotation");
   const form = app.find((node) => node.type === "form");
   form.props.onSubmit({ preventDefault() {} });
   const url = new URL(app.navigation[0], "https://example.test");

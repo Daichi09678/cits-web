@@ -152,6 +152,21 @@ test("dashboard hides product controls and private inbox content without their p
   assert.match(full, /Pesan privat/);
 });
 
+test("dashboard product CTA distinguishes read-only, create, edit and delete permissions", () => {
+  const readonly = render("app/(admin)/admin/page.tsx", {
+    user: { role: "Admin Internal", permissions: { products: ["view"] } },
+  }).html;
+  assert.match(readonly, /Lihat Produk/);
+  assert.doesNotMatch(readonly, /Kelola Produk|lucide-plus/);
+  for (const action of ["create", "edit", "delete"]) {
+    const html = render("app/(admin)/admin/page.tsx", {
+      user: { role: "Admin Internal", permissions: { products: ["view", action] } },
+    }).html;
+    assert.match(html, /Kelola Produk/);
+    assert.equal(html.includes("lucide-plus"), action === "create");
+  }
+});
+
 test("access checks keep empty assignments restricted and legacy landing URLs protected", () => {
   for (const page of [...access.EDITABLE_PAGES.map((page) => page.key), "landing"]) {
     assert.equal(access.canAccessPage({ role: "Admin Internal" }, page), false);

@@ -4,6 +4,29 @@ const { NextResponse } = require("next/server");
 const { load } = require("./helpers/load.cjs");
 
 const consultation = load("lib/consultation.ts", {}, { URLSearchParams });
+test("contact form offers every consultation purpose and keeps the chosen value", () => {
+  const PublicSelect = () => null;
+  const Fields = load("components/ui/ConsultationRequirementsFields.tsx", {
+    "@/lib/consultation": consultation,
+    "@/components/pages/public/PublicSelect": { default: PublicSelect },
+  }).default;
+  const initial = { purpose: "quotation", expectedOutcome: "", currentSystem: "", timeline: "", usageEstimate: "" };
+  let updated;
+  const tree = Fields({ value: initial, onChange: (value) => (updated = value) });
+  const purposeField = tree.props.children[1];
+  const select = purposeField.props.children[1];
+  assert.deepEqual(
+    Array.from(select.props.options, ({ value, label }) => [value, label]),
+    Object.entries(consultation.CONSULTATION_PURPOSES)
+  );
+  assert.equal(select.props.value, "quotation");
+  select.props.onChange("support");
+  assert.equal(updated.purpose, "support");
+  assert.match(purposeField.props.children[2].props.children, /penawaran/i);
+  for (const purpose of Object.keys(consultation.CONSULTATION_PURPOSES)) {
+    assert.equal(consultation.parseConsultationRequest({ purpose }).value.purpose, purpose);
+  }
+});
 const http = load("lib/http.ts", { "next/server": { NextResponse } });
 const serviceCatalog = load("lib/serviceCatalog.ts", { "@/data/serviceDetails": load("data/serviceDetails.ts") });
 const product = {

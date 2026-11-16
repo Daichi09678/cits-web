@@ -1,4 +1,5 @@
 "use client";
+import Button from "@/components/ui/Button";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -71,7 +72,9 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
           <UserRound aria-hidden="true" className="size-4 shrink-0 text-orange-600 dark:text-orange-400" />
           Profil anggota tim
         </p>
-        <button
+        <Button
+          variant="unstyled"
+          size="none"
           ref={closeRef}
           type="button"
           onClick={onClose}
@@ -79,7 +82,7 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
           className="-mr-2 flex size-11 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-orange-600 dark:text-slate-300 dark:hover:bg-white/5"
         >
           <X aria-hidden="true" className="size-5" />
-        </button>
+        </Button>
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [overflow-wrap:anywhere]">
         <div className="grid sm:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
@@ -155,13 +158,15 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
       </div>
       <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50/60 px-5 py-4 dark:border-white/10 dark:bg-white/[0.02]">
         <p className="text-xs font-medium text-slate-600 dark:text-slate-300">Profil tim CITS Indonesia</p>
-        <button
+        <Button
+          variant="unstyled"
+          size="none"
           type="button"
           onClick={onClose}
           className="min-h-11 rounded-xl bg-orange-700 px-5 text-sm font-semibold text-white transition-colors hover:bg-orange-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
         >
           Tutup
-        </button>
+        </Button>
       </footer>
     </dialog>
   );

@@ -102,7 +102,7 @@ export default function Home() {
                   <div className="mt-8 flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4 sm:items-center">
                     <Link
                       href={hero.primaryCtaLink ?? "/contact"}
-                      className="group px-7 py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-lg shadow-orange-600/25 hover:shadow-xl hover:shadow-orange-600/35 flex items-center justify-center gap-2.5 text-sm"
+                      className="group px-7 py-3.5 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-lg shadow-[#F4511E]/25 flex items-center justify-center gap-2.5 text-sm"
                     >
                       {hero.primaryCtaText ?? "Konsultasi Sekarang"}
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -238,7 +238,7 @@ export default function Home() {
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Link
                   href={cta.primaryLink ?? "/contact"}
-                  className="group inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-bold rounded-xl transition-all shadow-lg shadow-orange-600/25 hover:shadow-xl hover:shadow-orange-600/35 text-sm"
+                  className="group inline-flex items-center gap-2 px-8 py-4 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-bold rounded-xl transition-colors shadow-lg shadow-[#F4511E]/25 hover:shadow-xl hover:shadow-[#F4511E]/35 text-sm"
                 >
                   {cta.primaryText ?? "Mulai Konsultasi Gratis"}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

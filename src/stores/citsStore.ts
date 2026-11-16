@@ -261,10 +261,11 @@ export const CitsStore = {
   getContactInfo(): ContactInfo {
     return getStorageItem<ContactInfo>(siteConfig.storageKeys.contactInfo, initialContactInfo);
   },
-  saveContactInfo(info: ContactInfo): void {
+  async saveContactInfo(info: ContactInfo): Promise<void> {
     assertPageAction("contact", "edit");
-    setStorageItem(siteConfig.storageKeys.contactInfo, info);
-    citsApi.updateContactInfo(info).catch((err) => console.warn("Sync contact info error:", err));
+    const result = await citsApi.updateContactInfo(info);
+    if (!result?.success || !result.data) throw new Error(result?.message || "Informasi kontak gagal disimpan.");
+    setStorageItem(siteConfig.storageKeys.contactInfo, result.data);
   },
 
   // CONTACT MESSAGES (INBOX & REALTIME)
@@ -397,10 +398,11 @@ export const CitsStore = {
   getLandingData(): LandingPageData {
     return getStorageItem<LandingPageData>(siteConfig.storageKeys.landing, initialLandingPageData);
   },
-  saveLandingData(data: LandingPageData): void {
+  async saveLandingData(data: LandingPageData): Promise<void> {
     assertPageAction("landing", "edit");
-    setStorageItem(siteConfig.storageKeys.landing, data);
-    citsApi.updateLandingData(data).catch((err) => console.warn("Sync landing error:", err));
+    const result = await citsApi.updateLandingData(data);
+    if (!result?.success || !result.data) throw new Error(result?.message || "Konten Beranda gagal disimpan.");
+    setStorageItem(siteConfig.storageKeys.landing, result.data);
   },
 
   // CASE STUDIES (PORTOFOLIO)

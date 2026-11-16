@@ -15,7 +15,9 @@ import {
   X,
 } from "lucide-react";
 import ProductPhoto from "@/components/ui/ProductPhoto";
+import Button from "@/components/ui/Button";
 import ServicePhoto from "@/components/ui/ServicePhoto";
+import PublicSelect from "@/components/pages/public/PublicSelect";
 import { CONSULTATION_PURPOSES, consultationHref } from "@/lib/consultation";
 import {
   buildFeaturedCatalog,
@@ -36,8 +38,6 @@ type FeaturedCatalogProps = {
   bottomCtaLink?: string;
 };
 
-const selectClass =
-  "mt-2 min-h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3 py-2.5 pr-8 text-sm text-slate-800 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/10 dark:bg-[#1A1A2E] dark:text-slate-100";
 const fieldLabelClass = "block min-w-0 text-[13px] font-medium text-slate-600 dark:text-slate-300";
 
 export default function FeaturedCatalog({
@@ -126,14 +126,16 @@ export default function FeaturedCatalog({
                 </div>
               </div>
               {hasFilters && (
-                <button
+                <Button
+                  variant="unstyled"
+                  size="none"
                   type="button"
                   onClick={resetFilters}
                   className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-orange-700 focus-visible:outline-2 focus-visible:outline-orange-600 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-orange-300"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                   Reset filter
-                </button>
+                </Button>
               )}
             </div>
             <div
@@ -159,69 +161,54 @@ export default function FeaturedCatalog({
                     className="min-h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm font-normal text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 dark:border-white/10 dark:bg-[#1A1A2E] dark:text-white"
                   />
                   {filters.query && (
-                    <button
+                    <Button
+                      variant="unstyled"
+                      size="none"
                       type="button"
                       aria-label={`Hapus pencarian ${itemLabel}`}
                       onClick={() => setFilters({ ...result.filters, query: "" })}
                       className="absolute right-0 top-0 flex h-full w-10 items-center justify-center rounded-r-lg text-slate-500 hover:text-orange-700 focus-visible:outline-2 focus-visible:outline-orange-600"
                     >
                       <X aria-hidden="true" className="h-4 w-4" />
-                    </button>
+                    </Button>
                   )}
                 </span>
               </label>
               <label className={fieldLabelClass} htmlFor={id + "-category"}>
                 Kategori
-                <select
+                <PublicSelect
                   id={id + "-category"}
                   aria-label={`Pilih kategori ${itemLabel}`}
                   value={result.filters.category}
-                  onChange={(event) => updateCategory(event.target.value)}
-                  className={selectClass}
-                >
-                  <option value="">Semua kategori</option>
-                  {result.categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
+                  onChange={updateCategory}
+                  className="mt-2"
+                  placeholder="Semua kategori"
+                  options={result.categories}
+                />
               </label>
               <label className={fieldLabelClass} htmlFor={id + "-capability"}>
                 Kapabilitas yang dibutuhkan
-                <select
+                <PublicSelect
                   id={id + "-capability"}
                   value={result.filters.capability}
                   disabled={!result.capabilities.length}
-                  onChange={(event) =>
-                    setFilters({ ...result.filters, capability: event.target.value, technology: "" })
-                  }
-                  className={selectClass}
-                >
-                  <option value="">Semua kapabilitas</option>
-                  {result.capabilities.map((capability) => (
-                    <option key={capability} value={capability}>
-                      {capability}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(capability) => setFilters({ ...result.filters, capability, technology: "" })}
+                  className="mt-2"
+                  placeholder="Semua kapabilitas"
+                  options={result.capabilities}
+                />
               </label>
               <label className={fieldLabelClass} htmlFor={id + "-technology"}>
                 Teknologi / standar
-                <select
+                <PublicSelect
                   id={id + "-technology"}
                   value={result.filters.technology}
                   disabled={!result.technologies.length}
-                  onChange={(event) => setFilters({ ...result.filters, technology: event.target.value })}
-                  className={selectClass}
-                >
-                  <option value="">Semua teknologi</option>
-                  {result.technologies.map((technology) => (
-                    <option key={technology} value={technology}>
-                      {technology}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(technology) => setFilters({ ...result.filters, technology })}
+                  className="mt-2"
+                  placeholder="Semua teknologi"
+                  options={result.technologies}
+                />
               </label>
             </div>
             {hasFilters && (
@@ -229,7 +216,9 @@ export default function FeaturedCatalog({
                 {Object.entries(result.filters)
                   .filter(([, value]) => value.trim())
                   .map(([key, value]) => (
-                    <button
+                    <Button
+                      variant="unstyled"
+                      size="none"
                       key={key}
                       type="button"
                       aria-label={"Hapus filter " + value}
@@ -246,7 +235,7 @@ export default function FeaturedCatalog({
                     >
                       <span className="truncate">{value}</span>
                       <X className="h-3 w-3 shrink-0" />
-                    </button>
+                    </Button>
                   ))}
               </div>
             )}
@@ -337,13 +326,15 @@ export default function FeaturedCatalog({
                       : "Anda tetap bisa mendiskusikan kebutuhan langsung bersama tim kami."}
                   </p>
                   {hasFilters && (
-                    <button
+                    <Button
+                      variant="unstyled"
+                      size="none"
                       type="button"
                       onClick={resetFilters}
                       className="mt-4 min-h-10 text-xs font-bold text-orange-700 hover:underline dark:text-orange-300"
                     >
                       Tampilkan semua {itemLabel}
-                    </button>
+                    </Button>
                   )}
                 </div>
               )}
@@ -443,19 +434,14 @@ export default function FeaturedCatalog({
                     </details>
                   )}
                   <label className={"mt-6 " + fieldLabelClass} htmlFor={id + "-purpose"}>
-                    Tujuan konsultasi
-                    <select
+                    Jenis konsultasi
+                    <PublicSelect
                       id={id + "-purpose"}
                       value={purpose}
-                      onChange={(event) => setPurpose(event.target.value as ConsultationPurpose)}
-                      className={selectClass}
-                    >
-                      {Object.entries(CONSULTATION_PURPOSES).map(([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(next) => setPurpose(next as ConsultationPurpose)}
+                      className="mt-2"
+                      options={Object.entries(CONSULTATION_PURPOSES).map(([value, label]) => ({ value, label }))}
+                    />
                   </label>
                 </div>
               ) : (
@@ -507,15 +493,17 @@ export default function FeaturedCatalog({
               {selectedFeatures.map((feature) => (
                 <input key={feature} type="hidden" name="feature" value={feature} />
               ))}
-              <button
+              <Button
                 type="submit"
                 disabled={!selected}
                 data-consultation-href={consultationLink}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#F4511E] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#DC3F0C] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600 w-full sm:w-auto disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 dark:disabled:bg-white/10 dark:disabled:text-slate-500"
+                variant="public-primary"
+                size="lg"
+                className="w-full sm:w-auto"
               >
                 Lanjutkan konsultasi
                 <ArrowRight className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           </div>
         </form>

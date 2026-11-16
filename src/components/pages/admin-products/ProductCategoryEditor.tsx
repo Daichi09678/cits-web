@@ -1,4 +1,8 @@
 "use client";
+import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
+import FieldLabel from "@/components/ui/FieldLabel";
+import FormFeedback from "@/components/ui/FormFeedback";
 
 import { useRef, useState, type FormEvent } from "react";
 import type { ProductItem } from "@/types/schema";
@@ -71,17 +75,18 @@ export default function ProductCategoryEditor({
         Buat kategori dan pilih produk yang masuk di dalamnya. Kategori akan muncul sebagai filter setelah disimpan.
       </p>
       <fieldset disabled={saving} className="min-w-0 space-y-3">
-        <label htmlFor="new-product-category" className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+        <FieldLabel htmlFor="new-product-category" fieldSize="sm" required>
           Nama kategori
-        </label>
-        <input
+        </FieldLabel>
+        <Input
           id="new-product-category"
           required
           maxLength={100}
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder="Contoh: Infrastruktur TI"
-          className="h-9 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-orange-500/30 dark:border-white/10 dark:bg-[#151528] dark:text-white"
+          fieldSize="sm"
+          className="w-full min-w-0"
         />
         <fieldset className="space-y-2">
           <legend className="mb-2 text-xs font-medium text-slate-700 dark:text-slate-300">Terapkan ke produk</legend>
@@ -106,26 +111,14 @@ export default function ProductCategoryEditor({
             ))}
           </div>
         </fieldset>
-        {error && (
-          <p role="alert" className="text-xs text-red-600 dark:text-red-400">
-            {error}
-          </p>
-        )}
+        {error && <FormFeedback tone="error">{error}</FormFeedback>}
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-9 rounded-lg px-3 text-xs text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
-          >
+          <Button type="button" onClick={onClose} variant="secondary" size="md">
             Batal
-          </button>
-          <button
-            type="submit"
-            disabled={ids.length === 0}
-            className="h-9 rounded-lg bg-orange-600 px-3 text-xs font-medium text-white hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          </Button>
+          <Button type="submit" disabled={ids.length === 0} variant="primary" size="md">
             {saving ? "Menyimpan..." : "Simpan kategori"}
-          </button>
+          </Button>
         </div>
       </fieldset>
     </form>

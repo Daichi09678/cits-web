@@ -211,7 +211,7 @@ export default function ServicesPage() {
                       aria-current={isActive ? "location" : undefined}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${
                         isActive
-                          ? "bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-md shadow-orange-600/25 scale-105"
+                          ? "bg-[#F4511E] text-white shadow-md shadow-[#F4511E]/25 scale-105"
                           : "bg-white dark:bg-[#16162c] text-gray-800 dark:text-white border border-gray-200 dark:border-white/15 hover:border-orange-500/40 hover:text-orange-700 dark:hover:text-orange-400"
                       }`}
                     >
@@ -355,7 +355,7 @@ export default function ServicesPage() {
                     <div className="pt-2 flex flex-wrap gap-3">
                       <Link
                         href={consultationHref({ service: service.title, source: "services" })}
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-md shadow-orange-600/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-md shadow-[#F4511E]/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                       >
                         <span>Konsultasikan Kebutuhan Ini</span>
                         <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -678,7 +678,7 @@ export default function ServicesPage() {
               <div className="mt-8 flex flex-wrap justify-center gap-3.5">
                 <Link
                   href={consultationHref({ source: "services" })}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-md shadow-orange-600/20 hover:shadow-lg hover:shadow-orange-600/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-md shadow-[#F4511E]/20 hover:shadow-lg hover:shadow-[#F4511E]/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                 >
                   <span>Ajukan Diskusi Kebutuhan</span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />

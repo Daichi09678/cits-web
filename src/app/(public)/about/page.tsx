@@ -1,4 +1,5 @@
 "use client";
+import Button from "@/components/ui/Button";
 
 import { Fragment, useState, type ReactNode } from "react";
 import Image from "next/image";
@@ -165,7 +166,7 @@ export default function AboutPage() {
                     <div className="pt-2 space-y-2.5">
                       <Link
                         href={content.texts["about_hero_href_11"]}
-                        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-md shadow-orange-600/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-md shadow-[#F4511E]/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                       >
                         <span>{content.texts["about_hero_text_12"]}</span>
                         <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -493,7 +494,9 @@ export default function AboutPage() {
               ].map((tab) => {
                 const isActive = awardFilter === tab.key;
                 return (
-                  <button
+                  <Button
+                    variant="unstyled"
+                    size="none"
                     key={tab.key}
                     role="tab"
                     aria-selected={isActive}
@@ -506,7 +509,7 @@ export default function AboutPage() {
                   >
                     {tab.label} (
                     {tab.key === "all" ? awards.length : awards.filter((item) => item.category === tab.key).length})
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -642,7 +645,7 @@ export default function AboutPage() {
               <div className="mt-8 flex flex-wrap justify-center gap-3.5">
                 <Link
                   href={content.texts["about_cta_href_4"]}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-md shadow-orange-600/20 hover:shadow-lg hover:shadow-orange-600/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-md shadow-[#F4511E]/20 hover:shadow-lg hover:shadow-[#F4511E]/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                 >
                   <span>{content.texts["about_cta_text_5"]}</span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />

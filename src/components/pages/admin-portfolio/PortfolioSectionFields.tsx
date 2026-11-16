@@ -1,4 +1,5 @@
 "use client";
+import Input, { Textarea } from "@/components/ui/Input";
 
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import type { ChangeEvent } from "react";
@@ -75,7 +76,7 @@ export default function PortfolioSectionFields({
                   </span>
                 )}
                 {field.kind === "textarea" ? (
-                  <textarea
+                  <Textarea
                     id={id}
                     rows={3}
                     maxLength={8000}
@@ -83,10 +84,10 @@ export default function PortfolioSectionFields({
                     onChange={(event) =>
                       onChange({ ...data, texts: { ...data.texts, [field.key]: event.target.value } })
                     }
-                    className={fieldClass}
+                    fieldSize="sm"
                   />
                 ) : (
-                  <input
+                  <Input
                     id={id}
                     required={field.kind === "link"}
                     maxLength={8000}
@@ -94,7 +95,7 @@ export default function PortfolioSectionFields({
                     onChange={(event) =>
                       onChange({ ...data, texts: { ...data.texts, [field.key]: event.target.value } })
                     }
-                    className={fieldClass}
+                    fieldSize="sm"
                   />
                 )}
               </label>
@@ -176,7 +177,11 @@ export default function PortfolioSectionFields({
                           className={`min-w-0 text-xs font-semibold text-slate-700 dark:text-slate-200 ${multiline ? "sm:col-span-2" : ""}`}
                         >
                           {collectionLabels[field] || field}
-                          {multiline ? <textarea {...props} rows={3} /> : <input {...props} />}
+                          {multiline ? (
+                            <Textarea {...props} rows={3} fieldSize="sm" />
+                          ) : (
+                            <Input {...props} fieldSize="sm" />
+                          )}
                         </label>
                       );
                     })}

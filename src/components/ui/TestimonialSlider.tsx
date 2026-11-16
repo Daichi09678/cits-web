@@ -1,4 +1,5 @@
 "use client";
+import Button from "@/components/ui/Button";
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -63,17 +64,21 @@ export default function TestimonialSlider({ testimonials }: { testimonials: Test
 
       {/* Controls */}
       <div className="flex items-center justify-center gap-4 mt-6">
-        <button
+        <Button
+          variant="unstyled"
+          size="none"
           onClick={prev}
           className="w-10 h-10 rounded-full border border-gray-300 dark:border-white/20 bg-white dark:bg-[#1A1A2E] text-gray-700 dark:text-white/90 flex items-center justify-center hover:border-orange-600 hover:text-orange-700 dark:hover:text-orange-400 transition-colors cursor-pointer"
           aria-label="Testimonial sebelumnya"
         >
           <ChevronLeft className="w-5 h-5" />
-        </button>
+        </Button>
 
         <div className="flex gap-2">
           {testimonials.map((_, i) => (
-            <button
+            <Button
+              variant="unstyled"
+              size="none"
               key={i}
               onClick={() => {
                 setDirection(i > current ? 1 : -1);
@@ -89,13 +94,15 @@ export default function TestimonialSlider({ testimonials }: { testimonials: Test
           ))}
         </div>
 
-        <button
+        <Button
+          variant="unstyled"
+          size="none"
           onClick={next}
           className="w-10 h-10 rounded-full border border-gray-300 dark:border-white/20 bg-white dark:bg-[#1A1A2E] text-gray-700 dark:text-white/90 flex items-center justify-center hover:border-orange-600 hover:text-orange-700 dark:hover:text-orange-400 transition-colors cursor-pointer"
           aria-label="Testimonial berikutnya"
         >
           <ChevronRight className="w-5 h-5" />
-        </button>
+        </Button>
       </div>
     </div>
   );

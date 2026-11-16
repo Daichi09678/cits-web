@@ -7,6 +7,7 @@ interface SpotlightCardProps {
   className?: string;
   spotlightColor?: string;
   borderColor?: string;
+  disableSpotlight?: boolean;
 }
 
 export default function SpotlightCard({
@@ -14,6 +15,7 @@ export default function SpotlightCard({
   className = "",
   spotlightColor = "rgba(242, 101, 34, 0.15)",
   borderColor = "rgba(242, 101, 34, 0.45)",
+  disableSpotlight = false,
 }: SpotlightCardProps) {
   const divRef = useRef<HTMLDivElement>(null);
   const spotlightRef = useRef<HTMLDivElement>(null);
@@ -42,22 +44,28 @@ export default function SpotlightCard({
   return (
     <div
       ref={divRef}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className={`relative rounded-2xl overflow-hidden p-[1px] transition-transform duration-200 hover:-translate-y-1 group will-change-transform ${className}`}
-      style={{
-        background: `radial-gradient(400px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), ${borderColor}, transparent 65%)`,
-      }}
+      onMouseMove={disableSpotlight ? undefined : handleMouseMove}
+      onMouseEnter={disableSpotlight ? undefined : handleMouseEnter}
+      onMouseLeave={disableSpotlight ? undefined : handleMouseLeave}
+      className={`relative rounded-2xl overflow-hidden p-[1px] ${disableSpotlight ? "" : "transition-transform duration-200 hover:-translate-y-1 will-change-transform"} group ${className}`}
+      style={
+        disableSpotlight
+          ? undefined
+          : {
+              background: `radial-gradient(400px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), ${borderColor}, transparent 65%)`,
+            }
+      }
     >
       {/* Background radial spotlight on inner surface */}
-      <div
-        ref={spotlightRef}
-        className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-opacity duration-300 rounded-2xl"
-        style={{
-          background: `radial-gradient(350px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), ${spotlightColor}, transparent 80%)`,
-        }}
-      />
+      {!disableSpotlight && (
+        <div
+          ref={spotlightRef}
+          className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-opacity duration-300 rounded-2xl"
+          style={{
+            background: `radial-gradient(350px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), ${spotlightColor}, transparent 80%)`,
+          }}
+        />
+      )}
 
       {/* Main card body with backdrop & border fallback */}
       <div className="relative z-0 h-full w-full rounded-2xl bg-white dark:bg-[#16162c] border border-gray-100 dark:border-white/10 group-hover:border-transparent transition-colors overflow-hidden">

@@ -1,4 +1,6 @@
 "use client";
+import Button from "@/components/ui/Button";
+import FormFeedback from "@/components/ui/FormFeedback";
 
 import { useRef, useState, type FormEvent, type ReactNode } from "react";
 import { CheckCircle2, ChevronRight, ExternalLink, Info, LoaderCircle, Save } from "lucide-react";
@@ -145,9 +147,9 @@ export default function PortfolioEditor({
           </p>
         </div>
         {dirty && (
-          <p role="status" className="mt-4 text-xs leading-relaxed text-orange-700 dark:text-orange-300">
+          <FormFeedback tone="success" className="mt-4">
             Ada perubahan konten yang belum disimpan. Draft tetap tersedia saat berpindah section.
-          </p>
+          </FormFeedback>
         )}
         <a
           href="/portfolio"
@@ -192,15 +194,15 @@ export default function PortfolioEditor({
         ) : (
           <form onSubmit={submit} aria-labelledby="portfolio-section-title" className="min-w-0 p-5 sm:p-6">
             {loading && (
-              <p role="status" className="mb-4 flex items-center gap-2 text-xs text-slate-500">
+              <FormFeedback tone="success" className="mb-4">
                 <LoaderCircle className="size-4 animate-spin" />
                 Memuat konten Portofolio...
-              </p>
+              </FormFeedback>
             )}
             {loadError && (
-              <p role="alert" className="mb-4 text-xs text-red-700 dark:text-red-300">
+              <FormFeedback tone="error" className="mb-4">
                 {loadError}
-              </p>
+              </FormFeedback>
             )}
             <fieldset disabled={disabled} className="min-w-0 disabled:opacity-60">
               <PortfolioSectionFields sectionKey={selected} data={data} onChange={change} />
@@ -256,28 +258,22 @@ export default function PortfolioEditor({
             </fieldset>
             <footer className="mt-7 border-t border-slate-100 pt-5 dark:border-white/10">
               {error && (
-                <p
-                  role="alert"
-                  className="mb-4 rounded-lg bg-red-50 p-3 text-xs text-red-700 dark:bg-red-500/10 dark:text-red-300"
-                >
+                <FormFeedback tone="error" className="mb-4">
                   {error}
-                </p>
+                </FormFeedback>
               )}
               {saved && (
-                <p
-                  role="status"
-                  className="mb-4 flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-300"
-                >
+                <FormFeedback tone="success" className="mb-4">
                   <CheckCircle2 className="size-4" />
                   Perubahan konten Portofolio berhasil disimpan.
-                </p>
+                </FormFeedback>
               )}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs leading-relaxed text-slate-500">
                   {dirty ? "Perubahan konten belum disimpan." : "Sesuai konten tersimpan."}
                 </p>
                 <div className="flex flex-wrap justify-end gap-3">
-                  <button
+                  <Button
                     type="button"
                     disabled={disabled || !dirty}
                     onClick={() => {
@@ -286,18 +282,15 @@ export default function PortfolioEditor({
                       setError("");
                       setSaved(false);
                     }}
-                    className="min-h-11 rounded-lg border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-700 disabled:opacity-40 dark:border-white/15 dark:text-slate-200"
+                    variant="secondary"
+                    size="md"
                   >
                     Batal
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={disabled || !dirty}
-                    className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-orange-700 px-5 py-2 text-xs font-semibold text-white hover:bg-orange-800 disabled:opacity-40"
-                  >
+                  </Button>
+                  <Button type="submit" disabled={disabled || !dirty} variant="primary" size="md">
                     {saving ? <LoaderCircle className="size-4 animate-spin" /> : <Save className="size-4" />}
                     {saving ? "Menyimpan..." : "Simpan Perubahan"}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </footer>

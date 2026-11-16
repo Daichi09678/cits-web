@@ -1,4 +1,7 @@
 "use client";
+import Button from "@/components/ui/Button";
+import FieldLabel from "@/components/ui/FieldLabel";
+import FormFeedback from "@/components/ui/FormFeedback";
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -29,8 +32,9 @@ import GradientText from "@/components/ui/GradientText";
 import GridPattern from "@/components/ui/GridPattern";
 import FloatingShapes from "@/components/animations/FloatingShapes";
 import SpotlightCard from "@/components/ui/SpotlightCard";
-import CustomSelect from "@/components/ui/CustomSelect";
-import Input from "@/components/ui/Input";
+import CustomSelect from "@/components/pages/public/PublicSelect";
+import formStyles from "@/components/pages/contact/ContactForm.module.css";
+import Input, { Textarea } from "@/components/ui/Input";
 import { useCitsStore } from "@/stores/citsStore";
 import { contactPresentation } from "@/lib/contactPresentation";
 import FaqChat from "@/components/pages/contact/FaqChat";
@@ -265,7 +269,9 @@ function ContactPageContent({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <h4 className="font-bold text-dark dark:text-white text-sm">Telepon Kantor</h4>
-                        <button
+                        <Button
+                          variant="unstyled"
+                          size="none"
                           type="button"
                           onClick={() => handleCopy(contactInfo?.phone || "(021) 39719677", "phone")}
                           className="inline-flex items-center gap-1 text-[11px] font-semibold text-orange-800 dark:text-orange-300 hover:text-orange-900 bg-orange-100/70 dark:bg-orange-950/50 px-2 py-0.5 rounded transition-colors"
@@ -282,7 +288,7 @@ function ContactPageContent({
                               <span>Salin</span>
                             </>
                           )}
-                        </button>
+                        </Button>
                       </div>
                       <a
                         href={`tel:${(contactInfo?.phone || "02139719677").replace(/[^0-9]/g, "")}`}
@@ -306,7 +312,9 @@ function ContactPageContent({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <h4 className="font-bold text-dark dark:text-white text-sm">Email Korespondensi Resmi</h4>
-                        <button
+                        <Button
+                          variant="unstyled"
+                          size="none"
                           type="button"
                           onClick={() => handleCopy(contactInfo?.email || "info@citsindonesia.co.id", "email")}
                           className="inline-flex items-center gap-1 text-[11px] font-semibold text-orange-800 dark:text-orange-300 hover:text-orange-900 bg-orange-100/70 dark:bg-orange-950/50 px-2 py-0.5 rounded transition-colors"
@@ -323,7 +331,7 @@ function ContactPageContent({
                               <span>Salin</span>
                             </>
                           )}
-                        </button>
+                        </Button>
                       </div>
                       <a
                         href={`mailto:${contactInfo?.email || "info@citsindonesia.co.id"}`}
@@ -392,10 +400,10 @@ function ContactPageContent({
             {/* Right Column: Inquire Form (Span 7) */}
             <div className="lg:col-span-7 flex flex-col justify-between">
               <ScrollReveal direction="right" className="h-full">
-                <SpotlightCard className="h-full">
-                  <div className="p-7 md:p-10 flex flex-col justify-between h-full">
+                <SpotlightCard className="h-full" disableSpotlight>
+                  <div className={`${formStyles.form} p-5 sm:p-7 md:p-8 flex flex-col justify-between h-full`}>
                     <div>
-                      <div className="flex items-center justify-between pb-6 mb-6 border-b border-gray-150 dark:border-white/10">
+                      <div className="flex items-start justify-between gap-4 pb-5 mb-6 border-b border-gray-200 dark:border-white/10">
                         <div>
                           <h3 className="text-xl md:text-2xl font-extrabold text-dark dark:text-white">
                             Formulir Diskusi Kebutuhan Proyek
@@ -410,11 +418,7 @@ function ContactPageContent({
                       </div>
 
                       {submitted ? (
-                        <div
-                          role="status"
-                          aria-live="polite"
-                          className="p-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-center space-y-4 my-8"
-                        >
+                        <FormFeedback tone="success" className="my-8">
                           <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center mx-auto text-emerald-700 dark:text-emerald-300">
                             <CheckCircle2 className="w-8 h-8" />
                           </div>
@@ -425,14 +429,16 @@ function ContactPageContent({
                             Terima kasih telah menghubungi CITS Indonesia. Tim konsultan kami akan meninjau pesan Anda
                             dan segera menghubungi Anda kembali dalam 1x24 jam kerja.
                           </p>
-                          <button
+                          <Button
+                            variant="unstyled"
+                            size="none"
                             type="button"
                             onClick={() => setSubmitted(false)}
                             className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 dark:text-orange-300 hover:underline cursor-pointer"
                           >
                             Kirim Formulir Lain
-                          </button>
-                        </div>
+                          </Button>
+                        </FormFeedback>
                       ) : (
                         <form
                           onSubmit={async (e) => {
@@ -490,23 +496,13 @@ function ContactPageContent({
                           }}
                           className="space-y-4 sm:space-y-5"
                         >
-                          {submitError && (
-                            <div
-                              role="alert"
-                              className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-xs text-red-700 dark:text-red-300"
-                            >
-                              {submitError}
-                            </div>
-                          )}
+                          {submitError && <FormFeedback tone="error">{submitError}</FormFeedback>}
                           {/* Nama & Instansi */}
                           <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
                             <div>
-                              <label
-                                htmlFor="contact-nama"
-                                className="block text-sm font-bold text-gray-800 dark:text-white/90 mb-1.5"
-                              >
-                                Nama Lengkap <span className="text-red-600">*</span>
-                              </label>
+                              <FieldLabel htmlFor="contact-nama" fieldSize="md" required>
+                                Nama Lengkap
+                              </FieldLabel>
                               <div className="relative">
                                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-white/40 pointer-events-none">
                                   <User className="w-4 h-4" />
@@ -526,12 +522,9 @@ function ContactPageContent({
                             </div>
 
                             <div>
-                              <label
-                                htmlFor="contact-instansi"
-                                className="block text-sm font-bold text-gray-800 dark:text-white/90 mb-1.5"
-                              >
-                                Instansi / Perusahaan <span className="text-red-600">*</span>
-                              </label>
+                              <FieldLabel htmlFor="contact-instansi" fieldSize="md" required>
+                                Instansi / Perusahaan
+                              </FieldLabel>
                               <div className="relative">
                                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-white/40 pointer-events-none">
                                   <Building2 className="w-4 h-4" />
@@ -554,12 +547,9 @@ function ContactPageContent({
                           {/* Email & Telepon */}
                           <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
                             <div>
-                              <label
-                                htmlFor="contact-email"
-                                className="block text-sm font-bold text-gray-800 dark:text-white/90 mb-1.5"
-                              >
-                                Email Resmi / Dinas <span className="text-red-600">*</span>
-                              </label>
+                              <FieldLabel htmlFor="contact-email" fieldSize="md" required>
+                                Alamat Email
+                              </FieldLabel>
                               <div className="relative">
                                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-white/40 pointer-events-none">
                                   <Mail className="w-4 h-4" />
@@ -568,23 +558,28 @@ function ContactPageContent({
                                   id="contact-email"
                                   name="email"
                                   type="email"
+                                  autoComplete="email"
+                                  aria-describedby="contact-email-hint"
                                   required
                                   value={formEmail}
                                   onChange={(e) => setFormEmail(e.target.value)}
                                   withIcon
                                   fieldSize="md"
-                                  placeholder="nama@instansi.go.id"
+                                  placeholder="nama@perusahaan.com"
                                 />
                               </div>
+                              <p
+                                id="contact-email-hint"
+                                className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300"
+                              >
+                                Gunakan email aktif agar tim CITS dapat menghubungi Anda.
+                              </p>
                             </div>
 
                             <div>
-                              <label
-                                htmlFor="contact-telepon"
-                                className="block text-sm font-bold text-gray-800 dark:text-white/90 mb-1.5"
-                              >
-                                Nomor Telepon / WhatsApp <span className="text-red-600">*</span>
-                              </label>
+                              <FieldLabel htmlFor="contact-telepon" fieldSize="md" required>
+                                Nomor Telepon / WhatsApp
+                              </FieldLabel>
                               <div className="relative">
                                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-white/40 pointer-events-none">
                                   <Phone className="w-4 h-4" />
@@ -606,12 +601,9 @@ function ContactPageContent({
 
                           {/* Pilar Layanan */}
                           <div>
-                            <label
-                              id="service-select-label"
-                              className="block text-sm font-bold text-gray-800 dark:text-white/90 mb-1.5"
-                            >
+                            <FieldLabel id="service-select-label" fieldSize="md">
                               Pilar Layanan yang Dibutuhkan
-                            </label>
+                            </FieldLabel>
                             <CustomSelect
                               labelledBy="service-select-label"
                               placeholder="Pilih layanan yang dibutuhkan (opsional)"
@@ -622,12 +614,9 @@ function ContactPageContent({
                           </div>
 
                           <div>
-                            <label
-                              id="product-select-label"
-                              className="block text-sm font-bold text-gray-800 dark:text-white/90 mb-1.5"
-                            >
+                            <FieldLabel id="product-select-label" fieldSize="md">
                               Produk yang Ingin Dikonsultasikan
-                            </label>
+                            </FieldLabel>
                             <CustomSelect
                               labelledBy="product-select-label"
                               placeholder="Pilih produk (opsional)"
@@ -682,34 +671,34 @@ function ContactPageContent({
                                   ini.
                                 </p>
                               )}
-                              <button
+                              <Button
+                                variant="unstyled"
+                                size="none"
                                 type="button"
                                 onClick={() => setReferenceId("")}
                                 className="text-xs font-semibold text-orange-800 dark:text-orange-300 underline"
                               >
                                 Hapus Referensi Proyek
-                              </button>
+                              </Button>
                             </section>
                           )}
                           <ConsultationRequirementsFields value={requirements} onChange={setRequirements} />
 
                           {/* Uraian Pesan */}
                           <div>
-                            <label
-                              htmlFor="contact-pesan"
-                              className="block text-sm font-bold text-gray-800 dark:text-white/90 mb-1.5"
-                            >
-                              Detail Masalah & Kebutuhan Anda <span className="text-red-600">*</span>
-                            </label>
-                            <textarea
+                            <FieldLabel htmlFor="contact-pesan" fieldSize="md" required>
+                              Detail Masalah & Kebutuhan Anda
+                            </FieldLabel>
+                            <Textarea
                               id="contact-pesan"
                               name="pesan"
                               required
                               rows={4}
                               value={formMessage}
                               onChange={(e) => setFormMessage(e.target.value)}
-                              className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-white/15 bg-white dark:bg-[#121222] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-white/40 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all resize-none text-sm"
                               placeholder="Jelaskan kendala, alur kerja yang perlu dibantu, integrasi yang dibutuhkan, dan pertanyaan yang ingin dibahas dengan tim CITS..."
+                              fieldSize="md"
+                              className="w-full"
                             />
                           </div>
 
@@ -733,10 +722,14 @@ function ContactPageContent({
 
                           {/* Submit Button */}
                           <div className="pt-2">
-                            <button
+                            <Button
                               type="submit"
                               disabled={isSubmitting}
-                              className="w-full py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-orange-600/30 transition-all flex items-center justify-center gap-2 group cursor-pointer text-sm shadow-md shadow-orange-600/20 active:scale-[0.99]"
+                              variant="public-primary"
+                              size="lg"
+                              className="w-full group"
+                              busy={isSubmitting}
+                              busyLabel="Mengirim..."
                             >
                               {isSubmitting ? (
                                 <>
@@ -749,7 +742,7 @@ function ContactPageContent({
                                   <span>Kirim Permintaan Konsultasi</span>
                                 </>
                               )}
-                            </button>
+                            </Button>
                           </div>
                         </form>
                       )}
@@ -764,7 +757,10 @@ function ContactPageContent({
 
       {/* 3. FAQ SECTION — asisten tanya jawab berbasis pertanyaan yang tersedia.
           Layout 5/7 kolom mengikuti section formulir di atasnya agar lebar kartu identik. */}
-      <section aria-labelledby="faq-heading" className="py-16 md:py-24 bg-gray-50 dark:bg-[#151528] transition-colors">
+      <section
+        aria-labelledby="faq-heading"
+        className="mb-10 md:mb-16 py-16 md:py-24 bg-gray-50 dark:bg-[#151528] transition-colors"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-start">
             <div className="lg:col-span-5">
@@ -778,8 +774,7 @@ function ContactPageContent({
                     kepatuhan sistem bersama CITS Indonesia.
                   </p>
                   <p className="mt-4 text-xs text-gray-600 dark:text-white/70 leading-relaxed">
-                    Pilih salah satu pertanyaan yang tersedia, atau tulis pertanyaan Anda sendiri — asisten akan
-                    menjawab dari daftar jawaban resmi CITS.
+                    Pilih salah satu pertanyaan yang tersedia untuk melihat jawaban dari CITS.
                   </p>
                 </div>
               </ScrollReveal>

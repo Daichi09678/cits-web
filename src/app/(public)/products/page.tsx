@@ -1,4 +1,5 @@
 "use client";
+import Button from "@/components/ui/Button";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -160,19 +161,21 @@ export default function ProductsPage() {
               {categories.map((cat) => {
                 const isActive = effectiveCategory === cat;
                 return (
-                  <button
+                  <Button
+                    variant="unstyled"
+                    size="none"
                     key={cat}
                     role="tab"
                     aria-selected={isActive}
                     onClick={() => setSelectedCategory(cat)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer ${
                       isActive
-                        ? "bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-md shadow-orange-600/25 scale-105"
+                        ? "bg-[#F4511E] text-white shadow-md shadow-[#F4511E]/25 scale-105"
                         : "bg-white dark:bg-[#16162c] text-gray-800 dark:text-white border border-gray-200 dark:border-white/15 hover:border-orange-500/40 hover:text-orange-700 dark:hover:text-orange-400"
                     }`}
                   >
                     {cat}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -266,16 +269,18 @@ export default function ProductsPage() {
 
                         {/* Actions */}
                         <div className="pt-2 flex flex-col sm:flex-row items-center gap-2.5">
-                          <button
+                          <Button
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setActiveModalProduct(product)}
                             className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-gray-800 dark:text-white text-xs font-bold border border-gray-200 dark:border-white/15 transition-all cursor-pointer"
                           >
                             Spesifikasi Lengkap
                             <ChevronRight className="w-3.5 h-3.5" />
-                          </button>
+                          </Button>
                           <Link
                             href={consultationHref({ productId: product.id, purpose: "demo", source: "products" })}
-                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white text-xs font-bold transition-all shadow-md shadow-orange-600/20 hover:shadow-orange-600/30"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#F4511E] hover:bg-[#DC3F0C] text-white text-xs font-bold transition-colors shadow-md shadow-[#F4511E]/20 hover:shadow-[#F4511E]/30"
                           >
                             Minta Demo
                             <ArrowRight className="w-3.5 h-3.5" />
@@ -413,7 +418,7 @@ export default function ProductsPage() {
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Link
                   href={consultationHref({ purpose: "demo", source: "products" })}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white font-semibold rounded-xl transition-all shadow-md shadow-orange-600/20 hover:shadow-lg hover:shadow-orange-600/30 text-sm"
+                  className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-md shadow-[#F4511E]/20 hover:shadow-lg hover:shadow-[#F4511E]/30 text-sm"
                 >
                   Jadwalkan Demo Produk
                   <ArrowRight className="w-4 h-4" />

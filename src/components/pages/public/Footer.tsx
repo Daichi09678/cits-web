@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUp, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { useCitsStore } from "@/stores/citsStore";
 import { initialContactInfo } from "@/data/initialData";
 import { CompanyLogo } from "@/components/pages/public/CompanyBrand";
@@ -11,16 +11,10 @@ export default function Footer() {
   const { contactInfo: storeContact, aboutData } = useCitsStore();
   const contact = storeContact || initialContactInfo;
 
-  const scrollToTop = () => {
-    if (typeof window !== "undefined") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
   const { whatsappUrl, mapUrl } = contactPresentation(contact);
 
   return (
-    <footer className="bg-white dark:bg-[#121222] border-t border-slate-200/80 dark:border-white/10 transition-colors">
+    <footer className="bg-white dark:bg-[#121222] transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12">
         {/* Main 4-Column Grid */}
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:gap-16">
@@ -101,17 +95,6 @@ export default function Footer() {
         {/* Bottom Bar: Copyright & Legalitas */}
         <div className="border-t border-slate-200 dark:border-white/10 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 dark:text-slate-400">
           <p>&copy; {new Date().getFullYear()} CITS Indonesia. Seluruh hak cipta dilindungi.</p>
-
-          <div className="flex items-center gap-5">
-            <button
-              type="button"
-              onClick={scrollToTop}
-              className="inline-flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
-            >
-              <span>Kembali ke atas</span>
-              <ArrowUp className="w-3 h-3" />
-            </button>
-          </div>
         </div>
       </div>
     </footer>

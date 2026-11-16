@@ -13,6 +13,8 @@ const inputModule = load("components/ui/Input.tsx", runtime);
 const Input = inputModule.default;
 const Textarea = inputModule.Textarea;
 const Select = load("components/ui/Select.tsx", { ...runtime, "lucide-react": require("lucide-react") }).default;
+const FieldLabel = load("components/ui/FieldLabel.tsx", runtime).default;
+const FormFeedback = load("components/ui/FormFeedback.tsx", runtime).default;
 
 const html = (element) => renderToStaticMarkup(element);
 
@@ -50,7 +52,8 @@ test("badge keeps caller layout classes while owning its colour palette", () => 
 test("button defaults to a non-submitting type and exposes variant and size tokens", () => {
   const primary = html(React.createElement(Button, null, "Simpan"));
   assert.match(primary, /type="button"/);
-  assert.match(primary, /bg-orange-600/);
+  assert.match(primary, /bg-orange-700/);
+  assert.match(primary, /min-h-11/);
   assert.match(primary, /px-3\.5 py-2\.5 text-xs/);
 
   const danger = html(
@@ -60,6 +63,46 @@ test("button defaults to a non-submitting type and exposes variant and size toke
   assert.match(danger, /hover:bg-rose-50/);
   assert.match(danger, /px-5 py-3 text-sm/);
   assert.match(danger, /disabled=""/);
+});
+
+test("busy buttons announce progress, disable repeat submission and preserve their idle label", () => {
+  const busy = html(React.createElement(Button, { busy: true, busyLabel: "Menyimpan...", type: "submit" }, "Simpan"));
+  assert.match(busy, /aria-busy="true"/);
+  assert.match(busy, /disabled=""/);
+  assert.match(busy, /Menyimpan\.\.\./);
+  assert.match(busy, /motion-reduce:animate-none/);
+  assert.doesNotMatch(busy, /busyLabel=| busy="|>Simpan</);
+  assert.match(html(React.createElement(Button, null, "Simpan")), />Simpan</);
+});
+
+test("public and custom buttons use the shared component without losing their attributes", () => {
+  const publicButton = html(React.createElement(Button, { variant: "public-primary", type: "submit" }, "Kirim"));
+  assert.match(publicButton, /bg-\[#F4511E\]/);
+  assert.match(publicButton, /type="submit"/);
+
+  const custom = html(
+    React.createElement(
+      Button,
+      { variant: "unstyled", size: "none", className: "custom-button", "aria-busy": true },
+      "Filter"
+    )
+  );
+  assert.match(custom, /class="custom-button"/);
+  assert.match(custom, /aria-busy="true"/);
+});
+
+test("field labels stay associated with their controls and feedback announces errors and confirmed status", () => {
+  const label = html(React.createElement(FieldLabel, { htmlFor: "email", required: true }, "Email"));
+  assert.match(label, /for="email"/);
+  assert.match(label, /aria-hidden="true"/);
+  assert.match(label, /\*/);
+  const error = html(React.createElement(FormFeedback, { id: "email-error" }, "Periksa alamat email."));
+  assert.match(error, /role="alert"/);
+  assert.match(error, /aria-atomic="true"/);
+  assert.match(error, /Periksa alamat email/);
+  const success = html(React.createElement(FormFeedback, { tone: "success" }, "Data tersimpan."));
+  assert.match(success, /role="status"/);
+  assert.doesNotMatch(success, /role="alert"/);
 });
 
 test("form controls share one base style and only differ by field size", () => {
@@ -75,10 +118,16 @@ test("form controls share one base style and only differ by field size", () => {
   const invalid = html(React.createElement(Input, { invalid: true, name: "telp" }));
   assert.match(invalid, /border-rose-400/);
   assert.match(invalid, /aria-invalid="true"/);
+  assert.match(html(React.createElement(Input, { invalid: true, "aria-invalid": false })), /aria-invalid="true"/);
 
   const area = html(React.createElement(Textarea, { name: "pesan", fieldSize: "sm" }));
   assert.match(area, /min-h-\[7\.5rem\]/);
   assert.match(area, /py-2\.5 text-xs/);
+  const compact = html(React.createElement(Textarea, { rows: 2, "aria-describedby": "hint" }));
+  assert.match(compact, /rows="2"/);
+  assert.match(compact, /aria-describedby="hint"/);
+  assert.doesNotMatch(compact, /min-h-\[7\.5rem\]/);
+  assert.match(html(React.createElement(Textarea, { withIcon: true })), /pl-10/);
 });
 
 test("select renders native options with the shared chevron affordance", () => {

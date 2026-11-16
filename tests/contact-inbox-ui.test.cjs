@@ -188,6 +188,19 @@ test("inbox search composes with consultation stage and read-status filters", ()
   );
 });
 
+test("inbox search and selection survive navigating between extracted contact panels", () => {
+  const app = inbox();
+  app.search("IT Supplier");
+  app.rows()[0].props.onSelect();
+  button(app.render(), "Info Kontak").props.onClick();
+  button(app.render(), "Inbox Konsultasi").props.onClick();
+  assert.deepEqual(
+    app.rows().map((row) => row.props.message.id),
+    ["inbox-2"]
+  );
+  assert.equal(app.rows()[0].props.selected, true);
+});
+
 test("row callbacks and bulk selection still invoke the existing store actions", () => {
   const app = inbox();
   app.rows()[0].props.onStageChange("diskusi");

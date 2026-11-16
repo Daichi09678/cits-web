@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import AdminDialogSurface from "./AdminDialogSurface";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -77,8 +78,6 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileInputRef = useRef<HTMLInputElement>(null);
-  const mobileSearchTriggerRef = useRef<HTMLButtonElement>(null);
-  const mobileSearchWasOpen = useRef(false);
   const notificationRef = useRef<HTMLDivElement>(null);
   const notificationTriggerRef = useRef<HTMLButtonElement>(null);
 
@@ -110,31 +109,11 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
       }
       if (e.key === "Escape") {
         setShowSearchDropdown(false);
-        setShowMobileSearch(false);
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
-
-  // Fokus awal, penguncian scroll, dan pemulihan fokus untuk pencarian mobile.
-  useEffect(() => {
-    if (showMobileSearch) {
-      mobileSearchWasOpen.current = true;
-      const previousOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      const timer = window.setTimeout(() => mobileInputRef.current?.focus(), 50);
-      return () => {
-        window.clearTimeout(timer);
-        document.body.style.overflow = previousOverflow;
-      };
-    }
-
-    if (mobileSearchWasOpen.current) {
-      mobileSearchWasOpen.current = false;
-      mobileSearchTriggerRef.current?.focus();
-    }
-  }, [showMobileSearch]);
 
   // Jaga opsi aktif tetap terlihat di dalam panel hasil.
   useEffect(() => {
@@ -365,7 +344,6 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
         {/* Mobile Search Button (< 768px) */}
         <button
           type="button"
-          ref={mobileSearchTriggerRef}
           onClick={() => setShowMobileSearch(true)}
           className="md:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors shrink-0"
           title="Cari data"
@@ -597,16 +575,16 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
       {showMobileSearch &&
         typeof document !== "undefined" &&
         createPortal(
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Pencarian Admin"
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex flex-col p-4 md:hidden"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setShowMobileSearch(false);
-            }}
+          <AdminDialogSurface
+            labelledBy="admin-mobile-search-title"
+            onClose={() => setShowMobileSearch(false)}
+            initialFocusRef={mobileInputRef}
+            widthClassName="w-[min(672px,calc(100vw-32px))]"
           >
-            <div className="bg-white dark:bg-[#1A1A2E] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden flex flex-col max-h-[85vh]">
+            <h2 id="admin-mobile-search-title" className="sr-only">
+              Pencarian Admin
+            </h2>
+            <div className="flex min-h-0 flex-col">
               <div className="flex items-center px-4 py-3 border-b border-slate-200 dark:border-white/10">
                 <Search className="w-4 h-4 text-slate-400 mr-2.5 shrink-0" />
                 <input
@@ -680,7 +658,7 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
                 )}
               </div>
             </div>
-          </div>,
+          </AdminDialogSurface>,
           document.body
         )}
     </header>

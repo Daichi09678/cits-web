@@ -1,4 +1,5 @@
 "use client";
+import Button from "@/components/ui/Button";
 
 import { useState } from "react";
 import { Users } from "lucide-react";
@@ -58,13 +59,15 @@ export function TeamDirectory({ members, loading, error, onRetry }: TeamDirector
             className="mb-6 flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-300"
           >
             <p>Pembaruan data belum berhasil. Daftar terakhir tetap ditampilkan.</p>
-            <button
+            <Button
+              variant="unstyled"
+              size="none"
               type="button"
               onClick={onRetry}
               className="min-h-11 rounded-lg px-2 font-semibold text-orange-700 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 dark:text-orange-400"
             >
               Coba lagi
-            </button>
+            </Button>
           </div>
         )}
 
@@ -85,13 +88,15 @@ export function TeamDirectory({ members, loading, error, onRetry }: TeamDirector
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
               Silakan coba kembali untuk melihat daftar anggota.
             </p>
-            <button
+            <Button
+              variant="unstyled"
+              size="none"
               type="button"
               onClick={onRetry}
               className="mt-5 min-h-11 cursor-pointer rounded-xl border border-orange-600 px-5 text-sm font-semibold text-orange-700 transition-colors hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-500 dark:text-orange-400 dark:hover:bg-orange-500/10"
             >
               Coba lagi
-            </button>
+            </Button>
           </div>
         ) : !published.length ? (
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-6 py-14 text-center dark:border-white/10 dark:bg-[#151528]">

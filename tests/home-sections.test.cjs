@@ -148,6 +148,13 @@ const link = ({ href, children, ...props }) => React.createElement("a", { href, 
 const photo = ({ name }) => React.createElement("span", null, name);
 const catalog = load("lib/serviceCatalog.ts", { "@/data/serviceDetails": load("data/serviceDetails.ts") });
 const finder = load("lib/catalogFinder.ts", { "@/lib/serviceCatalog": catalog });
+const PublicSelect = load("components/pages/public/PublicSelect.tsx", {
+  react: React,
+  "react/jsx-runtime": require("react/jsx-runtime"),
+  "react-dom": require("react-dom"),
+  "lucide-react": require("lucide-react"),
+  "./PublicSelect.module.css": { default: {} },
+}).default;
 const shared = {
   react: React,
   "react/jsx-runtime": require("react/jsx-runtime"),
@@ -155,6 +162,7 @@ const shared = {
   "lucide-react": require("lucide-react"),
   "@/components/ui/ProductPhoto": { default: photo },
   "@/components/ui/ServicePhoto": { default: photo },
+  "@/components/pages/public/PublicSelect": { default: PublicSelect },
   "@/components/ui/SpotlightCard": { default: wrap },
   "@/lib/serviceCatalog": catalog,
   "@/lib/consultation": load("lib/consultation.ts", {}, { URLSearchParams }),

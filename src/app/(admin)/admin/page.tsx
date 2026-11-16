@@ -25,6 +25,9 @@ export default function AdminDashboardPage() {
   const { session } = useAdminAuth();
   const [error, setError] = useState("");
   const canEditProducts = canPerformAction(session?.user, "products", "edit");
+  const canCreateProducts = canPerformAction(session?.user, "products", "create");
+  const canDeleteProducts = canPerformAction(session?.user, "products", "delete");
+  const canMutateProducts = canCreateProducts || canEditProducts || canDeleteProducts;
   const canManageProducts = canAccessPage(session?.user, "products");
   const canSeeInbox = canAccessPage(session?.user, "contact");
   const canSeeClients = canAccessPage(session?.user, "clients");
@@ -110,8 +113,8 @@ export default function AdminDashboardPage() {
                 href="/admin/products"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-orange-700 hover:bg-orange-50 font-bold text-xs shadow-md transition-all"
               >
-                <Plus className="w-4 h-4" />
-                <span>Kelola Produk</span>
+                {canCreateProducts ? <Plus className="w-4 h-4" /> : <Package className="w-4 h-4" />}
+                <span>{canMutateProducts ? "Kelola Produk" : "Lihat Produk"}</span>
               </Link>
             )}
             <a

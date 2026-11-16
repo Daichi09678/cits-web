@@ -1,4 +1,5 @@
 "use client";
+import Button from "@/components/ui/Button";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -45,14 +46,16 @@ export default function ProductDetailsDialog({
           <p className="text-sm font-bold text-slate-900 dark:text-white">
             {preview ? "Pratinjau Detail Produk" : "Spesifikasi Produk"}
           </p>
-          <button
+          <Button
+            variant="unstyled"
+            size="none"
             type="button"
             aria-label="Tutup jendela spesifikasi produk"
             onClick={onClose}
             className="shrink-0 rounded-xl p-2 bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-white/20"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </header>
         <div
           data-testid="product-details-content"

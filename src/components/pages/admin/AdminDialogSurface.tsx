@@ -9,12 +9,18 @@ export default function AdminDialogSurface({
   onClose,
   widthClassName = "w-[min(900px,calc(100vw-48px))]",
   initialFocusRef,
+  describedBy,
+  busy = false,
+  className = "",
 }: {
   children: React.ReactNode;
   labelledBy: string;
   onClose: () => void;
   widthClassName?: string;
   initialFocusRef?: RefObject<HTMLElement | null>;
+  describedBy?: string;
+  busy?: boolean;
+  className?: string;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -35,13 +41,15 @@ export default function AdminDialogSurface({
       ref={dialogRef}
       data-admin-dialog="true"
       aria-labelledby={labelledBy}
+      aria-describedby={describedBy}
       aria-modal="true"
+      aria-busy={busy || undefined}
       onCancel={(event) => {
         event.preventDefault();
-        onClose();
+        if (!busy) onClose();
       }}
       onClick={(event) => {
-        if (event.target !== event.currentTarget) return;
+        if (busy || event.target !== event.currentTarget) return;
         const rect = event.currentTarget.getBoundingClientRect();
         if (
           event.clientX < rect.left ||
@@ -51,7 +59,7 @@ export default function AdminDialogSurface({
         )
           onClose();
       }}
-      className={`fixed inset-0 m-auto max-h-[calc(100dvh-48px)] max-w-none flex-col overflow-hidden rounded-[14px] border border-gray-200 bg-white p-0 text-gray-900 shadow-lg backdrop:bg-slate-950/50 open:flex dark:border-white/10 dark:bg-[#151528] dark:text-white ${widthClassName}`}
+      className={`fixed inset-0 m-auto max-h-[calc(100dvh-48px)] max-w-none flex-col overflow-hidden rounded-[14px] border border-gray-200 bg-white p-0 text-gray-900 shadow-lg backdrop:bg-slate-950/50 open:flex [color-scheme:light] dark:[color-scheme:dark] dark:border-white/10 dark:bg-[#151528] dark:text-white ${widthClassName} ${className}`}
     >
       {children}
     </dialog>

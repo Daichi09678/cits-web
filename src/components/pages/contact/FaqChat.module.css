@@ -1,0 +1,5 @@
+.faq,
+.faq button {
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  letter-spacing: normal;
+}

@@ -1,4 +1,5 @@
 "use client";
+import Button from "@/components/ui/Button";
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -86,7 +87,7 @@ export default function Navbar() {
         {/* Mobile controls */}
         <div className="lg:hidden flex items-center gap-2">
           <ThemeToggle />
-          <button
+          <Button variant="unstyled" size="none"
             className="p-2 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
@@ -94,7 +95,7 @@ export default function Navbar() {
             aria-controls="mobile-navigation"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          </Button>
         </div>
       </nav>
 

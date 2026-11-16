@@ -278,6 +278,7 @@ export default function AdminLoginPage() {
 
       <AdminModal
         open={forgotOpen}
+        busy={forgotLoading}
         onClose={() => {
           if (!forgotLoading) setForgotOpen(false);
         }}
