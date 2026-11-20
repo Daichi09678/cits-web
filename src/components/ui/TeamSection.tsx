@@ -22,7 +22,7 @@ export default function TeamSection({
   onRetry,
 }: TeamSectionProps) {
   const eligibleMembers = members
-    .filter((member) => member.isActive !== false && member.showOnHomepage !== false)
+    .filter((member) => member.isActive !== false && member.showOnHomepage !== false && member.isDemo !== true)
     .sort((a, b) => (a.displayOrder ?? Number.MAX_SAFE_INTEGER) - (b.displayOrder ?? Number.MAX_SAFE_INTEGER));
   const featuredMembers = showAll ? eligibleMembers : eligibleMembers.slice(0, 8);
   const teamGroups = showAll ? groupTeamMembers(featuredMembers) : [];
@@ -67,7 +67,7 @@ export default function TeamSection({
                 size="none"
                 type="button"
                 onClick={onRetry}
-                className="mt-4 min-h-11 cursor-pointer rounded-lg bg-[#F4511E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#DC3F0C] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600"
+                className="mt-4 min-h-11 cursor-pointer rounded-lg bg-action px-5 text-sm font-semibold text-white transition-colors hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600"
               >
                 Coba lagi
               </Button>
@@ -108,7 +108,7 @@ export default function TeamSection({
         <div className="mt-10 text-center lg:mt-12">
           <Link
             href={showAll ? "/#team" : "/team"}
-            className="group inline-flex min-h-11 items-center justify-center gap-2.5 rounded-lg bg-[#F4511E] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#DC3F0C] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600"
+            className="group inline-flex min-h-11 items-center justify-center gap-2.5 rounded-lg bg-action px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600"
           >
             {showAll ? "Kembali ke Beranda" : "Lihat Seluruh Tim"}
             <ArrowRight

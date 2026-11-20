@@ -1,4 +1,5 @@
 "use client";
+import { adminAction } from "@/components/pages/admin/accentStyles";
 
 import { useAdminAuth } from "@/lib/auth";
 import { canPerformAction } from "@/lib/internalAccess";
@@ -40,7 +41,7 @@ const fieldLabels: Record<string, string> = {
 export default function PublicPageContentEditor({ page }: { page: PublicContentPage }) {
   const { session } = useAdminAuth();
   const canEdit = canPerformAction(session?.user, page, "edit");
-  const { content, loading, loadError, save } = usePublicPageContent(page);
+  const { content, loading, loadError, save, retryLoad } = usePublicPageContent(page);
   const [draft, setDraft] = useState<PublicPageContent | null>(null);
   const [saving, setSaving] = useState(false);
   const [readingImage, setReadingImage] = useState(false);
@@ -118,9 +119,21 @@ export default function PublicPageContentEditor({ page }: { page: PublicContentP
           </p>
         )}
         {loadError && (
-          <p role="alert" className="text-xs text-rose-700 dark:text-rose-300">
-            {loadError}
-          </p>
+          <div className="space-y-2">
+            <p role="alert" className="text-sm text-rose-800 dark:text-rose-300">
+              {loadError}
+            </p>
+            <button
+              type="button"
+              aria-disabled={loading || undefined}
+              onClick={() => {
+                if (!loading) void retryLoad();
+              }}
+              className="min-h-10 rounded-lg border border-control-border px-3 text-sm font-semibold text-slate-800 hover:bg-slate-100 dark:text-white dark:hover:bg-white/10"
+            >
+              Muat ulang konten
+            </button>
+          </div>
         )}
         <fieldset
           disabled={!canEdit || loading || saving || readingImage || !!loadError}
@@ -377,7 +390,7 @@ export default function PublicPageContentEditor({ page }: { page: PublicContentP
             <p className="text-xs text-slate-500">Perubahan berlaku pada halaman {definition.title} di website.</p>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-orange-700"
+              className={`inline-flex items-center gap-2 rounded-xl ${adminAction} px-5 py-2.5 text-xs font-bold`}
             >
               <Save className="h-4 w-4" />
               {saving ? "Menyimpan..." : "Simpan Konten Halaman"}

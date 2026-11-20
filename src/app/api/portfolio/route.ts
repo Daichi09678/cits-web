@@ -4,10 +4,15 @@ import { DbRepo } from "@/lib/db";
 import { badRequest, readJsonBody } from "@/lib/http";
 import { collectionPermissionActions } from "@/lib/internalAccess";
 
-export async function GET() {
+export async function GET(req: Request) {
+  const admin = new URL(req.url).searchParams.get("admin") === "1";
+  if (admin) {
+    const denied = await requireAdmin(req, "portfolio", "view");
+    if (denied) return denied;
+  }
   try {
     const list = await DbRepo.getPortfolio();
-    return NextResponse.json({ success: true, data: list });
+    return NextResponse.json({ success: true, data: admin ? list : list.filter((item) => item.isActive !== false) });
   } catch (e: any) {
     return NextResponse.json({ success: false, message: e.message }, { status: 500 });
   }

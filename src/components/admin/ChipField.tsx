@@ -1,4 +1,5 @@
 "use client";
+import { adminAction } from "@/components/pages/admin/accentStyles";
 
 import { useState } from "react";
 import { Check, Plus, X } from "lucide-react";
@@ -31,13 +32,13 @@ const ACCENT = {
   orange: {
     chip: "bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-500/15 dark:text-orange-200 dark:border-orange-500/30",
     input: "focus:ring-orange-500",
-    button: "bg-orange-600 hover:bg-orange-700 text-white",
+    button: `${adminAction}`,
     check: "accent-orange-600",
   },
   emerald: {
     chip: "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-200 dark:border-emerald-500/30",
     input: "focus:ring-emerald-500",
-    button: "bg-emerald-600 hover:bg-emerald-700 text-white",
+    button: "bg-emerald-700 hover:bg-emerald-700 text-white",
     check: "accent-emerald-600",
   },
 } as const;

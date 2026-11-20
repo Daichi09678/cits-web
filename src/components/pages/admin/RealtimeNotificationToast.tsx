@@ -1,4 +1,5 @@
 "use client";
+import { adminAction } from "@/components/pages/admin/accentStyles";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -108,7 +109,7 @@ export default function RealtimeNotificationToast() {
           <Link
             href="/admin/contact"
             onClick={() => setVisible(false)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-sm shadow-orange-600/20 transition-all"
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${adminAction} text-xs font-bold shadow-sm shadow-orange-600/20 transition-all`}
           >
             <span>Buka di Mail Inbox</span>
             <ArrowRight className="w-3.5 h-3.5" />

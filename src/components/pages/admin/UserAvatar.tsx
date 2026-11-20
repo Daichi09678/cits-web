@@ -1,4 +1,5 @@
 "use client";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
 
 import Image from "next/image";
 import { useState } from "react";
@@ -46,7 +47,7 @@ export default function UserAvatar({
     <span
       aria-label={`Avatar ${name}`}
       style={{ width: size, height: size }}
-      className={`inline-flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-amber-600 font-bold text-white shadow-sm ${textClassName} ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center rounded-full ${adminAccent} font-bold shadow-sm ${textClassName} ${className}`}
     >
       {initialsOf(name)}
     </span>

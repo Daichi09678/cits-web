@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Sun, Moon } from "lucide-react";
-import { motion } from "framer-motion";
+import Button from "@/components/ui/Button";
 
 export default function ThemeToggle({ className = "" }: { className?: string }) {
   const [isDark, setIsDark] = useState(false);
@@ -36,24 +36,23 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
   };
 
   if (!mounted) {
-    return <div className={`w-9 h-9 rounded-xl border border-gray-200 bg-gray-50 ${className}`} />;
+    return <span aria-hidden="true" className={`inline-block size-11 shrink-0 ${className}`} />;
   }
 
   return (
-    <motion.button
-      type="button"
+    <Button
+      variant="secondary"
+      size="icon"
       onClick={toggleTheme}
-      whileTap={{ scale: 0.92 }}
-      whileHover={{ scale: 1.05 }}
       aria-label={isDark ? "Ganti ke tema terang" : "Ganti ke tema gelap"}
       title={isDark ? "Ganti ke tema terang" : "Ganti ke tema gelap"}
-      className={`relative w-9 h-9 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/90 dark:bg-gray-800/90 text-gray-700 dark:text-gray-200 hover:text-orange-700 dark:hover:text-orange-400 hover:border-orange-500/40 dark:hover:border-orange-400/40 flex items-center justify-center transition-colors shadow-sm ${className}`}
+      className={className}
     >
       {isDark ? (
-        <Sun className="w-4 h-4 text-amber-400 transition-transform rotate-0" />
+        <Sun aria-hidden="true" className="size-4 text-amber-300" />
       ) : (
-        <Moon className="w-4 h-4 text-gray-700 dark:text-gray-300 transition-transform" />
+        <Moon aria-hidden="true" className="size-4" />
       )}
-    </motion.button>
+    </Button>
   );
 }

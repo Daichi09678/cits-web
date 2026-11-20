@@ -147,7 +147,7 @@ export default function FeaturedCatalog({
                 <span className="relative mt-2 block">
                   <Search
                     aria-hidden="true"
-                    className="pointer-events-none absolute left-3.5 top-3.5 h-4 w-4 text-slate-400"
+                    className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-600 dark:text-slate-300"
                   />
                   <input
                     id={id + "-query"}
@@ -158,7 +158,7 @@ export default function FeaturedCatalog({
                       if (event.key === "Enter") event.preventDefault();
                     }}
                     placeholder={productsOnly ? "Cari produk atau fitur..." : "Cari layanan atau kapabilitas..."}
-                    className="min-h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm font-normal text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 dark:border-white/10 dark:bg-[#1A1A2E] dark:text-white"
+                    className="min-h-[48px] w-full min-w-0 rounded-lg border border-control-border bg-white py-2.5 pl-10 pr-10 text-sm font-normal text-slate-800 transition-colors placeholder:text-slate-600 focus:border-orange-800 dark:bg-[#1A1A2E] dark:text-white dark:placeholder:text-slate-300 dark:focus:border-orange-400"
                   />
                   {filters.query && (
                     <Button
@@ -212,7 +212,7 @@ export default function FeaturedCatalog({
               </label>
             </div>
             {hasFilters && (
-              <div className="mt-4 flex flex-wrap gap-2" aria-label="Filter aktif">
+              <div role="group" className="mt-4 flex flex-wrap gap-2" aria-label="Filter aktif">
                 {Object.entries(result.filters)
                   .filter(([, value]) => value.trim())
                   .map(([key, value]) => (
@@ -304,7 +304,7 @@ export default function FeaturedCatalog({
                           className={
                             "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border " +
                             (selected?.id === item.id
-                              ? "border-orange-600 bg-orange-600 text-white"
+                              ? "border-orange-600 bg-action text-on-action"
                               : "border-slate-300 dark:border-white/20")
                           }
                         >
@@ -365,7 +365,7 @@ export default function FeaturedCatalog({
                     {selected.description}
                   </p>
                   {selected.tags.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-1.5" aria-label={"Tag " + selected.title}>
+                    <div role="group" className="mt-4 flex flex-wrap gap-1.5" aria-label={"Tag " + selected.title}>
                       {selected.tags.map((tag) => (
                         <span
                           key={tag}
@@ -457,7 +457,7 @@ export default function FeaturedCatalog({
                   </p>
                   <Link
                     href={consultationHref({ source: "home" })}
-                    className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-orange-700 px-5 py-2.5 text-xs font-bold text-white hover:bg-orange-800"
+                    className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-action px-5 py-2.5 text-xs font-bold text-on-action hover:bg-action-hover"
                   >
                     Diskusikan kebutuhan lain
                     <ArrowRight className="h-4 w-4" />

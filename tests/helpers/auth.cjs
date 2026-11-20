@@ -4,10 +4,12 @@ const { load } = require("./load.cjs");
 function createTestAuth(secret = "qa-secret") {
   const accounts = new Map();
   const access = load("lib/internalAccess.ts");
+  const config = load("config/siteConfig.ts");
   const auth = load(
     "lib/apiAuth.ts",
     {
       "next/server": { NextResponse },
+      "@/config/siteConfig": config,
       "./internalAccess": access,
       "./internalAccountsServer": { findInternalAccountById: async (id) => accounts.get(id) || null },
     },
@@ -18,6 +20,9 @@ function createTestAuth(secret = "qa-secret") {
     ...auth,
     accounts,
     issueAdminToken(input) {
+      if (input.role === "superadmin") {
+        return issue({ ...input, sub: "admin-1", email: config.siteConfig.admin.defaultEmail });
+      }
       if (input.role === "internal")
         accounts.set(input.sub, {
           id: input.sub,

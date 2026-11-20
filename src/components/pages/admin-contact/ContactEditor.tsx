@@ -1,5 +1,6 @@
 "use client";
-import Select from "@/components/ui/Select";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
+import { BackOfficeSelect as Select } from "@/components/ui/Select";
 import FieldLabel from "@/components/ui/FieldLabel";
 import FormFeedback from "@/components/ui/FormFeedback";
 
@@ -60,7 +61,7 @@ export default function ContactEditor({ editor }: { editor: ContactEditorState }
                 onClick={() => setActiveTab(key as "inbox" | "info" | "faqs")}
                 className={`inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg border px-4 text-[13px] font-medium ${
                   activeTab === key
-                    ? "border-[#F45100] bg-[#F45100] text-white"
+                    ? `border-[#F45100] ${adminAccent}`
                     : "border-gray-200 bg-white text-gray-900 hover:bg-slate-50 dark:border-white/10 dark:bg-[#151528] dark:text-slate-200"
                 }`}
               >

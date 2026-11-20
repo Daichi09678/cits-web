@@ -33,15 +33,29 @@ function load(relative, overrides = {}, globals = {}, graph = { modules: new Map
         }
         if (id in overrides) return overrides[id];
         if (id.startsWith("node:")) return require(id);
+        if (id === "@/components/ui/Button") {
+          const button = load(
+            "components/ui/Button.tsx",
+            {
+              "@/lib/cn": load("lib/cn.ts"),
+            },
+            globals,
+            graph
+          );
+          graph.views.add(button.default);
+          graph.views.add(button.BackOfficeButton);
+          return button;
+        }
         const candidate = id.startsWith("@/")
           ? path.resolve(__dirname, "../../src", id.slice(2))
-          : id.startsWith(".") && pageModule.test(filename)
+          : id.startsWith(".") && (pageModule.test(filename) || primitive.test(filename))
             ? path.resolve(path.dirname(filename), id)
             : null;
         if (
           candidate &&
           (pageModule.test(candidate) ||
             primitive.test(candidate + ".tsx") ||
+            id === "@/components/pages/admin/accentStyles" ||
             candidate.endsWith(path.join("lib", "cn")))
         ) {
           const target = [candidate + ".ts", candidate + ".tsx"].find(fs.existsSync);

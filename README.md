@@ -25,31 +25,35 @@ npm run dev                    # http://localhost:3000
 
 ### Environment Variable
 
-| Variabel                                              | Wajib | Keterangan                                                   |
-| ----------------------------------------------------- | ----- | ------------------------------------------------------------ |
-| `DATABASE_URL`                                        | ya    | Connection string PostgreSQL (`?sslmode=require` untuk Neon) |
-| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | tidak | Notifikasi email formulir kontak                             |
-| `NOTIFICATION_EMAIL`                                  | tidak | Penerima notifikasi (default: email kontak di database)      |
-| `MESSAGE_RETENTION_DAYS`                              | tidak | Retensi inbox, default **30** hari                           |
-| `NEXT_PUBLIC_MESSAGE_RETENTION_DAYS`                  | tidak | Teks retensi di halaman admin                                |
-| `CRON_SECRET`                                         | tidak | Proteksi endpoint `/api/messages/cleanup`                    |
+| Variabel                                              | Wajib    | Keterangan                                                                                                                                                   |
+| ----------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `DATABASE_URL`                                        | ya       | Connection string PostgreSQL (`?sslmode=require` untuk Neon)                                                                                                 |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` | tidak    | Notifikasi email formulir kontak                                                                                                                             |
+| `NOTIFICATION_EMAIL`                                  | tidak    | Penerima notifikasi (default: email kontak di database)                                                                                                      |
+| `MESSAGE_RETENTION_DAYS`                              | tidak    | Retensi inbox, default **30** hari                                                                                                                           |
+| `NEXT_PUBLIC_MESSAGE_RETENTION_DAYS`                  | tidak    | Teks retensi di halaman admin                                                                                                                                |
+| `CRON_SECRET`                                         | tidak    | Proteksi endpoint `/api/messages/cleanup`                                                                                                                    |
+| `CITS_PUBLIC_SITE_URL`                                | produksi | Origin resmi web publik untuk canonical URL dan sitemap. Tanpa ini, sitemap kosong dan `robots.txt` meminta crawler tidak merayapi lingkungan lokal/preview. |
 
 > Tanpa SMTP, pesan dari formulir tetap tersimpan di database — hanya email
 > notifikasinya yang tidak terkirim.
 
+Jika kata sandi Superadmin belum tersimpan, gunakan **Lupa Kata Sandi** atau set `ADMIN_BOOTSTRAP_PASSWORD` di environment server untuk login pertama. Jika menggunakan kata sandi awal, ganti kata sandi melalui **Pengaturan → Keamanan**, lalu hapus variabel tersebut.
+
 ## Perintah
 
-| Perintah            | Fungsi                                 |
-| ------------------- | -------------------------------------- |
-| `npm run dev`       | Development server (webpack)           |
-| `npm run dev:turbo` | Development server (turbopack)         |
-| `npm run build`     | Build produksi                         |
-| `npm run start`     | Jalankan hasil build                   |
-| `npm run typecheck` | Cek tipe TypeScript                    |
-| `npm run lint`      | ESLint                                 |
-| `npm run test`      | Test (`node:test`)                     |
-| `npm run format`    | Rapikan format dengan Prettier         |
-| `npm run verify`    | Typecheck + lint + test + format:check |
+| Perintah            | Fungsi                                  |
+| ------------------- | --------------------------------------- |
+| `npm run dev`       | Development server (Turbopack)          |
+| `npm run dev:turbo` | Development server (turbopack)          |
+| `npm run build`     | Build produksi                          |
+| `npm run start`     | Jalankan hasil build                    |
+| `npm run preview`   | Build dan jalankan versi produksi lokal |
+| `npm run typecheck` | Cek tipe TypeScript                     |
+| `npm run lint`      | ESLint                                  |
+| `npm run test`      | Test (`node:test`)                      |
+| `npm run format`    | Rapikan format dengan Prettier          |
+| `npm run verify`    | Typecheck + lint + test + format:check  |
 
 ## Struktur Singkat
 

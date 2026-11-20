@@ -5,7 +5,7 @@ import { ArrowRight, CheckCircle2, ArrowUpRight } from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import ParticleNetwork from "@/components/animations/ParticleNetwork";
 import FloatingShapes from "@/components/animations/FloatingShapes";
-import TypewriterText from "@/components/animations/TypewriterText";
+import GradientText from "@/components/ui/GradientText";
 import HeroMockup from "@/components/ui/HeroMockup";
 import GridPattern from "@/components/ui/GridPattern";
 import Marquee from "@/components/ui/Marquee";
@@ -14,6 +14,13 @@ import { initialAboutData, initialLandingPageData, defaultSectionVisibility } fr
 import FeaturedCatalog from "@/components/ui/FeaturedCatalog";
 import AboutHomeHighlights from "@/components/ui/AboutHomeHighlights";
 import { useCompanyContent } from "@/components/pages/public/CompanyBrand";
+import { buttonStyles } from "@/components/ui/Button";
+
+function homeCtaHref(href = "/contact") {
+  if (href === "/contact" || href === "/contact/") return "/contact?source=home#consultation-form";
+  if (href.startsWith("/contact?") && !href.includes("#")) return `${href}#consultation-form`;
+  return href;
+}
 
 export default function Home() {
   const {
@@ -29,6 +36,7 @@ export default function Home() {
   const currentLanding = landingData || initialLandingPageData;
   const visibility = { ...defaultSectionVisibility, ...currentLanding.sectionVisibility };
   const hero = { ...initialLandingPageData.hero, ...currentLanding.hero };
+  const heroHighlight = hero.typewriterWords.find((word) => word.trim());
   // Company statistics have one CMS source: Tentang Kami > Statistik Pencapaian.
   const activeHighlights = (aboutData ?? initialAboutData).stats.filter(
     (item) => item.label.trim() && item.value.trim()
@@ -47,12 +55,12 @@ export default function Home() {
   );
 
   return (
-    <>
+    <main id="main-content">
       {/* Top Official Announcement Banner */}
       {contactInfo?.announcement?.isActive && contactInfo.announcement.text && (
         <aside
           aria-label="Pengumuman Resmi"
-          className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-2.5 px-4 text-xs font-semibold shadow-xs"
+          className="bg-action text-white py-2.5 px-4 text-xs font-semibold shadow-xs"
         >
           <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-center sm:text-left">
             <div className="flex items-center gap-2 mx-auto sm:mx-0">
@@ -87,8 +95,12 @@ export default function Home() {
                 <ScrollReveal delay={0.1}>
                   <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-dark dark:text-white tracking-tight leading-[1.15] [overflow-wrap:anywhere]">
                     {hero.headlinePrefix ?? "Ciptakan Solusi"}
-                    <br />
-                    {hero.typewriterWords.length > 0 && <TypewriterText words={hero.typewriterWords} />}
+                    {heroHighlight && (
+                      <>
+                        <br />
+                        <GradientText>{heroHighlight}</GradientText>
+                      </>
+                    )}
                   </h1>
                 </ScrollReveal>
 
@@ -101,11 +113,14 @@ export default function Home() {
                 <ScrollReveal delay={0.3}>
                   <div className="mt-8 flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4 sm:items-center">
                     <Link
-                      href={hero.primaryCtaLink ?? "/contact"}
-                      className="group px-7 py-3.5 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-lg shadow-[#F4511E]/25 flex items-center justify-center gap-2.5 text-sm"
+                      href={homeCtaHref(hero.primaryCtaLink)}
+                      className={buttonStyles("public-primary", "lg", "group px-7 shadow-md shadow-action/25")}
                     >
                       {hero.primaryCtaText ?? "Konsultasi Sekarang"}
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight
+                        aria-hidden="true"
+                        className="size-4 group-hover:translate-x-1 motion-safe:transition-transform motion-reduce:group-hover:translate-x-0"
+                      />
                     </Link>
 
                     <Link
@@ -237,8 +252,8 @@ export default function Home() {
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Link
-                  href={cta.primaryLink ?? "/contact"}
-                  className="group inline-flex items-center gap-2 px-8 py-4 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-bold rounded-xl transition-colors shadow-lg shadow-[#F4511E]/25 hover:shadow-xl hover:shadow-[#F4511E]/35 text-sm"
+                  href={homeCtaHref(cta.primaryLink)}
+                  className={buttonStyles("public-primary", "lg", "group px-8 shadow-md shadow-action/25")}
                 >
                   {cta.primaryText ?? "Mulai Konsultasi Gratis"}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -254,6 +269,6 @@ export default function Home() {
           </div>
         </section>
       )}
-    </>
+    </main>
   );
 }

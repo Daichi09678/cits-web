@@ -1,4 +1,5 @@
 "use client";
+import { adminAction } from "@/components/pages/admin/accentStyles";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { PanelLeftOpen } from "lucide-react";
@@ -78,6 +79,9 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     <AdminDialogProvider>
       <AdminShellContext.Provider value={value}>
         <AdminSessionSync />
+        <a href="#admin-content" className="skip-link" inert={mobileOpen}>
+          Lewati ke konten utama
+        </a>
         <AdminSidebar />
 
         {/* Handle kecil di tepi kiri saat sidebar ditutup — bukan tombol di header
@@ -90,7 +94,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             aria-label="Tampilkan sidebar"
             aria-controls="admin-sidebar"
             aria-expanded={false}
-            className="fixed left-0 top-[2.875rem] z-50 hidden h-8 w-8 items-center justify-center rounded-r-lg border border-l-0 border-orange-700/20 bg-orange-600 text-white shadow-md shadow-orange-600/25 transition-all hover:w-9 hover:bg-orange-700 lg:flex"
+            className={`fixed left-0 top-[2.875rem] z-50 hidden h-8 w-8 items-center justify-center rounded-r-lg border border-l-0 border-orange-700/20 ${adminAction} shadow-md shadow-orange-600/25 transition-all hover:w-9 lg:flex`}
           >
             <PanelLeftOpen className="h-3.5 w-3.5" />
           </button>
@@ -99,11 +103,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         {/* Area kerja: margin kiri 16rem saat sidebar terbuka, 0 saat ditutup.
           Transisi margin membuat konten melebar mulus ke 100% lebar layar. */}
         <div
-          className={`flex-1 flex flex-col min-w-0 w-full transition-[margin-left] duration-300 ease-in-out ${
+          className={`flex-1 flex flex-col min-w-0 w-full transition-[margin-left] duration-300 ease-in-out motion-reduce:transition-none ${
             collapsed ? "lg:ml-0" : "lg:ml-64"
           }`}
         >
-          <main className="flex-1 flex flex-col min-w-0 w-full">
+          <main id="admin-content" tabIndex={-1} inert={mobileOpen} className="flex-1 flex flex-col min-w-0 w-full">
             <PageAccessGate>{children}</PageAccessGate>
           </main>
         </div>

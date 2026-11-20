@@ -13,7 +13,7 @@ export function passwordStrength(value: string): {
   textClass: string;
 } {
   if (!value) {
-    return { score: 0, label: "Belum diisi", barClass: "bg-slate-200 dark:bg-white/10", textClass: "text-slate-400" };
+    return { score: 0, label: "Belum diisi", barClass: "bg-slate-200 dark:bg-white/10", textClass: "text-slate-600 dark:text-slate-300" };
   }
 
   let score = 0;
@@ -23,7 +23,7 @@ export function passwordStrength(value: string): {
   if (/[0-9]/.test(value) && /[^A-Za-z0-9]/.test(value)) score += 1;
 
   if (score <= 1) return { score: 1, label: "Lemah", barClass: "bg-rose-500", textClass: "text-rose-500" };
-  if (score === 2) return { score: 2, label: "Cukup", barClass: "bg-amber-500", textClass: "text-amber-600" };
-  if (score === 3) return { score: 3, label: "Kuat", barClass: "bg-emerald-500", textClass: "text-emerald-600" };
-  return { score: 4, label: "Sangat kuat", barClass: "bg-emerald-600", textClass: "text-emerald-600" };
+  if (score === 2) return { score: 2, label: "Cukup", barClass: "bg-amber-500", textClass: "text-amber-800 dark:text-amber-300" };
+  if (score === 3) return { score: 3, label: "Kuat", barClass: "bg-emerald-500", textClass: "text-emerald-800 dark:text-emerald-300" };
+  return { score: 4, label: "Sangat kuat", barClass: "bg-emerald-600", textClass: "text-emerald-800 dark:text-emerald-300" };
 }

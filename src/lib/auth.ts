@@ -26,7 +26,7 @@ export interface AdminSession {
 
 const defaultUser = {
   id: "admin-1",
-  name: "maswahyuganteng",
+  name: siteConfig.admin.defaultUsername,
   email: siteConfig.admin.defaultEmail,
   role: "Super Admin",
   avatar: "/avatars/admin.webp",

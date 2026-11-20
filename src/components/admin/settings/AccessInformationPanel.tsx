@@ -1,4 +1,5 @@
 "use client";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
 
 import { CircleAlert, Info } from "lucide-react";
 import PermissionSummary from "./PermissionSummary";
@@ -42,7 +43,7 @@ export default function AccessInformationPanel({
         <ol className="mt-3 space-y-2.5 text-xs leading-relaxed text-[#64748B] dark:text-slate-300">
           {points.map((point, index) => (
             <li key={point} className="flex items-start gap-2.5">
-              <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-[#FF4D00] text-[9px] font-bold text-white">
+              <span className={`flex size-4 shrink-0 items-center justify-center rounded-full ${adminAccent} text-[9px] font-bold`}>
                 {index + 1}
               </span>
               <span>{point}</span>

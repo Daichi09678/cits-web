@@ -1,5 +1,6 @@
 "use client";
-import Input from "@/components/ui/Input";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
+import { BackOfficeInput as Input } from "@/components/ui/Input";
 
 import { X, Search } from "lucide-react";
 import { PILLAR_ICON_OPTIONS } from "@/lib/serviceIcons";
@@ -68,7 +69,7 @@ export default function ServiceManagementIconPicker({ editor }: { editor: Servic
                 onClick={() => setIconCategoryFilter(cat.id)}
                 className={`px-2.5 py-1 rounded-lg text-[10px] font-medium transition-all cursor-pointer ${
                   iconCategoryFilter === cat.id
-                    ? "bg-orange-600 text-white font-semibold shadow-xs"
+                    ? `${adminAccent} font-semibold shadow-xs`
                     : "bg-white dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200/80 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10"
                 }`}
               >
@@ -103,7 +104,7 @@ export default function ServiceManagementIconPicker({ editor }: { editor: Servic
                   onMouseLeave={() => setHoveredIconOption(null)}
                   className={`h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
                     isSelected
-                      ? "bg-orange-600 text-white shadow-md shadow-orange-600/30 scale-105"
+                      ? `${adminAccent} shadow-md shadow-orange-600/30 scale-105`
                       : "text-slate-600 dark:text-slate-300 hover:bg-orange-50 dark:hover:bg-orange-500/15 hover:text-orange-600 dark:hover:text-orange-400 hover:scale-105"
                   }`}
                   title={`${opt.label} (${opt.name})`}

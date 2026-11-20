@@ -43,6 +43,9 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+    if (body.consent !== true) {
+      return badRequest("Centang persetujuan penggunaan data sebelum mengirim formulir.");
+    }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email.trim())) {
       return badRequest("Alamat email tidak valid.");
     }

@@ -1,5 +1,5 @@
 "use client";
-import Input, { Textarea } from "@/components/ui/Input";
+import { BackOfficeInput as Input, BackOfficeTextarea as Textarea } from "@/components/ui/Input";
 
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import type { ChangeEvent } from "react";
@@ -7,7 +7,7 @@ import { pageDefinition, type ContentRecord, type PublicPageContent } from "@/li
 
 const definition = pageDefinition("portfolio");
 const fieldClass =
-  "mt-2 min-h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-[13px] font-normal leading-relaxed text-slate-800 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 dark:border-white/15 dark:bg-[#151528] dark:text-slate-100";
+  "mt-2 min-h-11 rounded-lg text-[13px] leading-relaxed text-slate-800 dark:bg-[#151528] dark:text-slate-100";
 const labels: Record<string, string> = {
   portfolio_hero_text_2: "Judul utama halaman",
   portfolio_hero_text_3: "Lanjutan judul utama",
@@ -71,7 +71,7 @@ export default function PortfolioSectionFields({
               >
                 {labels[field.key] || field.label}
                 {field.kind !== "link" && (
-                  <span className="mt-1 block text-xs font-normal leading-relaxed text-slate-500 dark:text-slate-400">
+                  <span className="mt-1 block text-xs font-normal leading-relaxed text-slate-600 dark:text-slate-300">
                     Contoh: {definition.texts[field.key]}
                   </span>
                 )}

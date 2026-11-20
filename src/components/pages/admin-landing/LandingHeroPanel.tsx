@@ -1,5 +1,7 @@
 "use client";
-import Input, { Textarea } from "@/components/ui/Input";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
+import { BackOfficeButton as Button } from "@/components/ui/Button";
+import { BackOfficeInput as Input, BackOfficeTextarea as Textarea } from "@/components/ui/Input";
 import FieldLabel from "@/components/ui/FieldLabel";
 
 import { CheckCircle2, Plus, Trash2, Flame, Eye } from "lucide-react";
@@ -64,7 +66,7 @@ export default function LandingHeroPanel({ editor }: { editor: LandingEditorStat
               <h3 className="text-2xl sm:text-3xl font-black text-white leading-tight">
                 {formData.hero.headlinePrefix || "Ciptakan Solusi"}{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">
-                  [{formData.hero.typewriterWords[0] || "Animasi Kata"}]
+                  {formData.hero.typewriterWords.find((word) => word.trim())}
                 </span>
               </h3>
 
@@ -73,7 +75,7 @@ export default function LandingHeroPanel({ editor }: { editor: LandingEditorStat
               </p>
 
               <div className="flex flex-wrap gap-3 pt-2">
-                <span className="px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-lg text-xs font-bold shadow-md">
+                <span className={`px-4 py-2 ${adminAccent} rounded-lg text-xs font-bold shadow-md`}>
                   {formData.hero.primaryCtaText || "Tombol Utama"} →
                 </span>
                 <span className="px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg text-xs font-semibold">
@@ -137,20 +139,22 @@ export default function LandingHeroPanel({ editor }: { editor: LandingEditorStat
               <div className="flex items-center justify-between">
                 <div>
                   <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                    Kata-Kata Animasi Typewriter (Bergantian)
+                    Frasa Sorotan Judul
                   </label>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Kata ini akan berganti-ganti secara otomatis dengan efek animasi ketik di judul utama.
+                    Frasa pertama yang terisi tampil utuh di beranda. Frasa lainnya tersimpan sebagai cadangan.
                   </p>
                 </div>
-                <button
+                <Button
+                  variant="unstyled"
+                  size="none"
                   type="button"
                   onClick={addTypewriterWord}
                   className="px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Tambah Kata</span>
-                </button>
+                  <span>Tambah Frasa</span>
+                </Button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
@@ -163,19 +167,21 @@ export default function LandingHeroPanel({ editor }: { editor: LandingEditorStat
                       type="text"
                       value={word}
                       onChange={(e) => handleTypewriterChange(idx, e.target.value)}
-                      placeholder={`Kata ke-${idx + 1}`}
+                      placeholder={`Frasa ke-${idx + 1}`}
                       fieldSize="sm"
                       className="min-w-0 flex-1"
                     />
                     {formData.hero.typewriterWords.length > 1 && (
-                      <button
+                      <Button
+                        variant="unstyled"
+                        size="none"
                         type="button"
                         onClick={() => removeTypewriterWord(idx)}
                         className="p-2 text-slate-400 hover:text-red-500 cursor-pointer"
-                        title="Hapus kata"
+                        title="Hapus frasa"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      </Button>
                     )}
                   </div>
                 ))}
@@ -216,14 +222,16 @@ export default function LandingHeroPanel({ editor }: { editor: LandingEditorStat
                     Ditampilkan dengan ikon centang hijau di bawah tombol hero.
                   </p>
                 </div>
-                <button
+                <Button
+                  variant="unstyled"
+                  size="none"
                   type="button"
                   onClick={addTrustBadge}
                   className="px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50 hover:bg-emerald-100 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Tambah Poin</span>
-                </button>
+                </Button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
@@ -233,17 +241,21 @@ export default function LandingHeroPanel({ editor }: { editor: LandingEditorStat
                     <Input
                       type="text"
                       value={badge}
+                      aria-label={`Poin kepercayaan ${idx + 1}`}
                       onChange={(e) => handleTrustBadgeChange(idx, e.target.value)}
                       fieldSize="sm"
                       className="min-w-0 flex-1"
                     />
-                    <button
+                    <Button
+                      variant="unstyled"
+                      size="none"
                       type="button"
                       onClick={() => removeTrustBadge(idx)}
-                      className="p-1.5 text-slate-400 hover:text-red-500 cursor-pointer"
+                      aria-label={`Hapus poin kepercayaan ${idx + 1}`}
+                      className="p-1.5 text-slate-600 hover:text-rose-700 dark:text-slate-300 dark:hover:text-rose-300"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -260,7 +272,9 @@ export default function LandingHeroPanel({ editor }: { editor: LandingEditorStat
                     Menampilkan dashboard portal enterprise animasi di sebelah teks judul.
                   </p>
                 </div>
-                <button
+                <Button
+                  variant="unstyled"
+                  size="none"
                   type="button"
                   onClick={() =>
                     setFormData({
@@ -270,12 +284,12 @@ export default function LandingHeroPanel({ editor }: { editor: LandingEditorStat
                   }
                   className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                     formData.hero.showMockup !== false
-                      ? "bg-emerald-600 text-white"
+                      ? "bg-emerald-700 text-white"
                       : "bg-slate-300 dark:bg-white/20 text-slate-700 dark:text-slate-300"
                   }`}
                 >
                   <span>{formData.hero.showMockup !== false ? "Mockup Aktif" : "Mockup Disembunyikan"}</span>
-                </button>
+                </Button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">

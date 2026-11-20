@@ -1,4 +1,5 @@
 "use client";
+import { adminGroupAction } from "@/components/pages/admin/accentStyles";
 
 import { useEffect, useRef } from "react";
 import { Check, Minus } from "lucide-react";
@@ -30,7 +31,7 @@ export default function MatrixCheckbox({
   const stateClass = disabled
     ? "border-slate-200 bg-slate-100 text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-slate-500"
     : checked
-      ? "border-orange-600 bg-orange-600 text-white shadow-sm shadow-orange-600/25 group-hover:border-orange-700 group-hover:bg-orange-700"
+      ? `border-orange-600 ${adminGroupAction} shadow-sm shadow-orange-600/25 group-hover:border-orange-700`
       : indeterminate
         ? "border-orange-400 bg-orange-50 text-orange-600 dark:border-orange-500/60 dark:bg-orange-500/10 dark:text-orange-400"
         : "border-slate-300 bg-white text-transparent group-hover:border-orange-500 dark:border-white/20 dark:bg-transparent";

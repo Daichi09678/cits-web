@@ -1,5 +1,5 @@
 "use client";
-import Button from "@/components/ui/Button";
+import { BackOfficeButton as Button } from "@/components/ui/Button";
 import FormFeedback from "@/components/ui/FormFeedback";
 
 import Link from "next/link";

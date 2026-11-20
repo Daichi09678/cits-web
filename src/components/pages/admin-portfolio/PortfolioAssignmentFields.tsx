@@ -1,6 +1,6 @@
 "use client";
-import Input from "@/components/ui/Input";
-import Select from "@/components/ui/Select";
+import { BackOfficeInput as Input } from "@/components/ui/Input";
+import { BackOfficeSelect as Select } from "@/components/ui/Select";
 import FieldLabel from "@/components/ui/FieldLabel";
 
 import { SECTOR_OPTIONS } from "./constants";

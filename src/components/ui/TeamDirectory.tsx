@@ -25,7 +25,6 @@ export function TeamDirectory({ members, loading, error, onRetry }: TeamDirector
   ];
   const groups = groupTeamMembers(published);
   const unavailable = Boolean(error && published.length === 0);
-  const hasDemoProfiles = published.some((member) => member.isDemo === true);
 
   return (
     <section
@@ -103,23 +102,20 @@ export function TeamDirectory({ members, loading, error, onRetry }: TeamDirector
             <Users aria-hidden="true" className="mx-auto mb-4 size-8 text-orange-600 dark:text-orange-400" />
             <p className="text-base font-semibold text-dark dark:text-white">Profil anggota tim belum tersedia.</p>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-              Anda tetap dapat menghubungi CITS melalui halaman kontak.
+              Hubungi kami untuk berdiskusi dengan tim yang sesuai dengan kebutuhan Anda.
             </p>
+            <a
+              href="/contact?source=about#consultation-form"
+              className="mt-5 inline-flex min-h-11 items-center rounded-xl bg-action px-5 text-sm font-semibold text-on-action hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-700"
+            >
+              Hubungi Tim CITS
+            </a>
           </div>
         ) : (
           <>
             <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
               Menampilkan {published.length} dari {published.length} anggota
             </p>
-            {hasDemoProfiles && (
-              <p
-                role="note"
-                className="mb-5 rounded-xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
-              >
-                Sebagian profil di bawah masih berupa <strong>data contoh</strong> untuk pengembangan tampilan, bukan
-                data resmi anggota tim CITS.
-              </p>
-            )}
             <div className="space-y-7 sm:space-y-8">
               {groups.map((group, index) => (
                 <section key={group.name} aria-labelledby={`team-group-heading-${index}`}>

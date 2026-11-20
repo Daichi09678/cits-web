@@ -21,6 +21,15 @@ function getHeaders(token?: string): HeadersInit {
   return headers;
 }
 
+async function fetchCatalog(path: string, adminQuery: string | null) {
+  const url = `${API_URL}/${path}`;
+  if (adminQuery) {
+    const response = await fetch(`${url}?${adminQuery}`, { headers: getHeaders(), cache: "no-store" });
+    if (response.status !== 401 && response.status !== 403) return response;
+  }
+  return fetch(url, { cache: "no-store" });
+}
+
 export const citsApi = {
   getTeamMembers(admin = false): Promise<TeamMember[]> {
     return teamRequest<TeamMember[]>(`/team${admin ? "?admin=1" : ""}`);
@@ -86,9 +95,7 @@ export const citsApi = {
   },
 
   async getAllProducts() {
-    const headers = getHeaders();
-    const authenticated = "Authorization" in headers;
-    const res = await fetch(`${API_URL}/products${authenticated ? "?all=true" : ""}`, { headers, cache: "no-store" });
+    const res = await fetchCatalog("products", "Authorization" in getHeaders() ? "all=true" : null);
     if (!res.ok) throw new Error(`API getAllProducts failed: ${res.status}`);
     const json = await res.json();
     if (!json?.success || !Array.isArray(json.data)) throw new Error("Invalid products response");
@@ -138,6 +145,7 @@ export const citsApi = {
     productId?: string;
     consultation?: ConsultationRequest;
     message: string;
+    consent: true;
   }) {
     const res = await fetch(`${API_URL}/messages`, {
       method: "POST",
@@ -221,7 +229,8 @@ export const citsApi = {
   async getContactInfo() {
     const res = await fetch(`${API_URL}/contact`, { cache: "no-store" });
     const json = await res.json();
-    return json.data || null;
+    if (!res.ok || !json?.success || !json.data) throw new Error(json.message || "Informasi kontak gagal dimuat.");
+    return json.data;
   },
 
   async updateContactInfo(data: any) {
@@ -230,12 +239,15 @@ export const citsApi = {
       headers: getHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    const result = await res.json();
+    if (!res.ok || !result?.success || !result.data)
+      throw new Error(result.message || "Informasi kontak gagal disimpan.");
+    return result;
   },
 
   // 6. Clients
-  async getClients() {
-    const res = await fetch(`${API_URL}/clients`, { cache: "no-store" });
+  async getClients(admin = false) {
+    const res = await fetchCatalog("clients", admin ? "admin=1" : null);
     const json = await res.json();
     if (!res.ok || !json?.success || !Array.isArray(json.data))
       throw new Error(json.message || "Daftar mitra gagal dimuat.");
@@ -309,8 +321,8 @@ export const citsApi = {
   },
 
   // 9. Services Data
-  async getServices() {
-    const res = await fetch(`${API_URL}/services`, { cache: "no-store" });
+  async getServices(admin = false) {
+    const res = await fetchCatalog("services", admin ? "admin=1" : null);
     const json = await res.json();
     if (!res.ok || !json?.success || !Array.isArray(json.data))
       throw new Error(json.message || "Layanan gagal dimuat.");
@@ -330,8 +342,8 @@ export const citsApi = {
   },
 
   // 10. Portfolio / Case Studies
-  async getPortfolio() {
-    const res = await fetch(`${API_URL}/portfolio`, { cache: "no-store" });
+  async getPortfolio(admin = false) {
+    const res = await fetchCatalog("portfolio", admin ? "admin=1" : null);
     const json = await res.json();
     if (!res.ok || !json?.success || !Array.isArray(json.data))
       throw new Error(json.message || "Portofolio gagal dimuat.");

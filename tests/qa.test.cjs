@@ -114,6 +114,7 @@ const validMessage = {
   email: "qa@example.test",
   phone: "08123456789",
   message: "Konsultasi",
+  consent: true,
 };
 
 test("contact validation rejects malformed JSON, wrong types, whitespace, and invalid email without writing", async () => {
@@ -159,8 +160,10 @@ test("password database errors cannot fall back to the default credential", asyn
   const passwords = load(
     "lib/passwordServer.ts",
     { "node:crypto": crypto, "./db": { getSql: () => sql } },
-    { console: { error() {} } }
+    { process: { env: { NODE_ENV: "production", ALLOW_DEFAULT_ADMIN_FALLBACK: "1" } }, console: { error() {} } }
   );
+  assert.equal(passwords.matchesBootstrapAdminPassword("admin"), false);
+  assert.equal(passwords.matchesBootstrapAdminPassword("admin123"), false);
   await assert.rejects(passwords.verifyAdminCredential("admin", "admin"), /Verifikasi kata sandi/);
 });
 
@@ -231,6 +234,86 @@ test("login rejects invalid JSON and wrong field types before credential lookup"
   for (const body of ["{", null, [], { email: 5, password: "test" }, { email: "test", password: {} }]) {
     assert.equal((await route.POST(request(body))).status, 400);
   }
+});
+
+test("the original Superadmin can log in and recover the separate admin account", async () => {
+  const config = load("config/siteConfig.ts");
+  const email = "maswahyuganteng@cits.id";
+  const password = "Bootstrap-QA-Strong42!";
+  const internalEmail = "amanoyunn5@gmail.com";
+  const profile = { getAdminProfile: async (_id, fallback) => fallback };
+  const passwords = load(
+    "lib/passwordServer.ts",
+    { "node:crypto": crypto, "./db": { getSql: () => null } },
+    { process: { env: { NODE_ENV: "production", ADMIN_BOOTSTRAP_PASSWORD: password } } }
+  );
+  const route = load("app/api/auth/login/route.ts", {
+    "next/server": { NextResponse },
+    "@/config/siteConfig": config,
+    "@/lib/http": http,
+    "@/lib/apiAuth": auth,
+    "@/lib/internalAccountsServer": {
+      authenticateInternalAccount: async (address) =>
+        address === internalEmail
+          ? { status: "ok", account: { id: "staff", name: "Staff", email: internalEmail } }
+          : { status: "not-found" },
+    },
+    "@/lib/profileServer": profile,
+    "@/lib/profile": {},
+    "@/lib/passwordServer": passwords,
+  });
+  assert.equal((await route.POST(request({ email: "adminhebat2@gmail.com", password }))).status, 401);
+  assert.equal((await route.POST(request({ email, password: "admin" }))).status, 401);
+  const restored = await route.POST(request({ email: email.toUpperCase(), password }));
+  assert.equal(restored.status, 200);
+  const login = await restored.json();
+  assert.equal(login.user.email, email);
+  assert.equal(login.user.id, "admin-1");
+  assert.equal(login.user.role, "Super Admin");
+  assert.equal(auth.requireSuperadmin(request({}, login.token)), null);
+  const staff = await route.POST(request({ email: internalEmail, password }));
+  assert.equal((await staff.json()).user.role, "Admin Internal");
+
+  const deliveries = [];
+  const recovery = load("lib/passwordReset.ts", {
+    "@/config/siteConfig": config,
+    "./internalAccountsServer": { findInternalAccountByEmail: async () => null },
+    "./profileServer": profile,
+    "./passwordServer": {
+      createPasswordResetToken: async ({ userId, role }) => {
+        assert.equal(userId, "admin-1");
+        assert.equal(role, "superadmin");
+        return { token: "test-token" };
+      },
+    },
+    "./email": { sendPasswordResetEmail: async ({ to }) => (deliveries.push(to), { sent: true }) },
+  });
+  assert.equal((await recovery.requestPasswordResetForEmail(internalEmail, "https://example.test")).found, false);
+  assert.equal((await recovery.requestPasswordResetForEmail(email, "https://example.test")).sent, true);
+  assert.deepEqual(deliveries, [email]);
+
+  let changedUser;
+  const reset = load("app/api/auth/reset-password/route.ts", {
+    "next/server": { NextResponse },
+    "@/config/siteConfig": config,
+    "@/lib/http": http,
+    "@/lib/passwordServer": {
+      consumePasswordResetToken: async (token) => ({
+        userId: token === "cancelled-promotion" ? "staff" : "admin-1",
+        email: token === "cancelled-promotion" ? internalEmail : email,
+        role: "superadmin",
+      }),
+      setAdminCredential: async (id) => {
+        changedUser = id;
+      },
+    },
+    "@/lib/internalAccountsServer": {},
+    "@/lib/password": load("lib/password.ts"),
+  });
+  assert.equal((await reset.POST(request({ token: "cancelled-promotion", newPassword: password }))).status, 400);
+  assert.equal(changedUser, undefined);
+  assert.equal((await reset.POST(request({ token: "restored-admin", newPassword: password }))).status, 200);
+  assert.equal(changedUser, "admin-1");
 });
 
 test("image upload rejects text fields, unsupported formats and oversized files", async () => {

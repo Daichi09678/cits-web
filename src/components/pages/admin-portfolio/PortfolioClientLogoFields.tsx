@@ -1,5 +1,5 @@
 "use client";
-import Input from "@/components/ui/Input";
+import { BackOfficeInput as Input } from "@/components/ui/Input";
 import FieldLabel from "@/components/ui/FieldLabel";
 
 import Image from "next/image";

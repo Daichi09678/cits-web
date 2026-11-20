@@ -1,5 +1,6 @@
 "use client";
 
+import { BackOfficeButton as Button } from "@/components/ui/Button";
 import { useId, useRef, useState } from "react";
 import { Eye, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import AdminTopbar from "@/components/pages/admin/AdminTopbar";
@@ -10,7 +11,7 @@ import { useAdminAuth } from "@/lib/auth";
 import { canPerformAction } from "@/lib/internalAccess";
 import { citsApi } from "@/lib/api";
 import { announceTeamUpdate, useTeamMembers } from "@/lib/teamClient";
-import { sortTeamMembers, type TeamMember, type TeamMemberInput } from "@/lib/team";
+import { isPublicTeamMember, sortTeamMembers, type TeamMember, type TeamMemberInput } from "@/lib/team";
 
 const blank: TeamMemberInput = {
   name: "",
@@ -41,6 +42,7 @@ export default function AdminTeamPage() {
   const titleId = useId();
   const opener = useRef<HTMLElement | null>(null);
   const sorted = sortTeamMembers(members);
+  const publicCount = members.filter(isPublicTeamMember).length;
   const filtered = sorted.filter((member) => {
     const matchesQuery = `${member.name} ${member.position} ${member.teamName ?? ""}`
       .toLocaleLowerCase("id")
@@ -96,7 +98,9 @@ export default function AdminTeamPage() {
               </p>
             </div>
             {canCreate && (
-              <button
+              <Button
+                variant="unstyled"
+                size="none"
                 type="button"
                 onClick={() => openEditor()}
                 disabled={loading || Boolean(error)}
@@ -104,10 +108,16 @@ export default function AdminTeamPage() {
               >
                 <Plus className="h-4 w-4" aria-hidden="true" />
                 Tambah Anggota
-              </button>
+              </Button>
             )}
           </div>
           <div className="px-5 py-5 sm:px-6">
+            {!loading && !error && members.length > 0 && publicCount === 0 && (
+              <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-500/30 dark:bg-amber-950/30 dark:text-amber-100">
+                Belum ada profil yang tampil di Tentang Kami. Profil resmi akan tampil setelah statusnya Aktif dan
+                pilihan Tampilkan di Tentang Kami dicentang. Profil contoh hanya terlihat di Back Office.
+              </p>
+            )}
             {success && (
               <p
                 role="status"
@@ -127,9 +137,15 @@ export default function AdminTeamPage() {
                 className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-4 text-sm text-red-800 dark:text-red-200"
               >
                 <p>{error}</p>
-                <button type="button" onClick={() => void reload()} className={teamSecondary}>
+                <Button
+                  variant="unstyled"
+                  size="none"
+                  type="button"
+                  onClick={() => void reload()}
+                  className={teamSecondary}
+                >
                   Coba lagi
-                </button>
+                </Button>
               </div>
             )}
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -185,7 +201,9 @@ export default function AdminTeamPage() {
                     : "Tambahkan anggota tim untuk ditampilkan di website."}
                 </p>
                 {members.length > 0 && (
-                  <button
+                  <Button
+                    variant="unstyled"
+                    size="none"
                     type="button"
                     onClick={() => {
                       setQuery("");
@@ -194,13 +212,15 @@ export default function AdminTeamPage() {
                     className={teamSecondary + " mt-4"}
                   >
                     Reset pencarian
-                  </button>
+                  </Button>
                 )}
                 {canCreate && !members.length && (
                   <details className="mt-5 text-xs text-slate-600 dark:text-slate-300">
                     <summary className="cursor-pointer">Opsi data contoh</summary>
                     <p className="mt-2">Gunakan hanya untuk pengujian, bukan identitas resmi perusahaan.</p>
-                    <button
+                    <Button
+                      variant="unstyled"
+                      size="none"
                       type="button"
                       disabled={seeding}
                       className={teamSecondary + " mt-3"}
@@ -221,7 +241,7 @@ export default function AdminTeamPage() {
                       }}
                     >
                       {seeding ? "Mengisi data contoh..." : "Isi Data Contoh"}
-                    </button>
+                    </Button>
                   </details>
                 )}
               </div>
@@ -262,7 +282,9 @@ export default function AdminTeamPage() {
                         </p>
                         <TeamStatus active={member.isActive !== false} />
                         <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                          <button
+                          <Button
+                            variant="unstyled"
+                            size="none"
                             type="button"
                             aria-label={`Detail ${member.name}`}
                             onClick={() => {
@@ -276,9 +298,11 @@ export default function AdminTeamPage() {
                           >
                             <Eye className="h-4 w-4" aria-hidden="true" />
                             Detail
-                          </button>
+                          </Button>
                           {canEdit && (
-                            <button
+                            <Button
+                              variant="unstyled"
+                              size="none"
                               type="button"
                               aria-label={`Edit ${member.name}`}
                               onClick={() => openEditor(member)}
@@ -286,10 +310,12 @@ export default function AdminTeamPage() {
                             >
                               <Pencil className="h-4 w-4" aria-hidden="true" />
                               Edit
-                            </button>
+                            </Button>
                           )}
                           {canDelete && (
-                            <button
+                            <Button
+                              variant="unstyled"
+                              size="none"
                               type="button"
                               aria-label={`Hapus ${member.name}`}
                               title={`Hapus ${member.name}`}
@@ -302,7 +328,7 @@ export default function AdminTeamPage() {
                               }
                             >
                               <Trash2 className="h-4 w-4" aria-hidden="true" />
-                            </button>
+                            </Button>
                           )}
                         </div>
                       </li>
@@ -346,10 +372,20 @@ export default function AdminTeamPage() {
             )}
           </div>
           <footer className="flex shrink-0 justify-end gap-3 border-t border-slate-200 dark:border-white/10 px-6 py-4">
-            <button autoFocus type="button" onClick={close} disabled={saving} className={teamSecondary}>
+            <Button
+              variant="unstyled"
+              size="none"
+              autoFocus
+              type="button"
+              onClick={close}
+              disabled={saving}
+              className={teamSecondary}
+            >
               Batal
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="unstyled"
+              size="none"
               type="button"
               disabled={saving}
               className={teamButton + " bg-red-600 text-white hover:bg-red-700"}
@@ -371,7 +407,7 @@ export default function AdminTeamPage() {
               }}
             >
               {saving ? "Menghapus..." : "Hapus Anggota"}
-            </button>
+            </Button>
           </footer>
         </TeamDialog>
       )}

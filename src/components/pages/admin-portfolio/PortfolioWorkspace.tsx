@@ -1,6 +1,7 @@
 "use client";
-import Input from "@/components/ui/Input";
-import Select from "@/components/ui/Select";
+import { adminAction } from "@/components/pages/admin/accentStyles";
+import { BackOfficeInput as Input } from "@/components/ui/Input";
+import { BackOfficeSelect as Select } from "@/components/ui/Select";
 import FormFeedback from "@/components/ui/FormFeedback";
 
 import Image from "next/image";
@@ -167,7 +168,7 @@ export default function PortfolioWorkspace({ editor }: { editor: PortfolioEditor
             <button
               disabled={!canCreate}
               onClick={openAddModal}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 active:scale-98 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition-all cursor-pointer"
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl ${adminAction} active:scale-98 font-bold text-xs shadow-md shadow-orange-600/20 transition-all cursor-pointer`}
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Studi Kasus</span>

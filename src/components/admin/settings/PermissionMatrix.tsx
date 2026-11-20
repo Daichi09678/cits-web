@@ -1,4 +1,5 @@
 "use client";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
 
 import { useState } from "react";
 import { Check, LayoutGrid, Search } from "lucide-react";
@@ -119,7 +120,7 @@ export default function PermissionMatrix({
                             aria-hidden="true"
                             className={`flex size-[18px] items-center justify-center rounded-[5px] border transition ${
                               checked
-                                ? "border-[#FF4D00] bg-[#FF4D00] text-white"
+                                ? `border-[#FF4D00] ${adminAccent}`
                                 : "border-slate-300 bg-white dark:border-white/20 dark:bg-transparent"
                             }`}
                           >

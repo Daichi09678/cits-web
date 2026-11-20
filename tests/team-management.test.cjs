@@ -138,7 +138,7 @@ test("team API preserves team, new positions and descriptions on create, edit an
   assert.equal(stored.teamName, "Manajemen Proyek");
 });
 
-test("public team responses retain demo labels while hiding inactive and unpublished members", async () => {
+test("public team responses hide demo, inactive and unpublished members while admins can manage them", async () => {
   const auth = createTestAuth();
   const handler = routes(
     {
@@ -155,9 +155,8 @@ test("public team responses retain demo labels while hiding inactive and unpubli
   const publicMembers = (await response.json()).data;
   assert.deepEqual(
     publicMembers.map((member) => member.id),
-    ["public", "demo"]
+    ["public"]
   );
-  assert.equal(publicMembers.find((member) => member.id === "demo").isDemo, true);
   assert.equal((await handler.list.GET(request("GET", null, undefined, "/api/team?admin=1"))).status, 401);
   const denied = auth.issueAdminToken({
     sub: "denied",

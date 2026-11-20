@@ -1,6 +1,6 @@
 "use client";
-import Input, { Textarea } from "@/components/ui/Input";
-import Button from "@/components/ui/Button";
+import { BackOfficeInput as Input, BackOfficeTextarea as Textarea } from "@/components/ui/Input";
+import { BackOfficeButton as Button } from "@/components/ui/Button";
 import FormFeedback from "@/components/ui/FormFeedback";
 import FieldLabel from "@/components/ui/FieldLabel";
 

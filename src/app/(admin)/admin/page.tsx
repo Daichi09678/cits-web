@@ -1,4 +1,5 @@
 "use client";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -94,14 +95,14 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Hero Quick Action Banner */}
-        <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 text-white shadow-xl shadow-orange-600/15 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className={`p-6 md:p-8 rounded-3xl ${adminAccent} shadow-xl shadow-orange-600/15 flex flex-col md:flex-row items-start md:items-center justify-between gap-6`}>
           <div className="space-y-1.5 max-w-xl">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-xs text-[11px] font-bold">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Kontrol Dinamis Front Office</span>
             </div>
             <h2 className="text-xl md:text-2xl font-black tracking-tight">Kelola Konten Sesuai Hak Akses Anda</h2>
-            <p className="text-xs text-orange-100 leading-relaxed">
+            <p className="text-xs text-white leading-relaxed">
               Gunakan menu yang tersedia untuk mengelola konten website. Superadmin menentukan halaman yang dapat Anda
               akses dan edit.
             </p>

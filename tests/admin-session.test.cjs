@@ -336,6 +336,8 @@ test("admin layout redirects unauthenticated visitors and leaves login available
       "@/lib/auth": { useAdminAuth: () => ({ isAuthenticated: false, loading: false }) },
       "@/components/pages/admin/AdminShell": {},
       "@/components/pages/admin/RealtimeNotificationToast": {},
+      "@/components/ui/PageLoading": {},
+      "@/components/ui/RouteTransition": { default: "div" },
       "@/components/pages/admin/AdminPageTransitionLoader": {},
     }).default;
     const output = component({ children: "content" });

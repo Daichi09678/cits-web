@@ -34,6 +34,8 @@ test("client and portfolio writes cannot claim success when persistence is unava
       () => repo.updateClient("c1", { logo: "/new-logo.webp" }),
       () => repo.deleteClient("c1"),
       () => repo.updatePortfolio([]),
+      () => repo.updateContactInfo({ address: "Kantor baru" }),
+      () => repo.updateLandingData({ hero: {}, cta: {} }),
       () =>
         repo.createProduct({
           id: "p1",
@@ -54,6 +56,13 @@ test("client and portfolio writes cannot claim success when persistence is unava
 test("a deliberately emptied portfolio remains empty after a new server process reads it", async () => {
   const repo = database(async () => [{ data: [] }]);
   assert.deepEqual(Array.from(await repo.getPortfolio()), []);
+});
+
+test("removed contact FAQs and consultation options stay empty on a fresh read", async () => {
+  const repo = database(async () => [{ faqs: [], custom_services: [] }]);
+  const contact = await repo.getContactInfo();
+  assert.equal(contact.faqs.length, 0);
+  assert.equal(contact.customServices.length, 0);
 });
 
 test("failed profile and catalog reads reject rather than restoring default content", async () => {

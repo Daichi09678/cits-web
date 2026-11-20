@@ -106,6 +106,16 @@ function hashResetToken(token: string): string {
  * true  = kata sandi cocok
  * false = kredensial ada tetapi kata sandi salah
  */
+function allowsLocalAdminFallback(): boolean {
+  return process.env.NODE_ENV !== "production" && process.env.ALLOW_DEFAULT_ADMIN_FALLBACK === "1";
+}
+
+export function matchesBootstrapAdminPassword(password: string): boolean {
+  const bootstrap = process.env.ADMIN_BOOTSTRAP_PASSWORD;
+  if (bootstrap) return !["admin", "admin123"].includes(bootstrap) && password === bootstrap;
+  return allowsLocalAdminFallback() && (password === "admin" || password === "admin123");
+}
+
 export async function verifyAdminCredential(userId: string, password: string): Promise<boolean | null> {
   const sql = getSql();
   if (!sql) return null;
@@ -130,9 +140,7 @@ export async function verifyAdminCredential(userId: string, password: string): P
     // Fail-closed adalah perilaku default (dan diuji di tests/qa.test.cjs).
     // Untuk pengembangan tanpa database, login dengan kata sandi bawaan bisa
     // diaktifkan eksplisit lewat ALLOW_DEFAULT_ADMIN_FALLBACK=1 di .env lokal.
-    const allowDefaultFallback = typeof process !== "undefined" && process.env?.ALLOW_DEFAULT_ADMIN_FALLBACK === "1";
-
-    if (allowDefaultFallback) {
+    if (allowsLocalAdminFallback()) {
       console.warn(
         "verifyAdminCredential: database tidak tersedia — memakai kata sandi bawaan " +
           "(ALLOW_DEFAULT_ADMIN_FALLBACK=1, hanya untuk pengembangan)."

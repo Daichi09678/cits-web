@@ -3,7 +3,7 @@ import Button from "@/components/ui/Button";
 import FieldLabel from "@/components/ui/FieldLabel";
 import FormFeedback from "@/components/ui/FormFeedback";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ConsultationSelection from "@/components/ui/ConsultationSelection";
 import ConsultationRequirementsFields, {
@@ -79,6 +79,8 @@ const emptyRequirements = (purpose: ConsultationPurpose = "discussion"): Require
   usageEstimate: "",
 });
 
+const contactContentResources = ["contactInfo", "services", "products", "portfolio"] as const;
+
 function ContactPageContent({
   initialService,
   initialProduct,
@@ -94,7 +96,7 @@ function ContactPageContent({
   initialSource: ConsultationSource;
   initialReference: string;
 }) {
-  const { contactInfo, actions, services, activeProducts, activeCaseStudies } = useCitsStore();
+  const { contactInfo, actions, services, activeProducts, activeCaseStudies } = useCitsStore(contactContentResources);
   const { mapUrl, mapEmbedUrl, whatsappUrl } = contactPresentation(contactInfo);
   const [referenceId, setReferenceId] = useState(initialReference);
   const selectedPortfolio = activeCaseStudies.find((item) => item.id === referenceId);
@@ -103,9 +105,7 @@ function ContactPageContent({
   const [selectedProductId, setSelectedProductId] = useState(initialProduct);
   const selectedProduct = activeProducts.find((product) => product.id === selectedProductId);
   const selectedServiceDetails = resolveServiceCatalog(services).find((service) => service.title === selectedService);
-  const [requirements, setRequirements] = useState(() =>
-    emptyRequirements(initialPurpose === "demo" ? "demo" : "discussion")
-  );
+  const [requirements, setRequirements] = useState(() => emptyRequirements(initialPurpose));
   const [requestedFeatures, setRequestedFeatures] = useState(initialFeatures);
   const availableFeatures = new Set([
     ...(selectedProduct?.features || []),
@@ -132,8 +132,18 @@ function ContactPageContent({
   const [formEmail, setFormEmail] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formMessage, setFormMessage] = useState("");
+  const [hasConsented, setHasConsented] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const formHeading = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    // The form is inside Suspense, so the initial hash may resolve before the heading exists.
+    if (window.location.hash === "#consultation-form") {
+      formHeading.current?.scrollIntoView({ behavior: "instant" });
+      formHeading.current?.focus({ preventScroll: true });
+    }
+  }, []);
 
   const handleCopy = async (text: string, key: string) => {
     try {
@@ -151,7 +161,7 @@ function ContactPageContent({
       {announcement?.isActive && announcement.text && (
         <aside
           aria-label="Pengumuman Resmi"
-          className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-2.5 px-4 text-xs font-semibold shadow-xs"
+          className="bg-action text-white py-2.5 px-4 text-xs font-semibold shadow-xs"
         >
           <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-center sm:text-left">
             <div className="flex items-center gap-2 mx-auto sm:mx-0">
@@ -219,7 +229,6 @@ function ContactPageContent({
 
       {/* 2. CONTACT DETAILS & FORM BENTO (Perfect Symmetry & Visual Polish) */}
       <section
-        id="consultation-form"
         aria-labelledby="contact-form-heading"
         className="scroll-mt-20 py-16 md:py-24 bg-white dark:bg-[#1A1A2E] transition-colors"
       >
@@ -405,7 +414,12 @@ function ContactPageContent({
                     <div>
                       <div className="flex items-start justify-between gap-4 pb-5 mb-6 border-b border-gray-200 dark:border-white/10">
                         <div>
-                          <h3 className="text-xl md:text-2xl font-extrabold text-dark dark:text-white">
+                          <h3
+                            id="consultation-form"
+                            ref={formHeading}
+                            tabIndex={-1}
+                            className="scroll-mt-24 text-xl md:text-2xl font-extrabold text-dark dark:text-white"
+                          >
                             Formulir Diskusi Kebutuhan Proyek
                           </h3>
                           <p className="mt-1 text-xs md:text-sm text-gray-700 dark:text-white/85">
@@ -443,6 +457,7 @@ function ContactPageContent({
                         <form
                           onSubmit={async (e) => {
                             e.preventDefault();
+                            if (!hasConsented || isSubmitting) return;
                             if (selectedProductId && !selectedProduct) {
                               setSubmitError(
                                 "Produk yang dipilih tidak tersedia. Pilih produk lain atau kosongkan pilihan produk."
@@ -473,6 +488,7 @@ function ContactPageContent({
                                   referenceId: referenceId || undefined,
                                 },
                                 message: formMessage,
+                                consent: true,
                               });
                               setSubmitted(true);
                               setFormName("");
@@ -480,15 +496,17 @@ function ContactPageContent({
                               setFormEmail("");
                               setFormPhone("");
                               setFormMessage("");
+                              setHasConsented(false);
                               setSelectedService("");
                               setSelectedProductId("");
                               setRequirements(emptyRequirements());
                               setRequestedFeatures([]);
                               setReferenceId("");
-                            } catch (err: any) {
+                            } catch (err) {
                               setSubmitError(
-                                err?.message ||
-                                  "Gagal mengirim pesan ke server. Mohon periksa koneksi internet Anda atau hubungi kami langsung via WhatsApp."
+                                err instanceof Error && err.message
+                                  ? err.message
+                                  : "Gagal mengirim pesan ke server. Mohon periksa koneksi internet Anda atau hubungi kami langsung via WhatsApp."
                               );
                             } finally {
                               setIsSubmitting(false);
@@ -559,7 +577,6 @@ function ContactPageContent({
                                   name="email"
                                   type="email"
                                   autoComplete="email"
-                                  aria-describedby="contact-email-hint"
                                   required
                                   value={formEmail}
                                   onChange={(e) => setFormEmail(e.target.value)}
@@ -568,12 +585,6 @@ function ContactPageContent({
                                   placeholder="nama@perusahaan.com"
                                 />
                               </div>
-                              <p
-                                id="contact-email-hint"
-                                className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300"
-                              >
-                                Gunakan email aktif agar tim CITS dapat menghubungi Anda.
-                              </p>
                             </div>
 
                             <div>
@@ -708,40 +719,38 @@ function ContactPageContent({
                               id="contact-consent"
                               type="checkbox"
                               required
-                              defaultChecked
-                              className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 accent-orange-600 mt-0.5 cursor-pointer"
+                              checked={hasConsented}
+                              onChange={(event) => setHasConsented(event.target.checked)}
+                              aria-describedby="contact-data-use"
+                              className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-gray-300 accent-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-700"
                             />
-                            <label
-                              htmlFor="contact-consent"
-                              className="text-sm text-gray-700 dark:text-white/80 leading-normal cursor-pointer select-none"
-                            >
-                              Saya menyetujui data formulir ini digunakan oleh CITS Indonesia untuk keperluan komunikasi
-                              teknis dan penyusunan proposal konsultasi.
-                            </label>
+                            <div className="space-y-1 text-sm leading-normal text-gray-700 dark:text-white/80">
+                              <label htmlFor="contact-consent" className="cursor-pointer font-medium">
+                                Saya setuju data ini digunakan untuk menindaklanjuti konsultasi saya.{" "}
+                                <span aria-hidden="true" className="text-rose-700 dark:text-rose-300">
+                                  *
+                                </span>
+                              </label>
+                              <p id="contact-data-use">
+                                Nama, kontak, dan isi pesan disimpan di kotak masuk CITS sesuai pengaturan retensi
+                                pesan. Jangan sertakan kata sandi atau dokumen rahasia di formulir ini.
+                              </p>
+                            </div>
                           </div>
 
                           {/* Submit Button */}
                           <div className="pt-2">
                             <Button
                               type="submit"
-                              disabled={isSubmitting}
+                              disabled={!hasConsented}
                               variant="public-primary"
                               size="lg"
-                              className="w-full group"
+                              className="w-full"
                               busy={isSubmitting}
                               busyLabel="Mengirim..."
                             >
-                              {isSubmitting ? (
-                                <>
-                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                  <span>Mengirim Permintaan Konsultasi...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Send className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                                  <span>Kirim Permintaan Konsultasi</span>
-                                </>
-                              )}
+                              <Send aria-hidden="true" className="w-4 h-4" />
+                              <span>Kirim Permintaan Konsultasi</span>
                             </Button>
                           </div>
                         </form>

@@ -4,7 +4,7 @@ import { authenticateInternalAccount } from "@/lib/internalAccountsServer";
 import { issueAdminToken } from "@/lib/apiAuth";
 import { getAdminProfile } from "@/lib/profileServer";
 import { DEFAULT_AVATAR } from "@/lib/profile";
-import { verifyAdminCredential } from "@/lib/passwordServer";
+import { matchesBootstrapAdminPassword, verifyAdminCredential } from "@/lib/passwordServer";
 import { badRequest, missingStringFields, readJsonBody } from "@/lib/http";
 
 export const runtime = "nodejs";
@@ -73,13 +73,9 @@ export async function POST(req: Request) {
 
     // 2. Akun Superadmin bawaan.
     const isOfficialEmail =
-      email === "maswahyuganteng@cits.id" ||
-      email === "maswahyuganteng" ||
-      email === siteConfig.admin.defaultEmail.toLowerCase() ||
+      email === siteConfig.admin.defaultUsername ||
+      email === siteConfig.admin.defaultEmail ||
       email === "admin@cits.id";
-
-    const isOfficialPass =
-      password === siteConfig.admin.defaultPassword || password === "admin" || password === "admin123";
 
     if (!isOfficialEmail) {
       return NextResponse.json(
@@ -89,7 +85,7 @@ export async function POST(req: Request) {
     }
 
     const storedCredential = await verifyAdminCredential("admin-1", password);
-    const defaultPasswordOk = storedCredential === null && isOfficialPass;
+    const defaultPasswordOk = storedCredential === null && matchesBootstrapAdminPassword(password);
 
     if (storedCredential !== true && !defaultPasswordOk) {
       return NextResponse.json(
@@ -99,10 +95,10 @@ export async function POST(req: Request) {
     }
 
     const profile = await getAdminProfile("admin-1", {
-      displayName: "maswahyuganteng",
+      displayName: siteConfig.admin.defaultUsername,
       avatarUrl: DEFAULT_AVATAR,
     });
-    const displayName = profile.displayName || "maswahyuganteng";
+    const displayName = profile.displayName || siteConfig.admin.defaultUsername;
 
     const token = issueAdminToken({
       sub: "admin-1",

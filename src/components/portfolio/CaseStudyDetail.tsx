@@ -18,16 +18,18 @@ import {
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import { caseStudyEvidence } from "@/data/caseStudyFacts";
 import { consultationHref } from "@/lib/consultation";
-import { useCitsStore } from "@/stores/citsStore";
+import type { CaseStudyItem } from "@/types/schema";
+import CaseStudySummary from "@/components/portfolio/CaseStudySummary";
 
 export default function CaseStudyDetail({
   id,
+  caseStudies,
   matchPortfolioTheme = false,
 }: {
   id: string;
+  caseStudies: CaseStudyItem[];
   matchPortfolioTheme?: boolean;
 }) {
-  const { caseStudies } = useCitsStore();
   const study = caseStudies.find((item) => item.id === id && item.isActive !== false);
   const pageBackground = matchPortfolioTheme ? "bg-white dark:bg-[#1A1A2E]" : "bg-white dark:bg-[#111827]";
   const headerBackground = matchPortfolioTheme
@@ -48,7 +50,7 @@ export default function CaseStudyDetail({
           </p>
           <Link
             href="/portfolio"
-            className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-xl bg-orange-700 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-orange-800"
+            className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-xl bg-action px-5 py-2.5 text-sm font-bold text-on-action transition hover:bg-action-hover"
           >
             <ArrowLeft className="h-4 w-4" />
             Kembali ke Portofolio
@@ -101,7 +103,7 @@ export default function CaseStudyDetail({
             </div>
             <Link
               href={consultationHref({ source: "portfolio", referenceId: study.id })}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-orange-700 px-5 py-2.5 text-sm font-bold text-white   transition hover:bg-orange-800"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-action px-5 py-2.5 text-sm font-bold text-on-action   transition hover:bg-action-hover"
             >
               Konsultasi Kebutuhan Serupa
             </Link>
@@ -117,6 +119,9 @@ export default function CaseStudyDetail({
       </section>
 
       <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+        {evidence && (
+          <CaseStudySummary challenge={study.challenge} solution={study.solution} result={evidence.publicResult} />
+        )}
         {/* Dampak terukur */}
         <ScrollReveal>
           <section
@@ -124,7 +129,7 @@ export default function CaseStudyDetail({
             className="rounded-xl border border-slate-200 bg-slate-50/70 p-6 sm:p-8 dark:border-white/10 dark:bg-white/[0.03]"
           >
             <h2 id="impact-heading" className="text-xs font-bold   text-orange-800 dark:text-orange-300">
-              Dampak Terukur
+              Metrik Proyek Menurut Dokumentasi CITS
             </h2>
             <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -167,11 +172,11 @@ export default function CaseStudyDetail({
               <div className="flex flex-wrap items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 <h2 id="facts-heading" className="text-xl font-extrabold tracking-tight sm:text-2xl">
-                  Fakta Terverifikasi
+                  Fakta Pendukung dari Sumber Publik
                 </h2>
               </div>
               <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-                Angka di bawah dikutip langsung dari sumber resmi, bukan estimasi pemasaran.
+                Fakta ini menjelaskan konteks layanan instansi dan tersedia dalam daftar referensi di bawah.
               </p>
               <dl className="mt-6 grid gap-4 sm:grid-cols-2">
                 {evidence.facts.map((fact) => (
@@ -190,38 +195,40 @@ export default function CaseStudyDetail({
         )}
 
         {/* Tantangan & solusi */}
-        <div className="mt-12 grid gap-6 sm:grid-cols-2">
-          <ScrollReveal>
-            <section
-              aria-labelledby="challenge-heading"
-              className="h-full border-t border-slate-200 pt-6 dark:border-white/10"
-            >
-              <h2
-                id="challenge-heading"
-                className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white"
+        {!evidence && (
+          <div className="mt-12 grid gap-6 sm:grid-cols-2">
+            <ScrollReveal>
+              <section
+                aria-labelledby="challenge-heading"
+                className="h-full border-t border-slate-200 pt-6 dark:border-white/10"
               >
-                <Target className="h-4 w-4" />
-                Tantangan
-              </h2>
-              <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-200">{study.challenge}</p>
-            </section>
-          </ScrollReveal>
-          <ScrollReveal delay={0.05}>
-            <section
-              aria-labelledby="solution-heading"
-              className="h-full border-t border-slate-200 pt-6 dark:border-white/10"
-            >
-              <h2
-                id="solution-heading"
-                className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white"
+                <h2
+                  id="challenge-heading"
+                  className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white"
+                >
+                  <Target className="h-4 w-4" />
+                  Tantangan
+                </h2>
+                <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-200">{study.challenge}</p>
+              </section>
+            </ScrollReveal>
+            <ScrollReveal delay={0.05}>
+              <section
+                aria-labelledby="solution-heading"
+                className="h-full border-t border-slate-200 pt-6 dark:border-white/10"
               >
-                <Lightbulb className="h-4 w-4" />
-                Solusi CITS
-              </h2>
-              <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-200">{study.solution}</p>
-            </section>
-          </ScrollReveal>
-        </div>
+                <h2
+                  id="solution-heading"
+                  className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white"
+                >
+                  <Lightbulb className="h-4 w-4" />
+                  Solusi CITS
+                </h2>
+                <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-200">{study.solution}</p>
+              </section>
+            </ScrollReveal>
+          </div>
+        )}
 
         {/* Lingkup, teknologi, luaran */}
         <div className="mt-12 grid gap-6 lg:grid-cols-3">
@@ -341,7 +348,7 @@ export default function CaseStudyDetail({
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
                 href={consultationHref({ source: "portfolio", referenceId: study.id })}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-orange-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-orange-700"
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-action px-5 py-2.5 text-sm font-bold text-on-action transition hover:bg-action-hover"
               >
                 Mulai Konsultasi
               </Link>

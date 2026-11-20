@@ -205,7 +205,7 @@ export default function ProductDetailsDialog({
                   features: selectedFeatures,
                   source: "products",
                 })}
-                className="min-w-0 min-h-11 inline-flex items-center justify-center gap-2 rounded-xl bg-orange-700 hover:bg-orange-800 px-3 py-2.5 text-center text-xs sm:text-sm font-semibold text-white"
+                className="min-w-0 min-h-11 inline-flex items-center justify-center gap-2 rounded-xl bg-action hover:bg-action-hover px-3 py-2.5 text-center text-xs sm:text-sm font-semibold text-on-action"
               >
                 Konsultasi Produk
                 <ArrowRight className="hidden sm:block h-4 w-4 shrink-0" aria-hidden="true" />

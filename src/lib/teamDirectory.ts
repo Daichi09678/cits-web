@@ -1,7 +1,7 @@
-import { sortTeamMembers, type TeamMember } from "@/lib/team";
+import { isPublicTeamMember, sortTeamMembers, type TeamMember } from "@/lib/team";
 
 export function publicTeamMembers(members: readonly TeamMember[]): TeamMember[] {
-  return sortTeamMembers(members.filter((member) => member.isActive !== false && member.showOnHomepage !== false));
+  return sortTeamMembers(members.filter(isPublicTeamMember));
 }
 
 export function searchTeamMembers(

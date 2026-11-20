@@ -163,7 +163,7 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
           size="none"
           type="button"
           onClick={onClose}
-          className="min-h-11 rounded-xl bg-orange-700 px-5 text-sm font-semibold text-white transition-colors hover:bg-orange-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+          className="min-h-11 rounded-xl bg-action px-5 text-sm font-semibold text-on-action transition-colors hover:bg-action-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
         >
           Tutup
         </Button>

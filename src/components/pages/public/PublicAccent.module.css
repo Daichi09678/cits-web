@@ -1,0 +1,11 @@
+.surface {
+  --public-action: #f54a00;
+  --public-action-hover: #e84700;
+}
+
+@media (prefers-contrast: more) {
+  .surface {
+    --public-action: #9a3412;
+    --public-action-hover: #7c2d12;
+  }
+}

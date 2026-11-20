@@ -221,7 +221,14 @@ test("missing database configuration cannot report durable message success", asy
 test("submission waits for server confirmation and does not cache a failed send", async () => {
   const h = storeHarness();
   h.response = { success: false, message: "Cannot save" };
-  await assert.rejects(async () => h.CitsStore.addMessage({ name: "Test" }), /Cannot save/);
+  await assert.rejects(async () => h.CitsStore.addMessage({ name: "Test", consent: true }), /Cannot save/);
+  assert.equal(h.CitsStore.getMessages().length, 0);
+});
+
+test("confirmed public submissions leave no copy in the local inbox", async () => {
+  const h = storeHarness();
+  h.response = { success: true, data: { id: "public-lead", email: "visitor@example.test" } };
+  assert.equal((await h.CitsStore.addMessage({ name: "Visitor", consent: true })).id, "public-lead");
   assert.equal(h.CitsStore.getMessages().length, 0);
 });
 

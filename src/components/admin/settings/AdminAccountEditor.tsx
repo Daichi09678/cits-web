@@ -1,5 +1,7 @@
 "use client";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
 
+import { BackOfficeButton as Button } from "@/components/ui/Button";
 import { useRef, useState, type FormEvent } from "react";
 import {
   AlertCircle,
@@ -33,8 +35,6 @@ import AccessInformationPanel from "./AccessInformationPanel";
 import PermissionMatrix from "./PermissionMatrix";
 import { cardClass, fieldClass, primaryButton, secondaryButton } from "./styles";
 
-const matrixId = "admin-permission-matrix";
-
 export default function AdminAccountEditor({
   account,
   variant = "inline",
@@ -49,6 +49,8 @@ export default function AdminAccountEditor({
   onAccessSaved?: (account: PublicInternalAccount) => void;
 }) {
   const isDialog = variant === "dialog";
+  const matrixId = isDialog ? "admin-permission-matrix-edit" : "admin-permission-matrix";
+  const submitPending = useRef(false);
   const [name, setName] = useState(account?.name ?? "");
   const [email, setEmail] = useState(account?.email ?? "");
   const [password, setPassword] = useState("");
@@ -118,7 +120,7 @@ export default function AdminAccountEditor({
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (busy || permissionSavePending.current || statusBusy) return;
+    if (submitPending.current || permissionSavePending.current || statusBusy) return;
     const issue =
       name.trim().length < 2
         ? "Nama lengkap minimal 2 karakter."
@@ -129,6 +131,7 @@ export default function AdminAccountEditor({
               (password !== confirmation ? "Konfirmasi password belum sesuai." : "")
             : "";
     setValidation(issue);
+    setServerError("");
     if (issue) return;
 
     const input: InternalAccountInput = {
@@ -140,8 +143,8 @@ export default function AdminAccountEditor({
       isActive: active,
     };
 
+    submitPending.current = true;
     setBusy(true);
-    setServerError("");
     try {
       const saved = account ? await updateInternalAccount(account.id, input) : await createInternalAccount(input);
       if (!saved?.id)
@@ -150,6 +153,7 @@ export default function AdminAccountEditor({
     } catch (error) {
       setServerError(error instanceof Error ? error.message : "Gagal menyimpan akun.");
     } finally {
+      submitPending.current = false;
       setBusy(false);
     }
   };
@@ -198,6 +202,7 @@ export default function AdminAccountEditor({
       className={isDialog ? "flex min-h-0 min-w-0 flex-1 flex-col" : `${cardClass} scroll-mt-24`}
     >
       <form
+        method="post"
         onSubmit={submit}
         className={
           isDialog
@@ -213,12 +218,12 @@ export default function AdminAccountEditor({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-[#0F172A] dark:text-slate-100">Status Akun</p>
-                <p className="mt-1 flex flex-wrap items-center gap-2 text-[11px] leading-relaxed text-[#64748B]">
+                <p className="mt-1 flex flex-wrap items-center gap-2 text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
                   <span
                     className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-semibold ${
                       account.isActive
                         ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
-                        : "bg-slate-100 text-[#64748B] dark:bg-white/5"
+                        : "bg-slate-100 text-slate-600 dark:text-slate-300 dark:bg-white/5"
                     }`}
                   >
                     <span
@@ -232,7 +237,9 @@ export default function AdminAccountEditor({
                     : "Akun tidak dapat masuk sampai diaktifkan kembali."}
                 </p>
               </div>
-              <button
+              <Button
+                variant="unstyled"
+                size="none"
                 type="button"
                 onClick={() => void toggleStatus()}
                 disabled={statusBusy || busy || savingPermissions}
@@ -248,7 +255,7 @@ export default function AdminAccountEditor({
                   <Power className="size-4" aria-hidden="true" />
                 )}
                 {statusBusy ? "Memproses..." : account.isActive ? "Nonaktifkan Akun" : "Aktifkan Akun"}
-              </button>
+              </Button>
             </div>
             {statusError && (
               <p role="alert" className="mt-2.5 text-[11px] leading-relaxed text-red-600">
@@ -262,7 +269,7 @@ export default function AdminAccountEditor({
         <div className="min-w-0 space-y-5">
           {!isDialog && (
             <header className="flex items-start gap-3">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#FF4D00] text-white">
+              <span className={`flex size-10 shrink-0 items-center justify-center rounded-lg ${adminAccent}`}>
                 <UserPlus className="size-5" aria-hidden="true" />
               </span>
               <div className="min-w-0">
@@ -272,7 +279,7 @@ export default function AdminAccountEditor({
                 >
                   Tambah Akun Administrator
                 </h2>
-                <p className="mt-1 text-xs leading-relaxed text-[#64748B]">
+                <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                   Buat akun admin internal baru dengan hak akses sesuai kebutuhan.
                 </p>
               </div>
@@ -286,12 +293,14 @@ export default function AdminAccountEditor({
             {/* Informasi Akun */}
             <section className="rounded-lg border border-[#E2E8F0] p-4 dark:border-white/10 sm:p-5">
               <div className="flex items-start gap-2.5">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#FFF1E9] text-[#FF4D00] dark:bg-orange-500/10 dark:text-orange-300">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#FFF1E9] text-orange-800 dark:text-orange-300 dark:bg-orange-500/10 dark:text-orange-300">
                   <User className="size-4" aria-hidden="true" />
                 </span>
                 <div>
                   <h3 className="text-sm font-semibold text-[#0F172A] dark:text-white">Informasi Akun</h3>
-                  <p className="mt-0.5 text-[11px] text-[#64748B]">Lengkapi informasi dasar akun administrator.</p>
+                  <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-300">
+                    Lengkapi informasi dasar akun administrator.
+                  </p>
                 </div>
               </div>
 
@@ -369,7 +378,9 @@ export default function AdminAccountEditor({
                           placeholder="Minimal 8 karakter"
                           className={`${fieldClass} pr-10 pl-9`}
                         />
-                        <button
+                        <Button
+                          variant="unstyled"
+                          size="none"
                           type="button"
                           onClick={() => setVisible(!visible)}
                           aria-label={visible ? "Sembunyikan password" : "Tampilkan password"}
@@ -377,7 +388,7 @@ export default function AdminAccountEditor({
                           className="absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-lg text-[#94A3B8] hover:text-[#334155] focus-visible:outline-2 focus-visible:outline-[#FF4D00]"
                         >
                           {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                        </button>
+                        </Button>
                       </div>
                       <div className="mt-2 flex items-center gap-2">
                         <div className="flex flex-1 gap-1" aria-hidden="true">
@@ -393,7 +404,7 @@ export default function AdminAccountEditor({
                         <span
                           className={`text-[10px] font-medium ${
                             strength.score === 0
-                              ? "text-[#64748B]"
+                              ? "text-slate-600 dark:text-slate-300"
                               : strength.score === 1
                                 ? "text-red-600"
                                 : strength.score === 2
@@ -404,7 +415,10 @@ export default function AdminAccountEditor({
                           {strength.label}
                         </span>
                       </div>
-                      <p id="admin-password-help" className="mt-2 text-[11px] leading-relaxed text-[#64748B]">
+                      <p
+                        id="admin-password-help"
+                        className="mt-2 text-[11px] leading-relaxed text-slate-600 dark:text-slate-300"
+                      >
                         Minimal 8 karakter: huruf besar, huruf kecil, angka, dan simbol.
                       </p>
                     </div>
@@ -434,7 +448,9 @@ export default function AdminAccountEditor({
                           placeholder="Ulangi password"
                           className={`${fieldClass} pr-10 pl-9 ${mismatch ? "border-red-400" : ""}`}
                         />
-                        <button
+                        <Button
+                          variant="unstyled"
+                          size="none"
                           type="button"
                           onClick={() => setConfirmationVisible(!confirmationVisible)}
                           aria-label={
@@ -444,7 +460,7 @@ export default function AdminAccountEditor({
                           className="absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-lg text-[#94A3B8] hover:text-[#334155] focus-visible:outline-2 focus-visible:outline-[#FF4D00]"
                         >
                           {confirmationVisible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                        </button>
+                        </Button>
                       </div>
                       <p
                         id="admin-confirm-help"
@@ -471,11 +487,13 @@ export default function AdminAccountEditor({
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-[#0F172A] dark:text-slate-100">Reset Password</p>
-                      <p className="mt-0.5 truncate text-[11px] text-[#64748B]">
+                      <p className="mt-0.5 truncate text-[11px] text-slate-600 dark:text-slate-300">
                         Kirim tautan reset ke email tersimpan: {account.email}
                       </p>
                     </div>
-                    <button
+                    <Button
+                      variant="unstyled"
+                      size="none"
                       type="button"
                       onClick={() => void sendReset()}
                       disabled={resetting}
@@ -483,7 +501,7 @@ export default function AdminAccountEditor({
                     >
                       {resetting ? <LoaderCircle className="size-4 animate-spin" /> : <KeyRound className="size-4" />}
                       Kirim Tautan Reset
-                    </button>
+                    </Button>
                   </div>
                   {resetResult && (
                     <p
@@ -500,12 +518,12 @@ export default function AdminAccountEditor({
             {/* Hak Akses & Role */}
             <section className="rounded-lg border border-[#E2E8F0] p-4 dark:border-white/10 sm:p-5">
               <div className="flex items-start gap-2.5">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#FFF1E9] text-[#FF4D00] dark:bg-orange-500/10 dark:text-orange-300">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#FFF1E9] text-orange-800 dark:text-orange-300 dark:bg-orange-500/10 dark:text-orange-300">
                   <UserPlus className="size-4" aria-hidden="true" />
                 </span>
                 <div>
                   <h3 className="text-sm font-semibold text-[#0F172A] dark:text-white">Hak Akses &amp; Role</h3>
-                  <p className="mt-0.5 text-[11px] text-[#64748B]">
+                  <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-300">
                     Tentukan role dan halaman yang dapat diakses oleh akun ini.
                   </p>
                 </div>
@@ -584,9 +602,7 @@ export default function AdminAccountEditor({
           <AccessInformationPanel
             permissions={permissions}
             active={active}
-            onShowDetail={() =>
-              document.getElementById(matrixId)?.scrollIntoView({ behavior: "smooth", block: "center" })
-            }
+            onShowDetail={() => document.getElementById(matrixId)?.scrollIntoView({ block: "center" })}
           />
 
           {(validation || serverError) && (
@@ -607,18 +623,26 @@ export default function AdminAccountEditor({
               : "flex flex-col-reverse gap-2 lg:col-start-2 lg:row-start-2 sm:flex-row sm:justify-end"
           }
         >
-          <button
+          <Button
+            variant="unstyled"
+            size="none"
             type="button"
             disabled={busy || savingPermissions || statusBusy}
             onClick={resetForm}
             className={secondaryButton}
           >
             Batal
-          </button>
-          <button type="submit" disabled={busy || savingPermissions || statusBusy} className={primaryButton}>
+          </Button>
+          <Button
+            variant="unstyled"
+            size="none"
+            type="submit"
+            disabled={busy || savingPermissions || statusBusy}
+            className={primaryButton}
+          >
             {busy ? <LoaderCircle className="size-4 animate-spin" /> : <Save className="size-4" />}
             {busy ? "Menyimpan..." : account ? "Simpan Perubahan" : "Simpan Akun Administrator"}
-          </button>
+          </Button>
         </div>
       </form>
     </section>

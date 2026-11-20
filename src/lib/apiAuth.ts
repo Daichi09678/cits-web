@@ -1,5 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { siteConfig } from "@/config/siteConfig";
 import { canPerformAction, type PageKey, type PagePermissions, type PermissionAction } from "./internalAccess";
 import { findInternalAccountById } from "./internalAccountsServer";
 
@@ -53,6 +54,8 @@ export function verifyAdminToken(request: Request): AdminTokenPayload | null {
     if (!payload || typeof payload.exp !== "number" || payload.exp < Date.now()) return null;
     if (typeof payload.email !== "string" || !payload.email) return null;
     if (payload.role !== "superadmin" && payload.role !== "internal") return null;
+    if (payload.role === "superadmin" && (payload.sub !== "admin-1" || payload.email !== siteConfig.admin.defaultEmail))
+      return null;
     return payload;
   } catch {
     return null;

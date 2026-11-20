@@ -96,6 +96,8 @@ test("contact and FAQ settings share a save lock and report success only after s
   const state = {
     canEdit: true,
     contactInfo: initial.initialContactInfo,
+    clearInfoDraft() {},
+    clearFaqDraft() {},
     settingsPending: { current: false },
     setSettingsSaving: (value) => (updates.saving = value),
     setSettingsError: (value) => (updates.error = value),

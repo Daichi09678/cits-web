@@ -103,7 +103,11 @@ test("API action checks reject read-only product/clients mutations before reachi
 function repository(sql) {
   return load(
     "lib/internalAccountsServer.ts",
-    { "./db": { getSql: () => sql }, "./internalAccess": access },
+    {
+      "./db": { getSql: () => sql },
+      "./internalAccess": access,
+      "@/config/siteConfig": load("config/siteConfig.ts"),
+    },
     { console: { error() {} } }
   );
 }
@@ -137,6 +141,7 @@ test("account operations refuse unavailable persistence and never fall back to s
 test("primary superadmin cannot be downgraded or deleted, including direct repository calls", async () => {
   const repo = repository(null);
   assert.equal((await repo.deleteInternalAccount("admin-1")).success, false);
+  assert.equal((await repo.deleteInternalAccounts(["staff", "admin-1"])).success, false);
   assert.equal(
     (
       await repo.updateInternalAccount("admin-1", {
@@ -148,6 +153,46 @@ test("primary superadmin cannot be downgraded or deleted, including direct repos
     ).success,
     false
   );
+});
+
+test("bulk account deletion is restricted to Superadmin and removes only the selected accounts", async () => {
+  const remaining = new Set(["staff", "another-staff", "unselected"]);
+  let writes = 0;
+  const sql = Object.assign(
+    async (strings, ids) => {
+      if (strings.join("?").includes("DELETE FROM admin_profiles")) return [];
+      assert.match(strings.join("?"), /DELETE FROM internal_accounts WHERE id = ANY/);
+      writes++;
+      return [...new Set(ids)].filter((id) => remaining.delete(id)).map((id) => ({ id }));
+    },
+    { unsafe: async () => {} }
+  );
+  const auth = createTestAuth();
+  const issue = (role) => auth.issueAdminToken({ sub: role, name: role, email: role + "@example.test", role });
+  const superadmin = issue("superadmin");
+  const route = load("app/api/admin/internal-accounts/route.ts", {
+    "next/server": { NextResponse },
+    "@/config/siteConfig": {},
+    "@/lib/apiAuth": auth,
+    "@/lib/http": load("lib/http.ts", { "next/server": { NextResponse } }),
+    "@/lib/internalAccountsServer": repository(sql),
+    "@/lib/internalAccess": access,
+    "@/lib/profileServer": {},
+  });
+  const remove = (token, ids) => route.DELETE(request(token, "DELETE", { ids }));
+  assert.equal((await remove(null, ["staff"])).status, 401);
+  assert.equal((await remove(issue("internal"), ["staff"])).status, 403);
+  assert.equal((await remove(superadmin, [])).status, 400);
+  assert.equal((await remove(superadmin, ["staff", 1])).status, 400);
+  assert.equal((await remove(superadmin, ["staff", "admin-1"])).status, 400);
+  assert.equal(writes, 0);
+  const ids = ["staff", "another-staff", "staff", "already-removed"];
+  const result = await remove(superadmin, ids);
+  assert.equal(result.status, 200);
+  assert.deepEqual(await result.json(), { success: true, deletedCount: 2 });
+  assert.deepEqual([...remaining], ["unselected"]);
+  assert.equal(writes, 1);
+  assert.deepEqual(await (await remove(superadmin, ids)).json(), { success: true, deletedCount: 0 });
 });
 
 test("server persists action permissions with the account and derives navigation from view permission", async () => {

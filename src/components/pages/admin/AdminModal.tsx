@@ -1,6 +1,7 @@
 "use client";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
 
-import { useId } from "react";
+import { useId, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { X, type LucideIcon } from "lucide-react";
 import AdminDialogSurface from "./AdminDialogSurface";
@@ -15,6 +16,7 @@ interface AdminModalProps {
   icon?: LucideIcon;
   size?: ModalSize;
   busy?: boolean;
+  initialFocusRef?: RefObject<HTMLElement | null>;
   children: React.ReactNode;
 }
 
@@ -34,6 +36,7 @@ export default function AdminModal({
   icon: Icon,
   size = "xl",
   busy = false,
+  initialFocusRef,
   children,
 }: AdminModalProps) {
   const titleId = useId();
@@ -47,10 +50,11 @@ export default function AdminModal({
       onClose={onClose}
       busy={busy}
       widthClassName={SIZE_CLASS[size]}
+      initialFocusRef={initialFocusRef}
     >
       <header className="flex shrink-0 items-start gap-3 border-b border-slate-100 p-5 dark:border-white/5">
         {Icon && (
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-600 text-white">
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${adminAccent}`}>
             <Icon aria-hidden="true" className="h-5 w-5" />
           </div>
         )}

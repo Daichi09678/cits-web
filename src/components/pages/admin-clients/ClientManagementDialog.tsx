@@ -1,7 +1,8 @@
 "use client";
-import Input from "@/components/ui/Input";
-import Button from "@/components/ui/Button";
-import Select from "@/components/ui/Select";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
+import { BackOfficeInput as Input } from "@/components/ui/Input";
+import { BackOfficeButton as Button } from "@/components/ui/Button";
+import { BackOfficeSelect as Select } from "@/components/ui/Select";
 import FieldLabel from "@/components/ui/FieldLabel";
 import FormFeedback from "@/components/ui/FormFeedback";
 
@@ -202,7 +203,7 @@ export default function ClientManagementDialog({ editor }: { editor: ClientManag
                             className="max-h-full max-w-full object-contain"
                           />
                           {isSelected && (
-                            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-orange-600 text-white flex items-center justify-center text-[9px]">
+                            <span className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full ${adminAccent} flex items-center justify-center text-[9px]`}>
                               ✓
                             </span>
                           )}

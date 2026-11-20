@@ -1,4 +1,5 @@
 "use client";
+import { adminAction } from "@/components/pages/admin/accentStyles";
 
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -22,7 +23,7 @@ import { fetchInternalAccounts } from "@/lib/internalAccountsApi";
 import type { PublicInternalAccount } from "@/lib/internalAccess";
 
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-all placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 dark:border-white/10 dark:bg-white/[0.04] dark:text-white";
+  "w-full rounded-xl border border-control-border bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-600 focus:border-orange-800 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-slate-300 dark:focus:border-orange-400";
 
 interface PasswordFieldProps {
   id: string;
@@ -243,7 +244,7 @@ export default function SecuritySettings() {
             </div>
           </div>
 
-          <form onSubmit={handlePasswordSubmit} className="mt-5 space-y-4">
+          <form method="post" onSubmit={handlePasswordSubmit} className="mt-5 space-y-4">
             <PasswordField
               id="current-password"
               label="Kata Sandi Saat Ini"
@@ -306,7 +307,7 @@ export default function SecuritySettings() {
             <button
               type="submit"
               disabled={!canSubmitPassword}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 text-xs font-bold text-white shadow-sm shadow-orange-600/25 transition-all hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className={`inline-flex w-full items-center justify-center gap-2 rounded-xl ${adminAction} px-4 py-3 text-xs font-bold shadow-sm shadow-orange-600/25 transition-all disabled:cursor-not-allowed disabled:opacity-50`}
             >
               {savingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
               {savingPassword ? "Menyimpan..." : "Perbarui Kata Sandi"}
@@ -328,7 +329,7 @@ export default function SecuritySettings() {
               </div>
             </div>
 
-            <form onSubmit={handleResetSubmit} className="mt-5 space-y-4">
+            <form method="post" onSubmit={handleResetSubmit} className="mt-5 space-y-4">
               <div className="space-y-1.5">
                 <label
                   htmlFor="reset-email"

@@ -18,6 +18,7 @@ import {
   FileCheck,
   Briefcase,
   Layers,
+  Download,
 } from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import GradientText from "@/components/ui/GradientText";
@@ -28,6 +29,8 @@ import { useCitsStore } from "@/stores/citsStore";
 import { useCompanyContent } from "@/components/pages/public/CompanyBrand";
 import { pageCollection } from "@/lib/publicPageContent";
 import AboutTeamSection from "@/components/pages/about/AboutTeamSection";
+
+const contentResources = ["about"] as const;
 
 interface ValueItem {
   letter: string;
@@ -65,7 +68,7 @@ export default function AboutPage() {
   const milestones = pageCollection<MilestoneItem>(content, "milestones");
   const awards = pageCollection<AwardItem>(content, "awards");
   const governancePillars = pageCollection<GovernancePillar>(content, "governancePillars");
-  const { aboutData } = useCitsStore();
+  const { aboutData } = useCitsStore(contentResources);
   const [awardFilter, setAwardFilter] = useState<"all" | "kementerian" | "bumn" | "egov">("all");
 
   const filteredAwards = awardFilter === "all" ? awards : awards.filter((item) => item.category === awardFilter);
@@ -106,7 +109,7 @@ export default function AboutPage() {
             {/* Right Column: Symmetrical Credential Box */}
             <div className="lg:col-span-5">
               <ScrollReveal direction="right">
-                <SpotlightCard className="shadow-lg shadow-orange-600/5">
+                <SpotlightCard className="shadow-lg shadow-orange-600/5" disableSpotlight>
                   <div className="p-7 md:p-8 flex flex-col justify-between h-full space-y-6">
                     <div className="flex flex-wrap items-start justify-between gap-4 pb-5 border-b border-slate-200 dark:border-white/10">
                       <div className="min-w-0 flex-1">
@@ -166,7 +169,7 @@ export default function AboutPage() {
                     <div className="pt-2 space-y-2.5">
                       <Link
                         href={content.texts["about_hero_href_11"]}
-                        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-md shadow-[#F4511E]/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-action hover:bg-action-hover text-on-action font-semibold rounded-xl transition-colors shadow-md shadow-orange-700/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                       >
                         <span>{content.texts["about_hero_text_12"]}</span>
                         <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -181,6 +184,14 @@ export default function AboutPage() {
                           aria-hidden="true"
                         />
                         <span>{content.texts["about_hero_text_14"]}</span>
+                      </a>
+                      <a
+                        href="/api/company-profile"
+                        download="profil-perusahaan-cits.pdf"
+                        className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-orange-200 px-4 py-2.5 text-center text-sm font-semibold text-orange-800 transition hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-700 dark:border-orange-400/40 dark:text-orange-300 dark:hover:bg-orange-400/10"
+                      >
+                        <Download className="size-4 shrink-0" aria-hidden="true" />
+                        Unduh Profil Perusahaan (PDF)
                       </a>
                     </div>
                   </div>
@@ -215,7 +226,7 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-12 gap-8 items-stretch">
             {/* Visi Card (Span 5 - Symmetrical Height) */}
             <ScrollReveal className="lg:col-span-5 h-full">
-              <div className="h-full relative p-8 md:p-10 rounded-2xl bg-gradient-to-br from-orange-600 via-orange-700 to-orange-800 text-white shadow-xl shadow-orange-600/15 overflow-hidden flex flex-col justify-between">
+              <div className="h-full relative p-8 md:p-10 rounded-2xl bg-action text-white shadow-xl shadow-orange-600/15 overflow-hidden flex flex-col justify-between">
                 <div className="relative z-10">
                   <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center mb-6 shadow-md">
                     <Target className="w-7 h-7 text-white" aria-hidden="true" />
@@ -503,7 +514,7 @@ export default function AboutPage() {
                     onClick={() => setAwardFilter(tab.key as typeof awardFilter)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${
                       isActive
-                        ? "bg-orange-700 text-white shadow-sm shadow-orange-600/30"
+                        ? "bg-action text-on-action shadow-sm shadow-orange-600/30"
                         : "bg-white dark:bg-white/10 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/15 border border-slate-200 dark:border-white/10"
                     }`}
                   >
@@ -645,7 +656,7 @@ export default function AboutPage() {
               <div className="mt-8 flex flex-wrap justify-center gap-3.5">
                 <Link
                   href={content.texts["about_cta_href_4"]}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-md shadow-[#F4511E]/20 hover:shadow-lg hover:shadow-[#F4511E]/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-action hover:bg-action-hover text-on-action font-semibold rounded-xl transition-colors shadow-md shadow-orange-700/20 hover:shadow-lg hover:shadow-orange-700/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                 >
                   <span>{content.texts["about_cta_text_5"]}</span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />

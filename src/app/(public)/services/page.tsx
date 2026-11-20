@@ -151,8 +151,10 @@ const engagementModels: EngagementModel[] = [
   },
 ];
 
+const serviceContentResources = ["services", "portfolio"] as const;
+
 export default function ServicesPage() {
-  const { services: storeServices, caseStudies = [] } = useCitsStore();
+  const { services: storeServices, caseStudies = [] } = useCitsStore(serviceContentResources);
 
   const displayServices = resolveServiceCatalog(storeServices);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
@@ -163,7 +165,7 @@ export default function ServicesPage() {
       ? selectedSection
       : displayServices[0]?.id;
   const navigationItems = [
-    ...displayServices.map((item) => ({ id: item.id, label: item.category })),
+    ...displayServices.map((item) => ({ id: item.id, label: item.title })),
     { id: "alur-kerja", label: "Alur Metodologi" },
     { id: "skema-kerjasama", label: "Skema Pengadaan PBJ" },
   ];
@@ -211,7 +213,7 @@ export default function ServicesPage() {
                       aria-current={isActive ? "location" : undefined}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${
                         isActive
-                          ? "bg-[#F4511E] text-white shadow-md shadow-[#F4511E]/25 scale-105"
+                          ? "bg-action text-on-action shadow-md shadow-orange-700/25 scale-105"
                           : "bg-white dark:bg-[#16162c] text-gray-800 dark:text-white border border-gray-200 dark:border-white/15 hover:border-orange-500/40 hover:text-orange-700 dark:hover:text-orange-400"
                       }`}
                     >
@@ -355,7 +357,7 @@ export default function ServicesPage() {
                     <div className="pt-2 flex flex-wrap gap-3">
                       <Link
                         href={consultationHref({ service: service.title, source: "services" })}
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-md shadow-[#F4511E]/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-action hover:bg-action-hover text-on-action font-semibold rounded-xl transition-colors shadow-md shadow-orange-700/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                       >
                         <span>Konsultasikan Kebutuhan Ini</span>
                         <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -415,7 +417,7 @@ export default function ServicesPage() {
                       {/* Service SLA Chip */}
                       {service.slaNote && (
                         <div className="p-3.5 rounded-xl bg-orange-50/80 dark:bg-orange-500/10 border border-orange-200/80 dark:border-orange-500/30 flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-orange-600/20">
+                          <div className="w-9 h-9 rounded-lg bg-action text-white flex items-center justify-center shrink-0 shadow-sm shadow-orange-600/20">
                             <ShieldCheck className="w-4 h-4 text-white" aria-hidden="true" />
                           </div>
                           <div className="min-w-0">
@@ -471,7 +473,7 @@ export default function ServicesPage() {
                     <article className="p-6 h-full flex flex-col justify-between">
                       <div className="w-full">
                         <div className="flex items-center justify-between mb-4">
-                          <span className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white font-extrabold text-lg flex items-center justify-center shadow-md shadow-orange-600/25 shrink-0">
+                          <span className="w-12 h-12 rounded-xl bg-action text-white font-extrabold text-lg flex items-center justify-center shadow-md shadow-orange-600/25 shrink-0">
                             {p.step}
                           </span>
                         </div>
@@ -538,7 +540,7 @@ export default function ServicesPage() {
                 <ScrollReveal key={item.title} delay={idx * 0.08} className="h-full">
                   <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-slate-200 dark:border-white/10 hover:border-orange-500/40 transition-all shadow-xs h-full flex flex-col justify-between">
                     <div>
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center mb-4 shadow-md shadow-orange-600/25 shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-action text-white flex items-center justify-center mb-4 shadow-md shadow-orange-600/25 shrink-0">
                         <Icon className="w-6 h-6 text-white" aria-hidden="true" />
                       </div>
                       <h3 className="font-bold text-slate-900 dark:text-white text-base min-h-[44px] flex items-center">
@@ -594,7 +596,7 @@ export default function ServicesPage() {
                       <div>
                         {/* Header badge & icon */}
                         <div className="flex items-center justify-between mb-4">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-md shadow-orange-600/25 shrink-0">
+                          <div className="w-12 h-12 rounded-xl bg-action text-white flex items-center justify-center shadow-md shadow-orange-600/25 shrink-0">
                             <IconModel className="w-6 h-6 text-white" aria-hidden="true" />
                           </div>
                         </div>
@@ -641,7 +643,7 @@ export default function ServicesPage() {
                       <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10">
                         <Link
                           href={consultationHref({ service: model.title, source: "services" })}
-                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-semibold text-xs transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-action hover:bg-action-hover text-on-action font-semibold text-xs transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                         >
                           <span>Diskusikan Skema Ini</span>
                           <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -678,7 +680,7 @@ export default function ServicesPage() {
               <div className="mt-8 flex flex-wrap justify-center gap-3.5">
                 <Link
                   href={consultationHref({ source: "services" })}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-md shadow-[#F4511E]/20 hover:shadow-lg hover:shadow-[#F4511E]/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-action hover:bg-action-hover text-on-action font-semibold rounded-xl transition-colors shadow-md shadow-orange-700/20 hover:shadow-lg hover:shadow-orange-700/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                 >
                   <span>Ajukan Diskusi Kebutuhan</span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />

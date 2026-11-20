@@ -1,17 +1,12 @@
 import { readJsonBody } from "@/lib/http";
 import { NextResponse } from "next/server";
 import { errorResponse, requireAdmin, unauthorizedResponse, verifyAdminToken } from "@/lib/apiAuth";
-import { siteConfig } from "@/config/siteConfig";
 import { authenticateInternalAccount, updateInternalAccountPassword } from "@/lib/internalAccountsServer";
-import { setAdminCredential, verifyAdminCredential } from "@/lib/passwordServer";
+import { matchesBootstrapAdminPassword, setAdminCredential, verifyAdminCredential } from "@/lib/passwordServer";
 import { validateNewPassword } from "@/lib/password";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function isDefaultSuperadminPassword(password: string): boolean {
-  return password === siteConfig.admin.defaultPassword || password === "admin" || password === "admin123";
-}
 
 export async function PUT(request: Request) {
   const denied = await requireAdmin(request);
@@ -60,7 +55,7 @@ export async function PUT(request: Request) {
     }
 
     const credential = await verifyAdminCredential("admin-1", currentPassword);
-    const defaultPasswordOk = credential === null && isDefaultSuperadminPassword(currentPassword);
+    const defaultPasswordOk = credential === null && matchesBootstrapAdminPassword(currentPassword);
     if (credential !== true && !defaultPasswordOk) {
       return NextResponse.json({ success: false, message: "Kata sandi saat ini salah." }, { status: 400 });
     }

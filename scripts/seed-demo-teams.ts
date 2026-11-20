@@ -33,7 +33,7 @@ async function main() {
       await writeFile(backup, JSON.stringify(existing, null, 2), { flag: "wx" });
       for (const { id, ...data } of demoTeamMembers) {
         await transaction`
-          INSERT INTO team_members (id, data) VALUES (${id}, ${JSON.stringify(data)}::jsonb)
+          INSERT INTO team_members (id, data) VALUES (${id}, ${transaction.json(data as never)})
           ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()
         `;
       }

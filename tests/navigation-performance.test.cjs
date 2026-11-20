@@ -111,7 +111,6 @@ test("ready content appears while another API is still pending", async () => {
 test("header, sidebar and page share seven requests and one content notification during navigation", async () => {
   const state = app();
   const pending = [state.syncContentFromBackend(), state.syncContentFromBackend(), state.syncContentFromBackend()];
-  assert.equal(pending[0], pending[1]);
   state.finish();
   await Promise.all(pending);
   assert.equal(Object.keys(state.calls).length, 7);
@@ -122,6 +121,18 @@ test("header, sidebar and page share seven requests and one content notification
   await state.syncContentFromBackend(true);
   assert.ok(Object.values(state.calls).every((count) => count === 2));
   assert.equal(state.events.length, 1, "unchanged snapshots must not rerender every store consumer");
+});
+
+test("public pages only request their content and share overlapping reads", async () => {
+  const state = app();
+  const footer = state.syncContentFromBackend(false, ["about", "contactInfo"]);
+  const about = state.syncContentFromBackend(false, ["about"]);
+  state.finish();
+  await Promise.all([footer, about]);
+  assert.deepEqual(state.calls, { getAboutData: 1, getContactInfo: 1 });
+
+  await state.syncContentFromBackend(false, ["services", "portfolio"]);
+  assert.deepEqual(state.calls, { getAboutData: 1, getContactInfo: 1, getServices: 1, getPortfolio: 1 });
 });
 
 test("a delayed background read cannot overwrite a completed admin save", async () => {
@@ -187,7 +198,7 @@ test("navigation feedback follows the real Link pending state without a fullscre
     "react/jsx-runtime": require("react/jsx-runtime"),
     "next/link": { useLinkStatus: () => ({ pending }) },
   }).default;
-  assert.doesNotMatch(renderToStaticMarkup(React.createElement(Indicator)), /Memuat|role="status"/);
+  assert.equal(renderToStaticMarkup(React.createElement(Indicator)), "");
   pending = true;
   const html = renderToStaticMarkup(React.createElement(Indicator));
   assert.match(html, /role="status"/);

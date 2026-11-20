@@ -1,6 +1,7 @@
 "use client";
-import Input from "@/components/ui/Input";
-import Button from "@/components/ui/Button";
+import { adminAccent, adminAction } from "@/components/pages/admin/accentStyles";
+import { BackOfficeInput as Input } from "@/components/ui/Input";
+import { BackOfficeButton as Button } from "@/components/ui/Button";
 import FieldLabel from "@/components/ui/FieldLabel";
 import FormFeedback from "@/components/ui/FormFeedback";
 
@@ -90,7 +91,7 @@ export default function ServiceManagementEditor({ editor }: { editor: ServiceMan
                       }}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${
                         categoryFilter === cat
-                          ? "bg-orange-600 text-white shadow-xs"
+                          ? `${adminAccent} shadow-xs`
                           : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
                       }`}
                     >
@@ -140,7 +141,7 @@ export default function ServiceManagementEditor({ editor }: { editor: ServiceMan
             <button
               disabled={!canCreate || categorySaving}
               onClick={openAddModal}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25 transition-all shrink-0"
+              className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl ${adminAction} text-xs font-bold shadow-md shadow-orange-600/25 transition-all shrink-0`}
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Layanan Baru</span>

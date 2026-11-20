@@ -1,31 +1,38 @@
-import { readJsonBody } from "@/lib/http";
+import { badRequest, readJsonBody } from "@/lib/http";
 import { NextResponse } from "next/server";
 import { siteConfig } from "@/config/siteConfig";
-import { errorResponse, requireSuperadmin } from "@/lib/apiAuth";
-import { bulkSetPageAccess, createInternalAccount, listInternalAccounts } from "@/lib/internalAccountsServer";
+import { errorResponse, requireSuperadmin, unauthorizedResponse, verifyAdminToken } from "@/lib/apiAuth";
+import {
+  bulkSetPageAccess,
+  createInternalAccount,
+  deleteInternalAccounts,
+  listInternalAccounts,
+} from "@/lib/internalAccountsServer";
 import { getAdminProfile } from "@/lib/profileServer";
 import { normalizePermissions, type PageKey } from "@/lib/internalAccess";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-async function superadminInfo() {
-  const profile = await getAdminProfile("admin-1", { displayName: "maswahyuganteng" });
-  return {
-    id: "admin-1",
-    name: profile.displayName || "maswahyuganteng",
-    email: siteConfig.admin.defaultEmail,
-    role: "Super Admin",
-  };
-}
-
 export async function GET(request: Request) {
   const denied = requireSuperadmin(request);
   if (denied) return denied;
+  const session = verifyAdminToken(request);
+  if (!session) return unauthorizedResponse();
 
   try {
     const accounts = await listInternalAccounts();
-    return NextResponse.json({ success: true, data: accounts, superadmin: await superadminInfo() });
+    const profile = await getAdminProfile(session.sub, { displayName: session.name });
+    return NextResponse.json({
+      success: true,
+      data: accounts,
+      superadmin: {
+        id: session.sub,
+        name: profile.displayName || session.name,
+        email: siteConfig.admin.defaultEmail,
+        role: "Super Admin",
+      },
+    });
   } catch (error) {
     return errorResponse(error, "Gagal memuat akun internal.");
   }
@@ -86,5 +93,23 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ success: true, data: accounts });
   } catch (error) {
     return errorResponse(error, "Gagal menyimpan matriks hak akses.");
+  }
+}
+
+export async function DELETE(request: Request) {
+  const denied = requireSuperadmin(request);
+  if (denied) return denied;
+
+  try {
+    const parsed = await readJsonBody<{ ids?: unknown }>(request);
+    if (!parsed.ok) return parsed.response;
+    const { ids } = parsed.body;
+    if (!Array.isArray(ids) || !ids.length || !ids.every((id): id is string => typeof id === "string" && !!id.trim())) {
+      return badRequest("Pilih setidaknya satu akun internal yang valid untuk dihapus.");
+    }
+    const result = await deleteInternalAccounts(ids);
+    return NextResponse.json(result, { status: result.success ? 200 : 400 });
+  } catch (error) {
+    return errorResponse(error, "Gagal menghapus akun internal terpilih.");
   }
 }

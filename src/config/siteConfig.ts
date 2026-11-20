@@ -6,7 +6,6 @@ export const siteConfig = {
   admin: {
     defaultEmail: "maswahyuganteng@cits.id",
     defaultUsername: "maswahyuganteng",
-    defaultPassword: "admin",
     sessionKey: "cits_admin_session",
   },
   storageKeys: {

@@ -7,8 +7,10 @@ import { initialContactInfo } from "@/data/initialData";
 import { CompanyLogo } from "@/components/pages/public/CompanyBrand";
 import { contactPresentation } from "@/lib/contactPresentation";
 
+const contentResources = ["contactInfo", "about"] as const;
+
 export default function Footer() {
-  const { contactInfo: storeContact, aboutData } = useCitsStore();
+  const { contactInfo: storeContact, aboutData } = useCitsStore(contentResources);
   const contact = storeContact || initialContactInfo;
 
   const { whatsappUrl, mapUrl } = contactPresentation(contact);

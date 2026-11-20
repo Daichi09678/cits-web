@@ -83,7 +83,7 @@ export default function HomeServiceCard({ service, wide = false }: { service: Se
           </Link>
           <Link
             href={consultationHref({ service: service.title, source: "home" })}
-            className="inline-flex items-center gap-2 rounded-xl bg-orange-700 hover:bg-orange-800 px-4 py-2.5 text-sm font-semibold text-white"
+            className="inline-flex items-center gap-2 rounded-xl bg-action hover:bg-action-hover px-4 py-2.5 text-sm font-semibold text-on-action"
           >
             Konsultasi Layanan <ArrowRight className="w-4 h-4 shrink-0" aria-hidden="true" />
           </Link>

@@ -13,6 +13,10 @@ export interface TeamMember {
 
 export type TeamMemberInput = Omit<TeamMember, "id">;
 
+export function isPublicTeamMember(member: TeamMember): boolean {
+  return member.isActive !== false && member.showOnHomepage !== false && member.isDemo !== true;
+}
+
 export function parseTeamMember(value: unknown): { ok: true; value: TeamMemberInput } | { ok: false; message: string } {
   if (!value || typeof value !== "object" || Array.isArray(value))
     return { ok: false, message: "Data anggota tim tidak valid." };

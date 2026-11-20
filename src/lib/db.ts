@@ -727,17 +727,15 @@ export const DbRepo = {
             workingHours: r.working_hours,
             mapsUrl: r.maps_url || undefined,
             emergencyPhone: r.emergency_phone || undefined,
-            faqs: Array.isArray(faqs) && faqs.length > 0 ? faqs : initialContactInfo.faqs,
-            customServices:
-              Array.isArray(customServices) && customServices.length > 0
-                ? customServices
-                : initialContactInfo.customServices,
+            faqs: Array.isArray(faqs) ? faqs : initialContactInfo.faqs,
+            customServices: Array.isArray(customServices) ? customServices : initialContactInfo.customServices,
             announcement:
               announcement && typeof announcement === "object" ? announcement : initialContactInfo.announcement,
           };
         }
       } catch (e) {
         console.error("DB Error getContactInfo:", e);
+        throw e;
       }
     }
     return memoryDb.contactInfo;
@@ -745,6 +743,7 @@ export const DbRepo = {
 
   async updateContactInfo(info: ContactInfo): Promise<ContactInfo> {
     const sql = getSql();
+    if (!sql) throw new Error("Database belum dikonfigurasi. Informasi kontak belum dapat disimpan.");
     if (sql) {
       await ensureDbReady();
       try {
@@ -772,6 +771,7 @@ export const DbRepo = {
         `;
       } catch (e) {
         console.error("DB Error updateContactInfo:", e);
+        throw e;
       }
     }
     memoryDb.contactInfo = { ...info };
@@ -996,6 +996,7 @@ export const DbRepo = {
         }
       } catch (e) {
         console.error("DB Error getLandingData:", e);
+        throw e;
       }
     }
     return memoryDb.landingData;
@@ -1007,6 +1008,7 @@ export const DbRepo = {
       updatedAt: new Date().toISOString(),
     };
     const sql = getSql();
+    if (!sql) throw new Error("Database belum dikonfigurasi. Isi beranda belum dapat disimpan.");
     if (sql) {
       await ensureDbReady();
       try {
@@ -1037,6 +1039,7 @@ export const DbRepo = {
         `;
       } catch (e) {
         console.error("DB Error updateLandingData:", e);
+        throw e;
       }
     }
     memoryDb.landingData = updated;

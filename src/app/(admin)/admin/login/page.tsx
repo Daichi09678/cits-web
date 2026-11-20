@@ -1,6 +1,7 @@
 "use client";
+import { adminAction } from "@/components/pages/admin/accentStyles";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -21,16 +22,16 @@ import { useAdminAuth } from "@/lib/auth";
 import ThemeToggle from "@/components/pages/public/ThemeToggle";
 import GridPattern from "@/components/ui/GridPattern";
 import AdminModal from "@/components/pages/admin/AdminModal";
-import Badge from "@/components/ui/Badge";
+import { BackOfficeBadge as Badge } from "@/components/ui/Badge";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const { login } = useAdminAuth();
+  const { login, loading: checkingSession } = useAdminAuth();
+  const forgotEmailField = useRef<HTMLInputElement>(null);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [forgotOpen, setForgotOpen] = useState(false);
@@ -41,6 +42,7 @@ export default function AdminLoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading || checkingSession) return;
     setError("");
     setLoading(true);
 
@@ -67,6 +69,7 @@ export default function AdminLoginPage() {
 
   async function handleForgotSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (forgotLoading) return;
     setForgotError("");
     setForgotLoading(true);
 
@@ -77,7 +80,7 @@ export default function AdminLoginPage() {
         body: JSON.stringify({ email: forgotEmail.trim() }),
       });
       const payload = (await response.json().catch(() => ({}))) as { success?: boolean; message?: string };
-      if (!response.ok || payload.success === false) {
+      if (!response.ok || payload.success !== true) {
         throw new Error(payload.message || "Permintaan reset kata sandi gagal diproses.");
       }
       setForgotSent(true);
@@ -91,7 +94,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 bg-slate-50 dark:bg-[#0c0c16] text-slate-900 dark:text-white transition-colors overflow-hidden">
+    <main className="relative min-h-screen flex items-center justify-center p-4 sm:p-6 bg-slate-50 dark:bg-[#0c0c16] text-slate-900 dark:text-white transition-colors overflow-hidden">
       {/* Background Decorative Patterns */}
       <GridPattern className="opacity-60 dark:opacity-40" />
 
@@ -108,7 +111,7 @@ export default function AdminLoginPage() {
 
       {/* Main Login Card */}
       <div className="relative w-full max-w-md z-10 my-16">
-        <div className="p-7 sm:p-9 rounded-3xl bg-white/95 dark:bg-[#16162d]/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-2xl shadow-slate-900/10 dark:shadow-black/50 space-y-6">
+        <div className="p-5 sm:p-9 rounded-3xl bg-white/95 dark:bg-[#16162d]/95 backdrop-blur-xl border border-slate-200 dark:border-white/10 shadow-2xl shadow-slate-900/10 dark:shadow-black/50 space-y-6">
           {/* Header Brand & Badge */}
           <div className="text-center space-y-3">
             <div className="flex justify-center">
@@ -134,8 +137,8 @@ export default function AdminLoginPage() {
               />
             </div>
 
-            <Badge tone="accent" size="md" className="uppercase tracking-wide shadow-2xs">
-              <ShieldCheck className="w-3.5 h-3.5 text-orange-700 dark:text-orange-400" />
+            <Badge tone="accent" size="md" className="max-w-full whitespace-normal! uppercase tracking-wide">
+              <ShieldCheck aria-hidden="true" className="size-3.5 shrink-0 text-orange-700 dark:text-orange-400" />
               <span>Back Office • Sistem Kontrol CMS</span>
             </Badge>
 
@@ -151,7 +154,8 @@ export default function AdminLoginPage() {
           {error && (
             <div
               role="alert"
-              className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/60 flex items-start gap-2.5 text-xs text-rose-800 dark:text-rose-200 shadow-2xs animate-shake"
+              id="admin-login-error"
+              className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/60 flex items-start gap-2.5 text-xs text-rose-800 dark:text-rose-200 shadow-2xs motion-safe:animate-shake"
             >
               <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
               <div className="leading-relaxed">{error}</div>
@@ -159,13 +163,21 @@ export default function AdminLoginPage() {
           )}
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            method="post"
+            onSubmit={handleSubmit}
+            aria-describedby={error ? "admin-login-error" : undefined}
+            className="space-y-4"
+          >
             <div>
               <label
                 htmlFor="admin-email-input"
                 className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1.5"
               >
-                Email Akun <span className="text-red-500">*</span>
+                Email Akun{" "}
+                <span aria-hidden="true" className="text-rose-700 dark:text-rose-300">
+                  *
+                </span>
               </label>
               <div className="relative">
                 <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400 pointer-events-none">
@@ -176,28 +188,30 @@ export default function AdminLoginPage() {
                   name="email"
                   type="email"
                   autoComplete="username"
-                  autoFocus
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="maswahyuganteng@cits.id"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/15 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all font-mono"
+                  placeholder="nama@cits.id"
+                  className="min-h-11 w-full rounded-xl border border-control-border bg-slate-50 py-2.5 pl-10 pr-4 font-mono text-sm text-slate-900 placeholder:text-slate-600 focus:border-orange-800 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-300 dark:focus:border-orange-400"
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="mb-1.5 flex flex-wrap items-center justify-between gap-x-2">
                 <label
                   htmlFor="admin-password-input"
                   className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider"
                 >
-                  Kata Sandi <span className="text-red-500">*</span>
+                  Kata Sandi{" "}
+                  <span aria-hidden="true" className="text-rose-700 dark:text-rose-300">
+                    *
+                  </span>
                 </label>
                 <button
                   type="button"
                   onClick={openForgotPassword}
-                  className="text-[10px] font-bold text-orange-600 transition-colors hover:text-orange-700 hover:underline dark:text-orange-400 dark:hover:text-orange-300"
+                  className="min-h-6 cursor-pointer text-xs font-semibold text-orange-800 underline underline-offset-2 hover:text-orange-950 dark:text-orange-300 dark:hover:text-orange-200"
                 >
                   Lupa kata sandi?
                 </button>
@@ -215,38 +229,30 @@ export default function AdminLoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/15 text-xs text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition-all font-mono"
+                  className="min-h-11 w-full rounded-xl border border-control-border bg-slate-50 py-2.5 pl-10 pr-12 font-mono text-sm text-slate-900 placeholder:text-slate-600 focus:border-orange-800 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-300 dark:focus:border-orange-400"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer p-1"
+                  aria-controls="admin-password-input"
+                  className="absolute right-1.5 top-1/2 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? (
+                    <EyeOff aria-hidden="true" className="size-4" />
+                  ) : (
+                    <Eye aria-hidden="true" className="size-4" />
+                  )}
                 </button>
               </div>
-            </div>
-
-            {/* Remember Me Checkbox */}
-            <div className="flex items-center text-xs pt-1">
-              <label className="flex items-center gap-2 text-slate-700 dark:text-slate-300 select-none cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-300 dark:border-white/20 text-orange-600 focus:ring-orange-500 accent-orange-600 cursor-pointer"
-                />
-                <span>Ingat sesi di peramban ini</span>
-              </label>
             </div>
 
             {/* Submit Button */}
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full py-3.5 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 active:scale-[0.99] text-white font-bold text-xs rounded-xl hover:shadow-lg hover:shadow-orange-600/30 transition-all flex items-center justify-center gap-2 group cursor-pointer shadow-md shadow-orange-600/20 disabled:opacity-60"
+                disabled={loading || checkingSession}
+                className={`w-full py-3.5 ${adminAction} font-bold text-sm rounded-xl transition-colors flex items-center justify-center gap-2 group cursor-pointer shadow-md shadow-orange-600/20 disabled:cursor-not-allowed disabled:opacity-60`}
               >
                 {loading ? (
                   <>
@@ -269,7 +275,7 @@ export default function AdminLoginPage() {
               <Building2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
               <span>PT Cipta Integrasi Teknologi Solusi • CITS Indonesia</span>
             </div>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500">
+            <p className="text-xs text-slate-600 dark:text-slate-300">
               Sistem Terproteksi IDDS & SPBE. Akses terbatas hanya untuk staf berwenang.
             </p>
           </div>
@@ -286,6 +292,7 @@ export default function AdminLoginPage() {
         description="Masukkan email akun back office Anda. Kami akan mengirim tautan untuk membuat kata sandi baru."
         icon={KeyRound}
         size="md"
+        initialFocusRef={forgotEmailField}
       >
         {forgotSent ? (
           <div className="space-y-4 text-center">
@@ -302,13 +309,13 @@ export default function AdminLoginPage() {
             <button
               type="button"
               onClick={() => setForgotOpen(false)}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-orange-700"
+              className={`inline-flex w-full items-center justify-center gap-2 rounded-xl ${adminAction} px-4 py-2.5 text-xs font-bold transition-colors`}
             >
               Kembali ke Login
             </button>
           </div>
         ) : (
-          <form onSubmit={handleForgotSubmit} className="space-y-4">
+          <form method="post" onSubmit={handleForgotSubmit} className="space-y-4">
             <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400">
               Masukkan alamat email asli yang terdaftar pada akun internal atau Superadmin.
             </p>
@@ -333,6 +340,7 @@ export default function AdminLoginPage() {
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                 <input
+                  ref={forgotEmailField}
                   id="forgot-email"
                   type="email"
                   value={forgotEmail}
@@ -340,7 +348,7 @@ export default function AdminLoginPage() {
                   placeholder="nama@cits.id"
                   autoComplete="email"
                   required
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-xs text-slate-900 shadow-sm outline-none transition-all placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
+                  className="min-h-11 w-full rounded-xl border border-control-border bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-600 focus:border-orange-800 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-300 dark:focus:border-orange-400"
                 />
               </div>
             </div>
@@ -348,18 +356,18 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={forgotLoading || forgotEmail.trim().length === 0}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-3 text-xs font-bold text-white shadow-sm shadow-orange-600/25 transition-colors hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className={`inline-flex w-full items-center justify-center gap-2 rounded-xl ${adminAction} px-4 py-3 text-xs font-bold shadow-sm shadow-orange-600/25 transition-colors disabled:cursor-not-allowed disabled:opacity-50`}
             >
               {forgotLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               {forgotLoading ? "Mengirim tautan..." : "Kirim Tautan Reset"}
             </button>
 
-            <p className="text-center text-[10px] leading-relaxed text-slate-400 dark:text-slate-500">
+            <p className="text-center text-xs leading-relaxed text-slate-600 dark:text-slate-300">
               Demi keamanan, kami tidak menampilkan apakah email tersebut terdaftar atau tidak.
             </p>
           </form>
         )}
       </AdminModal>
-    </div>
+    </main>
   );
 }

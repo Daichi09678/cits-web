@@ -1,5 +1,5 @@
 "use client";
-import Button from "@/components/ui/Button";
+import { BackOfficeButton as Button } from "@/components/ui/Button";
 import FormFeedback from "@/components/ui/FormFeedback";
 
 import { useRef, useState, type FormEvent, type ReactNode } from "react";
@@ -41,7 +41,7 @@ export default function PortfolioEditor({
 }) {
   const { session } = useAdminAuth();
   const canEdit = canPerformAction(session?.user, "portfolio", "edit");
-  const { content, loading, loadError, save } = usePublicPageContent("portfolio");
+  const { content, loading, loadError, save, retryLoad } = usePublicPageContent("portfolio");
   const [selected, setSelected] = useState(portfolioEditorSections[0].key);
   const [draft, setDraft] = useState<PublicPageContent | null>(null);
   const [flagshipChanges, setFlagshipChanges] = useState<Record<string, boolean>>({});
@@ -104,8 +104,8 @@ export default function PortfolioEditor({
           <h2 id="portfolio-sections-title" className="text-sm font-semibold text-slate-900 dark:text-white">
             Bagian Konten
           </h2>
-          <span className="rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-500 dark:bg-white/5 dark:text-slate-300">
-            7 section
+          <span className="rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-700 dark:bg-white/5 dark:text-slate-300">
+            {portfolioEditorSections.length} bagian
           </span>
         </div>
         <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
@@ -164,6 +164,7 @@ export default function PortfolioEditor({
         ref={panelRef}
         id="portfolio-section-panel"
         role="region"
+        tabIndex={-1}
         aria-labelledby="portfolio-section-title"
         className={`${cardClass} scroll-mt-24`}
       >
@@ -194,15 +195,26 @@ export default function PortfolioEditor({
         ) : (
           <form onSubmit={submit} aria-labelledby="portfolio-section-title" className="min-w-0 p-5 sm:p-6">
             {loading && (
-              <FormFeedback tone="success" className="mb-4">
-                <LoaderCircle className="size-4 animate-spin" />
+              <FormFeedback tone="info" className="mb-4 flex items-center gap-2">
+                <LoaderCircle aria-hidden="true" className="size-4 shrink-0 animate-spin motion-reduce:animate-none" />
                 Memuat konten Portofolio...
               </FormFeedback>
             )}
             {loadError && (
-              <FormFeedback tone="error" className="mb-4">
-                {loadError}
-              </FormFeedback>
+              <div className="mb-4 space-y-2">
+                <FormFeedback>{loadError} Coba muat lagi untuk melanjutkan pengeditan.</FormFeedback>
+                <Button
+                  variant="secondary"
+                  aria-disabled={loading || undefined}
+                  onClick={async (event) => {
+                    const trigger = event.currentTarget;
+                    if (!loading && (await retryLoad()) && document.activeElement === trigger)
+                      panelRef.current?.focus();
+                  }}
+                >
+                  Muat ulang konten
+                </Button>
+              </div>
             )}
             <fieldset disabled={disabled} className="min-w-0 disabled:opacity-60">
               <PortfolioSectionFields sectionKey={selected} data={data} onChange={change} />
@@ -269,7 +281,7 @@ export default function PortfolioEditor({
                 </FormFeedback>
               )}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-xs leading-relaxed text-slate-500">
+                <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
                   {dirty ? "Perubahan konten belum disimpan." : "Sesuai konten tersimpan."}
                 </p>
                 <div className="flex flex-wrap justify-end gap-3">
