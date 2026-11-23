@@ -1,0 +1,8 @@
+.field:focus {
+  outline: 2px solid #6b7280;
+  outline-offset: -1px;
+}
+
+:global(.dark) .field:focus {
+  outline-color: #9ca3af;
+}

@@ -257,7 +257,7 @@ export default function ServiceDetailsFields({
             onClick={() =>
               onChange({ ...value, deliverables: [...value.deliverables, { label: "", description: "" }] })
             }
-            className="rounded-lg border border-orange-300 dark:border-orange-800 px-3 py-2 text-xs font-bold text-orange-800 dark:text-orange-300"
+            className="rounded-lg border border-orange-300 dark:border-orange-800 px-3 py-2 text-xs font-bold text-accent dark:text-orange-300"
           >
             Tambah Hasil Layanan
           </button>

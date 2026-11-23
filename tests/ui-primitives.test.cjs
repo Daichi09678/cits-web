@@ -81,7 +81,7 @@ test("busy buttons announce progress, disable repeat submission and preserve the
 
 test("Back Office actions and active badges use the local orange palette with high-contrast styles", () => {
   const button = html(React.createElement(BackOfficeButton, null, "Simpan"));
-  assert.match(button, /bg-\[#F54A00\] text-white contrast-more:bg-orange-800/);
+  assert.match(button, /bg-accent text-white contrast-more:bg-orange-800/);
   const badge = html(React.createElement(BackOfficeBadge, { variant: "inverse" }, "5 Aktif"));
   assert.match(badge, /bg-white\/20 text-white contrast-more:bg-white contrast-more:text-orange-950/);
 });

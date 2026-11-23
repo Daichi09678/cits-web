@@ -49,7 +49,7 @@ export default function ServiceCaseStudyPicker({
         <button
           type="button"
           onClick={() => onChange(value.filter((id) => available.has(id)))}
-          className="min-h-10 text-xs font-semibold text-orange-700 dark:text-orange-300"
+          className="min-h-10 text-xs font-semibold text-accent dark:text-orange-300"
         >
           Bersihkan {stale.length} referensi yang dihapus/nonaktif
         </button>

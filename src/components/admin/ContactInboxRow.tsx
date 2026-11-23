@@ -93,7 +93,7 @@ export default function ContactInboxRow({
                 {message.name}
               </h2>
               {message.company && (
-                <span className="max-w-full rounded-md bg-[#FFF1E8] px-2.5 py-0.5 text-[11px] font-medium leading-4 break-words text-orange-800 dark:bg-orange-500/10 dark:text-orange-300">
+                <span className="max-w-full rounded-md bg-[#FFF1E8] px-2.5 py-0.5 text-[11px] font-medium leading-4 break-words text-accent dark:bg-orange-500/10 dark:text-orange-300">
                   {message.company}
                 </span>
               )}

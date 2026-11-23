@@ -126,7 +126,7 @@ export default function PortfolioEditor({
                     panelRef.current?.scrollIntoView({ block: "start", behavior: "instant" })
                   );
               }}
-              className={`flex min-h-12 w-full min-w-0 items-center gap-3 rounded-lg border px-3 py-3 text-left text-xs font-semibold leading-relaxed transition focus-visible:outline-2 focus-visible:outline-orange-500 disabled:opacity-50 ${selected === item.key ? "border-orange-300 bg-orange-50/70 text-orange-800 dark:border-orange-500/40 dark:bg-orange-500/10 dark:text-orange-200" : "border-slate-200/80 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5"}`}
+              className={`flex min-h-12 w-full min-w-0 items-center gap-3 rounded-lg border px-3 py-3 text-left text-xs font-semibold leading-relaxed transition focus-visible:outline-2 focus-visible:outline-orange-500 disabled:opacity-50 ${selected === item.key ? "border-orange-300 bg-orange-50/70 text-accent dark:border-orange-500/40 dark:bg-orange-500/10 dark:text-orange-200" : "border-slate-200/80 text-slate-700 hover:bg-slate-50 dark:border-white/10 dark:text-slate-200 dark:hover:bg-white/5"}`}
             >
               <span
                 aria-hidden="true"
@@ -155,7 +155,7 @@ export default function PortfolioEditor({
           href="/portfolio"
           target="_blank"
           rel="noreferrer"
-          className="mt-4 inline-flex min-h-10 items-center gap-2 text-xs font-semibold text-slate-600 hover:text-orange-700 dark:text-slate-300 dark:hover:text-orange-300"
+          className="mt-4 inline-flex min-h-10 items-center gap-2 text-xs font-semibold text-slate-600 hover:text-accent dark:text-slate-300 dark:hover:text-orange-300"
         >
           <ExternalLink className="size-3.5" /> Lihat Halaman Portofolio
         </a>

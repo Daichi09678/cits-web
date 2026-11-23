@@ -51,7 +51,7 @@ export default function HomeSectionEditor({ page }: { page: HomeEditorPage }) {
             </span>
           </span>
         </span>
-        <span className="shrink-0 text-xs font-bold text-orange-700 dark:text-orange-300">Atur</span>
+        <span className="shrink-0 text-xs font-bold text-accent dark:text-orange-300">Atur</span>
       </summary>
       <form
         className="border-t border-slate-100 p-5 sm:p-6 dark:border-white/10"

@@ -15,7 +15,7 @@ const VARIANTS: Record<ButtonVariant, string> = {
   primary: PRIMARY,
   "public-primary": `${accentStyles.action} shadow-sm`,
   unstyled: "",
-  link: "text-orange-800 underline decoration-1 underline-offset-4 hover:text-orange-900 dark:text-orange-300 dark:hover:text-orange-200",
+  link: "text-accent underline decoration-1 underline-offset-4 hover:text-[#E84700] dark:text-orange-300 dark:hover:text-orange-200",
   danger: "bg-rose-700 text-white shadow-sm hover:bg-rose-800",
   secondary:
     "border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10",

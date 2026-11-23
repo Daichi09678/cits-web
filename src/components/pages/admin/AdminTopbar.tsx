@@ -4,6 +4,7 @@ import { adminAccentFill } from "@/components/pages/admin/accentStyles";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import AdminDialogSurface from "./AdminDialogSurface";
+import inputFocus from "./AdminInputFocus.module.css";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -215,7 +216,7 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
             category: "Layanan",
             href: "/admin/services",
             icon: Cpu,
-            badgeClass: "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300",
+            badgeClass: "bg-orange-50 text-accent dark:bg-orange-500/10 dark:text-orange-300",
           });
         }
       }
@@ -404,7 +405,7 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
               }
             }}
             placeholder="Cari data, produk, pesan..."
-            className="min-h-10 w-full rounded-xl border border-control-border bg-slate-50 py-2 pl-9 pr-12 text-xs text-slate-900 placeholder:text-slate-600 focus:border-orange-800 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-300 dark:focus:border-orange-400"
+            className={`${inputFocus.field} min-h-10 w-full rounded-xl border border-control-border bg-slate-50 py-2 pl-9 pr-12 text-xs text-slate-900 placeholder:text-slate-600 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-300`}
           />
           {searchQuery ? (
             <button
@@ -541,7 +542,7 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
                   <Link
                     href="/admin/contact"
                     onClick={() => setShowNotifications(false)}
-                    className="text-[11px] font-semibold text-orange-800 hover:underline dark:text-orange-300"
+                    className="text-[11px] font-semibold text-accent hover:underline dark:text-orange-300"
                   >
                     Buka Inbox
                   </Link>
@@ -597,7 +598,7 @@ export default function AdminTopbar({ title, description }: AdminTopbarProps) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cari data, produk, pesan..."
-                  className="w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-600 dark:text-white dark:placeholder:text-slate-300"
+                  className={`${inputFocus.field} w-full min-w-0 rounded-md bg-transparent px-2 py-1 text-sm text-slate-900 placeholder:text-slate-600 dark:text-white dark:placeholder:text-slate-300`}
                 />
                 <button
                   type="button"

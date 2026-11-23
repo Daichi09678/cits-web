@@ -90,7 +90,7 @@ export default function ProductSpecificationFields({
           type="button"
           disabled={specifications.length >= 50}
           onClick={() => onSpecifications([...specifications, { name: "", value: "" }])}
-          className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-orange-200 px-3 text-xs font-semibold text-orange-700 disabled:opacity-40 dark:border-orange-500/30 dark:text-orange-300"
+          className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-orange-200 px-3 text-xs font-semibold text-accent disabled:opacity-40 dark:border-orange-500/30 dark:text-orange-300"
         >
           <Plus className="size-4" />
           Tambah Spesifikasi

@@ -23,7 +23,7 @@ export default function AccessInformationPanel({
 }) {
   return (
     <div className="space-y-4">
-      <div className="flex items-start gap-2.5 rounded-lg border border-[#FED7AA] bg-[#FFF7ED] p-3.5 text-xs leading-relaxed text-[#9A3412] dark:border-orange-500/20 dark:bg-orange-500/5 dark:text-orange-200">
+      <div className="flex items-start gap-2.5 rounded-lg border border-[#FED7AA] bg-[#FFF7ED] p-3.5 text-xs leading-relaxed text-accent dark:border-orange-500/20 dark:bg-orange-500/5 dark:text-orange-200">
         <CircleAlert className="mt-0.5 size-4 shrink-0 text-[#EA580C]" aria-hidden="true" />
         <p>
           Akun admin hanya dapat mengakses halaman internal dan tidak dapat mengakses halaman yang bersifat publik

@@ -110,7 +110,7 @@ export default function AdminDashboardPage() {
           {canManageProducts && (
             <Link
               href="/admin/products"
-              className="inline-flex shrink-0 items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-orange-700 hover:bg-orange-50 font-bold text-xs shadow-md transition-all"
+              className="inline-flex shrink-0 items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-accent hover:bg-orange-50 font-bold text-xs shadow-md transition-all"
             >
               {canCreateProducts ? <Plus className="w-4 h-4" /> : <Package className="w-4 h-4" />}
               <span>{canMutateProducts ? "Kelola Produk" : "Lihat Produk"}</span>

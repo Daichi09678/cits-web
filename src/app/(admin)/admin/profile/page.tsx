@@ -402,7 +402,7 @@ export default function AdminProfilePage() {
                       <span
                         className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
                           roleIsSuperadmin
-                            ? "border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-800/60 dark:bg-orange-950/40 dark:text-orange-300"
+                            ? "border-orange-200 bg-orange-50 text-accent dark:border-orange-800/60 dark:bg-orange-950/40 dark:text-orange-300"
                             : "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800/60 dark:bg-blue-950/40 dark:text-blue-300"
                         }`}
                       >

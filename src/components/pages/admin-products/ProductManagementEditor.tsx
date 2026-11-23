@@ -165,7 +165,7 @@ export default function ProductManagementEditor({ editor }: { editor: ProductMan
                               <img src={prod.image} alt={prod.name} className="w-full h-full object-cover" />
                             </div>
                           ) : (
-                            <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0 shadow-2xs">
+                            <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-accent dark:text-orange-400 shrink-0 shadow-2xs">
                               <Package className="w-6 h-6" />
                             </div>
                           )}
@@ -182,7 +182,7 @@ export default function ProductManagementEditor({ editor }: { editor: ProductMan
 
                       {/* Category */}
                       <td className="py-4 px-4 shrink-0">
-                        <span className="inline-block px-2.5 py-1 rounded-md bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-200/80 dark:border-orange-500/30 font-bold text-[11px]">
+                        <span className="inline-block px-2.5 py-1 rounded-md bg-orange-50 dark:bg-orange-500/10 text-accent dark:text-orange-300 border border-orange-200/80 dark:border-orange-500/30 font-bold text-[11px]">
                           {prod.category}
                         </span>
                       </td>

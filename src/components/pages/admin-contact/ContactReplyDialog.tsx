@@ -151,7 +151,7 @@ export default function ContactReplyDialog({ editor }: { editor: ContactEditorSt
                           className={`w-3.5 h-3.5 ${activeTemplate === t.id ? "text-orange-600" : "text-slate-400"}`}
                         />
                         <span
-                          className={`text-[11px] font-bold ${activeTemplate === t.id ? "text-orange-700 dark:text-orange-300" : "text-slate-700 dark:text-slate-300"}`}
+                          className={`text-[11px] font-bold ${activeTemplate === t.id ? "text-accent dark:text-orange-300" : "text-slate-700 dark:text-slate-300"}`}
                         >
                           {t.title}
                         </span>

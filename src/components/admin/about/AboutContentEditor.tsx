@@ -232,7 +232,7 @@ export default function AboutContentEditor() {
               {data.homeVisibility[item.key] && (
                 <span
                   title="Tampil di beranda"
-                  className="mr-1 flex size-6 shrink-0 items-center justify-center rounded bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300"
+                  className="mr-1 flex size-6 shrink-0 items-center justify-center rounded bg-orange-100 text-accent dark:bg-orange-500/10 dark:text-orange-300"
                 >
                   <Home className="size-3.5" aria-hidden="true" />
                 </span>
