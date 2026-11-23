@@ -1,5 +1,5 @@
 .surface {
-  --public-action: #f54a00;
+  --public-action: var(--color-accent);
   --public-action-hover: #e84700;
   --public-action-label: #fff;
   --public-accent: var(--public-action);

@@ -250,7 +250,7 @@ export default function InternalAccountsTable({
                             className={`flex size-9 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${
                               account.locked
                                 ? "bg-violet-100 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300"
-                                : "bg-[#FFF1E9] text-[#C2410C] dark:bg-orange-500/10 dark:text-orange-300"
+                                : "bg-[#FFF1E9] text-accent dark:bg-orange-500/10 dark:text-orange-300"
                             }`}
                             aria-hidden="true"
                           >
@@ -277,7 +277,7 @@ export default function InternalAccountsTable({
                           className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-medium whitespace-nowrap ${
                             account.locked
                               ? "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300"
-                              : "bg-[#FFF1E9] text-[#C2410C] dark:bg-orange-500/10 dark:text-orange-300"
+                              : "bg-[#FFF1E9] text-accent dark:bg-orange-500/10 dark:text-orange-300"
                           }`}
                         >
                           {account.locked && <ShieldCheck className="size-3" aria-hidden="true" />}

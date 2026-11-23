@@ -150,7 +150,7 @@ export default function ClientManagementDialog({ editor }: { editor: ClientManag
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="inline-flex max-w-full items-center gap-2 px-3 py-2 rounded-lg bg-orange-50 dark:bg-orange-950/50 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 font-bold text-[11px] leading-relaxed cursor-pointer transition-colors"
+                        className="inline-flex max-w-full items-center gap-2 px-3 py-2 rounded-lg bg-orange-50 dark:bg-orange-950/50 text-accent dark:text-orange-300 border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 font-bold text-[11px] leading-relaxed cursor-pointer transition-colors"
                       >
                         <Upload className="w-3.5 h-3.5" />
                         <span>Unggah Foto dari Komputer</span>

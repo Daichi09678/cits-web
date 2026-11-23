@@ -150,7 +150,7 @@ export default function LandingHeroPanel({ editor }: { editor: LandingEditorStat
                   size="none"
                   type="button"
                   onClick={addTypewriterWord}
-                  className="px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-accent dark:text-orange-300 border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Tambah Frasa</span>
@@ -265,7 +265,7 @@ export default function LandingHeroPanel({ editor }: { editor: LandingEditorStat
             <div className="p-4 rounded-xl bg-orange-50/60 dark:bg-white/5 border border-orange-200/80 dark:border-white/10 space-y-3 pt-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="block text-xs font-bold text-orange-900 dark:text-orange-300">
+                  <span className="block text-xs font-bold text-accent dark:text-orange-300">
                     Mockup Console Interaktif (Di Sisi Kanan Hero)
                   </span>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">

@@ -293,7 +293,7 @@ export default function AdminAccountEditor({
             {/* Informasi Akun */}
             <section className="rounded-lg border border-[#E2E8F0] p-4 dark:border-white/10 sm:p-5">
               <div className="flex items-start gap-2.5">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#FFF1E9] text-orange-800 dark:text-orange-300 dark:bg-orange-500/10 dark:text-orange-300">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#FFF1E9] text-accent dark:bg-orange-500/10 dark:text-orange-300">
                   <User className="size-4" aria-hidden="true" />
                 </span>
                 <div>
@@ -518,7 +518,7 @@ export default function AdminAccountEditor({
             {/* Hak Akses & Role */}
             <section className="rounded-lg border border-[#E2E8F0] p-4 dark:border-white/10 sm:p-5">
               <div className="flex items-start gap-2.5">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#FFF1E9] text-orange-800 dark:text-orange-300 dark:bg-orange-500/10 dark:text-orange-300">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#FFF1E9] text-accent dark:bg-orange-500/10 dark:text-orange-300">
                   <UserPlus className="size-4" aria-hidden="true" />
                 </span>
                 <div>

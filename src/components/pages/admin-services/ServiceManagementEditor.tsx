@@ -274,7 +274,7 @@ export default function ServiceManagementEditor({ editor }: { editor: ServiceMan
 
                       {/* Category */}
                       <td className="py-4 px-4 shrink-0">
-                        <span className="inline-block px-2.5 py-1 rounded-md bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-200/80 dark:border-orange-500/30 font-bold text-[11px]">
+                        <span className="inline-block px-2.5 py-1 rounded-md bg-orange-50 dark:bg-orange-500/10 text-accent dark:text-orange-300 border border-orange-200/80 dark:border-orange-500/30 font-bold text-[11px]">
                           {prod.category}
                         </span>
                       </td>

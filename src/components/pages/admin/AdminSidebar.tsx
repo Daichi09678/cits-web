@@ -394,7 +394,7 @@ export default function AdminSidebar() {
                 <p className="truncate text-xs font-bold text-slate-900 dark:text-white">
                   {session.user.name || "Administrator"}
                 </p>
-                <p className="truncate text-[10px] font-semibold text-orange-700 dark:text-orange-400">
+                <p className="truncate text-[10px] font-semibold text-accent dark:text-orange-400">
                   {session.user.jobTitle || roleLabel}
                 </p>
                 <p className="truncate text-[10px] text-slate-500 dark:text-slate-400">{session.user.email}</p>

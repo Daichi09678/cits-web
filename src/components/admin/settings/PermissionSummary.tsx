@@ -36,7 +36,7 @@ export default function PermissionSummary({
             Role
           </dt>
           <dd>
-            <span className="rounded-md bg-[#FFF1E9] px-2 py-0.5 text-[11px] font-semibold text-[#C2410C] dark:bg-orange-500/10 dark:text-orange-300">
+            <span className="rounded-md bg-[#FFF1E9] px-2 py-0.5 text-[11px] font-semibold text-accent dark:bg-orange-500/10 dark:text-orange-300">
               Admin Internal
             </span>
           </dd>

@@ -19,7 +19,7 @@ export type BadgeSize = "sm" | "md";
 
 const SOFT: Record<BadgeTone, string> = {
   accent:
-    "border border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-500/25 dark:bg-orange-500/10 dark:text-orange-300",
+    "border border-orange-200 bg-orange-50 text-accent dark:border-orange-500/25 dark:bg-orange-500/10 dark:text-orange-300",
   neutral:
     "border border-slate-200 bg-slate-100 text-slate-700 dark:border-white/10 dark:bg-white/10 dark:text-slate-200",
   success:

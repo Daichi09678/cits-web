@@ -37,7 +37,7 @@ export default function RoleInformationCard({ superadmin = false }: { superadmin
             className={`rounded-md px-2 py-0.5 text-[11px] font-semibold ${
               superadmin
                 ? "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300"
-                : "bg-[#FFF1E9] text-[#C2410C] dark:bg-orange-500/10 dark:text-orange-300"
+                : "bg-[#FFF1E9] text-accent dark:bg-orange-500/10 dark:text-orange-300"
             }`}
           >
             {superadmin ? "Full Access" : "Custom Access"}

@@ -199,7 +199,7 @@ export default function PortfolioSectionFields({
                   ),
                 ])
               }
-              className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-orange-200 px-4 py-2 text-xs font-semibold text-orange-700 disabled:opacity-40 dark:border-orange-500/30 dark:text-orange-300"
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-orange-200 px-4 py-2 text-xs font-semibold text-accent disabled:opacity-40 dark:border-orange-500/30 dark:text-orange-300"
             >
               <Plus className="size-4" /> Tambah {schema.title}
             </button>

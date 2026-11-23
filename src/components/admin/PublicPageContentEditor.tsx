@@ -76,7 +76,7 @@ export default function PublicPageContentEditor({ page }: { page: PublicContentP
             </span>
           </span>
         </span>
-        <span className="shrink-0 text-xs font-bold text-orange-700 dark:text-orange-300">Edit Konten</span>
+        <span className="shrink-0 text-xs font-bold text-accent dark:text-orange-300">Edit Konten</span>
       </summary>
       <form
         className="space-y-4 border-t border-slate-100 p-5 sm:p-6 dark:border-white/10"
@@ -358,7 +358,7 @@ export default function PublicPageContentEditor({ page }: { page: PublicContentP
                       {data.collections[key].length < 100 && (
                         <button
                           type="button"
-                          className="inline-flex items-center gap-2 text-xs font-bold text-orange-700 dark:text-orange-300"
+                          className="inline-flex items-center gap-2 text-xs font-bold text-accent dark:text-orange-300"
                           onClick={() =>
                             collection(key, [
                               ...data.collections[key],

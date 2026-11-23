@@ -1,4 +1,4 @@
-export const adminAccentFill = "bg-[#F54A00]";
+export const adminAccentFill = "bg-accent";
 
 export const adminAccent = `${adminAccentFill} text-white contrast-more:bg-orange-800`;
 

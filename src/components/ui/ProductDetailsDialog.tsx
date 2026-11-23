@@ -22,8 +22,8 @@ export default function ProductDetailsDialog({
 }) {
   const ref = useModalFocus(true, onClose);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
-  const accentText = preview ? "text-orange-800 dark:text-orange-300" : accentStyles.text;
-  const accentIcon = preview ? "text-orange-700 dark:text-orange-300" : accentStyles.accent;
+  const accentText = preview ? "text-accent dark:text-orange-300" : accentStyles.text;
+  const accentIcon = preview ? "text-accent dark:text-orange-300" : accentStyles.accent;
   const features = [...new Set(product.features.filter(Boolean))];
   const tags = [...new Set(product.tags.filter(Boolean))];
   const toggle = (feature: string) =>

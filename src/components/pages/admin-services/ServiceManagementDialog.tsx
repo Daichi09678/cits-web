@@ -188,7 +188,7 @@ export default function ServiceManagementDialog({ editor }: { editor: ServiceMan
                       onClick={() => setIsIconPickerOpen(!isIconPickerOpen)}
                       className={`w-full h-10 px-3 rounded-xl border flex items-center justify-between gap-2 transition-all cursor-pointer ${
                         isIconPickerOpen
-                          ? "bg-orange-50 dark:bg-orange-500/15 border-orange-500 ring-2 ring-orange-500/20 text-orange-950 dark:text-orange-200"
+                          ? "bg-orange-50 dark:bg-orange-500/15 border-orange-500 ring-2 ring-orange-500/20 text-accent dark:text-orange-200"
                           : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 hover:border-orange-400 dark:hover:border-orange-500/40 text-slate-900 dark:text-white"
                       }`}
                       title="Klik untuk memilih ikon pilar layanan"

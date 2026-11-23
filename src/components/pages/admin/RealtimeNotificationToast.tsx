@@ -81,7 +81,7 @@ export default function RealtimeNotificationToast() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="font-extrabold text-sm truncate">{activeMessage.name}</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-500/15 text-orange-800 dark:text-orange-300 truncate max-w-[130px]">
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-500/15 text-accent dark:text-orange-300 truncate max-w-[130px]">
               {activeMessage.company}
             </span>
           </div>

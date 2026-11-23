@@ -22,6 +22,7 @@ import { useAdminAuth } from "@/lib/auth";
 import ThemeToggle from "@/components/pages/public/ThemeToggle";
 import GridPattern from "@/components/ui/GridPattern";
 import AdminModal from "@/components/pages/admin/AdminModal";
+import inputFocus from "@/components/pages/admin/AdminInputFocus.module.css";
 import { BackOfficeBadge as Badge } from "@/components/ui/Badge";
 
 export default function AdminLoginPage() {
@@ -138,7 +139,7 @@ export default function AdminLoginPage() {
             </div>
 
             <Badge tone="accent" size="md" className="max-w-full whitespace-normal! uppercase tracking-wide">
-              <ShieldCheck aria-hidden="true" className="size-3.5 shrink-0 text-orange-700 dark:text-orange-400" />
+              <ShieldCheck aria-hidden="true" className="size-3.5 shrink-0 text-accent dark:text-orange-400" />
               <span>Back Office • Sistem Kontrol CMS</span>
             </Badge>
 
@@ -192,7 +193,7 @@ export default function AdminLoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="nama@cits.id"
-                  className="min-h-11 w-full rounded-xl border border-control-border bg-slate-50 py-2.5 pl-10 pr-4 font-mono text-sm text-slate-900 placeholder:text-slate-600 focus:border-orange-800 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-300 dark:focus:border-orange-400"
+                  className={`${inputFocus.field} min-h-11 w-full rounded-xl border border-control-border bg-slate-50 py-2.5 pl-10 pr-4 font-mono text-sm text-slate-900 placeholder:text-slate-600 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-300`}
                 />
               </div>
             </div>
@@ -211,7 +212,7 @@ export default function AdminLoginPage() {
                 <button
                   type="button"
                   onClick={openForgotPassword}
-                  className="min-h-6 cursor-pointer text-xs font-semibold text-orange-800 underline underline-offset-2 hover:text-orange-950 dark:text-orange-300 dark:hover:text-orange-200"
+                  className="min-h-6 cursor-pointer text-xs font-semibold text-accent underline underline-offset-2 hover:text-[#E84700]"
                 >
                   Lupa kata sandi?
                 </button>
@@ -229,7 +230,7 @@ export default function AdminLoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="min-h-11 w-full rounded-xl border border-control-border bg-slate-50 py-2.5 pl-10 pr-12 font-mono text-sm text-slate-900 placeholder:text-slate-600 focus:border-orange-800 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-300 dark:focus:border-orange-400"
+                  className={`${inputFocus.field} min-h-11 w-full rounded-xl border border-control-border bg-slate-50 py-2.5 pl-10 pr-12 font-mono text-sm text-slate-900 placeholder:text-slate-600 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-300`}
                 />
                 <button
                   type="button"
@@ -348,7 +349,7 @@ export default function AdminLoginPage() {
                   placeholder="nama@cits.id"
                   autoComplete="email"
                   required
-                  className="min-h-11 w-full rounded-xl border border-control-border bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-600 focus:border-orange-800 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-300 dark:focus:border-orange-400"
+                  className={`${inputFocus.field} min-h-11 w-full rounded-xl border border-control-border bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-600 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-300`}
                 />
               </div>
             </div>

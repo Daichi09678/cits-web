@@ -45,7 +45,7 @@ export default function LandingStatsPanel({ editor }: { editor: LandingEditorSta
             </div>
             <Link
               href="/admin/about"
-              className="px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+              className="px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-950/40 text-accent dark:text-orange-300 border border-orange-200 dark:border-orange-800/50 hover:bg-orange-100 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
             >
               <Edit3 className="w-3.5 h-3.5" />
               <span>Kelola di Tentang Kami</span>

@@ -35,7 +35,7 @@ export default function PortfolioClientLogoFields({ editor }: { editor: Portfoli
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 font-bold text-[11px] cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-orange-100 dark:bg-orange-950/60 text-accent dark:text-orange-300 font-bold text-[11px] cursor-pointer"
           >
             <Upload className="w-3.5 h-3.5" />
             <span>Unggah Logo dari Komputer</span>

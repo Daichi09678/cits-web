@@ -30,7 +30,7 @@ export interface ChipFieldProps {
 
 const ACCENT = {
   orange: {
-    chip: "bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-500/15 dark:text-orange-200 dark:border-orange-500/30",
+    chip: "bg-orange-50 text-accent border-orange-200 dark:bg-orange-500/15 dark:text-orange-200 dark:border-orange-500/30",
     input: "focus:ring-orange-500",
     button: `${adminAction}`,
     check: "accent-orange-600",
@@ -154,7 +154,7 @@ export default function ChipField({
                 key={preset}
                 className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-[11px] font-semibold cursor-pointer transition-colors ${
                   checked
-                    ? "bg-orange-50 dark:bg-orange-500/10 text-orange-800 dark:text-orange-200"
+                    ? "bg-orange-50 dark:bg-orange-500/10 text-accent dark:text-orange-200"
                     : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5"
                 }`}
               >

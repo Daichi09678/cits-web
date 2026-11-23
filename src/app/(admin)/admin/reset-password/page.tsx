@@ -87,8 +87,8 @@ function ResetPasswordForm() {
                 priority
               />
             </div>
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-orange-200/80 bg-orange-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-orange-900 shadow-2xs dark:border-orange-800/60 dark:bg-orange-950/60 dark:text-orange-300">
-              <ShieldCheck className="h-3.5 w-3.5 text-orange-700 dark:text-orange-400" />
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-orange-200/80 bg-orange-100 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-accent shadow-2xs dark:border-orange-800/60 dark:bg-orange-950/60 dark:text-orange-300">
+              <ShieldCheck className="h-3.5 w-3.5 text-accent dark:text-orange-400" />
               Keamanan Akun
             </div>
             <h1 className="text-xl font-black tracking-tight text-slate-900 dark:text-white sm:text-2xl">
