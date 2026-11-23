@@ -154,6 +154,7 @@ const PublicSelect = load("components/pages/public/PublicSelect.tsx", {
   "react-dom": require("react-dom"),
   "lucide-react": require("lucide-react"),
   "./PublicSelect.module.css": { default: {} },
+  "./PublicAccent.module.css": { default: {} },
 }).default;
 const shared = {
   react: React,
@@ -231,7 +232,7 @@ function renderHome(landingData, overrides = {}) {
     "@/components/ui/ManagedTeamSection": { default: () => null },
     "@/lib/publicPageContentClient": { usePublicPageContent: () => ({ content: {} }) },
     "@/components/pages/public/CompanyBrand": { useCompanyContent: () => ({}) },
-    "@/components/ui/Marquee": {
+    "@/components/pages/home/ClientLogoList": {
       default: ({ items }) => React.createElement("div", null, items.map((item) => item.name).join(", ")),
     },
   }).default;

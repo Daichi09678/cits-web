@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, Ref } from "react";
 import { adminAction } from "@/components/pages/admin/accentStyles";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import { cn } from "@/lib/cn";
 
 export type ButtonVariant =
@@ -12,7 +13,7 @@ const BASE =
 const PRIMARY = "bg-action text-on-action shadow-sm hover:bg-action-hover";
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: PRIMARY,
-  "public-primary": PRIMARY,
+  "public-primary": `${accentStyles.action} shadow-sm`,
   unstyled: "",
   link: "text-orange-800 underline decoration-1 underline-offset-4 hover:text-orange-900 dark:text-orange-300 dark:hover:text-orange-200",
   danger: "bg-rose-700 text-white shadow-sm hover:bg-rose-800",

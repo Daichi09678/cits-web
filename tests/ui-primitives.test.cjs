@@ -88,7 +88,7 @@ test("Back Office actions and active badges use the local orange palette with hi
 
 test("public and custom buttons use the shared component without losing their attributes", () => {
   const publicButton = html(React.createElement(Button, { variant: "public-primary", type: "submit" }, "Kirim"));
-  assert.match(publicButton, /bg-action text-on-action/);
+  assert.match(publicButton, /public-accent-action/);
   assert.match(publicButton, /type="submit"/);
 
   const custom = html(

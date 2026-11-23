@@ -83,20 +83,6 @@ html:not(.dark) select option {
   color: #0f172a !important;
 }
 
-@keyframes marquee {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
-
-.animate-marquee {
-  animation: marquee linear infinite;
-  will-change: transform;
-}
-
 @keyframes float-hex {
   0%,
   100% {
@@ -234,8 +220,7 @@ body:has(dialog[data-admin-dialog][open]) {
   }
 
   .animate-admin-backdrop,
-  .animate-admin-dialog,
-  .animate-marquee {
+  .animate-admin-dialog {
     animation: none;
   }
 }

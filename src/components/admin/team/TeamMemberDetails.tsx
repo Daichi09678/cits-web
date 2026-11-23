@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Pencil, UserRound } from "lucide-react";
-import type { TeamMember } from "@/lib/team";
+import { isPublicTeamMember, type TeamMember } from "@/lib/team";
 import TeamDialog, { teamPrimary, teamSecondary } from "./TeamDialog";
 
 export function TeamPhoto({
@@ -69,7 +69,7 @@ export default function TeamMemberDetails({
     ["Urutan tampil", String(member.displayOrder ?? 0)],
     [
       "Ditampilkan di Tentang Kami",
-      member.isActive !== false && member.showOnHomepage !== false ? "Ya, sesuai urutan" : "Tidak",
+      isPublicTeamMember(member) ? (member.isDemo ? "Ya, sebagai data contoh" : "Ya, sesuai urutan") : "Tidak",
     ],
     ["Tanggal ditambahkan", memberDate(member, "createdAt")],
     ["Terakhir diperbarui", memberDate(member, "updatedAt")],
@@ -100,7 +100,7 @@ export default function TeamMemberDetails({
           </p>
         </section>
         {member.isDemo && (
-          <p className="text-xs text-slate-600 dark:text-slate-300">Data contoh, bukan anggota resmi.</p>
+          <p className="text-xs text-slate-600 dark:text-slate-300">Data contoh.</p>
         )}
       </div>
       <footer className="flex shrink-0 justify-end gap-3 border-t border-slate-200 dark:border-white/10 px-6 py-4">

@@ -1,4 +1,5 @@
 "use client";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Button from "@/components/ui/Button";
 import FieldLabel from "@/components/ui/FieldLabel";
 import FormFeedback from "@/components/ui/FormFeedback";
@@ -136,6 +137,7 @@ function ContactPageContent({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const formHeading = useRef<HTMLHeadingElement>(null);
+  const successHeading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     // The form is inside Suspense, so the initial hash may resolve before the heading exists.
@@ -144,6 +146,10 @@ function ContactPageContent({
       formHeading.current?.focus({ preventScroll: true });
     }
   }, []);
+
+  useEffect(() => {
+    if (submitted) successHeading.current?.focus();
+  }, [submitted]);
 
   const handleCopy = async (text: string, key: string) => {
     try {
@@ -161,7 +167,7 @@ function ContactPageContent({
       {announcement?.isActive && announcement.text && (
         <aside
           aria-label="Pengumuman Resmi"
-          className="bg-action text-white py-2.5 px-4 text-xs font-semibold shadow-xs"
+          className={`py-2.5 px-4 text-xs font-semibold shadow-xs ${accentStyles.fill}`}
         >
           <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-center sm:text-left">
             <div className="flex items-center gap-2 mx-auto sm:mx-0">
@@ -173,7 +179,7 @@ function ContactPageContent({
                 href={announcement.linkUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mx-auto sm:mx-0 inline-flex items-center gap-1 underline hover:text-orange-100 font-bold text-[11px]"
+                className="mx-auto inline-flex items-center gap-1 text-[11px] font-bold underline hover:decoration-2 sm:mx-0"
               >
                 <span>{announcement.linkText}</span>
                 <ExternalLink className="w-3 h-3" />
@@ -211,7 +217,7 @@ function ContactPageContent({
           <ScrollReveal delay={0.2}>
             <div className="mt-8 flex flex-wrap justify-center gap-2.5 text-xs">
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15">
-                <Clock className="w-4 h-4 text-orange-700 dark:text-orange-400" />
+                <Clock className={`w-4 h-4 ${accentStyles.accent}`} />
                 Respon Cepat 1x24 Jam Kerja
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15">
@@ -256,7 +262,7 @@ function ContactPageContent({
                 {/* Address Card */}
                 <ScrollReveal delay={0.1}>
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-gray-200 dark:border-white/10 flex items-start gap-4 hover:border-orange-500/40 transition-all shadow-sm">
-                    <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0 mt-0.5">
+                    <div className={`w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center shrink-0 mt-0.5 ${accentStyles.accent}`}>
                       <MapPin className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -272,7 +278,7 @@ function ContactPageContent({
                 {/* Phone Card with Click-to-Call & Copy button */}
                 <ScrollReveal delay={0.15}>
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-gray-200 dark:border-white/10 flex items-start gap-4 hover:border-orange-500/40 transition-all shadow-sm">
-                    <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0 mt-0.5">
+                    <div className={`w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center shrink-0 mt-0.5 ${accentStyles.accent}`}>
                       <Phone className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -283,7 +289,7 @@ function ContactPageContent({
                           size="none"
                           type="button"
                           onClick={() => handleCopy(contactInfo?.phone || "(021) 39719677", "phone")}
-                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-orange-800 dark:text-orange-300 hover:text-orange-900 bg-orange-100/70 dark:bg-orange-950/50 px-2 py-0.5 rounded transition-colors"
+                          className={`inline-flex items-center gap-1 rounded bg-orange-100/70 px-2 py-0.5 text-[11px] font-semibold transition-colors hover:bg-orange-100 dark:bg-orange-950/50 dark:hover:bg-orange-950/80 ${accentStyles.text}`}
                           title="Salin nomor telepon"
                         >
                           {copiedKey === "phone" ? (
@@ -301,7 +307,7 @@ function ContactPageContent({
                       </div>
                       <a
                         href={`tel:${(contactInfo?.phone || "02139719677").replace(/[^0-9]/g, "")}`}
-                        className="mt-1 inline-block text-xs md:text-sm text-orange-700 dark:text-orange-400 font-bold hover:underline"
+                        className={`mt-1 inline-block text-xs md:text-sm font-bold hover:underline ${accentStyles.text}`}
                       >
                         {contactInfo?.phone || "(021) 39719677"}
                       </a>
@@ -315,7 +321,7 @@ function ContactPageContent({
                 {/* Email Card with Click-to-Mail & Copy button */}
                 <ScrollReveal delay={0.2}>
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-gray-200 dark:border-white/10 flex items-start gap-4 hover:border-orange-500/40 transition-all shadow-sm">
-                    <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0 mt-0.5">
+                    <div className={`w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center shrink-0 mt-0.5 ${accentStyles.accent}`}>
                       <Mail className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -326,7 +332,7 @@ function ContactPageContent({
                           size="none"
                           type="button"
                           onClick={() => handleCopy(contactInfo?.email || "info@citsindonesia.co.id", "email")}
-                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-orange-800 dark:text-orange-300 hover:text-orange-900 bg-orange-100/70 dark:bg-orange-950/50 px-2 py-0.5 rounded transition-colors"
+                          className={`inline-flex items-center gap-1 rounded bg-orange-100/70 px-2 py-0.5 text-[11px] font-semibold transition-colors hover:bg-orange-100 dark:bg-orange-950/50 dark:hover:bg-orange-950/80 ${accentStyles.text}`}
                           title="Salin alamat email"
                         >
                           {copiedKey === "email" ? (
@@ -344,7 +350,7 @@ function ContactPageContent({
                       </div>
                       <a
                         href={`mailto:${contactInfo?.email || "info@citsindonesia.co.id"}`}
-                        className="mt-1 inline-block text-xs md:text-sm text-orange-700 dark:text-orange-400 font-bold hover:underline break-all"
+                        className={`mt-1 inline-block text-xs md:text-sm font-bold hover:underline break-all ${accentStyles.text}`}
                       >
                         {contactInfo?.email || "info@citsindonesia.co.id"}
                       </a>
@@ -362,7 +368,7 @@ function ContactPageContent({
                     rel="noopener noreferrer"
                     className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-slate-50 p-5 hover:border-orange-400 dark:border-white/10 dark:bg-[#16162c]"
                   >
-                    <MessageSquare className="size-5 shrink-0 text-orange-700 dark:text-orange-400" />
+                    <MessageSquare className={`size-5 shrink-0 ${accentStyles.accent}`} />
                     <span className="min-w-0 text-sm">
                       <span className="block font-semibold">WhatsApp</span>
                       <span className="mt-1 block break-words text-slate-600 dark:text-slate-300">
@@ -376,14 +382,14 @@ function ContactPageContent({
                   <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-sm bg-slate-100 dark:bg-slate-900">
                     <div className="p-3 bg-slate-50 dark:bg-[#16162c] border-b border-gray-200 dark:border-white/10 flex items-center justify-between text-xs">
                       <span className="font-semibold text-dark dark:text-white flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-orange-700 dark:text-orange-400" />
+                        <MapPin className={`w-3.5 h-3.5 ${accentStyles.accent}`} />
                         Peta Lokasi Kantor
                       </span>
                       <a
                         href={mapUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-orange-700 dark:text-orange-400 hover:underline"
+                        className={`inline-flex items-center gap-1 text-[11px] font-semibold hover:underline ${accentStyles.text}`}
                       >
                         Buka di Google Maps
                         <ExternalLink className="w-3 h-3" />
@@ -426,29 +432,39 @@ function ContactPageContent({
                             Sampaikan detail kebutuhan instansi Anda. Kami siap merespons segera.
                           </p>
                         </div>
-                        <div className="hidden sm:flex w-11 h-11 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 items-center justify-center text-orange-700 dark:text-orange-400 shrink-0">
+                        <div className={`hidden sm:flex w-11 h-11 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 items-center justify-center shrink-0 ${accentStyles.accent}`}>
                           <MessageSquare className="w-5 h-5" />
                         </div>
                       </div>
 
                       {submitted ? (
-                        <FormFeedback tone="success" className="my-8">
-                          <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center mx-auto text-emerald-700 dark:text-emerald-300">
-                            <CheckCircle2 className="w-8 h-8" />
+                        <FormFeedback
+                          tone="success"
+                          className="flex flex-col items-center gap-3 text-center sm:px-6 sm:py-8"
+                        >
+                          <div className="flex size-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+                            <CheckCircle2 aria-hidden="true" className="size-7" />
                           </div>
-                          <h4 className="text-xl font-extrabold text-emerald-900 dark:text-emerald-200">
-                            Pesan Berhasil Terkirim!
-                          </h4>
-                          <p className="text-sm text-emerald-800 dark:text-emerald-300 max-w-md mx-auto leading-relaxed">
-                            Terima kasih telah menghubungi CITS Indonesia. Tim konsultan kami akan meninjau pesan Anda
-                            dan segera menghubungi Anda kembali dalam 1x24 jam kerja.
-                          </p>
+                          <div className="max-w-md space-y-2">
+                            <h4
+                              ref={successHeading}
+                              tabIndex={-1}
+                              className="scroll-mt-24 text-xl font-extrabold text-emerald-900 dark:text-emerald-200"
+                            >
+                              Pesan Berhasil Terkirim!
+                            </h4>
+                            <p className="text-pretty">
+                              Terima kasih telah menghubungi CITS Indonesia. Tim konsultan kami akan meninjau pesan Anda
+                              dan segera menghubungi Anda kembali dalam 1x24 jam kerja.
+                            </p>
+                          </div>
                           <Button
-                            variant="unstyled"
-                            size="none"
-                            type="button"
-                            onClick={() => setSubmitted(false)}
-                            className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 dark:text-orange-300 hover:underline cursor-pointer"
+                            variant="secondary"
+                            onClick={() => {
+                              setSubmitted(false);
+                              formHeading.current?.focus();
+                            }}
+                            className="mt-1"
                           >
                             Kirim Formulir Lain
                           </Button>
@@ -661,7 +677,7 @@ function ContactPageContent({
                               data-testid="consultation-reference"
                               className="rounded-xl border border-orange-200 dark:border-orange-800/60 bg-orange-50/60 dark:bg-orange-950/20 p-4 space-y-2 [overflow-wrap:anywhere]"
                             >
-                              <p className="text-xs font-semibold text-orange-800 dark:text-orange-300">
+                              <p className={`text-xs font-semibold ${accentStyles.text}`}>
                                 Referensi Proyek untuk Kebutuhan Serupa
                               </p>
                               {selectedPortfolio ? (
@@ -687,7 +703,7 @@ function ContactPageContent({
                                 size="none"
                                 type="button"
                                 onClick={() => setReferenceId("")}
-                                className="text-xs font-semibold text-orange-800 dark:text-orange-300 underline"
+                                className={`text-xs font-semibold underline ${accentStyles.text}`}
                               >
                                 Hapus Referensi Proyek
                               </Button>

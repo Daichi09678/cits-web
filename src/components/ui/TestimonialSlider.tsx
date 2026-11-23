@@ -1,4 +1,5 @@
 "use client";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Button from "@/components/ui/Button";
 
 import { useState, useEffect } from "react";
@@ -50,7 +51,7 @@ export default function TestimonialSlider({ testimonials }: { testimonials: Test
             transition={{ duration: 0.4, ease: "easeInOut" }}
             className="w-full text-center"
           >
-            <Quote className="w-10 h-10 text-orange-500/30 dark:text-orange-400/30 mx-auto mb-4" />
+            <Quote className={`mx-auto mb-4 size-10 ${accentStyles.mutedAccent}`} />
             <p className="text-gray-800 dark:text-white/90 text-lg italic leading-relaxed">
               &ldquo;{activeTestimonial.quote}&rdquo;
             </p>
@@ -68,7 +69,7 @@ export default function TestimonialSlider({ testimonials }: { testimonials: Test
           variant="unstyled"
           size="none"
           onClick={prev}
-          className="w-10 h-10 rounded-full border border-gray-300 dark:border-white/20 bg-white dark:bg-[#1A1A2E] text-gray-700 dark:text-white/90 flex items-center justify-center hover:border-orange-600 hover:text-orange-700 dark:hover:text-orange-400 transition-colors cursor-pointer"
+          className={`w-10 h-10 rounded-full border border-gray-300 dark:border-white/20 bg-white dark:bg-[#1A1A2E] text-gray-700 dark:text-white/90 flex items-center justify-center hover:border-orange-600 transition-colors cursor-pointer ${accentStyles.hoverText}`}
           aria-label="Testimonial sebelumnya"
         >
           <ChevronLeft className="w-5 h-5" />
@@ -86,7 +87,7 @@ export default function TestimonialSlider({ testimonials }: { testimonials: Test
               }}
               className={`h-2.5 rounded-full transition-all cursor-pointer ${
                 i === current
-                  ? "bg-orange-600 w-6"
+                  ? `w-6 ${accentStyles.fill}`
                   : "bg-gray-300 dark:bg-white/30 hover:bg-gray-400 dark:hover:bg-white/50 w-2.5"
               }`}
               aria-label={`Lihat testimoni ${i + 1}`}
@@ -98,7 +99,7 @@ export default function TestimonialSlider({ testimonials }: { testimonials: Test
           variant="unstyled"
           size="none"
           onClick={next}
-          className="w-10 h-10 rounded-full border border-gray-300 dark:border-white/20 bg-white dark:bg-[#1A1A2E] text-gray-700 dark:text-white/90 flex items-center justify-center hover:border-orange-600 hover:text-orange-700 dark:hover:text-orange-400 transition-colors cursor-pointer"
+          className={`w-10 h-10 rounded-full border border-gray-300 dark:border-white/20 bg-white dark:bg-[#1A1A2E] text-gray-700 dark:text-white/90 flex items-center justify-center hover:border-orange-600 transition-colors cursor-pointer ${accentStyles.hoverText}`}
           aria-label="Testimonial berikutnya"
         >
           <ChevronRight className="w-5 h-5" />

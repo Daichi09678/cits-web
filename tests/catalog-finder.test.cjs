@@ -219,6 +219,7 @@ function mount(input = services, products = []) {
         "react-dom": require("react-dom"),
         "lucide-react": require("lucide-react"),
         "./PublicSelect.module.css": { default: {} },
+        "./PublicAccent.module.css": { default: {} },
       }).default,
     },
     "@/lib/catalogFinder": finder,

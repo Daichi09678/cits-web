@@ -1,4 +1,5 @@
 "use client";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Button from "@/components/ui/Button";
 
 import { Fragment, useState, type ReactNode } from "react";
@@ -36,7 +37,7 @@ const categoryColors: Record<string, string> = {
   "Kementerian & Lembaga Pusat":
     "bg-red-100 dark:bg-red-950/60 text-red-900 dark:text-red-300 border border-red-200/80 dark:border-red-800/60",
   "BUMN & Energi Strategis":
-    "bg-amber-100 dark:bg-amber-950/60 text-amber-950 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60",
+    `border ${accentStyles.soft}`,
   "Transportasi & Maritim":
     "bg-blue-100 dark:bg-blue-950/60 text-blue-900 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60",
   "Satu Data & Geospasial":
@@ -98,7 +99,7 @@ export default function PortfolioPage() {
           <ScrollReveal delay={0.25}>
             <div className="mt-10 max-w-4xl mx-auto p-4 sm:p-5 rounded-2xl bg-white/90 dark:bg-[#16162c]/90 border border-orange-200/80 dark:border-orange-900/40 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-left">
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0 mt-0.5">
+                <div className={`w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center shrink-0 mt-0.5 ${accentStyles.accent}`}>
                   <Compass className="w-4 h-4" />
                 </div>
                 <div>
@@ -114,7 +115,7 @@ export default function PortfolioPage() {
               </div>
               <Link
                 href={content.texts["portfolio_hero_href_12"]}
-                className="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-action-hover hover:text-on-action text-gray-800 dark:text-white text-xs font-bold border border-gray-200 dark:border-white/15 transition-all shadow-sm"
+                className={`shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white text-xs font-bold border border-gray-200 dark:border-white/15 transition-all shadow-sm ${accentStyles.hoverFill}`}
               >
                 {content.texts["portfolio_hero_text_13"]}
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -166,7 +167,7 @@ export default function PortfolioPage() {
                             />
                           </div>
                           <div>
-                            <span className="block text-xs font-bold text-orange-800 dark:text-orange-400">
+                            <span className={`block text-xs font-bold ${accentStyles.text}`}>
                               {project.clientShort}
                             </span>
                             <span className="block text-[11px] text-gray-500 dark:text-white/60 font-medium">
@@ -203,7 +204,7 @@ export default function PortfolioPage() {
                         </div>
 
                         <div className="p-4 rounded-xl bg-orange-50/60 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-900/40 h-28 flex flex-col justify-center">
-                          <div className="flex items-center gap-1.5 text-xs font-bold text-orange-800 dark:text-orange-400 mb-1.5 shrink-0">
+                          <div className={`flex items-center gap-1.5 text-xs font-bold mb-1.5 shrink-0 ${accentStyles.text}`}>
                             <Lightbulb className="w-3.5 h-3.5 shrink-0" />
                             <span>{content.texts["flagship_text_7"]}</span>
                           </div>
@@ -216,7 +217,7 @@ export default function PortfolioPage() {
                       {/* Measurable KPI Banner */}
                       <div className="mt-5 p-4 rounded-xl bg-slate-100/90 dark:bg-[#1A1A32] border border-gray-200 dark:border-white/10 h-20 flex items-center justify-between gap-4">
                         <div className="min-w-0">
-                          <span className="block text-2xl sm:text-3xl font-black text-orange-600 dark:text-orange-400 leading-none">
+                          <span className={`block text-2xl sm:text-3xl font-black leading-none ${accentStyles.accent}`}>
                             {project.measurableImpact.highlightValue}
                           </span>
                           <span className="block text-[11px] font-bold text-dark dark:text-white mt-1 truncate">
@@ -235,7 +236,7 @@ export default function PortfolioPage() {
                         variant="unstyled"
                         size="none"
                         onClick={() => setActiveModalStudy(project)}
-                        className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-action hover:bg-action-hover text-on-action text-xs font-bold transition-all shadow-md shadow-orange-600/20 cursor-pointer"
+                        className={`w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md shadow-orange-600/20 cursor-pointer ${accentStyles.action}`}
                       >
                         {content.texts["flagship_text_8"]}
                         <ChevronRight className="w-3.5 h-3.5" />
@@ -295,8 +296,8 @@ export default function PortfolioPage() {
                     onClick={() => setSelectedCategory(cat)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer ${
                       isActive
-                        ? "bg-action text-on-action shadow-md shadow-orange-700/25 scale-105"
-                        : "bg-slate-50 dark:bg-[#16162c] text-gray-800 dark:text-white border border-gray-200 dark:border-white/15 hover:border-orange-500/40 hover:text-orange-700 dark:hover:text-orange-400"
+                        ? `shadow-md shadow-orange-700/25 scale-105 ${accentStyles.fill}`
+                        : `bg-slate-50 dark:bg-[#16162c] text-gray-800 dark:text-white border border-gray-200 dark:border-white/15 hover:border-orange-500/40 ${accentStyles.hoverText}`
                     }`}
                   >
                     {cat}
@@ -320,7 +321,7 @@ export default function PortfolioPage() {
                 onClick={() => setViewMode("grid")}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                   viewMode === "grid"
-                    ? "bg-white dark:bg-[#16162c] text-orange-700 dark:text-orange-400 shadow-sm font-bold"
+                    ? `bg-white dark:bg-[#16162c] shadow-sm font-bold ${accentStyles.text}`
                     : "text-gray-600 dark:text-white/70 hover:text-dark dark:hover:text-white"
                 }`}
               >
@@ -333,7 +334,7 @@ export default function PortfolioPage() {
                 onClick={() => setViewMode("table")}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                   viewMode === "table"
-                    ? "bg-white dark:bg-[#16162c] text-orange-700 dark:text-orange-400 shadow-sm font-bold"
+                    ? `bg-white dark:bg-[#16162c] shadow-sm font-bold ${accentStyles.text}`
                     : "text-gray-600 dark:text-white/70 hover:text-dark dark:hover:text-white"
                 }`}
               >
@@ -384,7 +385,7 @@ export default function PortfolioPage() {
                           </div>
 
                           {/* Service Pillar Badge (Normalized h-6) */}
-                          <div className="h-6 flex items-center gap-1.5 text-[11px] font-semibold text-orange-800 dark:text-orange-400 mt-2 overflow-hidden">
+                          <div className={`h-6 flex items-center gap-1.5 text-[11px] font-semibold mt-2 overflow-hidden ${accentStyles.text}`}>
                             <Layers className="w-3.5 h-3.5 shrink-0" />
                             <span className="truncate">{project.servicePillar}</span>
                           </div>
@@ -408,7 +409,7 @@ export default function PortfolioPage() {
                             </div>
 
                             <div className="p-2.5 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-200/60 dark:border-orange-900/30 h-[4.75rem] flex flex-col justify-center">
-                              <span className="block text-[10px] font-bold text-orange-800 dark:text-orange-400 uppercase tracking-wide shrink-0">
+                              <span className={`block text-[10px] font-bold uppercase tracking-wide shrink-0 ${accentStyles.text}`}>
                                 {content.texts["case_studies_list_text_10"]}
                               </span>
                               <span className="block mt-0.5 text-[11px] text-gray-800 dark:text-white/90 line-clamp-2 leading-relaxed">
@@ -420,7 +421,7 @@ export default function PortfolioPage() {
                           {/* Impact Highlight Badge (Normalized h-16) */}
                           <div className="mt-4 p-3 rounded-xl bg-slate-100/90 dark:bg-[#141426] border border-gray-200 dark:border-white/10 h-16 flex items-center justify-between gap-3">
                             <div className="min-w-0">
-                              <span className="block text-xl font-extrabold text-orange-600 dark:text-orange-400 truncate leading-tight">
+                              <span className={`block text-xl font-extrabold truncate leading-tight ${accentStyles.accent}`}>
                                 {project.measurableImpact.highlightValue}
                               </span>
                               <span className="block text-[10px] font-bold text-dark dark:text-white truncate">
@@ -454,7 +455,7 @@ export default function PortfolioPage() {
                             variant="unstyled"
                             size="none"
                             onClick={() => setActiveModalStudy(project)}
-                            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-action hover:bg-action-hover text-on-action text-xs font-bold transition-colors shadow-md shadow-orange-700/20 hover:shadow-orange-700/30 cursor-pointer"
+                            className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-md shadow-orange-700/20 hover:shadow-orange-700/30 cursor-pointer ${accentStyles.action}`}
                           >
                             <span>{content.texts["case_studies_list_text_12"]}</span>
                             <ArrowRight className="w-3.5 h-3.5" />
@@ -530,7 +531,7 @@ export default function PortfolioPage() {
                           >
                             {project.categoryTag}
                           </span>
-                          <span className="text-[10px] text-orange-800 dark:text-orange-400 font-semibold">
+                          <span className={`text-[10px] font-semibold ${accentStyles.text}`}>
                             {project.servicePillar}
                           </span>
                         </div>
@@ -545,7 +546,7 @@ export default function PortfolioPage() {
                           {project.challenge}
                         </p>
                         <p className="mt-1 text-[11px] text-gray-800 dark:text-white/90 line-clamp-2">
-                          <strong className="text-orange-700 dark:text-orange-400">
+                          <strong className={accentStyles.text}>
                             {content.texts["case_studies_list_text_19"]}
                           </strong>{" "}
                           {project.solution}
@@ -554,7 +555,7 @@ export default function PortfolioPage() {
 
                       {/* KPI */}
                       <td className="py-4 px-5 align-top whitespace-nowrap">
-                        <span className="font-extrabold text-orange-600 dark:text-orange-400 block text-base leading-tight">
+                        <span className={`font-extrabold block text-base leading-tight ${accentStyles.text}`}>
                           {project.measurableImpact.highlightValue}
                         </span>
                         <span className="text-[10px] text-dark dark:text-white font-medium block">
@@ -567,7 +568,7 @@ export default function PortfolioPage() {
                           variant="unstyled"
                           size="none"
                           onClick={() => setActiveModalStudy(project)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-action hover:bg-action-hover text-on-action text-xs font-bold transition-all shadow-sm shadow-orange-600/20 cursor-pointer"
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm shadow-orange-600/20 cursor-pointer ${accentStyles.action}`}
                         >
                           <span>{content.texts["case_studies_list_text_20"]}</span>
                           <ArrowRight className="w-3 h-3" />
@@ -604,7 +605,7 @@ export default function PortfolioPage() {
               <ScrollReveal key={item.label} delay={idx * 0.1} className="h-full">
                 <div className="p-6 rounded-2xl bg-white dark:bg-[#16162c] border border-gray-200 dark:border-white/10 hover:border-orange-500/40 transition-all shadow-sm h-full flex flex-col justify-between">
                   <div>
-                    <span className="block text-3xl md:text-4xl font-extrabold text-orange-700 dark:text-orange-400">
+                    <span className={`block text-3xl md:text-4xl font-extrabold ${accentStyles.accent}`}>
                       {item.value}
                     </span>
                     <h3 className="mt-2 font-bold text-dark dark:text-white text-base">{item.label}</h3>
@@ -669,7 +670,7 @@ export default function PortfolioPage() {
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Link
                   href={content.texts["portfolio_cta_href_4"]}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 bg-action hover:bg-action-hover text-on-action font-semibold rounded-xl transition-colors shadow-md shadow-orange-700/20 hover:shadow-lg hover:shadow-orange-700/30 text-sm"
+                  className={`inline-flex items-center gap-2 px-8 py-3.5 font-semibold rounded-xl transition-colors shadow-md shadow-orange-700/20 hover:shadow-lg hover:shadow-orange-700/30 text-sm ${accentStyles.action}`}
                 >
                   {content.texts["portfolio_cta_text_5"]}
                   <ArrowRight className="w-4 h-4" />
@@ -718,7 +719,7 @@ export default function PortfolioPage() {
                 size="none"
                 onClick={() => setActiveModalStudy(null)}
                 aria-label="Tutup jendela studi kasus"
-                className="absolute top-5 right-5 p-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-600 dark:text-white/80 hover:bg-action-hover hover:text-on-action transition-all cursor-pointer"
+                className={`absolute top-5 right-5 p-2 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-600 dark:text-white/80 transition-all cursor-pointer ${accentStyles.hoverFill}`}
               >
                 <X className="w-5 h-5" />
               </Button>
@@ -737,7 +738,7 @@ export default function PortfolioPage() {
                 </div>
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-bold text-orange-800 dark:text-orange-400">
+                    <span className={`text-xs font-bold ${accentStyles.text}`}>
                       {activeModalStudy.client}
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/10 text-gray-700 dark:text-white/80 border border-gray-200 dark:border-white/10">
@@ -755,7 +756,7 @@ export default function PortfolioPage() {
 
               {/* Tagline Box */}
               <div className="mt-5 p-4 rounded-xl bg-orange-50/70 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-900/40">
-                <p className="text-xs sm:text-sm font-semibold text-orange-950 dark:text-orange-200 leading-relaxed">
+                <p className={`text-xs sm:text-sm font-semibold leading-relaxed ${accentStyles.text}`}>
                   {activeModalStudy.tagline}
                 </p>
               </div>
@@ -786,10 +787,10 @@ export default function PortfolioPage() {
               {/* Measurable Impact Highlight */}
               <div className="mt-6 p-5 rounded-2xl bg-gradient-to-r from-orange-500/10 via-amber-500/10 to-orange-500/10 border border-orange-300/60 dark:border-orange-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <span className="block text-xs font-bold text-orange-900 dark:text-orange-300 uppercase tracking-wider">
+                  <span className={`block text-xs font-bold uppercase tracking-wider ${accentStyles.text}`}>
                     Capaian Kinerja & Dampak Terukur:
                   </span>
-                  <span className="block text-2xl sm:text-3xl font-black text-orange-700 dark:text-orange-400 mt-1">
+                  <span className={`block text-2xl sm:text-3xl font-black mt-1 ${accentStyles.accent}`}>
                     {activeModalStudy.measurableImpact.highlightValue}
                   </span>
                   <span className="block text-xs font-bold text-dark dark:text-white">
@@ -870,13 +871,13 @@ export default function PortfolioPage() {
                   <Link
                     href={`/portfolio/${encodeURIComponent(activeModalStudy.id)}`}
                     onClick={() => setActiveModalStudy(null)}
-                    className="rounded-xl border border-orange-200 px-4 py-2 text-xs font-semibold text-orange-800 hover:bg-orange-50 dark:border-orange-400/40 dark:text-orange-300 dark:hover:bg-orange-400/10"
+                    className={`rounded-xl border border-orange-200 px-4 py-2 text-xs font-semibold hover:bg-orange-50 dark:border-orange-400/40 dark:hover:bg-orange-400/10 ${accentStyles.text}`}
                   >
                     Baca Studi Kasus Lengkap
                   </Link>
                   <Link
                     href={consultationHref({ source: "portfolio", referenceId: activeModalStudy.id })}
-                    className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-action hover:bg-action-hover text-on-action text-xs font-bold transition-all shadow-md shadow-orange-600/20"
+                    className={`inline-flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-md shadow-orange-600/20 ${accentStyles.action}`}
                   >
                     Konsultasikan Proyek Serupa
                     <ArrowRight className="w-3.5 h-3.5" />

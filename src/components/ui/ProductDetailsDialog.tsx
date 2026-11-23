@@ -1,4 +1,5 @@
 "use client";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Button from "@/components/ui/Button";
 
 import { useState } from "react";
@@ -21,6 +22,8 @@ export default function ProductDetailsDialog({
 }) {
   const ref = useModalFocus(true, onClose);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const accentText = preview ? "text-orange-800 dark:text-orange-300" : accentStyles.text;
+  const accentIcon = preview ? "text-orange-700 dark:text-orange-300" : accentStyles.accent;
   const features = [...new Set(product.features.filter(Boolean))];
   const tags = [...new Set(product.tags.filter(Boolean))];
   const toggle = (feature: string) =>
@@ -64,7 +67,7 @@ export default function ProductDetailsDialog({
           <div className="grid md:grid-cols-2 items-start gap-5 sm:gap-6">
             <ProductPhoto image={product.image} name={product.name} className="h-40 sm:h-52 md:h-60 rounded-xl" />
             <div className="min-w-0">
-              <span className="inline-block max-w-full rounded-lg bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/60 px-2.5 py-1 text-xs font-semibold text-orange-800 dark:text-orange-300">
+              <span className={`inline-block max-w-full rounded-lg border border-orange-200 bg-orange-50 px-2.5 py-1 text-xs font-semibold dark:border-orange-800/60 dark:bg-orange-950/40 ${accentText}`}>
                 {product.category}
               </span>
               <h2
@@ -127,7 +130,7 @@ export default function ProductDetailsDialog({
               <h3 id="product-features-heading" className="font-bold text-slate-900 dark:text-white">
                 Fitur & Ruang Lingkup
               </h3>
-              <span className="text-xs font-semibold text-orange-800 dark:text-orange-300" aria-live="polite">
+              <span className={`text-xs font-semibold ${accentText}`} aria-live="polite">
                 {selectionText}
               </span>
             </div>
@@ -179,7 +182,7 @@ export default function ProductDetailsDialog({
                   className="flex items-start gap-2 text-sm leading-relaxed text-slate-700 dark:text-slate-200"
                 >
                   <CheckCircle2
-                    className="mt-0.5 h-4 w-4 shrink-0 text-orange-700 dark:text-orange-300"
+                    className={`mt-0.5 h-4 w-4 shrink-0 ${accentIcon}`}
                     aria-hidden="true"
                   />
                   <span>{question}</span>
@@ -205,7 +208,7 @@ export default function ProductDetailsDialog({
                   features: selectedFeatures,
                   source: "products",
                 })}
-                className="min-w-0 min-h-11 inline-flex items-center justify-center gap-2 rounded-xl bg-action hover:bg-action-hover px-3 py-2.5 text-center text-xs sm:text-sm font-semibold text-on-action"
+                className={`min-w-0 min-h-11 inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-center text-xs sm:text-sm font-semibold ${accentStyles.action}`}
               >
                 Konsultasi Produk
                 <ArrowRight className="hidden sm:block h-4 w-4 shrink-0" aria-hidden="true" />

@@ -1,11 +1,117 @@
 .surface {
   --public-action: #f54a00;
   --public-action-hover: #e84700;
+  --public-action-label: #fff;
+  --public-accent: var(--public-action);
+  --public-label: #334155;
+  --public-tint: #fff3ec;
+  --public-tint-border: #ffd1ba;
+  --public-gradient-end: #f26522;
+  --public-nav-accent: var(--public-accent);
+}
+
+:global(.dark) .surface {
+  --public-label: #e2e8f0;
+  --public-tint: color-mix(in srgb, var(--public-action) 12%, #1a1a2e);
+  --public-tint-border: color-mix(in srgb, var(--public-action) 45%, #1a1a2e);
 }
 
 @media (prefers-contrast: more) {
   .surface {
-    --public-action: #9a3412;
-    --public-action-hover: #7c2d12;
+    --public-action-label: #0f172a;
+    --public-gradient-end: var(--public-accent);
+    --public-nav-accent: var(--public-label);
+  }
+
+  :global(.dark) .surface {
+    --public-accent: #fdba74;
+  }
+}
+
+.accent {
+  color: var(--public-accent);
+}
+
+.text {
+  color: var(--public-label);
+  text-decoration-color: var(--public-accent);
+}
+
+.soft {
+  color: var(--public-label);
+  background-color: var(--public-tint);
+  border-color: var(--public-tint-border);
+}
+
+.mutedAccent {
+  color: var(--public-accent);
+  opacity: 0.3;
+}
+
+.fill,
+.action {
+  background-color: var(--public-action);
+  color: var(--public-action-label);
+}
+
+.gradientText {
+  color: var(--public-accent);
+  background-image: linear-gradient(90deg, var(--public-accent), var(--public-gradient-end));
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.navLink:is([aria-current="page"], :focus-visible) {
+  color: var(--public-nav-accent);
+}
+
+.navUnderline {
+  position: absolute;
+  inset: auto auto 0 0;
+  width: 0;
+  height: 2px;
+  border-radius: 9999px;
+  background-color: var(--public-accent);
+  transition: width 150ms;
+}
+
+.navLink:is([aria-current="page"], :focus-visible) .navUnderline {
+  width: 100%;
+}
+
+@media (hover: hover) {
+  .action:hover:not(:disabled),
+  .hoverFill:hover {
+    background-color: var(--public-action-hover);
+    color: var(--public-action-label);
+  }
+
+  .hoverText:hover,
+  :global(.group):hover .groupHoverText {
+    color: var(--public-label);
+    text-decoration-line: underline;
+    text-decoration-color: var(--public-accent);
+    text-underline-offset: 0.2em;
+  }
+
+  .navLink:hover {
+    color: var(--public-nav-accent);
+  }
+
+  .navLink:hover .navUnderline {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navUnderline {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .gradientText {
+    background-image: none;
+    -webkit-text-fill-color: currentColor;
   }
 }

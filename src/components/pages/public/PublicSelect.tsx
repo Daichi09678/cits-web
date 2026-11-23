@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown } from "lucide-react";
 import styles from "./PublicSelect.module.css";
+import accentStyles from "./PublicAccent.module.css";
 
 type Option = string | { value: string; label: string };
 
@@ -176,7 +177,7 @@ export default function PublicSelect({
             role="listbox"
             aria-labelledby={labelledBy}
             aria-label={ariaLabel ?? (labelledBy ? undefined : (placeholder ?? "Pilihan"))}
-            className={styles.panel}
+            className={`${styles.panel} ${accentStyles.surface}`}
             style={position}
             onPointerDown={(event) => event.preventDefault()}
           >

@@ -33,6 +33,7 @@ test("team validation rejects invalid names, orders, flags, and executable photo
     { displayOrder: -1 },
     { displayOrder: 1.2 },
     { isActive: "false" },
+    { showDemoOnAbout: "true" },
     { photoUrl: "javascript:alert(1)" },
     { photoUrl: "//outside.test/photo.jpg" },
     { photoUrl: "/\\outside.test/photo.jpg" },
@@ -48,6 +49,9 @@ test("team validation rejects invalid names, orders, flags, and executable photo
     "data:image/png;base64,aGVsbG8=",
   ])
     assert.equal(team.parseTeamMember({ ...input, photoUrl }).ok, true);
+  assert.equal(team.parseTeamMember({ ...input, isDemo: true, showDemoOnAbout: true }).value.showDemoOnAbout, true);
+  assert.equal(team.parseTeamMember({ ...input, isDemo: true, showDemoOnAbout: false }).value.showDemoOnAbout, undefined);
+  assert.equal(team.parseTeamMember({ ...input, isDemo: false, showDemoOnAbout: true }).value.showDemoOnAbout, undefined);
 });
 
 test("team grouping accepts an optional trimmed name and rejects malformed names", () => {
@@ -138,7 +142,7 @@ test("team API preserves team, new positions and descriptions on create, edit an
   assert.equal(stored.teamName, "Manajemen Proyek");
 });
 
-test("public team responses hide demo, inactive and unpublished members while admins can manage them", async () => {
+test("public team responses require active, listed profiles and explicit permission to display examples", async () => {
   const auth = createTestAuth();
   const handler = routes(
     {
@@ -147,6 +151,9 @@ test("public team responses hide demo, inactive and unpublished members while ad
         { ...input, id: "inactive", isActive: false },
         { ...input, id: "hidden", showOnHomepage: false },
         { ...input, id: "demo", isDemo: true },
+        { ...input, id: "published-demo", isDemo: true, showDemoOnAbout: true },
+        { ...input, id: "inactive-demo", isDemo: true, showDemoOnAbout: true, isActive: false },
+        { ...input, id: "hidden-demo", isDemo: true, showDemoOnAbout: true, showOnHomepage: false },
       ],
     },
     auth
@@ -155,8 +162,9 @@ test("public team responses hide demo, inactive and unpublished members while ad
   const publicMembers = (await response.json()).data;
   assert.deepEqual(
     publicMembers.map((member) => member.id),
-    ["public"]
+    ["public", "published-demo"]
   );
+  assert.equal(publicMembers.find((member) => member.id === "published-demo").isDemo, true);
   assert.equal((await handler.list.GET(request("GET", null, undefined, "/api/team?admin=1"))).status, 401);
   const denied = auth.issueAdminToken({
     sub: "denied",
@@ -175,7 +183,7 @@ test("public team responses hide demo, inactive and unpublished members while ad
   });
   const all = await handler.list.GET(request("GET", viewer, undefined, "/api/team?admin=1"));
   const adminMembers = (await all.json()).data;
-  assert.equal(adminMembers.length, 4);
+  assert.equal(adminMembers.length, 7);
   assert.equal(adminMembers.find((member) => member.id === "demo").isDemo, true);
 });
 

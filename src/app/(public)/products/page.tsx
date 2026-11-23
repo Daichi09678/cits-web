@@ -1,4 +1,5 @@
 "use client";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Button from "@/components/ui/Button";
 
 import { useState } from "react";
@@ -172,8 +173,8 @@ export default function ProductsPage() {
                     onClick={() => setSelectedCategory(cat)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer ${
                       isActive
-                        ? "bg-action text-on-action shadow-md shadow-orange-700/25 scale-105"
-                        : "bg-white dark:bg-[#16162c] text-gray-800 dark:text-white border border-gray-200 dark:border-white/15 hover:border-orange-500/40 hover:text-orange-700 dark:hover:text-orange-400"
+                        ? `shadow-md shadow-orange-700/25 scale-105 ${accentStyles.fill}`
+                        : `bg-white dark:bg-[#16162c] text-gray-800 dark:text-white border border-gray-200 dark:border-white/15 hover:border-orange-500/40 ${accentStyles.hoverText}`
                     }`}
                   >
                     {cat}
@@ -224,7 +225,7 @@ export default function ProductsPage() {
 
                           {/* Icon & Product Name */}
                           <div className="flex items-center gap-3.5 mb-3">
-                            <div className="w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shadow-sm shrink-0">
+                            <div className={`w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center shadow-sm shrink-0 ${accentStyles.accent}`}>
                               <Icon className="w-6 h-6" />
                             </div>
                             <div>
@@ -250,7 +251,7 @@ export default function ProductsPage() {
                                   key={feat}
                                   className="flex items-start gap-2 text-xs text-gray-800 dark:text-white/90 leading-tight"
                                 >
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-orange-700 dark:text-orange-400 shrink-0 mt-0.5" />
+                                  <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${accentStyles.accent}`} />
                                   <span>{feat}</span>
                                 </li>
                               ))}
@@ -282,7 +283,7 @@ export default function ProductsPage() {
                           </Button>
                           <Link
                             href={consultationHref({ productId: product.id, purpose: "demo", source: "products" })}
-                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-action hover:bg-action-hover text-on-action text-xs font-bold transition-colors shadow-md shadow-orange-700/20 hover:shadow-orange-700/30"
+                            className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-md shadow-orange-700/20 hover:shadow-orange-700/30 ${accentStyles.action}`}
                           >
                             Minta Demo
                             <ArrowRight className="w-3.5 h-3.5" />
@@ -344,7 +345,7 @@ export default function ProductsPage() {
                   <div className="mt-8 pt-4">
                     <Link
                       href={consultationHref({ service: `Konsultasi Produk: ${item.title}`, source: "products" })}
-                      className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-action-hover hover:text-on-action text-gray-800 dark:text-white text-xs font-bold border border-gray-200 dark:border-white/15 transition-all shadow-sm"
+                      className={`w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white text-xs font-bold border border-gray-200 dark:border-white/15 transition-all shadow-sm ${accentStyles.hoverFill}`}
                     >
                       Konsultasikan Skema Ini
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -382,7 +383,7 @@ export default function ProductsPage() {
                 <ScrollReveal key={adv.title} delay={idx * 0.1} className="h-full">
                   <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-gray-200 dark:border-white/10 hover:border-orange-500/40 transition-all shadow-sm h-full flex flex-col justify-between">
                     <div>
-                      <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 mb-4 shadow-sm">
+                      <div className={`w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center mb-4 shadow-sm ${accentStyles.accent}`}>
                         <AdvIcon className="w-6 h-6" />
                       </div>
                       <h3 className="font-bold text-dark dark:text-white text-base">{adv.title}</h3>
@@ -420,7 +421,7 @@ export default function ProductsPage() {
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Link
                   href={consultationHref({ purpose: "demo", source: "products" })}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 bg-action hover:bg-action-hover text-on-action font-semibold rounded-xl transition-colors shadow-md shadow-orange-700/20 hover:shadow-lg hover:shadow-orange-700/30 text-sm"
+                  className={`inline-flex items-center gap-2 px-8 py-3.5 font-semibold rounded-xl transition-colors shadow-md shadow-orange-700/20 hover:shadow-lg hover:shadow-orange-700/30 text-sm ${accentStyles.action}`}
                 >
                   Jadwalkan Demo Produk
                   <ArrowRight className="w-4 h-4" />

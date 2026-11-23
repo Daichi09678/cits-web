@@ -8,6 +8,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import ThemeToggle from "@/components/pages/public/ThemeToggle";
 import { CompanyLogo } from "@/components/pages/public/CompanyBrand";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 
 const navLinks = [
   { href: "/", label: "Beranda" },
@@ -72,20 +73,10 @@ export default function Navbar() {
               <Link
                 href={link.href}
                 aria-current={isActive(link.href) ? "page" : undefined}
-                className={`group relative inline-flex min-h-10 items-center text-sm font-medium transition-colors ${
-                  isActive(link.href)
-                    ? "text-orange-700 dark:text-orange-400 font-semibold"
-                    : "text-gray-700 dark:text-white hover:text-orange-700 dark:hover:text-orange-400"
-                }`}
+                className={`relative inline-flex min-h-10 items-center text-sm font-medium text-gray-700 transition-colors aria-[current=page]:font-semibold dark:text-white ${accentStyles.navLink}`}
               >
                 {link.label}
-                {isActive(link.href) ? (
-                  <span
-                    className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-action dark:bg-orange-400"
-                  />
-                ) : (
-                  <span className="absolute bottom-0 left-0 h-0.5 w-0 rounded-full bg-action transition-[width] group-hover:w-full motion-reduce:transition-none dark:bg-orange-400" />
-                )}
+                <span aria-hidden="true" className={accentStyles.navUnderline} />
               </Link>
             </li>
           ))}
@@ -128,10 +119,8 @@ export default function Navbar() {
                   <Link
                     href={link.href}
                     aria-current={isActive(link.href) ? "page" : undefined}
-                    className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
-                      isActive(link.href)
-                        ? "text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 font-semibold"
-                        : "text-gray-700 dark:text-white hover:text-orange-700 dark:hover:text-orange-400 hover:bg-orange-50/50 dark:hover:bg-orange-950/20"
+                    className={`block rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors dark:text-white ${accentStyles.navLink} ${
+                      isActive(link.href) ? "bg-orange-50 font-semibold dark:bg-orange-950/40" : "hover:bg-orange-50/50 dark:hover:bg-orange-950/20"
                     }`}
                     onClick={() => {
                       setMobileOpen(false);

@@ -1,0 +1,46 @@
+.viewport {
+  overflow-x: auto;
+}
+
+.row {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.25rem 0.375rem;
+}
+
+.copy {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .viewport:has(.track) {
+    overflow: clip;
+  }
+
+  .track {
+    display: flex;
+    width: max-content;
+    min-width: 200%;
+    animation: scroll-logos 30s linear infinite;
+  }
+
+  .track .row {
+    display: flex;
+    flex: 1 0 auto;
+    min-width: 0;
+    justify-content: space-around;
+  }
+
+  .viewport:is(:hover, :focus-visible, :active) .track {
+    animation-play-state: paused;
+  }
+
+  @keyframes scroll-logos {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { pageCollection, pageDefinition, type PublicPageContent } from "@/lib/publicPageContent";
@@ -134,7 +135,7 @@ export default function AboutHomeHighlights({
         <div className="mt-8 text-center">
           <Link
             href="/about"
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-4 py-2 text-sm font-semibold text-[#0F172A] transition hover:border-orange-300 hover:text-orange-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:text-orange-300"
+            className={`inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-4 py-2 text-sm font-semibold text-[#0F172A] transition hover:border-orange-300 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 ${accentStyles.hoverText}`}
           >
             Selengkapnya tentang kami
             <ArrowRight className="size-4" aria-hidden="true" />

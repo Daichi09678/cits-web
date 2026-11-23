@@ -1,4 +1,5 @@
 "use client";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Button from "@/components/ui/Button";
 
 import { useEffect, useRef, useState } from "react";
@@ -69,7 +70,7 @@ export default function FaqChat({ faqs }: { faqs: readonly FaqChatItem[] }) {
                 <div
                   className={`min-w-0 max-w-[95%] rounded-xl px-4 py-3 text-sm leading-relaxed ${
                     message.role === "user"
-                      ? "bg-orange-50 text-orange-950 dark:bg-orange-950/30 dark:text-orange-100"
+                      ? `bg-orange-50 dark:bg-orange-950/30 ${accentStyles.text}`
                       : "border border-gray-200 bg-white text-gray-800 dark:border-white/10 dark:bg-[#1A1A2E] dark:text-white/90"
                   }`}
                 >
@@ -101,7 +102,7 @@ export default function FaqChat({ faqs }: { faqs: readonly FaqChatItem[] }) {
                 </span>
                 <ChevronRight
                   aria-hidden="true"
-                  className="h-4 w-4 shrink-0 text-gray-400 group-hover:text-orange-600 dark:group-hover:text-orange-400"
+                  className={`h-4 w-4 shrink-0 text-gray-400 ${accentStyles.groupHoverText}`}
                 />
               </Button>
             ))}

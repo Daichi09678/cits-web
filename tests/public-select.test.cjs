@@ -32,6 +32,7 @@ function mount(extra = {}) {
       "react-dom": { createPortal: (child) => child },
       "lucide-react": require("lucide-react"),
       "./PublicSelect.module.css": { default: {} },
+      "./PublicAccent.module.css": { default: {} },
     },
     {
       document: { body: {}, addEventListener() {}, removeEventListener() {} },

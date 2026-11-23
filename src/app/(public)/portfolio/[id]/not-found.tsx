@@ -1,3 +1,4 @@
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Link from "next/link";
 
 export default function CaseStudyNotFound() {
@@ -9,7 +10,7 @@ export default function CaseStudyNotFound() {
       </p>
       <Link
         href="/portfolio"
-        className="mt-7 inline-flex min-h-11 items-center rounded-xl bg-action px-5 py-2.5 text-sm font-bold text-on-action hover:bg-action-hover"
+        className={`mt-7 inline-flex min-h-11 items-center rounded-xl px-5 py-2.5 text-sm font-bold ${accentStyles.action}`}
       >
         Kembali ke Portofolio
       </Link>

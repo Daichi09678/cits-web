@@ -1,5 +1,6 @@
 "use client";
 
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -40,7 +41,7 @@ export default function CaseStudyDetail({
     return (
       <main id="main-content" className={`min-h-screen py-24 ${pageBackground}`}>
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300">
+          <div className={`mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-orange-50 dark:bg-orange-500/10 ${accentStyles.accent}`}>
             <Briefcase className="h-6 w-6" />
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">Studi kasus tidak ditemukan</h1>
@@ -50,7 +51,7 @@ export default function CaseStudyDetail({
           </p>
           <Link
             href="/portfolio"
-            className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-xl bg-action px-5 py-2.5 text-sm font-bold text-on-action transition hover:bg-action-hover"
+            className={`mt-7 inline-flex min-h-11 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition ${accentStyles.action}`}
           >
             <ArrowLeft className="h-4 w-4" />
             Kembali ke Portofolio
@@ -92,7 +93,7 @@ export default function CaseStudyDetail({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={study.clientLogo} alt="" className="h-8 w-8 shrink-0 object-contain" />
               ) : (
-                <Building2 className="h-6 w-6 shrink-0 text-orange-700 dark:text-orange-300" />
+                <Building2 className={`h-6 w-6 shrink-0 ${accentStyles.accent}`} />
               )}
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold   text-slate-500 dark:text-slate-400">Klien</p>
@@ -103,13 +104,13 @@ export default function CaseStudyDetail({
             </div>
             <Link
               href={consultationHref({ source: "portfolio", referenceId: study.id })}
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-action px-5 py-2.5 text-sm font-bold text-on-action   transition hover:bg-action-hover"
+              className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition ${accentStyles.action}`}
             >
               Konsultasi Kebutuhan Serupa
             </Link>
             <Link
               href="/portfolio"
-              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-orange-300 hover:text-orange-700 dark:border-white/15 dark:bg-white/5 dark:text-slate-200 dark:hover:text-orange-300"
+              className={`inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-orange-300 dark:border-white/15 dark:bg-white/5 dark:text-slate-200 ${accentStyles.hoverText}`}
             >
               <ArrowLeft className="h-4 w-4" />
               Semua Portofolio
@@ -128,12 +129,12 @@ export default function CaseStudyDetail({
             aria-labelledby="impact-heading"
             className="rounded-xl border border-slate-200 bg-slate-50/70 p-6 sm:p-8 dark:border-white/10 dark:bg-white/[0.03]"
           >
-            <h2 id="impact-heading" className="text-xs font-bold   text-orange-800 dark:text-orange-300">
+            <h2 id="impact-heading" className={`text-xs font-bold ${accentStyles.text}`}>
               Metrik Proyek Menurut Dokumentasi CITS
             </h2>
             <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-3xl font-black leading-none text-orange-600 sm:text-5xl dark:text-orange-400">
+                <p className={`text-3xl font-black leading-none sm:text-5xl ${accentStyles.accent}`}>
                   {study.measurableImpact.highlightValue}
                 </p>
                 <p className="mt-2 text-sm font-bold text-slate-800 dark:text-slate-100">
@@ -238,7 +239,7 @@ export default function CaseStudyDetail({
               className="h-full rounded-xl border border-slate-200 p-5 dark:border-white/10"
             >
               <h2 id="scope-heading" className="flex items-center gap-2 text-sm font-bold">
-                <Layers className="h-4 w-4 text-orange-700 dark:text-orange-300" />
+                <Layers className={`h-4 w-4 ${accentStyles.accent}`} />
                 Lingkup Pekerjaan
               </h2>
               <ul className="mt-3 space-y-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
@@ -257,7 +258,7 @@ export default function CaseStudyDetail({
               className="h-full rounded-xl border border-slate-200 p-5 dark:border-white/10"
             >
               <h2 id="tech-heading" className="flex items-center gap-2 text-sm font-bold">
-                <Cpu className="h-4 w-4 text-orange-700 dark:text-orange-300" />
+                <Cpu className={`h-4 w-4 ${accentStyles.accent}`} />
                 Teknologi
               </h2>
               <div className="mt-3 flex flex-wrap gap-1.5">
@@ -275,7 +276,7 @@ export default function CaseStudyDetail({
               className="h-full rounded-xl border border-slate-200 p-5 dark:border-white/10"
             >
               <h2 id="deliverables-heading" className="flex items-center gap-2 text-sm font-bold">
-                <FileText className="h-4 w-4 text-orange-700 dark:text-orange-300" />
+                <FileText className={`h-4 w-4 ${accentStyles.accent}`} />
                 Luaran
               </h2>
               <ul className="mt-3 space-y-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
@@ -312,11 +313,11 @@ export default function CaseStudyDetail({
                       rel="noopener noreferrer"
                       className="group flex items-start gap-3 rounded-xl border border-transparent bg-white p-3 transition hover:border-orange-300 dark:bg-white/5 dark:hover:border-orange-500/40"
                     >
-                      <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-300">
+                      <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-orange-50 dark:bg-orange-500/10 ${accentStyles.accent}`}>
                         <ExternalLink className="h-3.5 w-3.5" />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block text-xs font-bold text-slate-800 group-hover:text-orange-800 dark:text-slate-100 dark:group-hover:text-orange-300">
+                        <span className={`block text-xs font-bold text-slate-800 dark:text-slate-100 ${accentStyles.groupHoverText}`}>
                           {source.label}
                         </span>
                         <span className="mt-0.5 block text-[11px] text-slate-500 dark:text-slate-400">
@@ -324,7 +325,7 @@ export default function CaseStudyDetail({
                           {source.date ? ` · ${source.date}` : ""}
                         </span>
                       </span>
-                      <ArrowUpRight className="mt-1 h-3.5 w-3.5 shrink-0 text-slate-400 transition group-hover:text-orange-700 dark:group-hover:text-orange-300" />
+                      <ArrowUpRight className={`mt-1 h-3.5 w-3.5 shrink-0 text-slate-400 transition ${accentStyles.groupHoverText}`} />
                     </a>
                   </li>
                 ))}
@@ -348,13 +349,13 @@ export default function CaseStudyDetail({
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
                 href={consultationHref({ source: "portfolio", referenceId: study.id })}
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-action px-5 py-2.5 text-sm font-bold text-on-action transition hover:bg-action-hover"
+                className={`inline-flex min-h-11 items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition ${accentStyles.action}`}
               >
                 Mulai Konsultasi
               </Link>
               <Link
                 href="/portfolio"
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/20 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-orange-400 hover:text-orange-200"
+                className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/20 px-5 py-2.5 text-sm font-semibold text-white underline-offset-4 transition hover:border-orange-400 hover:underline"
               >
                 Lihat Portofolio Lain
               </Link>
@@ -375,11 +376,11 @@ export default function CaseStudyDetail({
                   href={`/portfolio/${encodeURIComponent(item.id)}`}
                   className="group rounded-xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 hover:border-orange-300  dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-orange-500/40"
                 >
-                  <p className="text-[10px] font-bold   text-orange-800 dark:text-orange-300">
+                  <p className={`text-[10px] font-bold ${accentStyles.text}`}>
                     {item.clientShort || item.client}
                   </p>
                   <p className="mt-1.5 line-clamp-2 text-sm font-bold text-slate-900 dark:text-white">{item.title}</p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 group-hover:text-orange-700 dark:text-slate-400 dark:group-hover:text-orange-300">
+                  <span className={`mt-3 inline-flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400 ${accentStyles.groupHoverText}`}>
                     Buka detail
                   </span>
                 </Link>

@@ -1,5 +1,6 @@
 "use client";
 
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import { motion } from "framer-motion";
 import { ShieldCheck, Zap, Building2 } from "lucide-react";
 import Link from "next/link";
@@ -73,7 +74,7 @@ export default function HeroMockup({ title, description, projects = [] }: HeroMo
                     className="flex items-center justify-between gap-3 rounded-lg border border-slate-200/70 bg-white p-2.5 transition hover:border-orange-400 dark:border-white/5 dark:bg-[#1a1a32]"
                   >
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300">
+                      <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-orange-100 dark:bg-orange-950/60 ${accentStyles.accent}`}>
                         <Building2 className="h-4 w-4" />
                       </div>
                       <div className="min-w-0">
@@ -106,7 +107,7 @@ export default function HeroMockup({ title, description, projects = [] }: HeroMo
             </div>
 
             <div className="flex items-center gap-1.5 sm:gap-2 text-slate-800 dark:text-slate-100 sm:justify-end min-w-0">
-              <div className="w-5 h-5 rounded bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-400 flex items-center justify-center shrink-0">
+              <div className={`w-5 h-5 rounded bg-orange-100 dark:bg-orange-950/60 flex items-center justify-center shrink-0 ${accentStyles.accent}`}>
                 <Zap className="w-3.5 h-3.5" />
               </div>
               <span className="font-semibold text-[11px]">Diskusikan kebutuhan Anda</span>

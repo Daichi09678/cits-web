@@ -89,6 +89,10 @@ test("directory hides demo profiles and handles loading, errors and an empty ros
   const demo = render({ members: [{ ...members[0], isDemo: true }] });
   assert.doesNotMatch(demo, /Rina|<article/);
   assert.match(demo, /Hubungi Tim CITS/);
+  const publishedExample = render({ members: [{ ...members[0], isDemo: true, showDemoOnAbout: true }] });
+  assert.match(publishedExample, /Seluruh profil di bagian ini adalah ilustrasi/);
+  assert.match(publishedExample, /Lihat profil Rina \(profil ilustrasi\)/);
+  assert.doesNotMatch(publishedExample, /Data contoh/);
   const loading = render({ members: [], loading: true });
   assert.match(loading, /Memuat informasi tim/);
   assert.doesNotMatch(loading, /belum tersedia|anggota ditampilkan/);

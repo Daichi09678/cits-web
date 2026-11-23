@@ -93,8 +93,8 @@ export default function AdminTeamPage() {
                 Anggota Tim
               </h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
-                Anggota aktif yang dipublikasikan tampil di bagian Tim pada halaman Tentang Kami sesuai urutan. Gunakan
-                data dan foto resmi untuk setiap profil yang dipublikasikan.
+                Profil aktif yang dipublikasikan tampil sesuai urutan di Tentang Kami. Direktori publik menyertakan
+                keterangan untuk profil ilustrasi.
               </p>
             </div>
             {canCreate && (
@@ -114,8 +114,8 @@ export default function AdminTeamPage() {
           <div className="px-5 py-5 sm:px-6">
             {!loading && !error && members.length > 0 && publicCount === 0 && (
               <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-500/30 dark:bg-amber-950/30 dark:text-amber-100">
-                Belum ada profil yang tampil di Tentang Kami. Profil resmi akan tampil setelah statusnya Aktif dan
-                pilihan Tampilkan di Tentang Kami dicentang. Profil contoh hanya terlihat di Back Office.
+                Belum ada profil yang tampil di Tentang Kami. Atur status menjadi Aktif, lalu centang pilihan tampil
+                pada profil yang ingin dipublikasikan.
               </p>
             )}
             {success && (
@@ -232,7 +232,7 @@ export default function AdminTeamPage() {
                           const examples = await citsApi.seedTeamExamples();
                           setMembers(examples);
                           announceTeamUpdate();
-                          setSuccess("Data contoh ditambahkan. Ganti dengan data resmi sebelum dipublikasikan.");
+                          setSuccess("Data contoh ditambahkan. Centang pilihan tampil pada profil contoh yang ingin dipublikasikan.");
                         } catch (cause) {
                           setMutationError(cause instanceof Error ? cause.message : "Data contoh belum tersimpan.");
                         } finally {

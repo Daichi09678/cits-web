@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import GradientText from "@/components/ui/GradientText";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 
 interface TypewriterTextProps {
   words?: string[];
@@ -63,13 +65,9 @@ export default function TypewriterText({
 
   return (
     <span className="inline min-h-[1.15em] [overflow-wrap:anywhere]">
+      <GradientText className={className}>{currentText || "\u00A0"}</GradientText>
       <span
-        className={`text-orange-700 dark:text-orange-400 bg-gradient-to-r from-orange-600 to-brand dark:from-brand dark:to-orange-400 bg-clip-text [-webkit-text-fill-color:transparent] ${className}`}
-      >
-        {currentText || "\u00A0"}
-      </span>
-      <span
-        className={`inline-block w-[3px] sm:w-[4px] h-[0.85em] ml-1 bg-brand rounded-full align-baseline animate-pulse ${cursorClassName}`}
+        className={`ml-1 inline-block h-[0.85em] w-[3px] animate-pulse rounded-full align-baseline sm:w-[4px] ${accentStyles.fill} ${cursorClassName}`}
         aria-hidden="true"
       />
     </span>

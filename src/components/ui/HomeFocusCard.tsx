@@ -1,4 +1,5 @@
 import Link from "next/link";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import { ArrowUpRight, Shield } from "lucide-react";
 import SpotlightCard from "@/components/ui/SpotlightCard";
 import { DEFAULT_FOCUS_EXPLANATION, resolveFocusItems } from "@/lib/focusContent";
@@ -14,10 +15,10 @@ export default function HomeFocusCard({ content }: { content?: LandingServicesIn
         className="min-w-0 p-8 md:p-10 flex flex-col h-full bg-white dark:bg-[#16162c] text-dark dark:text-white [overflow-wrap:anywhere]"
       >
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-          <span className="w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/20">
-            <Shield className="w-7 h-7 text-white" aria-hidden="true" />
+          <span className={`flex size-14 shrink-0 items-center justify-center rounded-2xl shadow-lg shadow-orange-600/20 ${accentStyles.fill}`}>
+            <Shield className="size-7" aria-hidden="true" />
           </span>
-          <span className="max-w-full text-xs font-bold text-orange-900 dark:text-orange-300 bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 px-3 py-1.5 rounded-full uppercase tracking-wider">
+          <span className={`max-w-full rounded-full border px-3 py-1.5 text-xs font-bold uppercase tracking-wider ${accentStyles.soft}`}>
             {content?.badge || "Budaya Kerja & Standar SLA"}
           </span>
         </div>
@@ -33,12 +34,12 @@ export default function HomeFocusCard({ content }: { content?: LandingServicesIn
               className={`min-w-0 rounded-xl bg-orange-50/70 dark:bg-[#121222] border border-orange-200/70 dark:border-white/10 p-4 ${items.length % 2 && index === items.length - 1 ? "sm:col-span-2" : ""}`}
             >
               <div className="flex items-start gap-3">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-950/60 text-xl font-black text-orange-800 dark:text-orange-300">
+                <span className={`flex size-10 shrink-0 items-center justify-center rounded-lg text-xl font-black ${accentStyles.soft}`}>
                   {item.letter}
                 </span>
                 <div className="min-w-0">
                   <h4 className="text-sm font-bold">{item.word}</h4>
-                  <p className="mt-0.5 text-xs font-semibold text-orange-800 dark:text-orange-300">{item.desc}</p>
+                  <p className={`mt-0.5 text-xs font-semibold ${accentStyles.text}`}>{item.desc}</p>
                 </div>
               </div>
               {item.detail && (
@@ -54,7 +55,7 @@ export default function HomeFocusCard({ content }: { content?: LandingServicesIn
             </p>
             <Link
               href={content?.linkUrl || "/about"}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-800 dark:text-orange-300 hover:underline"
+              className={`inline-flex items-center gap-1.5 text-sm font-semibold hover:underline ${accentStyles.text}`}
             >
               {content?.linkText || "Kenali CITS Lebih Dekat"}
               <ArrowUpRight className="w-4 h-4 shrink-0" aria-hidden="true" />

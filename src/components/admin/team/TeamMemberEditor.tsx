@@ -3,7 +3,7 @@
 import { useId, useState, type ChangeEvent, type FormEvent } from "react";
 import { Upload } from "lucide-react";
 import { citsApi } from "@/lib/api";
-import { isTeamPhotoUrl, parseTeamMember, type TeamMember, type TeamMemberInput } from "@/lib/team";
+import { isTeamMemberListedOnAbout, isTeamPhotoUrl, parseTeamMember, type TeamMember, type TeamMemberInput } from "@/lib/team";
 import TeamDialog, { teamButton, teamField, teamPrimary, teamSecondary } from "./TeamDialog";
 import { TeamPhoto } from "./TeamMemberDetails";
 import TeamAssignmentSelect from "./TeamAssignmentSelect";
@@ -245,11 +245,17 @@ export default function TeamMemberEditor({
               <input
                 type="checkbox"
                 name="showOnHomepage"
-                checked={draft.showOnHomepage !== false}
-                onChange={(event) => setDraft({ ...draft, showOnHomepage: event.target.checked })}
+                checked={isTeamMemberListedOnAbout(draft)}
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    showOnHomepage: event.target.checked,
+                    showDemoOnAbout: draft.isDemo === true && event.target.checked,
+                  })
+                }
                 className="h-4 w-4 accent-[#F45100]"
               />
-              Tampilkan di Tentang Kami
+              {draft.isDemo ? "Tampilkan di Tentang Kami sebagai data contoh" : "Tampilkan di Tentang Kami"}
             </label>
             <details className="border-t border-slate-200 dark:border-white/10 pt-4">
               <summary className="cursor-pointer text-xs font-medium text-slate-600 dark:text-slate-300">
@@ -269,10 +275,17 @@ export default function TeamMemberEditor({
                 <input
                   type="checkbox"
                   checked={draft.isDemo === true}
-                  onChange={(event) => setDraft({ ...draft, isDemo: event.target.checked })}
+                  onChange={(event) =>
+                    setDraft({
+                      ...draft,
+                      isDemo: event.target.checked,
+                      showOnHomepage: isTeamMemberListedOnAbout(draft),
+                      showDemoOnAbout: false,
+                    })
+                  }
                   className="h-4 w-4 accent-[#F45100]"
                 />
-                Data contoh (penanda untuk pengelolaan admin)
+                Tandai sebagai data contoh
               </label>
             </details>
           </fieldset>

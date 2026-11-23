@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, ArrowUpRight } from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
@@ -8,7 +9,7 @@ import FloatingShapes from "@/components/animations/FloatingShapes";
 import GradientText from "@/components/ui/GradientText";
 import HeroMockup from "@/components/ui/HeroMockup";
 import GridPattern from "@/components/ui/GridPattern";
-import Marquee from "@/components/ui/Marquee";
+import ClientLogoList from "@/components/pages/home/ClientLogoList";
 import { useCitsStore } from "@/stores/citsStore";
 import { initialAboutData, initialLandingPageData, defaultSectionVisibility } from "@/data/initialData";
 import FeaturedCatalog from "@/components/ui/FeaturedCatalog";
@@ -46,7 +47,7 @@ export default function Home() {
   const clientsIntro = { ...initialLandingPageData.clientsIntro, ...currentLanding.clientsIntro };
   const cta = { ...initialLandingPageData.cta, ...currentLanding.cta };
 
-  const marqueeList = storeClients
+  const clientLogos = storeClients
     .filter((client) => client.isActive !== false && client.showOnHome !== false)
     .map((client) => ({ name: client.name, logo: client.logo, showLabel: true }));
   const featuredProducts = activeProducts.filter((product) => product.showOnHome !== false);
@@ -60,7 +61,7 @@ export default function Home() {
       {contactInfo?.announcement?.isActive && contactInfo.announcement.text && (
         <aside
           aria-label="Pengumuman Resmi"
-          className="bg-action text-white py-2.5 px-4 text-xs font-semibold shadow-xs"
+          className={`py-2.5 px-4 text-xs font-semibold shadow-xs ${accentStyles.fill}`}
         >
           <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-center sm:text-left">
             <div className="flex items-center gap-2 mx-auto sm:mx-0">
@@ -72,7 +73,7 @@ export default function Home() {
                 href={contactInfo.announcement.linkUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mx-auto sm:mx-0 inline-flex items-center gap-1 underline hover:text-orange-100 font-bold text-[11px]"
+                className="mx-auto inline-flex items-center gap-1 text-[11px] font-bold underline hover:decoration-2 sm:mx-0"
               >
                 <span>{contactInfo.announcement.linkText}</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -125,7 +126,7 @@ export default function Home() {
 
                     <Link
                       href={hero.secondaryCtaLink ?? "/products"}
-                      className="px-7 py-3.5 border-2 border-gray-200 dark:border-white/20 hover:border-orange-600 dark:hover:border-orange-400 text-gray-700 dark:text-white hover:text-orange-700 dark:hover:text-orange-400 font-semibold rounded-xl transition-all bg-white/70 dark:bg-white/10 backdrop-blur-sm text-center text-sm shadow-sm"
+                      className={`px-7 py-3.5 border-2 border-gray-200 dark:border-white/20 hover:border-orange-600 dark:hover:border-orange-400 text-gray-700 dark:text-white font-semibold rounded-xl transition-all bg-white/70 dark:bg-white/10 backdrop-blur-sm text-center text-sm shadow-sm ${accentStyles.hoverText}`}
                     >
                       {hero.secondaryCtaText ?? "Eksplorasi Produk"}
                     </Link>
@@ -173,7 +174,7 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
               {activeHighlights.map((item) => (
                 <div key={item.label} className="p-3">
-                  <p className="text-3xl sm:text-4xl md:text-5xl font-black text-orange-600 dark:text-orange-400 tracking-tight break-words">
+                  <p className={`text-3xl sm:text-4xl md:text-5xl font-black tracking-tight break-words ${accentStyles.accent}`}>
                     {item.value}
                   </p>
                   <p className="mt-2 text-xs sm:text-sm font-semibold text-gray-700 dark:text-white">{item.label}</p>
@@ -204,7 +205,7 @@ export default function Home() {
           products={featuredProducts}
           title={(productsIntro.title ?? "Produk Unggulan CITS").split(/(CITS)/g).map((part, index) =>
             part === "CITS" ? (
-              <span key={index} className="text-orange-700 dark:text-orange-400">
+              <span key={index} className={accentStyles.text}>
                 CITS
               </span>
             ) : (
@@ -221,17 +222,17 @@ export default function Home() {
       )}
       <AboutHomeHighlights content={companyContent} aboutData={aboutData} />
 
-      {/* Client Logos Marquee */}
-      {visibility.clients !== false && marqueeList.length > 0 && (
-        <section className="py-16 bg-white dark:bg-[#1A1A2E] border-t border-gray-100 dark:border-white/10 relative overflow-hidden transition-colors">
+      {/* Client logos */}
+      {visibility.clients !== false && clientLogos.length > 0 && (
+        <section aria-labelledby="client-logos-heading" className="py-16 bg-white dark:bg-[#1A1A2E] border-t border-gray-100 dark:border-white/10 relative overflow-hidden transition-colors">
           <GridPattern className="opacity-40" />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <ScrollReveal>
-              <p className="text-center text-xs md:text-sm text-gray-700 dark:text-white/90 uppercase tracking-widest mb-8 font-semibold">
+              <h2 id="client-logos-heading" className="text-center text-xs md:text-sm text-gray-700 dark:text-white/90 uppercase tracking-widest mb-8 font-semibold">
                 {clientsIntro?.title ?? "Dipercaya oleh Kementerian, BUMN, dan Lembaga Nasional"}
-              </p>
+              </h2>
             </ScrollReveal>
-            <Marquee items={marqueeList} speed={45} />
+            <ClientLogoList items={clientLogos} />
           </div>
         </section>
       )}

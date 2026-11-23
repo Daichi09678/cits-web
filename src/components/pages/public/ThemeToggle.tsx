@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Sun, Moon } from "lucide-react";
 import Button from "@/components/ui/Button";
+import accentStyles from "./PublicAccent.module.css";
 
 export default function ThemeToggle({ className = "" }: { className?: string }) {
   const [isDark, setIsDark] = useState(false);
@@ -49,7 +50,7 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
       className={className}
     >
       {isDark ? (
-        <Sun aria-hidden="true" className="size-4 text-amber-300" />
+        <Sun aria-hidden="true" className={`size-4 ${accentStyles.accent}`} />
       ) : (
         <Moon aria-hidden="true" className="size-4" />
       )}

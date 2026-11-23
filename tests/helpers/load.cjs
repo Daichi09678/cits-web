@@ -32,6 +32,9 @@ function load(relative, overrides = {}, globals = {}, graph = { modules: new Map
           return { ...runtime, jsx: render(runtime.jsx), jsxs: render(runtime.jsxs) };
         }
         if (id in overrides) return overrides[id];
+        if (id === "@/components/pages/public/PublicAccent.module.css") {
+          return { default: new Proxy({}, { get: (_, name) => `public-accent-${name}` }) };
+        }
         if (id.startsWith("node:")) return require(id);
         if (id === "@/components/ui/Button") {
           const button = load(
