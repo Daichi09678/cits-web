@@ -84,7 +84,7 @@ test("full team listing includes every published active member", () => {
 });
 
 test("homepage displays only the first eight eligible members in one responsive grid", () => {
-  const members = load("data/teamMembers.ts").demoTeamMembers;
+  const members = load("data/teamMembers.ts").demoTeamMembers.map((member) => ({ ...member, isDemo: false }));
   const before = structuredClone(members);
   const expected = [...members].sort((a, b) => a.displayOrder - b.displayOrder);
   const html = renderToStaticMarkup(React.createElement(Section, { members }));

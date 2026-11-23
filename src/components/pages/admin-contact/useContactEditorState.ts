@@ -13,6 +13,7 @@ export default function useContactEditorState() {
   const { session } = useAdminAuth();
 
   const canEdit = canPerformAction(session?.user, "contact", "edit");
+  const canCreate = canPerformAction(session?.user, "contact", "create");
 
   const canDelete = canPerformAction(session?.user, "contact", "delete");
 
@@ -61,24 +62,31 @@ export default function useContactEditorState() {
 
   const [replyFeedback, setReplyFeedback] = useState("");
 
-  const [address, setAddress] = useState(contactInfo.address);
+  const [addressDraft, setAddress] = useState<string>();
+  const address = addressDraft ?? contactInfo.address;
 
-  const [phone, setPhone] = useState(contactInfo.phone);
+  const [phoneDraft, setPhone] = useState<string>();
+  const phone = phoneDraft ?? contactInfo.phone;
 
-  const [email, setEmail] = useState(contactInfo.email);
+  const [emailDraft, setEmail] = useState<string>();
+  const email = emailDraft ?? contactInfo.email;
 
-  const [workingHours, setWorkingHours] = useState(contactInfo.workingHours);
+  const [workingHoursDraft, setWorkingHours] = useState<string>();
+  const workingHours = workingHoursDraft ?? contactInfo.workingHours;
 
-  const [emergencyPhone, setEmergencyPhone] = useState(contactInfo.emergencyPhone || "");
+  const [emergencyPhoneDraft, setEmergencyPhone] = useState<string>();
+  const emergencyPhone = emergencyPhoneDraft ?? contactInfo.emergencyPhone ?? "";
 
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [settingsError, setSettingsError] = useState("");
   const settingsPending = useRef(false);
 
-  const [faqsList, setFaqsList] = useState<ContactFaqItem[]>(() => contactInfo.faqs || []);
+  const [faqsDraft, setFaqsList] = useState<ContactFaqItem[]>();
+  const faqsList = faqsDraft ?? contactInfo.faqs ?? [];
 
-  const [servicesList, setServicesList] = useState<string[]>(() => contactInfo.customServices || []);
+  const [servicesDraft, setServicesList] = useState<string[]>();
+  const servicesList = servicesDraft ?? contactInfo.customServices ?? [];
 
   const [newServiceText, setNewServiceText] = useState("");
 
@@ -92,13 +100,17 @@ export default function useContactEditorState() {
 
   const [faqIsActive, setFaqIsActive] = useState(true);
 
-  const [announcementActive, setAnnouncementActive] = useState(contactInfo.announcement?.isActive || false);
+  const [announcementActiveDraft, setAnnouncementActive] = useState<boolean>();
+  const announcementActive = announcementActiveDraft ?? contactInfo.announcement?.isActive ?? false;
 
-  const [announcementText, setAnnouncementText] = useState(contactInfo.announcement?.text || "");
+  const [announcementTextDraft, setAnnouncementText] = useState<string>();
+  const announcementText = announcementTextDraft ?? contactInfo.announcement?.text ?? "";
 
-  const [announcementLinkText, setAnnouncementLinkText] = useState(contactInfo.announcement?.linkText || "");
+  const [announcementLinkTextDraft, setAnnouncementLinkText] = useState<string>();
+  const announcementLinkText = announcementLinkTextDraft ?? contactInfo.announcement?.linkText ?? "";
 
-  const [announcementLinkUrl, setAnnouncementLinkUrl] = useState(contactInfo.announcement?.linkUrl || "");
+  const [announcementLinkUrlDraft, setAnnouncementLinkUrl] = useState<string>();
+  const announcementLinkUrl = announcementLinkUrlDraft ?? contactInfo.announcement?.linkUrl ?? "";
 
   const [faqSuccessMsg, setFaqSuccessMsg] = useState("");
 
@@ -127,8 +139,24 @@ export default function useContactEditorState() {
   return {
     session,
     canEdit,
+    canCreate,
     canDelete,
     contactInfo,
+    clearInfoDraft: () => {
+      setAddress(undefined);
+      setPhone(undefined);
+      setEmail(undefined);
+      setWorkingHours(undefined);
+      setEmergencyPhone(undefined);
+    },
+    clearFaqDraft: () => {
+      setFaqsList(undefined);
+      setServicesList(undefined);
+      setAnnouncementActive(undefined);
+      setAnnouncementText(undefined);
+      setAnnouncementLinkText(undefined);
+      setAnnouncementLinkUrl(undefined);
+    },
     messages,
     isLiveConnected,
     actions,

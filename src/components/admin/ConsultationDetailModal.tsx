@@ -1,4 +1,5 @@
 "use client";
+import { adminAccent, adminAction, adminAccentFill } from "@/components/pages/admin/accentStyles";
 
 import { useEffect, useId, useState } from "react";
 import {
@@ -94,7 +95,7 @@ export default function ConsultationDetailModal({
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div
             aria-hidden="true"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#F45100] text-sm font-semibold text-white"
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${adminAccent} text-sm font-semibold`}
           >
             {message.name.slice(0, 2).toUpperCase()}
           </div>
@@ -225,7 +226,7 @@ export default function ConsultationDetailModal({
                 className="absolute left-[10%] right-[10%] top-2 h-0.5 bg-gray-200 dark:bg-slate-700"
               >
                 <span
-                  className="block h-full bg-[#F45100]"
+                  className={`block h-full ${adminAccentFill}`}
                   style={{ width: `${(Math.max(0, currentIndex) / (progressStages.length - 1)) * 100}%` }}
                 />
               </div>
@@ -241,7 +242,7 @@ export default function ConsultationDetailModal({
                     >
                       <span
                         aria-hidden="true"
-                        className={`h-[18px] w-[18px] rounded-full ${item.key === stage ? "border-[5px] border-[#F45100] bg-white dark:bg-[#151528]" : index < currentIndex ? "border-2 border-[#F45100] bg-[#F45100]" : "border-2 border-gray-300 bg-white dark:border-slate-600 dark:bg-[#151528]"}`}
+                        className={`h-[18px] w-[18px] rounded-full ${item.key === stage ? "border-[5px] border-[#F45100] bg-white dark:bg-[#151528]" : index < currentIndex ? `border-2 border-[#F45100] ${adminAccentFill}` : "border-2 border-gray-300 bg-white dark:border-slate-600 dark:bg-[#151528]"}`}
                       />
                       <span className={item.key === stage ? "font-medium" : ""}>{item.label}</span>
                     </button>
@@ -263,7 +264,7 @@ export default function ConsultationDetailModal({
             </h3>
             <ol className="ml-2 border-l border-gray-200 dark:border-white/10">
               <li className="relative pl-5 text-[13px]">
-                <span aria-hidden="true" className="absolute -left-[5px] top-1 h-2 w-2 rounded-full bg-[#F45100]" />
+                <span aria-hidden="true" className={`absolute -left-[5px] top-1 h-2 w-2 rounded-full ${adminAccentFill}`} />
                 <p className="font-medium">Pesan konsultasi diterima</p>
                 <time dateTime={message.createdAt} className="mt-1 block text-xs leading-5 text-slate-500">
                   {formatMessageDate(message.createdAt)} · {formatMessageTime(message.createdAt)}
@@ -301,7 +302,7 @@ export default function ConsultationDetailModal({
                 type="button"
                 disabled={saving || !canEdit}
                 onClick={() => void saveNotes()}
-                className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#F45100] px-3 text-[13px] font-medium text-white hover:bg-[#d94700] disabled:cursor-not-allowed disabled:opacity-50"
+                className={`inline-flex h-9 items-center gap-2 rounded-lg ${adminAction} px-3 text-[13px] font-medium disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                 {saving ? "Menyimpan..." : "Simpan Catatan"}
@@ -343,7 +344,7 @@ export default function ConsultationDetailModal({
             href={`https://wa.me/${cleanPhone}?text=Halo%20${encodeURIComponent(message.name)},%20terima%20kasih%20telah%20menghubungi%20CITS%20Indonesia.`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 text-[13px] font-medium text-white hover:bg-emerald-700"
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-emerald-700 px-3 text-[13px] font-medium text-white hover:bg-emerald-700"
           >
             <Phone className="h-4 w-4 shrink-0" />
             Balas via WhatsApp
@@ -353,7 +354,7 @@ export default function ConsultationDetailModal({
           type="button"
           disabled={!canEdit}
           onClick={onReply}
-          className="col-span-2 inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[#F45100] px-3 text-[13px] font-medium text-white hover:bg-[#d94700] disabled:cursor-not-allowed disabled:opacity-50"
+          className={`col-span-2 inline-flex h-9 items-center justify-center gap-2 rounded-lg ${adminAction} px-3 text-[13px] font-medium disabled:cursor-not-allowed disabled:opacity-50`}
         >
           <Reply className="h-4 w-4" />
           Kirim Balasan Email

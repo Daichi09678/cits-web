@@ -6,9 +6,13 @@ import type { ContactEditorContext } from "./useContactEditorState";
 export default function createContactSettingsActions(state: ContactEditorContext) {
   const {
     canEdit,
+    canCreate,
+    canDelete,
     dialog,
     actions,
     contactInfo,
+    clearInfoDraft,
+    clearFaqDraft,
     address,
     phone,
     email,
@@ -40,7 +44,7 @@ export default function createContactSettingsActions(state: ContactEditorContext
     setSettingsError,
   } = state;
   const persistSettings = async (data: ContactInfo, faq = false) => {
-    if (!canEdit) {
+    if (!canEdit && (!faq || (!canCreate && !canDelete))) {
       setSettingsError("Anda tidak memiliki izin untuk menyimpan pengaturan kontak.");
       return;
     }
@@ -52,8 +56,13 @@ export default function createContactSettingsActions(state: ContactEditorContext
     setFaqSuccessMsg("");
     try {
       await actions.saveContactInfo(data);
-      if (faq) setFaqSuccessMsg("Pengaturan FAQ dan layanan berhasil disimpan.");
-      else setSavedSuccess(true);
+      if (faq) {
+        clearFaqDraft();
+        setFaqSuccessMsg("Pengaturan FAQ dan layanan berhasil disimpan.");
+      } else {
+        clearInfoDraft();
+        setSavedSuccess(true);
+      }
     } catch (error) {
       setSettingsError(error instanceof Error ? error.message : "Pengaturan kontak gagal disimpan. Silakan coba lagi.");
     } finally {
@@ -80,19 +89,22 @@ export default function createContactSettingsActions(state: ContactEditorContext
         ...contactInfo,
         faqs: faqsList,
         customServices: servicesList,
-        announcement: {
-          isActive: announcementActive,
-          text: announcementText,
-          linkText: announcementLinkText,
-          linkUrl: announcementLinkUrl,
-          type: "info",
-        },
+        ...(canEdit && {
+          announcement: {
+            ...contactInfo.announcement,
+            isActive: announcementActive,
+            text: announcementText,
+            linkText: announcementLinkText,
+            linkUrl: announcementLinkUrl,
+          },
+        }),
       },
       true
     );
   };
 
   const openAddFaqModal = () => {
+    if (!canCreate) return;
     setEditingFaq(null);
     setFaqQuestion("");
     setFaqAnswer("");
@@ -101,6 +113,7 @@ export default function createContactSettingsActions(state: ContactEditorContext
   };
 
   const openEditFaqModal = (faq: ContactFaqItem) => {
+    if (!canEdit) return;
     setEditingFaq(faq);
     setFaqQuestion(faq.question);
     setFaqAnswer(faq.answer);
@@ -110,7 +123,7 @@ export default function createContactSettingsActions(state: ContactEditorContext
 
   const handleSaveFaqItem = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canEdit) {
+    if (editingFaq ? !canEdit : !canCreate) {
       void dialog.alert({
         title: "Akses terbatas",
         description: "Anda tidak memiliki izin untuk tindakan ini.",
@@ -143,7 +156,7 @@ export default function createContactSettingsActions(state: ContactEditorContext
   };
 
   const handleDeleteFaqItem = (id: string) => {
-    if (!canEdit) {
+    if (!canDelete) {
       void dialog.alert({
         title: "Akses terbatas",
         description: "Anda tidak memiliki izin untuk tindakan ini.",
@@ -168,7 +181,7 @@ export default function createContactSettingsActions(state: ContactEditorContext
 
   const handleAddServiceOption = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canEdit) {
+    if (!canCreate) {
       void dialog.alert({
         title: "Akses terbatas",
         description: "Anda tidak memiliki izin untuk tindakan ini.",
@@ -183,7 +196,7 @@ export default function createContactSettingsActions(state: ContactEditorContext
   };
 
   const handleDeleteServiceOption = (index: number) => {
-    if (!canEdit) {
+    if (!canDelete) {
       void dialog.alert({
         title: "Akses terbatas",
         description: "Anda tidak memiliki izin untuk tindakan ini.",

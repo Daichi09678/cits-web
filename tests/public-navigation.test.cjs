@@ -17,6 +17,7 @@ test("public navigation prioritizes the company profile and includes only availa
         span: ({ className }) => React.createElement("span", { className }),
       },
       AnimatePresence: ({ children }) => children,
+      useReducedMotion: () => false,
     },
     "lucide-react": { Menu: () => null, X: () => null },
     "@/components/pages/public/ThemeToggle": { default: () => null },

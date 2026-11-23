@@ -1,5 +1,6 @@
 "use client";
-import Input, { Textarea } from "@/components/ui/Input";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
+import { BackOfficeInput as Input, BackOfficeTextarea as Textarea } from "@/components/ui/Input";
 import FieldLabel from "@/components/ui/FieldLabel";
 
 import Link from "next/link";
@@ -19,7 +20,7 @@ export default function LandingFocusFields({ editor }: { editor: LandingEditorSt
         </p>
         <Link
           href="/admin/services"
-          className="mt-4 inline-flex rounded-xl bg-orange-700 px-4 py-2.5 text-xs font-bold text-white"
+          className={`mt-4 inline-flex rounded-xl ${adminAccent} px-4 py-2.5 text-xs font-bold`}
         >
           Kelola Data Layanan
         </Link>

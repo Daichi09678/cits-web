@@ -68,7 +68,11 @@ export default function SpotlightCard({
       )}
 
       {/* Main card body with backdrop & border fallback */}
-      <div className="relative z-0 h-full w-full rounded-2xl bg-white dark:bg-[#16162c] border border-gray-100 dark:border-white/10 group-hover:border-transparent transition-colors overflow-hidden">
+      <div
+        className={`relative z-0 h-full w-full rounded-2xl bg-white dark:bg-[#16162c] border border-gray-100 dark:border-white/10 overflow-hidden ${
+          disableSpotlight ? "" : "group-hover:border-transparent transition-colors"
+        }`}
+      >
         {children}
       </div>
     </div>

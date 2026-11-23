@@ -2,12 +2,13 @@
 import Button from "@/components/ui/Button";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import ThemeToggle from "@/components/pages/public/ThemeToggle";
 import { CompanyLogo } from "@/components/pages/public/CompanyBrand";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 
 const navLinks = [
   { href: "/", label: "Beranda" },
@@ -18,13 +19,24 @@ const navLinks = [
   { href: "/contact", label: "Hubungi Kami" },
 ];
 
+const FLOAT_AT = 28;
+const RESET_AT = 12;
+
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const menuTrigger = useRef<HTMLButtonElement>(null);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    let floating = false;
+    const handleScroll = () => {
+      const next = window.scrollY > (floating ? RESET_AT : FLOAT_AT);
+      if (next === floating) return;
+      floating = next;
+      setScrolled(next);
+    };
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -36,17 +48,20 @@ export default function Navbar() {
   };
 
   return (
-    <motion.header
-      initial={{ y: -100 }}
-      animate={{ y: scrolled ? 12 : 0 }}
-      transition={{ duration: 0.35 }}
-      className={`sticky top-0 z-50 w-full mx-auto shrink-0 overflow-hidden transition-[max-width,border-radius,box-shadow,border-color] duration-300 ease-out motion-reduce:transition-none bg-white/95 dark:bg-[#1A1A2E]/95 backdrop-blur-md border ${
+    <header
+      onKeyDown={(event) => {
+        if (event.key !== "Escape" || !mobileOpen) return;
+        event.preventDefault();
+        setMobileOpen(false);
+        menuTrigger.current?.focus();
+      }}
+      className={`sticky top-0 z-50 mx-auto shrink-0 overflow-hidden border bg-white/95 backdrop-blur-md dark:bg-[#1A1A2E]/95 motion-safe:transition-[width,translate,border-radius,box-shadow,border-color] motion-safe:duration-300 motion-safe:ease-out ${
         scrolled
-          ? "max-w-[calc(100%_-_1.5rem)] sm:max-w-[calc(100%_-_3rem)] xl:max-w-6xl rounded-2xl border-gray-200/80 dark:border-white/15 shadow-lg shadow-black/10"
-          : "max-w-full rounded-none border-transparent"
+          ? "w-[calc(100%-1.5rem)] sm:w-[calc(100%-3rem)] xl:w-6xl motion-safe:translate-y-3 rounded-2xl border-gray-200/80 dark:border-white/15 shadow-lg shadow-black/10"
+          : "w-full rounded-none border-transparent"
       }`}
     >
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <nav aria-label="Navigasi utama" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
         <Link href="/" className="flex items-center gap-2 shrink-0" aria-label="Beranda CITS Indonesia">
           <CompanyLogo location="navbar" />
         </Link>
@@ -58,22 +73,10 @@ export default function Navbar() {
               <Link
                 href={link.href}
                 aria-current={isActive(link.href) ? "page" : undefined}
-                className={`group relative text-sm font-medium transition-colors ${
-                  isActive(link.href)
-                    ? "text-orange-700 dark:text-orange-400 font-semibold"
-                    : "text-gray-700 dark:text-white hover:text-orange-700 dark:hover:text-orange-400"
-                }`}
+                className={`relative inline-flex min-h-10 items-center text-sm font-medium text-gray-700 transition-colors aria-[current=page]:font-semibold dark:text-white ${accentStyles.navLink}`}
               >
                 {link.label}
-                {isActive(link.href) ? (
-                  <motion.span
-                    layoutId="activeNav"
-                    className="absolute -bottom-1 left-0 w-full h-0.5 bg-brand rounded-full"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
-                ) : (
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-brand group-hover:w-full transition-all duration-300" />
-                )}
+                <span aria-hidden="true" className={accentStyles.navUnderline} />
               </Link>
             </li>
           ))}
@@ -87,10 +90,10 @@ export default function Navbar() {
         {/* Mobile controls */}
         <div className="lg:hidden flex items-center gap-2">
           <ThemeToggle />
-          <Button variant="unstyled" size="none"
-            className="p-2 rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          <Button variant="ghost" size="icon"
+            ref={menuTrigger}
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
+            aria-label={mobileOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
             aria-expanded={mobileOpen}
             aria-controls="mobile-navigation"
           >
@@ -104,26 +107,20 @@ export default function Navbar() {
         {mobileOpen && (
           <motion.div
             id="mobile-navigation"
-            initial={{ opacity: 0, height: 0 }}
+            initial={reducedMotion ? false : { opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
+            exit={reducedMotion ? undefined : { opacity: 0, height: 0 }}
+            transition={{ duration: reducedMotion ? 0 : 0.16 }}
             className="lg:hidden bg-white/95 dark:bg-[#1A1A2E]/95 backdrop-blur-md border-t border-gray-100 dark:border-white/10 overflow-y-auto max-h-[calc(100dvh-6rem)]"
           >
             <ul className="px-4 py-4 space-y-1">
-              {navLinks.map((link, i) => (
-                <motion.li
-                  key={link.href}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                >
+              {navLinks.map((link) => (
+                <li key={link.href}>
                   <Link
                     href={link.href}
                     aria-current={isActive(link.href) ? "page" : undefined}
-                    className={`block px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
-                      isActive(link.href)
-                        ? "text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 font-semibold"
-                        : "text-gray-700 dark:text-white hover:text-orange-700 dark:hover:text-orange-400 hover:bg-orange-50/50 dark:hover:bg-orange-950/20"
+                    className={`block rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors dark:text-white ${accentStyles.navLink} ${
+                      isActive(link.href) ? "bg-orange-50 font-semibold dark:bg-orange-950/40" : "hover:bg-orange-50/50 dark:hover:bg-orange-950/20"
                     }`}
                     onClick={() => {
                       setMobileOpen(false);
@@ -131,12 +128,12 @@ export default function Navbar() {
                   >
                     {link.label}
                   </Link>
-                </motion.li>
+                </li>
               ))}
             </ul>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.header>
+    </header>
   );
 }

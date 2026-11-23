@@ -1,5 +1,6 @@
 "use client";
 
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { useCitsStore } from "@/stores/citsStore";
@@ -7,8 +8,10 @@ import { initialContactInfo } from "@/data/initialData";
 import { CompanyLogo } from "@/components/pages/public/CompanyBrand";
 import { contactPresentation } from "@/lib/contactPresentation";
 
+const contentResources = ["contactInfo", "about"] as const;
+
 export default function Footer() {
-  const { contactInfo: storeContact, aboutData } = useCitsStore();
+  const { contactInfo: storeContact, aboutData } = useCitsStore(contentResources);
   const contact = storeContact || initialContactInfo;
 
   const { whatsappUrl, mapUrl } = contactPresentation(contact);
@@ -43,7 +46,7 @@ export default function Footer() {
                   href={mapUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-orange-700 dark:text-orange-400 hover:underline"
+                  className={`inline-flex items-center gap-1 text-xs hover:underline ${accentStyles.text}`}
                 >
                   <span>Buka di Google Maps</span>
                   <ArrowUpRight className="w-3 h-3" />
@@ -54,7 +57,7 @@ export default function Footer() {
                 <p>
                   <a
                     href={`tel:${(contact.phone || "02139719677").replace(/[^0-9]/g, "")}`}
-                    className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+                    className={`transition-colors ${accentStyles.hoverText}`}
                   >
                     {contact.phone || "(021) 39719677"}
                   </a>
@@ -62,7 +65,7 @@ export default function Footer() {
                 <p>
                   <a
                     href={`mailto:${contact.email || "info@citsindonesia.co.id"}`}
-                    className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+                    className={`transition-colors ${accentStyles.hoverText}`}
                   >
                     {contact.email || "info@citsindonesia.co.id"}
                   </a>

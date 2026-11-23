@@ -1,3 +1,4 @@
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Image from "next/image";
 import type { TeamMember } from "@/lib/team";
 
@@ -35,7 +36,7 @@ export default function TeamMemberCard({
           <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
             <span
               aria-hidden="true"
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-50 text-sm font-bold tracking-wide text-orange-700 dark:bg-orange-500/10 dark:text-orange-300"
+              className={`flex h-12 w-12 items-center justify-center rounded-full bg-orange-50 text-sm font-bold tracking-wide dark:bg-orange-500/10 ${accentStyles.text}`}
             >
               {initials}
             </span>
@@ -49,7 +50,7 @@ export default function TeamMemberCard({
         </Heading>
         <p className="mt-1 break-words text-sm leading-relaxed text-slate-600 dark:text-slate-300">{member.position}</p>
         <div className="mt-auto flex items-center pt-4" aria-hidden="true">
-          <span className="h-[3px] w-10 rounded-sm bg-orange-600 transition-all duration-300 group-hover:w-16 dark:bg-orange-400" />
+          <span className={`h-[3px] w-10 rounded-sm transition-all duration-300 group-hover:w-16 ${accentStyles.fill}`} />
         </div>
       </div>
     </article>

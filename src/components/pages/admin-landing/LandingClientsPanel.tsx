@@ -1,5 +1,6 @@
 "use client";
-import Input from "@/components/ui/Input";
+import { adminAccent, adminAction } from "@/components/pages/admin/accentStyles";
+import { BackOfficeInput as Input } from "@/components/ui/Input";
 import FieldLabel from "@/components/ui/FieldLabel";
 import FormFeedback from "@/components/ui/FormFeedback";
 
@@ -121,7 +122,7 @@ export default function LandingClientsPanel({ editor }: { editor: LandingEditorS
                   type="button"
                   onClick={openAddClientModal}
                   disabled={clientMutation !== null}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl ${adminAction} font-bold text-xs shadow-md shadow-orange-600/20 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50`}
                 >
                   <Plus className="w-4 h-4" />
                   <span>Tambah Kementerian / Mitra</span>
@@ -152,7 +153,7 @@ export default function LandingClientsPanel({ editor }: { editor: LandingEditorS
                     onClick={() => setClientFilter(cat)}
                     className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                       clientFilter === cat
-                        ? "bg-orange-600 text-white shadow-xs"
+                        ? `${adminAccent} shadow-xs`
                         : "bg-white dark:bg-[#16162d] text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/10 hover:border-orange-400"
                     }`}
                   >

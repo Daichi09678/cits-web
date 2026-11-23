@@ -1,5 +1,6 @@
 "use client";
 
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Link from "next/link";
 import ServicePhoto from "@/components/ui/ServicePhoto";
 import { ArrowRight, CheckCircle2, Cpu } from "lucide-react";
@@ -20,7 +21,7 @@ export default function HomeServiceCard({ service, wide = false }: { service: Se
           <span className="w-14 h-14 shrink-0 rounded-2xl bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/20">
             <Icon className="w-7 h-7 text-white" aria-hidden="true" />
           </span>
-          <span className="max-w-full break-words px-3 py-1.5 rounded-full border border-orange-200 dark:border-orange-800/60 bg-orange-100 dark:bg-orange-950/60 text-xs font-bold text-orange-900 dark:text-orange-300">
+          <span className={`max-w-full break-words rounded-full border px-3 py-1.5 text-xs font-bold ${accentStyles.soft}`}>
             {service.badge}
           </span>
         </div>
@@ -32,7 +33,7 @@ export default function HomeServiceCard({ service, wide = false }: { service: Se
           {service.tags.slice(0, 4).map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-orange-200 px-2.5 py-1 text-[11px] font-medium text-orange-800 dark:border-orange-800/60 dark:text-orange-300"
+              className={`rounded-full border px-2.5 py-1 text-[11px] font-medium ${accentStyles.soft}`}
             >
               {tag}
             </span>
@@ -47,7 +48,7 @@ export default function HomeServiceCard({ service, wide = false }: { service: Se
           {service.features.map((feature) => (
             <li key={feature} className="min-w-0 flex items-start gap-2">
               <CheckCircle2
-                className="w-4 h-4 mt-0.5 shrink-0 text-orange-700 dark:text-orange-400"
+                className={`mt-0.5 size-4 shrink-0 ${accentStyles.accent}`}
                 aria-hidden="true"
               />
               <span className="min-w-0 break-words">{feature}</span>
@@ -63,7 +64,7 @@ export default function HomeServiceCard({ service, wide = false }: { service: Se
             <dl className="mt-3 space-y-3">
               {service.deliverables.slice(0, wide ? 3 : 1).map((item) => (
                 <div key={item.label} className="min-w-0 [overflow-wrap:anywhere]">
-                  <dt className="text-xs font-semibold text-orange-800 dark:text-orange-300">{item.label}</dt>
+                  <dt className={`text-xs font-semibold ${accentStyles.text}`}>{item.label}</dt>
                   <dd className="mt-1 text-sm leading-relaxed text-gray-700 dark:text-white/85">{item.description}</dd>
                 </div>
               ))}
@@ -77,13 +78,13 @@ export default function HomeServiceCard({ service, wide = false }: { service: Se
         <div className="mt-auto pt-6 flex flex-wrap items-center gap-3">
           <Link
             href={`/services#${service.id}`}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-800 dark:text-orange-300 hover:underline"
+            className={`inline-flex items-center gap-1.5 text-sm font-semibold hover:underline ${accentStyles.text}`}
           >
             Pelajari Selengkapnya <ArrowRight className="w-4 h-4 shrink-0" aria-hidden="true" />
           </Link>
           <Link
             href={consultationHref({ service: service.title, source: "home" })}
-            className="inline-flex items-center gap-2 rounded-xl bg-orange-700 hover:bg-orange-800 px-4 py-2.5 text-sm font-semibold text-white"
+            className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold ${accentStyles.action}`}
           >
             Konsultasi Layanan <ArrowRight className="w-4 h-4 shrink-0" aria-hidden="true" />
           </Link>

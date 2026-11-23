@@ -1,5 +1,6 @@
 "use client";
 
+import { BackOfficeButton as Button } from "@/components/ui/Button";
 import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, CheckCircle2, RefreshCw, X } from "lucide-react";
 import {
@@ -22,7 +23,8 @@ export default function AccountsSettings() {
   const [error, setError] = useState("");
   const [editAccount, setEditAccount] = useState<PublicInternalAccount | null>(null);
   const [editorKey, setEditorKey] = useState(0);
-  const [deleting, setDeleting] = useState<PublicInternalAccount | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [deleting, setDeleting] = useState<{ accounts: PublicInternalAccount[]; bulk: boolean } | null>(null);
   const [notice, setNotice] = useState("");
 
   const load = useCallback(async () => {
@@ -32,6 +34,7 @@ export default function AccountsSettings() {
       const data = await fetchInternalAccounts();
       setAccounts(data.accounts);
       setSuperadmin(data.superadmin);
+      setSelectedIds((previous) => new Set(data.accounts.filter(({ id }) => previous.has(id)).map(({ id }) => id)));
     } catch (error) {
       setError(error instanceof Error ? error.message : "Gagal memuat akun.");
     } finally {
@@ -63,7 +66,9 @@ export default function AccountsSettings() {
 
   const scrollToEditor = () => {
     window.setTimeout(() => {
-      document.getElementById("admin-account-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const editor = document.getElementById("admin-account-editor");
+      editor?.querySelector("input")?.focus({ preventScroll: true });
+      editor?.scrollIntoView({ block: "start" });
     }, 80);
   };
 
@@ -80,6 +85,17 @@ export default function AccountsSettings() {
     setEditorKey((key) => key + 1);
   };
 
+  const selectAccounts = (ids: string[], checked: boolean) => {
+    setSelectedIds((previous) => {
+      const next = new Set(previous);
+      for (const id of ids) {
+        if (checked) next.add(id);
+        else next.delete(id);
+      }
+      return next;
+    });
+  };
+
   return (
     <div className="space-y-5">
       <div className="grid gap-4 md:grid-cols-2">
@@ -94,13 +110,15 @@ export default function AccountsSettings() {
         >
           <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" />
           <span className="flex-1">{notice}</span>
-          <button
+          <Button
+            variant="unstyled"
+            size="none"
             aria-label="Tutup notifikasi"
             onClick={() => setNotice("")}
             className="rounded-md p-1.5 hover:bg-emerald-100 dark:hover:bg-white/5"
           >
             <X className="size-4" />
-          </button>
+          </Button>
         </div>
       )}
 
@@ -114,7 +132,9 @@ export default function AccountsSettings() {
             <p className="font-semibold">Daftar akun belum dapat dimuat</p>
             <p className="mt-1 text-xs leading-relaxed">{error}</p>
           </div>
-          <button
+          <Button
+            variant="unstyled"
+            size="none"
             type="button"
             disabled={loading}
             onClick={() => void load()}
@@ -122,16 +142,20 @@ export default function AccountsSettings() {
           >
             <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} />
             Coba Lagi
-          </button>
+          </Button>
         </div>
       ) : (
         <InternalAccountsTable
           accounts={accounts}
           superadmin={superadmin}
           loading={loading}
+          selectedIds={selectedIds}
+          onSelect={selectAccounts}
+          onClearSelection={() => setSelectedIds(new Set())}
+          onBulkDelete={() => setDeleting({ accounts: accounts.filter(({ id }) => selectedIds.has(id)), bulk: true })}
           onAdd={startCreate}
           onEdit={startEdit}
-          onDelete={setDeleting}
+          onDelete={(account) => setDeleting({ accounts: [account], bulk: false })}
         />
       )}
 
@@ -164,18 +188,28 @@ export default function AccountsSettings() {
 
       {deleting && (
         <DeleteConfirmationDialog
-          account={deleting}
+          accounts={deleting.accounts}
           onClose={() => setDeleting(null)}
-          onDeleted={() => {
-            setAccounts((previous) => previous.filter((item) => item.id !== deleting.id));
-            setNotice(`Akun “${deleting.name}” berhasil dihapus.`);
+          onDeleted={(count) => {
+            const ids = new Set(deleting.accounts.map(({ id }) => id));
+            setAccounts((previous) => previous.filter(({ id }) => !ids.has(id)));
+            setSelectedIds((previous) => new Set([...previous].filter((id) => !ids.has(id))));
+            if (!deleting.bulk) setNotice(`Akun “${deleting.accounts[0].name}” berhasil dihapus.`);
+            else if (count === 0) setNotice("Akun terpilih sudah tidak ada.");
+            else if (count < ids.size) setNotice(`${count} akun dihapus. ${ids.size - count} akun sudah tidak ada.`);
+            else setNotice(`${count} akun berhasil dihapus.`);
             setDeleting(null);
+            window.requestAnimationFrame(() => document.getElementById("internal-accounts-title")?.focus());
           }}
-          onDeactivated={(saved) => {
-            replaceAccount(saved);
-            setNotice(`Akun “${saved.name}” dinonaktifkan.`);
-            setDeleting(null);
-          }}
+          onDeactivated={
+            deleting.bulk
+              ? undefined
+              : (saved) => {
+                  replaceAccount(saved);
+                  setNotice(`Akun “${saved.name}” dinonaktifkan.`);
+                  setDeleting(null);
+                }
+          }
         />
       )}
     </div>

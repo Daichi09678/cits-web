@@ -17,8 +17,7 @@ export default function AboutTeamSection() {
           Tim di Balik CITS Indonesia
         </h2>
         <p className="mt-4 max-w-3xl text-base leading-relaxed text-slate-600 dark:text-slate-300">
-          Kenali anggota tim, bidang keahlian, dan perannya dalam mendampingi kebutuhan teknologi organisasi Anda. Pilih
-          anggota untuk melihat profil lengkapnya.
+          Kenali anggota tim, bidang keahlian, dan perannya dalam mendampingi kebutuhan teknologi organisasi Anda.
         </p>
       </div>
       <ManagedTeamDirectory />

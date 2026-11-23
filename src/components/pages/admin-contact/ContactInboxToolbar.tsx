@@ -1,5 +1,5 @@
 "use client";
-import Input from "@/components/ui/Input";
+import { BackOfficeInput as Input } from "@/components/ui/Input";
 
 import { Search } from "lucide-react";
 import type { ContactEditorState } from "./useContactEditor";

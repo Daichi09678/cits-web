@@ -1,4 +1,5 @@
 "use client";
+import { adminAction } from "@/components/pages/admin/accentStyles";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -42,7 +43,7 @@ import {
 } from "@/lib/profile";
 
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm outline-none transition-all placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 dark:border-white/10 dark:bg-white/[0.04] dark:text-white";
+  "w-full rounded-xl border border-control-border bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-600 focus:border-orange-800 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-slate-300 dark:focus:border-orange-400";
 
 const readonlyClass =
   "w-full cursor-not-allowed rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-500 shadow-sm outline-none dark:border-white/10 dark:bg-white/[0.02] dark:text-slate-400";
@@ -350,7 +351,7 @@ export default function AdminProfilePage() {
             <button
               type="button"
               onClick={() => void loadProfile()}
-              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm shadow-orange-600/20 transition-colors hover:bg-orange-700"
+              className={`mt-5 inline-flex items-center gap-2 rounded-xl ${adminAction} px-4 py-2.5 text-xs font-bold shadow-sm shadow-orange-600/20 transition-colors`}
             >
               <RotateCcw className="h-4 w-4" />
               Coba lagi
@@ -380,7 +381,7 @@ export default function AdminProfilePage() {
                       onClick={() => fileInputRef.current?.click()}
                       title="Ganti foto profil"
                       aria-label="Ganti foto profil"
-                      className="absolute -bottom-1 -right-1 inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-orange-600 text-white shadow-lg shadow-orange-600/30 transition-transform hover:scale-105 hover:bg-orange-700 dark:border-[#151528]"
+                      className={`absolute -bottom-1 -right-1 inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-white ${adminAction} shadow-lg shadow-orange-600/30 transition-transform hover:scale-105 dark:border-[#151528]`}
                     >
                       {avatarBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
                     </button>
@@ -654,7 +655,7 @@ export default function AdminProfilePage() {
                     <button
                       type="submit"
                       disabled={!isDirty || saving}
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-orange-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm shadow-orange-600/30 transition-all hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
+                      className={`inline-flex flex-1 items-center justify-center gap-2 rounded-xl ${adminAction} px-5 py-2.5 text-xs font-bold shadow-sm shadow-orange-600/30 transition-all disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none`}
                     >
                       {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                       {saving ? "Menyimpan..." : "Simpan Profil"}

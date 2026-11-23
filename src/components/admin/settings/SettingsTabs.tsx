@@ -1,4 +1,5 @@
 "use client";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
 
 import { KeyRound, Users, Wrench } from "lucide-react";
 
@@ -51,7 +52,7 @@ export default function SettingsTabs({
           }}
           className={`flex min-h-9 flex-1 items-center justify-center gap-2 rounded-md px-2 py-1.5 text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF4D00] sm:flex-none sm:px-4 sm:text-[13px] ${
             value === key
-              ? "bg-[#FF4D00] text-white"
+              ? `${adminAccent}`
               : "text-[#0F172A] hover:bg-[#F8FAFC] dark:text-slate-300 dark:hover:bg-white/5"
           }`}
         >

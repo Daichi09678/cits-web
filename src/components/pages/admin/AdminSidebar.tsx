@@ -1,4 +1,5 @@
 "use client";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -26,8 +27,8 @@ import { useCitsStore } from "@/stores/citsStore";
 import { useAdminShell } from "@/components/pages/admin/AdminShell";
 import { canAccessPage, type PageKey } from "@/lib/internalAccess";
 import { cn } from "@/lib/cn";
-import Badge, { type BadgeTone, type BadgeVariant } from "@/components/ui/Badge";
-import Button from "@/components/ui/Button";
+import { BackOfficeBadge as Badge, type BadgeTone, type BadgeVariant } from "@/components/ui/Badge";
+import { BackOfficeButton as Button } from "@/components/ui/Button";
 import UserAvatar from "@/components/pages/admin/UserAvatar";
 import AdminPageTransitionLoader from "./AdminPageTransitionLoader";
 
@@ -56,6 +57,7 @@ export default function AdminSidebar() {
   const { collapsed, toggleCollapsed, mobileOpen, closeMobile } = useAdminShell();
 
   const drawerWasOpen = useRef(false);
+  const closeButton = useRef<HTMLButtonElement>(null);
   const [isDesktop, setIsDesktop] = useState(
     () => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches
   );
@@ -65,11 +67,14 @@ export default function AdminSidebar() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const query = window.matchMedia("(min-width: 1024px)");
-    const update = () => setIsDesktop(query.matches);
+    const update = () => {
+      setIsDesktop(query.matches);
+      if (query.matches) closeMobile();
+    };
     update();
     query.addEventListener("change", update);
     return () => query.removeEventListener("change", update);
-  }, []);
+  }, [closeMobile]);
 
   const sidebarHidden = isDesktop ? collapsed : !mobileOpen;
 
@@ -87,8 +92,9 @@ export default function AdminSidebar() {
   // Kembalikan fokus ke tombol pembuka saat drawer ditutup.
   useEffect(() => {
     if (typeof document === "undefined") return;
-    if (mobileOpen) {
+    if (mobileOpen && !isDesktop) {
       drawerWasOpen.current = true;
+      closeButton.current?.focus();
       return;
     }
     if (!drawerWasOpen.current) return;
@@ -97,7 +103,7 @@ export default function AdminSidebar() {
       (element) => element.offsetParent !== null
     );
     trigger?.focus();
-  }, [mobileOpen]);
+  }, [isDesktop, mobileOpen]);
 
   // Drawer mobile selalu tertutup saat berpindah halaman.
   useEffect(() => {
@@ -230,9 +236,11 @@ export default function AdminSidebar() {
       <aside
         id="admin-sidebar"
         aria-label="Navigasi Back Office"
+        role={!isDesktop && mobileOpen ? "dialog" : undefined}
+        aria-modal={!isDesktop && mobileOpen ? true : undefined}
         aria-hidden={sidebarHidden || undefined}
         inert={sidebarHidden}
-        className={`fixed top-0 left-0 z-40 flex h-dvh w-64 flex-col justify-between overflow-y-auto bg-white dark:bg-[#151528] border-r border-slate-200/90 dark:border-white/10 select-none transition-transform duration-300 ease-in-out will-change-transform ${
+        className={`fixed top-0 left-0 z-40 flex h-dvh w-64 max-w-full flex-col justify-between overflow-y-auto bg-white dark:bg-[#151528] border-r border-slate-200/90 dark:border-white/10 select-none transition-transform duration-300 ease-in-out motion-reduce:transition-none ${
           mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         } ${collapsed ? "lg:-translate-x-full" : "lg:translate-x-0"}`}
       >
@@ -271,11 +279,12 @@ export default function AdminSidebar() {
 
                 {/* Tutup drawer di mobile */}
                 <button
+                  ref={closeButton}
                   type="button"
                   onClick={closeMobile}
                   title="Tutup menu"
                   aria-label="Tutup menu navigasi"
-                  className="lg:hidden shrink-0 p-0.5 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/10 transition-colors"
+                  className="lg:hidden inline-flex size-8 shrink-0 items-center justify-center rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/10 transition-colors"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -328,13 +337,14 @@ export default function AdminSidebar() {
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all group ${
+                        aria-current={isActive ? "page" : undefined}
+                        className={`flex min-h-10 items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold group ${
                           isActive
-                            ? "bg-orange-600 text-white shadow-sm shadow-orange-600/25 font-bold"
+                            ? `${adminAccent} shadow-sm shadow-orange-600/25 font-bold`
                             : "text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
                         }`}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex min-w-0 flex-1 items-center gap-3">
                           <Icon
                             className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-110 ${
                               isActive
@@ -342,7 +352,7 @@ export default function AdminSidebar() {
                                 : "text-slate-600 dark:text-slate-200 group-hover:text-orange-600 dark:group-hover:text-orange-400"
                             }`}
                           />
-                          <span className="truncate">{item.title}</span>
+                          <span className="min-w-0 wrap-break-word">{item.title}</span>
                           <AdminPageTransitionLoader />
                         </div>
 
@@ -387,9 +397,7 @@ export default function AdminSidebar() {
                 <p className="truncate text-[10px] font-semibold text-orange-700 dark:text-orange-400">
                   {session.user.jobTitle || roleLabel}
                 </p>
-                <p className="truncate text-[10px] text-slate-500 dark:text-slate-400">
-                  {session.user.email || "admin@cits.id"}
-                </p>
+                <p className="truncate text-[10px] text-slate-500 dark:text-slate-400">{session.user.email}</p>
               </div>
               <ChevronRight
                 aria-hidden="true"

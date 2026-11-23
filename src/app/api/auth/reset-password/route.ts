@@ -1,5 +1,6 @@
 import { readJsonBody } from "@/lib/http";
 import { NextResponse } from "next/server";
+import { siteConfig } from "@/config/siteConfig";
 import { consumePasswordResetToken, setAdminCredential } from "@/lib/passwordServer";
 import { updateInternalAccountPassword } from "@/lib/internalAccountsServer";
 import { validateNewPassword } from "@/lib/password";
@@ -28,7 +29,10 @@ export async function POST(request: Request) {
     }
 
     const reset = await consumePasswordResetToken(token);
-    if (!reset) {
+    if (
+      !reset ||
+      (reset.role === "superadmin" && (reset.userId !== "admin-1" || reset.email !== siteConfig.admin.defaultEmail))
+    ) {
       return NextResponse.json(
         { success: false, message: "Tautan reset sudah kedaluwarsa atau sudah pernah digunakan." },
         { status: 400 }

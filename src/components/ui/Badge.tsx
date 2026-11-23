@@ -1,4 +1,5 @@
 import type { HTMLAttributes, ReactNode } from "react";
+import { adminAccent, adminActiveBadge } from "@/components/pages/admin/accentStyles";
 import { cn } from "@/lib/cn";
 
 /**
@@ -31,11 +32,11 @@ const SOFT: Record<BadgeTone, string> = {
 };
 
 const SOLID: Record<BadgeTone, string> = {
-  accent: "bg-orange-600 text-white",
+  accent: "bg-action text-on-action",
   neutral: "bg-slate-700 text-white",
-  success: "bg-emerald-600 text-white",
+  success: "bg-emerald-700 text-white",
   info: "bg-blue-600 text-white",
-  warning: "bg-amber-500 text-white",
+  warning: "bg-amber-100 text-amber-950",
   danger: "bg-rose-600 text-white",
 };
 
@@ -58,16 +59,13 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   children?: ReactNode;
 }
 
-export default function Badge({
-  tone = "neutral",
-  variant = "soft",
-  shape = "pill",
-  size = "sm",
-  className,
-  children,
-  ...rest
-}: BadgeProps) {
-  const toneClass = variant === "inverse" ? "bg-white/20 text-white" : variant === "solid" ? SOLID[tone] : SOFT[tone];
+function renderBadge(
+  { tone = "neutral", variant = "soft", shape = "pill", size = "sm", className, children, ...rest }: BadgeProps,
+  backOffice: boolean
+) {
+  const inverse = backOffice ? adminActiveBadge : "bg-white text-slate-950";
+  const solid = backOffice && tone === "accent" ? adminAccent : SOLID[tone];
+  const toneClass = variant === "inverse" ? inverse : variant === "solid" ? solid : SOFT[tone];
 
   return (
     <span
@@ -83,4 +81,12 @@ export default function Badge({
       {children}
     </span>
   );
+}
+
+export default function Badge(props: BadgeProps) {
+  return renderBadge(props, false);
+}
+
+export function BackOfficeBadge(props: BadgeProps) {
+  return renderBadge(props, true);
 }

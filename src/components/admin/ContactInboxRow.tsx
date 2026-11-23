@@ -1,4 +1,5 @@
 "use client";
+import { adminAction } from "@/components/pages/admin/accentStyles";
 
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, Eye, MoreVertical, Reply, Trash2 } from "lucide-react";
@@ -149,7 +150,7 @@ export default function ContactInboxRow({
             onClick={onReply}
             aria-label="Balas Email"
             title="Balas pesan ini via email"
-            className="inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-[#F45100] px-2 text-xs font-medium text-white hover:bg-[#d94700] sm:gap-2 sm:px-3"
+            className={`inline-flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg ${adminAction} px-2 text-xs font-medium sm:gap-2 sm:px-3`}
           >
             <Reply className="h-3.5 w-3.5" />
             <span>

@@ -1,5 +1,6 @@
 "use client";
-import Input, { Textarea } from "@/components/ui/Input";
+import { adminAction } from "@/components/pages/admin/accentStyles";
+import { BackOfficeInput as Input, BackOfficeTextarea as Textarea } from "@/components/ui/Input";
 import FieldLabel from "@/components/ui/FieldLabel";
 
 import Link from "next/link";
@@ -144,7 +145,7 @@ export default function LandingProductsPanel({ editor }: { editor: LandingEditor
             </p>
             <Link
               href="/admin/products"
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-orange-700 hover:bg-orange-800 px-4 py-2.5 text-xs font-bold text-white"
+              className={`mt-4 inline-flex items-center gap-2 rounded-xl ${adminAction} px-4 py-2.5 text-xs font-bold`}
             >
               Kelola Foto & Konten Produk <ExternalLink className="h-3.5 w-3.5" />
             </Link>

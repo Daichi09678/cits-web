@@ -1,3 +1,4 @@
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Button from "@/components/ui/Button";
 import Image from "next/image";
 import { UserRound } from "lucide-react";
@@ -6,7 +7,7 @@ import type { TeamMember } from "@/lib/team";
 export default function TeamDirectoryCard({ member, onSelect }: { member: TeamMember; onSelect: () => void }) {
   return (
     <article className="relative flex h-full min-h-32 min-w-0 items-stretch gap-4 overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors duration-150 hover:border-orange-300 hover:bg-orange-50/20 dark:border-white/10 dark:bg-transparent dark:hover:border-orange-400/40">
-      <div className="relative flex w-24 shrink-0 items-center justify-center overflow-hidden bg-[#FFF0E5] text-orange-600 sm:w-28 dark:bg-orange-500/10 dark:text-orange-400">
+      <div className={`relative flex w-24 shrink-0 items-center justify-center overflow-hidden bg-[#FFF0E5] sm:w-28 dark:bg-orange-500/10 ${accentStyles.accent}`}>
         {member.photoUrl ? (
           <Image
             src={member.photoUrl}
@@ -25,19 +26,14 @@ export default function TeamDirectoryCard({ member, onSelect }: { member: TeamMe
           {member.name}
         </h4>
         <p className="mt-1 break-words text-sm leading-relaxed text-slate-600 dark:text-slate-300">{member.position}</p>
-        {member.isDemo && (
-          <span className="mt-1.5 inline-flex w-fit items-center rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-800 uppercase dark:bg-amber-500/15 dark:text-amber-300">
-            Data contoh
-          </span>
-        )}
-        <span className="mt-2 block text-sm font-medium text-orange-700 dark:text-orange-400">Lihat profil</span>
+        <span className={`mt-2 block text-sm font-medium ${accentStyles.text}`}>Lihat profil</span>
       </div>
       <Button
         variant="unstyled"
         size="none"
         type="button"
         onClick={onSelect}
-        aria-label={`Lihat profil ${member.name}`}
+        aria-label={`Lihat profil ${member.name}${member.isDemo ? " (profil ilustrasi)" : ""}`}
         aria-haspopup="dialog"
         className="absolute inset-0 cursor-pointer rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
       />

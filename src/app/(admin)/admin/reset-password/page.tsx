@@ -1,4 +1,5 @@
 "use client";
+import { adminAction } from "@/components/pages/admin/accentStyles";
 
 import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
@@ -24,6 +25,7 @@ function ResetPasswordForm() {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (loading || !token) return;
     setError("");
 
     const validationError = validateNewPassword(newPassword);
@@ -44,7 +46,7 @@ function ResetPasswordForm() {
         body: JSON.stringify({ token, newPassword }),
       });
       const payload = (await response.json().catch(() => ({}))) as { success?: boolean; message?: string };
-      if (!response.ok || payload.success === false) {
+      if (!response.ok || payload.success !== true) {
         throw new Error(payload.message || "Kata sandi gagal diperbarui.");
       }
       setSuccess(true);
@@ -110,7 +112,7 @@ function ResetPasswordForm() {
               </div>
               <Link
                 href="/admin/login"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-700 px-4 py-3 text-xs font-bold text-white transition-colors hover:bg-orange-800"
+                className={`inline-flex w-full items-center justify-center gap-2 rounded-xl ${adminAction} px-4 py-3 text-xs font-bold transition-colors`}
               >
                 Kembali ke Login
                 <ArrowRight className="h-4 w-4" />
@@ -131,14 +133,14 @@ function ResetPasswordForm() {
               </div>
               <Link
                 href="/admin/login"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-700 px-4 py-3 text-xs font-bold text-white transition-colors hover:bg-orange-800"
+                className={`inline-flex w-full items-center justify-center gap-2 rounded-xl ${adminAction} px-4 py-3 text-xs font-bold transition-colors`}
               >
                 Masuk ke Back Office
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form method="post" onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <div
                   role="alert"
@@ -234,7 +236,7 @@ function ResetPasswordForm() {
               <button
                 type="submit"
                 disabled={loading || !newPassword || !confirmPassword}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-orange-700 px-4 py-3.5 text-xs font-bold text-white shadow-md shadow-orange-600/20 transition-all hover:bg-orange-800 disabled:cursor-not-allowed disabled:opacity-50"
+                className={`inline-flex w-full items-center justify-center gap-2 rounded-xl ${adminAction} px-4 py-3.5 text-xs font-bold shadow-md shadow-orange-600/20 transition-all disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
                 {loading ? "Menyimpan kata sandi..." : "Simpan Kata Sandi Baru"}

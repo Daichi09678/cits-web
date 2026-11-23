@@ -52,6 +52,7 @@ const message = {
   phone: "08123456789",
   message: "Konsultasi aplikasi",
   serviceRequested: "Software House",
+  consent: true,
 };
 const request = (body) =>
   new Request("http://localhost/api/messages", {
@@ -74,6 +75,15 @@ function route(db) {
     "@/lib/email": { sendContactNotificationEmail: async () => ({ sent: false }) },
   });
 }
+
+test("consultation submissions require explicit consent before saving a message", async () => {
+  const api = route({ addMessage: async () => assert.fail("A message without consent was saved") });
+  for (const consent of [undefined, false, "true", 1]) {
+    const response = await api.POST(request({ ...message, consent }));
+    assert.equal(response.status, 400);
+    assert.match((await response.json()).message, /persetujuan penggunaan data/i);
+  }
+});
 
 test("consultation links round-trip service and product identifiers with reserved characters", () => {
   const service = "Konsultan TI & SPBE / Pengadaan";

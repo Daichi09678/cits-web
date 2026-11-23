@@ -9,9 +9,18 @@ export interface TeamMember {
   isActive?: boolean;
   showOnHomepage?: boolean;
   isDemo?: boolean;
+  showDemoOnAbout?: boolean;
 }
 
 export type TeamMemberInput = Omit<TeamMember, "id">;
+
+export function isTeamMemberListedOnAbout(member: TeamMemberInput): boolean {
+  return member.showOnHomepage !== false && (member.isDemo !== true || member.showDemoOnAbout === true);
+}
+
+export function isPublicTeamMember(member: TeamMember): boolean {
+  return member.isActive !== false && isTeamMemberListedOnAbout(member);
+}
 
 export function parseTeamMember(value: unknown): { ok: true; value: TeamMemberInput } | { ok: false; message: string } {
   if (!value || typeof value !== "object" || Array.isArray(value))
@@ -31,7 +40,7 @@ export function parseTeamMember(value: unknown): { ok: true; value: TeamMemberIn
     return { ok: false, message: "Deskripsi harus berupa teks, maksimal 3.000 karakter." };
   if (typeof order !== "number" || !Number.isSafeInteger(order) || order < 0 || order > 9999)
     return { ok: false, message: "Urutan harus berupa angka bulat antara 0 dan 9999." };
-  for (const key of ["isActive", "showOnHomepage", "isDemo"])
+  for (const key of ["isActive", "showOnHomepage", "isDemo", "showDemoOnAbout"])
     if (input[key] !== undefined && typeof input[key] !== "boolean")
       return { ok: false, message: "Status tampil harus berupa pilihan aktif atau nonaktif." };
   const photo = input.photoUrl;
@@ -52,6 +61,7 @@ export function parseTeamMember(value: unknown): { ok: true; value: TeamMemberIn
       isActive: input.isActive !== false,
       showOnHomepage: input.showOnHomepage !== false,
       isDemo: input.isDemo === true,
+      ...(input.isDemo === true && input.showDemoOnAbout === true ? { showDemoOnAbout: true } : {}),
     },
   };
 }

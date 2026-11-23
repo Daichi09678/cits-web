@@ -1,4 +1,5 @@
 "use client";
+import { adminAction } from "@/components/pages/admin/accentStyles";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { CheckCircle2, GripVertical, Home, Info, LoaderCircle, RefreshCw, Save } from "lucide-react";
@@ -22,7 +23,7 @@ export default function AboutContentEditor() {
   const { session } = useAdminAuth();
   const canEdit = canPerformAction(session?.user, "about", "edit");
   const { actions } = useCitsStore();
-  const { content, loading: contentLoading, loadError, save: saveContent } = usePublicPageContent("about");
+  const { content, loading: contentLoading, loadError, save: saveContent, retryLoad } = usePublicPageContent("about");
   const [profileBase, setProfileBase] = useState<AboutData | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
   const [profileError, setProfileError] = useState("");
@@ -155,7 +156,10 @@ export default function AboutContentEditor() {
         <p>{loadError || profileError || "Profil perusahaan belum dapat dimuat."}</p>
         <button
           type="button"
-          onClick={() => window.location.reload()}
+          onClick={() => {
+            if (loadError && !profileError && profile) void retryLoad();
+            else window.location.reload();
+          }}
           className={`${aboutSecondaryButton} mt-4 bg-white`}
         >
           <RefreshCw className="size-4" />
@@ -342,7 +346,7 @@ export default function AboutContentEditor() {
             <button
               type="submit"
               disabled={editingDisabled || !dirty}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#D63F00] px-6 py-2.5 text-[13px] font-semibold text-white transition hover:bg-[#C43B00] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 disabled:cursor-not-allowed disabled:opacity-50"
+              className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-lg ${adminAction} px-6 py-2.5 text-[13px] font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 disabled:cursor-not-allowed disabled:opacity-50`}
             >
               {saving || readingImages > 0 ? (
                 <LoaderCircle className="size-4 animate-spin" />

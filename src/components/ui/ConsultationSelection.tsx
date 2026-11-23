@@ -1,5 +1,6 @@
 "use client";
 
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import ProductPhoto from "@/components/ui/ProductPhoto";
 import type { ProductItem } from "@/types/schema";
 import type { ServicePresentation } from "@/data/serviceDetails";
@@ -24,7 +25,7 @@ export default function ConsultationSelection({
           className="rounded-xl border border-orange-200 dark:border-orange-800/60 bg-orange-50/60 dark:bg-orange-950/20 p-4"
           data-testid="consultation-service"
         >
-          <p className="text-xs font-semibold text-orange-800 dark:text-orange-300">Layanan yang Dikonsultasikan</p>
+          <p className={`text-xs font-semibold ${accentStyles.text}`}>Layanan yang Dikonsultasikan</p>
           <h4 className="mt-1 font-bold break-words text-slate-900 dark:text-white">{service.title}</h4>
           <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-200">{service.description}</p>
           {service.details && service.details !== service.description && (
@@ -42,7 +43,7 @@ export default function ConsultationSelection({
         >
           <ProductPhoto image={product.image} name={product.name} className="h-36 sm:h-44" />
           <div className="p-4">
-            <p className="text-xs font-semibold text-orange-800 dark:text-orange-300">Produk yang Dikonsultasikan</p>
+            <p className={`text-xs font-semibold ${accentStyles.text}`}>Produk yang Dikonsultasikan</p>
             <h4 className="mt-1 font-bold break-words text-slate-900 dark:text-white">{product.name}</h4>
             <p className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-200">{product.description}</p>
           </div>

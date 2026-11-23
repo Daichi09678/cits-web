@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { citsApi } from "@/lib/api";
 import { resolvePublicPageContent, type PublicContentPage, type PublicPageContent } from "@/lib/publicPageContent";
 
@@ -11,10 +11,11 @@ export function usePublicPageContent(page: PublicContentPage) {
   const [content, setContent] = useState(() => resolvePublicPageContent(page));
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const reloadRef = useRef<(() => Promise<boolean>) | null>(null);
   useEffect(() => {
     let cancelled = false;
     let revision = 0;
-    let inFlight = false;
+    let inFlight: Promise<boolean> | null = null;
     const refresh = () => {
       try {
         const cached = localStorage.getItem(storageKey(page));
@@ -39,28 +40,35 @@ export function usePublicPageContent(page: PublicContentPage) {
       setLoading(true);
       setLoadError("");
     });
-    const reload = async () => {
-      if (cancelled || inFlight || document.hidden) return;
-      inFlight = true;
+    const reload = (interactive = false): Promise<boolean> => {
+      if (cancelled || document.hidden) return Promise.resolve(false);
+      if (interactive) setLoading(true);
+      if (inFlight) return inFlight;
       const current = revision;
-      try {
-        const data = await citsApi.getPublicPageContent(page);
-        if (cancelled || current !== revision) return;
-        setContent(resolvePublicPageContent(page, data));
-        setLoadError("");
-        try {
-          localStorage.setItem(storageKey(page), JSON.stringify(data));
-        } catch {
-          // A successful read must still update the page when browser storage is full.
-        }
-      } catch {
-        if (!cancelled && current === revision)
-          setLoadError("Konten tersimpan belum dapat dimuat. Muat ulang halaman sebelum mengedit.");
-      } finally {
-        inFlight = false;
-        if (!cancelled) setLoading(false);
-      }
+      inFlight = Promise.resolve()
+        .then(() => citsApi.getPublicPageContent(page))
+        .then((data) => {
+          if (cancelled || current !== revision) return false;
+          setContent(resolvePublicPageContent(page, data));
+          setLoadError("");
+          try {
+            localStorage.setItem(storageKey(page), JSON.stringify(data));
+          } catch {
+            // Browser storage can fail after the data has already loaded.
+          }
+          return true;
+        })
+        .catch(() => {
+          if (!cancelled && current === revision) setLoadError("Konten tersimpan belum dapat dimuat.");
+          return false;
+        })
+        .finally(() => {
+          inFlight = null;
+          if (!cancelled) setLoading(false);
+        });
+      return inFlight;
     };
+    reloadRef.current = () => reload(true);
     const onFocus = () => void reload();
     void reload();
     const timer = window.setInterval(onFocus, 10000);
@@ -70,6 +78,7 @@ export function usePublicPageContent(page: PublicContentPage) {
     document.addEventListener("visibilitychange", onFocus);
     return () => {
       cancelled = true;
+      reloadRef.current = null;
       window.clearInterval(timer);
       window.removeEventListener(eventName, onUpdate);
       window.removeEventListener("storage", onUpdate);
@@ -88,5 +97,7 @@ export function usePublicPageContent(page: PublicContentPage) {
     }
     window.dispatchEvent(new CustomEvent(eventName, { detail: { page, data: saved } }));
   };
-  return { content, loading, loadError, save };
+  const retryLoad = () => reloadRef.current?.() ?? Promise.resolve(false);
+
+  return { content, loading, loadError, save, retryLoad };
 }

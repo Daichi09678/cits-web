@@ -7,12 +7,16 @@ const { load } = require("./helpers/load.cjs");
 const cnModule = load("lib/cn.ts");
 const cn = cnModule.cn;
 const runtime = { "react/jsx-runtime": require("react/jsx-runtime"), "@/lib/cn": cnModule };
-const Badge = load("components/ui/Badge.tsx", runtime).default;
-const Button = load("components/ui/Button.tsx", runtime).default;
+const { default: Badge, BackOfficeBadge } = load("components/ui/Badge.tsx", runtime);
+const { default: Button, BackOfficeButton } = load("components/ui/Button.tsx", runtime);
 const inputModule = load("components/ui/Input.tsx", runtime);
 const Input = inputModule.default;
 const Textarea = inputModule.Textarea;
-const Select = load("components/ui/Select.tsx", { ...runtime, "lucide-react": require("lucide-react") }).default;
+const Select = load("components/ui/Select.tsx", {
+  ...runtime,
+  "./Input": inputModule,
+  "lucide-react": require("lucide-react"),
+}).default;
 const FieldLabel = load("components/ui/FieldLabel.tsx", runtime).default;
 const FormFeedback = load("components/ui/FormFeedback.tsx", runtime).default;
 
@@ -29,12 +33,12 @@ test("badge applies tone, variant, size and shape from props instead of ad-hoc c
   assert.match(soft, /text-\[10px\]/);
 
   const accent = html(React.createElement(Badge, { tone: "accent", variant: "solid", size: "md" }, "3 Baru"));
-  assert.match(accent, /bg-orange-600 text-white/);
+  assert.match(accent, /bg-action text-on-action/);
   assert.match(accent, /text-\[11px\]/);
   assert.doesNotMatch(accent, /border-orange-200/);
 
   const inverse = html(React.createElement(Badge, { variant: "inverse" }, "menu aktif"));
-  assert.match(inverse, /bg-white\/20 text-white/);
+  assert.match(inverse, /bg-white text-slate-950/);
 
   const rounded = html(React.createElement(Badge, { shape: "rounded", tone: "success" }, "Superadmin"));
   assert.match(rounded, /rounded-md/);
@@ -52,7 +56,7 @@ test("badge keeps caller layout classes while owning its colour palette", () => 
 test("button defaults to a non-submitting type and exposes variant and size tokens", () => {
   const primary = html(React.createElement(Button, null, "Simpan"));
   assert.match(primary, /type="button"/);
-  assert.match(primary, /bg-orange-700/);
+  assert.match(primary, /bg-action text-on-action/);
   assert.match(primary, /min-h-11/);
   assert.match(primary, /px-3\.5 py-2\.5 text-xs/);
 
@@ -75,9 +79,16 @@ test("busy buttons announce progress, disable repeat submission and preserve the
   assert.match(html(React.createElement(Button, null, "Simpan")), />Simpan</);
 });
 
+test("Back Office actions and active badges use the local orange palette with high-contrast styles", () => {
+  const button = html(React.createElement(BackOfficeButton, null, "Simpan"));
+  assert.match(button, /bg-\[#F54A00\] text-white contrast-more:bg-orange-800/);
+  const badge = html(React.createElement(BackOfficeBadge, { variant: "inverse" }, "5 Aktif"));
+  assert.match(badge, /bg-white\/20 text-white contrast-more:bg-white contrast-more:text-orange-950/);
+});
+
 test("public and custom buttons use the shared component without losing their attributes", () => {
   const publicButton = html(React.createElement(Button, { variant: "public-primary", type: "submit" }, "Kirim"));
-  assert.match(publicButton, /bg-\[#F4511E\]/);
+  assert.match(publicButton, /public-accent-action/);
   assert.match(publicButton, /type="submit"/);
 
   const custom = html(
@@ -87,7 +98,9 @@ test("public and custom buttons use the shared component without losing their at
       "Filter"
     )
   );
-  assert.match(custom, /class="custom-button"/);
+  assert.match(custom, /min-h-6 min-w-6/);
+  assert.match(custom, /focus-visible:outline-2/);
+  assert.match(custom, /custom-button"/);
   assert.match(custom, /aria-busy="true"/);
 });
 
@@ -109,14 +122,14 @@ test("form controls share one base style and only differ by field size", () => {
   const md = html(React.createElement(Input, { placeholder: "Nama", name: "nama" }));
   assert.match(md, /py-3 text-sm/);
   assert.match(md, /rounded-xl/);
-  assert.match(md, /focus:ring-2 focus:ring-orange-500\/20/);
+  assert.match(md, /focus:ring-2 focus:ring-orange-700/);
 
   const sm = html(React.createElement(Input, { fieldSize: "sm", withIcon: true, name: "email" }));
   assert.match(sm, /py-2\.5 text-xs/);
   assert.match(sm, /pl-10/);
 
   const invalid = html(React.createElement(Input, { invalid: true, name: "telp" }));
-  assert.match(invalid, /border-rose-400/);
+  assert.match(invalid, /border-rose-700/);
   assert.match(invalid, /aria-invalid="true"/);
   assert.match(html(React.createElement(Input, { invalid: true, "aria-invalid": false })), /aria-invalid="true"/);
 

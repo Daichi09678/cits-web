@@ -1,4 +1,5 @@
 "use client";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
 
 import Link from "next/link";
 import { useState } from "react";
@@ -8,7 +9,6 @@ import {
   Building2,
   Plus,
   ArrowRight,
-  ExternalLink,
   CheckCircle2,
   Clock,
   Sparkles,
@@ -94,39 +94,28 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Hero Quick Action Banner */}
-        <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 text-white shadow-xl shadow-orange-600/15 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className={`p-6 md:p-8 rounded-3xl ${adminAccent} shadow-xl shadow-orange-600/15 flex flex-col md:flex-row items-start md:items-center justify-between gap-6`}>
           <div className="space-y-1.5 max-w-xl">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-xs text-[11px] font-bold">
               <Sparkles className="w-3.5 h-3.5" />
               <span>Kontrol Dinamis Front Office</span>
             </div>
             <h2 className="text-xl md:text-2xl font-black tracking-tight">Kelola Konten Sesuai Hak Akses Anda</h2>
-            <p className="text-xs text-orange-100 leading-relaxed">
+            <p className="text-xs text-white leading-relaxed">
               Gunakan menu yang tersedia untuk mengelola konten website. Superadmin menentukan halaman yang dapat Anda
               akses dan edit.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            {canManageProducts && (
-              <Link
-                href="/admin/products"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-orange-700 hover:bg-orange-50 font-bold text-xs shadow-md transition-all"
-              >
-                {canCreateProducts ? <Plus className="w-4 h-4" /> : <Package className="w-4 h-4" />}
-                <span>{canMutateProducts ? "Kelola Produk" : "Lihat Produk"}</span>
-              </Link>
-            )}
-            <a
-              href="/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black/20 hover:bg-black/30 text-white font-bold text-xs transition-all border border-white/20"
+          {canManageProducts && (
+            <Link
+              href="/admin/products"
+              className="inline-flex shrink-0 items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-orange-700 hover:bg-orange-50 font-bold text-xs shadow-md transition-all"
             >
-              <span>Cek Tampilan Publik</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
-          </div>
+              {canCreateProducts ? <Plus className="w-4 h-4" /> : <Package className="w-4 h-4" />}
+              <span>{canMutateProducts ? "Kelola Produk" : "Lihat Produk"}</span>
+            </Link>
+          )}
         </div>
 
         {/* Two Column Grid: Recent Messages & Quick Product Toggle */}
@@ -218,7 +207,7 @@ export default function AdminDashboardPage() {
 
               <div className="space-y-3">
                 {messages.length === 0 ? (
-                  <p className="text-xs text-slate-500 text-center py-6">Belum ada pesan masuk.</p>
+                <p className="text-xs text-slate-500 text-center py-6">Belum ada pesan masuk.</p>
                 ) : (
                   messages.slice(0, 4).map((msg) => (
                     <div

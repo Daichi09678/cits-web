@@ -1,3 +1,4 @@
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -22,7 +23,7 @@ export default function TeamSection({
   onRetry,
 }: TeamSectionProps) {
   const eligibleMembers = members
-    .filter((member) => member.isActive !== false && member.showOnHomepage !== false)
+    .filter((member) => member.isActive !== false && member.showOnHomepage !== false && member.isDemo !== true)
     .sort((a, b) => (a.displayOrder ?? Number.MAX_SAFE_INTEGER) - (b.displayOrder ?? Number.MAX_SAFE_INTEGER));
   const featuredMembers = showAll ? eligibleMembers : eligibleMembers.slice(0, 8);
   const teamGroups = showAll ? groupTeamMembers(featuredMembers) : [];
@@ -40,7 +41,7 @@ export default function TeamSection({
             id="team-heading"
             className="text-[28px] font-bold leading-tight tracking-tight text-slate-900 md:text-[32px] dark:text-white"
           >
-            Tim Profesional di Balik <span className="text-orange-600 dark:text-orange-400">Solusi CITS</span>
+            Tim Profesional di Balik <span className={accentStyles.accent}>Solusi CITS</span>
           </Heading>
           <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-slate-600 dark:text-slate-300">
             Didukung oleh para ahli di bidang teknologi informasi, manajemen proyek, dan pengembangan bisnis untuk
@@ -67,7 +68,7 @@ export default function TeamSection({
                 size="none"
                 type="button"
                 onClick={onRetry}
-                className="mt-4 min-h-11 cursor-pointer rounded-lg bg-[#F4511E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#DC3F0C] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600"
+                className={`mt-4 min-h-11 cursor-pointer rounded-lg px-5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600 ${accentStyles.action}`}
               >
                 Coba lagi
               </Button>
@@ -108,7 +109,7 @@ export default function TeamSection({
         <div className="mt-10 text-center lg:mt-12">
           <Link
             href={showAll ? "/#team" : "/team"}
-            className="group inline-flex min-h-11 items-center justify-center gap-2.5 rounded-lg bg-[#F4511E] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#DC3F0C] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600"
+            className={`group inline-flex min-h-11 items-center justify-center gap-2.5 rounded-lg px-6 py-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-600 ${accentStyles.action}`}
           >
             {showAll ? "Kembali ke Beranda" : "Lihat Seluruh Tim"}
             <ArrowRight

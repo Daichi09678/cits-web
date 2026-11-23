@@ -88,11 +88,15 @@ test("direct study URLs stop displaying a project when the admin unpublishes or 
     "@/components/animations/ScrollReveal": { default: wrap },
     "@/data/caseStudyFacts": facts,
     "@/lib/consultation": { consultationHref: () => "/contact" },
-    "@/stores/citsStore": { useCitsStore: () => ({ caseStudies: studies }) },
+    "@/components/portfolio/CaseStudySummary": load("components/portfolio/CaseStudySummary.tsx", {
+      "react/jsx-runtime": require("react/jsx-runtime"),
+    }),
   }).default;
   const id = studies[0].id;
-  const render = () => renderToStaticMarkup(React.createElement(Detail, { id }));
+  const render = () => renderToStaticMarkup(React.createElement(Detail, { id, caseStudies: studies }));
   assert.match(render(), /Proyek tersimpan untuk audit/);
+  assert.match(render(), /Hasil yang terdokumentasi publik/);
+  assert.ok(render().includes(`href="${facts.caseStudyEvidence[id].publicResult.source.url}"`));
   studies[0].isActive = false;
   assert.match(render(), /Studi kasus tidak ditemukan/);
   assert.doesNotMatch(render(), /Proyek tersimpan untuk audit/);

@@ -24,6 +24,7 @@ export interface CaseStudySource {
 
 export interface CaseStudyEvidence {
   overview: string;
+  publicResult: { title: string; detail: string; source: CaseStudySource };
   facts: CaseStudyFact[];
   sources: CaseStudySource[];
 }
@@ -37,9 +38,35 @@ const SIMLALA_OVERVIEW =
 const BKPM_OVERVIEW =
   "Satu Data Kementerian Investasi dan Hilirisasi/BKPM adalah portal data terbuka yang menyajikan dataset, infografis, dan visualisasi realisasi penanaman modal. Datanya bersumber dari Laporan Kegiatan Penanaman Modal (LKPM) perusahaan PMA dan PMDN, dengan Ditjen Data dan Informasi BKPM berperan sebagai walidata penanaman modal.";
 
+const dukcapilReport: CaseStudySource = {
+  label: "Pemerintah Jadikan IKD Sebagai Identitas Digital Dasar",
+  publisher: "Ditjen Dukcapil Kemendagri",
+  url: "https://dukcapil.kemendagri.go.id/blog/read/pemerintah-jadikan-ikd-sebagai-identitas-digital-dasar",
+  date: "28 Februari 2024",
+};
+
+const simlalaOverview: CaseStudySource = {
+  label: "Sistem Informasi Manajemen Lalu Lintas (SIMLALA)",
+  publisher: "Kementerian Perhubungan RI",
+  url: "https://www.kemenhub.go.id/post/read/sistem-inforamsi-manajemen-lalu-lintas-simlala",
+  date: "10 Mei 2016",
+};
+
+const bkpmPortal: CaseStudySource = {
+  label: "Satu Data Kementerian Investasi dan Hilirisasi/BKPM",
+  publisher: "Kementerian Investasi dan Hilirisasi/BKPM",
+  url: "https://data.bkpm.go.id/home",
+};
+
 export const caseStudyEvidence: Record<string, CaseStudyEvidence> = {
   "ktp-el": {
     overview: KTP_OVERVIEW,
+    publicResult: {
+      title: "6.444 lembaga pengguna menandatangani perjanjian akses data",
+      detail:
+        "Angka dilaporkan Ditjen Dukcapil pada Februari 2024 dan menggambarkan pemanfaatan data kependudukan pada skala nasional.",
+      source: dukcapilReport,
+    },
     facts: [
       {
         label: "Penduduk terdata by name by address",
@@ -80,12 +107,7 @@ export const caseStudyEvidence: Record<string, CaseStudyEvidence> = {
         url: "https://dukcapil.kemendagri.go.id/phln/read/kawal-penerapan-spbe-kemendagri-siapkan-nik-sebagai-basis-data",
         date: "17 Oktober 2023",
       },
-      {
-        label: "Pemerintah Jadikan IKD Sebagai Identitas Digital Dasar",
-        publisher: "Ditjen Dukcapil Kemendagri",
-        url: "https://dukcapil.kemendagri.go.id/blog/read/pemerintah-jadikan-ikd-sebagai-identitas-digital-dasar",
-        date: "28 Februari 2024",
-      },
+      dukcapilReport,
       {
         label: "Data Kependudukan (statistik resmi Dukcapil)",
         publisher: "Ditjen Dukcapil Kemendagri",
@@ -102,6 +124,12 @@ export const caseStudyEvidence: Record<string, CaseStudyEvidence> = {
 
   simlala: {
     overview: SIMLALA_OVERVIEW,
+    publicResult: {
+      title: "Permohonan angkutan laut tersedia secara daring",
+      detail:
+        "Kemenhub mendokumentasikan pengajuan izin usaha dan operasi, spesifikasi kapal, rencana pengoperasian kapal, serta keagenan kapal asing melalui SIMLALA.",
+      source: simlalaOverview,
+    },
     facts: [
       {
         label: "Mulai diimplementasikan",
@@ -134,11 +162,7 @@ export const caseStudyEvidence: Record<string, CaseStudyEvidence> = {
       },
     ],
     sources: [
-      {
-        label: "Sistem Informasi Manajemen Lalu Lintas (SIMLALA)",
-        publisher: "Kementerian Perhubungan RI",
-        url: "https://www.kemenhub.go.id/post/read/sistem-inforamsi-manajemen-lalu-lintas-simlala",
-      },
+      simlalaOverview,
       {
         label: "Penyederhanaan Proses Perizinan Usaha Angkutan Laut melalui SIMLALA",
         publisher: "Ditjen Perhubungan Laut, Kemenhub",
@@ -166,6 +190,12 @@ export const caseStudyEvidence: Record<string, CaseStudyEvidence> = {
 
   "satu-data-bkpm": {
     overview: BKPM_OVERVIEW,
+    publicResult: {
+      title: "Data realisasi investasi bisa diakses publik",
+      detail:
+        "Portal resmi BKPM menerbitkan dataset, infografis, dan visualisasi realisasi investasi, termasuk publikasi berdasarkan triwulan dan provinsi.",
+      source: bkpmPortal,
+    },
     facts: [
       {
         label: "Bentuk layanan",
@@ -199,11 +229,7 @@ export const caseStudyEvidence: Record<string, CaseStudyEvidence> = {
       },
     ],
     sources: [
-      {
-        label: "Satu Data Kementerian Investasi dan Hilirisasi/BKPM",
-        publisher: "Kementerian Investasi dan Hilirisasi/BKPM",
-        url: "https://data.bkpm.go.id/home",
-      },
+      bkpmPortal,
       {
         label: "Sejarah Waktu BKPM (peluncuran SPIPISE 2009)",
         publisher: "Kementerian Investasi dan Hilirisasi/BKPM",

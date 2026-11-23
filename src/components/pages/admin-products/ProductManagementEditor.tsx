@@ -1,5 +1,6 @@
 "use client";
-import Input from "@/components/ui/Input";
+import { adminAccent, adminAction } from "@/components/pages/admin/accentStyles";
+import { BackOfficeInput as Input } from "@/components/ui/Input";
 
 import { Package, Plus, Search, Edit, Trash2, X } from "lucide-react";
 import AdminTopbar from "@/components/pages/admin/AdminTopbar";
@@ -75,7 +76,7 @@ export default function ProductManagementEditor({ editor }: { editor: ProductMan
                         setProductFilters({ ...productFilters, category: category ?? "" });
                         setPage(1);
                       }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${productFilters.category === (category ?? "") ? "bg-orange-600 text-white shadow-xs" : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200"}`}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${productFilters.category === (category ?? "") ? `${adminAccent} shadow-xs` : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 hover:bg-slate-200"}`}
                     >
                       {category === null ? "All" : category}
                     </button>
@@ -113,7 +114,7 @@ export default function ProductManagementEditor({ editor }: { editor: ProductMan
             <button
               disabled={!canCreate || categorySaving}
               onClick={openAddModal}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold shadow-md shadow-orange-600/25 transition-all shrink-0"
+              className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl ${adminAction} text-xs font-bold shadow-md shadow-orange-600/25 transition-all shrink-0`}
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Produk Baru</span>
@@ -198,7 +199,7 @@ export default function ProductManagementEditor({ editor }: { editor: ProductMan
                             </span>
                           ))}
                           {prod.features.length > 3 && (
-                            <span className="text-[10px] px-1.5 py-0.5 text-slate-400 font-semibold">
+                            <span className="text-[10px] px-1.5 py-0.5 font-semibold text-slate-600 dark:text-slate-300">
                               +{prod.features.length - 3} lainnya
                             </span>
                           )}

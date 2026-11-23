@@ -78,28 +78,25 @@ export default function ConsultationRequirementsFields({
 
       <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
         <div>
-          <FieldLabel htmlFor="consultation-timeline" fieldSize="md" required>
-            Target Waktu
+          <FieldLabel htmlFor="consultation-timeline" fieldSize="md">
+            Target Waktu (opsional)
           </FieldLabel>
           <Input
             fieldSize="md"
             id="consultation-timeline"
             type="date"
-            required
             value={value.timeline}
             onChange={(event) => onChange({ ...value, timeline: event.target.value })}
             className="[color-scheme:light] dark:[color-scheme:dark]"
           />
         </div>
         <div>
-          <FieldLabel htmlFor="consultation-usage" fieldSize="md" required>
-            Perkiraan Penggunaan
+          <FieldLabel htmlFor="consultation-usage" fieldSize="md">
+            Perkiraan Penggunaan (opsional)
           </FieldLabel>
           <Input
             fieldSize="md"
             id="consultation-usage"
-            required
-            pattern={".*\\S.*"}
             maxLength={200}
             value={value.usageEstimate}
             onChange={(event) => onChange({ ...value, usageEstimate: event.target.value })}

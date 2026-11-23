@@ -1,5 +1,6 @@
 "use client";
 
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useMemo, useState } from "react";
@@ -131,7 +132,7 @@ export default function FeaturedCatalog({
                   size="none"
                   type="button"
                   onClick={resetFilters}
-                  className="inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-orange-700 focus-visible:outline-2 focus-visible:outline-orange-600 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-orange-300"
+                  className={`inline-flex min-h-10 items-center gap-1.5 rounded-lg px-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-orange-600 dark:text-slate-300 dark:hover:bg-white/5 ${accentStyles.hoverText}`}
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                   Reset filter
@@ -147,7 +148,7 @@ export default function FeaturedCatalog({
                 <span className="relative mt-2 block">
                   <Search
                     aria-hidden="true"
-                    className="pointer-events-none absolute left-3.5 top-3.5 h-4 w-4 text-slate-400"
+                    className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-600 dark:text-slate-300"
                   />
                   <input
                     id={id + "-query"}
@@ -158,7 +159,7 @@ export default function FeaturedCatalog({
                       if (event.key === "Enter") event.preventDefault();
                     }}
                     placeholder={productsOnly ? "Cari produk atau fitur..." : "Cari layanan atau kapabilitas..."}
-                    className="min-h-11 w-full min-w-0 rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-10 text-sm font-normal text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/10 dark:border-white/10 dark:bg-[#1A1A2E] dark:text-white"
+                    className="min-h-[48px] w-full min-w-0 rounded-lg border border-control-border bg-white py-2.5 pl-10 pr-10 text-sm font-normal text-slate-800 transition-colors placeholder:text-slate-600 focus:border-orange-800 dark:bg-[#1A1A2E] dark:text-white dark:placeholder:text-slate-300 dark:focus:border-orange-400"
                   />
                   {filters.query && (
                     <Button
@@ -167,7 +168,7 @@ export default function FeaturedCatalog({
                       type="button"
                       aria-label={`Hapus pencarian ${itemLabel}`}
                       onClick={() => setFilters({ ...result.filters, query: "" })}
-                      className="absolute right-0 top-0 flex h-full w-10 items-center justify-center rounded-r-lg text-slate-500 hover:text-orange-700 focus-visible:outline-2 focus-visible:outline-orange-600"
+                      className={`absolute right-0 top-0 flex h-full w-10 items-center justify-center rounded-r-lg text-slate-500 focus-visible:outline-2 focus-visible:outline-orange-600 ${accentStyles.hoverText}`}
                     >
                       <X aria-hidden="true" className="h-4 w-4" />
                     </Button>
@@ -212,7 +213,7 @@ export default function FeaturedCatalog({
               </label>
             </div>
             {hasFilters && (
-              <div className="mt-4 flex flex-wrap gap-2" aria-label="Filter aktif">
+              <div role="group" className="mt-4 flex flex-wrap gap-2" aria-label="Filter aktif">
                 {Object.entries(result.filters)
                   .filter(([, value]) => value.trim())
                   .map(([key, value]) => (
@@ -231,7 +232,7 @@ export default function FeaturedCatalog({
                             ...(key === "capability" ? { technology: "" } : {}),
                           });
                       }}
-                      className="inline-flex max-w-full items-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 px-2.5 py-1.5 text-[11px] font-medium text-orange-900 transition hover:bg-orange-100 focus-visible:outline-2 focus-visible:outline-orange-600 dark:border-orange-500/20 dark:bg-orange-500/10 dark:text-orange-200"
+                      className={`inline-flex max-w-full items-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 px-2.5 py-1.5 text-[11px] font-medium transition hover:bg-orange-100 focus-visible:outline-2 focus-visible:outline-orange-600 dark:border-orange-500/20 dark:bg-orange-500/10 ${accentStyles.text}`}
                     >
                       <span className="truncate">{value}</span>
                       <X className="h-3 w-3 shrink-0" />
@@ -288,7 +289,7 @@ export default function FeaturedCatalog({
                         </span>
                         <span className="min-w-0 flex-1">
                           {item.category && (
-                            <span className="mb-1 block truncate text-[13px] font-semibold text-orange-800 dark:text-orange-300">
+                            <span className={`mb-1 block truncate text-[13px] font-semibold ${accentStyles.text}`}>
                               {item.category}
                             </span>
                           )}
@@ -304,7 +305,7 @@ export default function FeaturedCatalog({
                           className={
                             "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border " +
                             (selected?.id === item.id
-                              ? "border-orange-600 bg-orange-600 text-white"
+                              ? `border-orange-600 ${accentStyles.fill}`
                               : "border-slate-300 dark:border-white/20")
                           }
                         >
@@ -331,7 +332,7 @@ export default function FeaturedCatalog({
                       size="none"
                       type="button"
                       onClick={resetFilters}
-                      className="mt-4 min-h-10 text-xs font-bold text-orange-700 hover:underline dark:text-orange-300"
+                      className={`mt-4 min-h-10 text-xs font-bold hover:underline ${accentStyles.text}`}
                     >
                       Tampilkan semua {itemLabel}
                     </Button>
@@ -355,7 +356,7 @@ export default function FeaturedCatalog({
                     <Link
                       href={selected.href}
                       aria-label={"Lihat detail " + selected.title}
-                      className="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-orange-800 transition hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-orange-600 dark:text-orange-300 dark:hover:bg-orange-500/10"
+                      className={`inline-flex min-h-10 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-semibold transition hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-orange-600 dark:hover:bg-orange-500/10 ${accentStyles.text}`}
                     >
                       Detail
                       <ChevronRight className="h-3.5 w-3.5" />
@@ -365,7 +366,7 @@ export default function FeaturedCatalog({
                     {selected.description}
                   </p>
                   {selected.tags.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-1.5" aria-label={"Tag " + selected.title}>
+                    <div role="group" className="mt-4 flex flex-wrap gap-1.5" aria-label={"Tag " + selected.title}>
                       {selected.tags.map((tag) => (
                         <span
                           key={tag}
@@ -446,7 +447,7 @@ export default function FeaturedCatalog({
                 </div>
               ) : (
                 <div className="flex h-full min-h-64 flex-col items-center justify-center px-4 py-10 text-center">
-                  <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-orange-600 dark:bg-orange-500/10">
+                  <span className={`mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 dark:bg-orange-500/10 ${accentStyles.accent}`}>
                     <SlidersHorizontal className="h-6 w-6" />
                   </span>
                   <h3 className="text-base font-bold text-slate-900 dark:text-white">
@@ -457,7 +458,7 @@ export default function FeaturedCatalog({
                   </p>
                   <Link
                     href={consultationHref({ source: "home" })}
-                    className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl bg-orange-700 px-5 py-2.5 text-xs font-bold text-white hover:bg-orange-800"
+                    className={`mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold ${accentStyles.action}`}
                   >
                     Diskusikan kebutuhan lain
                     <ArrowRight className="h-4 w-4" />
@@ -469,7 +470,7 @@ export default function FeaturedCatalog({
 
           <div className="flex flex-col gap-4 border-t border-slate-200/80 bg-white p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6 dark:border-white/10 dark:bg-white/[0.02]">
             <div className="flex min-w-0 items-start gap-2.5">
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-orange-600" />
+              <CheckCircle2 className={`mt-0.5 h-4 w-4 shrink-0 ${accentStyles.accent}`} />
               <p className="text-[13px] leading-relaxed text-slate-500 dark:text-slate-400">
                 {selected ? (
                   <>
@@ -512,7 +513,7 @@ export default function FeaturedCatalog({
           <div className="mt-4 text-center">
             <Link
               href={bottomCtaLink}
-              className="inline-flex min-h-11 items-center justify-center gap-2 text-xs font-semibold text-slate-600 transition hover:text-orange-700 sm:text-sm dark:text-slate-300 dark:hover:text-orange-300"
+              className={`inline-flex min-h-11 items-center justify-center gap-2 text-xs font-semibold text-slate-600 transition sm:text-sm dark:text-slate-300 ${accentStyles.hoverText}`}
             >
               {bottomCtaText}
               <ArrowRight className="h-4 w-4" />

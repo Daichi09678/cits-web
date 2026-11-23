@@ -1,9 +1,10 @@
 "use client";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Button from "@/components/ui/Button";
 import FieldLabel from "@/components/ui/FieldLabel";
 import FormFeedback from "@/components/ui/FormFeedback";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import ConsultationSelection from "@/components/ui/ConsultationSelection";
 import ConsultationRequirementsFields, {
@@ -79,6 +80,8 @@ const emptyRequirements = (purpose: ConsultationPurpose = "discussion"): Require
   usageEstimate: "",
 });
 
+const contactContentResources = ["contactInfo", "services", "products", "portfolio"] as const;
+
 function ContactPageContent({
   initialService,
   initialProduct,
@@ -94,7 +97,7 @@ function ContactPageContent({
   initialSource: ConsultationSource;
   initialReference: string;
 }) {
-  const { contactInfo, actions, services, activeProducts, activeCaseStudies } = useCitsStore();
+  const { contactInfo, actions, services, activeProducts, activeCaseStudies } = useCitsStore(contactContentResources);
   const { mapUrl, mapEmbedUrl, whatsappUrl } = contactPresentation(contactInfo);
   const [referenceId, setReferenceId] = useState(initialReference);
   const selectedPortfolio = activeCaseStudies.find((item) => item.id === referenceId);
@@ -103,9 +106,7 @@ function ContactPageContent({
   const [selectedProductId, setSelectedProductId] = useState(initialProduct);
   const selectedProduct = activeProducts.find((product) => product.id === selectedProductId);
   const selectedServiceDetails = resolveServiceCatalog(services).find((service) => service.title === selectedService);
-  const [requirements, setRequirements] = useState(() =>
-    emptyRequirements(initialPurpose === "demo" ? "demo" : "discussion")
-  );
+  const [requirements, setRequirements] = useState(() => emptyRequirements(initialPurpose));
   const [requestedFeatures, setRequestedFeatures] = useState(initialFeatures);
   const availableFeatures = new Set([
     ...(selectedProduct?.features || []),
@@ -132,8 +133,23 @@ function ContactPageContent({
   const [formEmail, setFormEmail] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formMessage, setFormMessage] = useState("");
+  const [hasConsented, setHasConsented] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const formHeading = useRef<HTMLHeadingElement>(null);
+  const successHeading = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    // The form is inside Suspense, so the initial hash may resolve before the heading exists.
+    if (window.location.hash === "#consultation-form") {
+      formHeading.current?.scrollIntoView({ behavior: "instant" });
+      formHeading.current?.focus({ preventScroll: true });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (submitted) successHeading.current?.focus();
+  }, [submitted]);
 
   const handleCopy = async (text: string, key: string) => {
     try {
@@ -151,7 +167,7 @@ function ContactPageContent({
       {announcement?.isActive && announcement.text && (
         <aside
           aria-label="Pengumuman Resmi"
-          className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-2.5 px-4 text-xs font-semibold shadow-xs"
+          className={`py-2.5 px-4 text-xs font-semibold shadow-xs ${accentStyles.fill}`}
         >
           <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-center sm:text-left">
             <div className="flex items-center gap-2 mx-auto sm:mx-0">
@@ -163,7 +179,7 @@ function ContactPageContent({
                 href={announcement.linkUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mx-auto sm:mx-0 inline-flex items-center gap-1 underline hover:text-orange-100 font-bold text-[11px]"
+                className="mx-auto inline-flex items-center gap-1 text-[11px] font-bold underline hover:decoration-2 sm:mx-0"
               >
                 <span>{announcement.linkText}</span>
                 <ExternalLink className="w-3 h-3" />
@@ -201,7 +217,7 @@ function ContactPageContent({
           <ScrollReveal delay={0.2}>
             <div className="mt-8 flex flex-wrap justify-center gap-2.5 text-xs">
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15">
-                <Clock className="w-4 h-4 text-orange-700 dark:text-orange-400" />
+                <Clock className={`w-4 h-4 ${accentStyles.accent}`} />
                 Respon Cepat 1x24 Jam Kerja
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white font-semibold border border-gray-200 dark:border-white/15">
@@ -219,7 +235,6 @@ function ContactPageContent({
 
       {/* 2. CONTACT DETAILS & FORM BENTO (Perfect Symmetry & Visual Polish) */}
       <section
-        id="consultation-form"
         aria-labelledby="contact-form-heading"
         className="scroll-mt-20 py-16 md:py-24 bg-white dark:bg-[#1A1A2E] transition-colors"
       >
@@ -247,7 +262,7 @@ function ContactPageContent({
                 {/* Address Card */}
                 <ScrollReveal delay={0.1}>
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-gray-200 dark:border-white/10 flex items-start gap-4 hover:border-orange-500/40 transition-all shadow-sm">
-                    <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0 mt-0.5">
+                    <div className={`w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center shrink-0 mt-0.5 ${accentStyles.accent}`}>
                       <MapPin className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -263,7 +278,7 @@ function ContactPageContent({
                 {/* Phone Card with Click-to-Call & Copy button */}
                 <ScrollReveal delay={0.15}>
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-gray-200 dark:border-white/10 flex items-start gap-4 hover:border-orange-500/40 transition-all shadow-sm">
-                    <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0 mt-0.5">
+                    <div className={`w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center shrink-0 mt-0.5 ${accentStyles.accent}`}>
                       <Phone className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -274,7 +289,7 @@ function ContactPageContent({
                           size="none"
                           type="button"
                           onClick={() => handleCopy(contactInfo?.phone || "(021) 39719677", "phone")}
-                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-orange-800 dark:text-orange-300 hover:text-orange-900 bg-orange-100/70 dark:bg-orange-950/50 px-2 py-0.5 rounded transition-colors"
+                          className={`inline-flex items-center gap-1 rounded bg-orange-100/70 px-2 py-0.5 text-[11px] font-semibold transition-colors hover:bg-orange-100 dark:bg-orange-950/50 dark:hover:bg-orange-950/80 ${accentStyles.text}`}
                           title="Salin nomor telepon"
                         >
                           {copiedKey === "phone" ? (
@@ -292,7 +307,7 @@ function ContactPageContent({
                       </div>
                       <a
                         href={`tel:${(contactInfo?.phone || "02139719677").replace(/[^0-9]/g, "")}`}
-                        className="mt-1 inline-block text-xs md:text-sm text-orange-700 dark:text-orange-400 font-bold hover:underline"
+                        className={`mt-1 inline-block text-xs md:text-sm font-bold hover:underline ${accentStyles.text}`}
                       >
                         {contactInfo?.phone || "(021) 39719677"}
                       </a>
@@ -306,7 +321,7 @@ function ContactPageContent({
                 {/* Email Card with Click-to-Mail & Copy button */}
                 <ScrollReveal delay={0.2}>
                   <div className="p-5 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-gray-200 dark:border-white/10 flex items-start gap-4 hover:border-orange-500/40 transition-all shadow-sm">
-                    <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center text-orange-700 dark:text-orange-400 shrink-0 mt-0.5">
+                    <div className={`w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center shrink-0 mt-0.5 ${accentStyles.accent}`}>
                       <Mail className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -317,7 +332,7 @@ function ContactPageContent({
                           size="none"
                           type="button"
                           onClick={() => handleCopy(contactInfo?.email || "info@citsindonesia.co.id", "email")}
-                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-orange-800 dark:text-orange-300 hover:text-orange-900 bg-orange-100/70 dark:bg-orange-950/50 px-2 py-0.5 rounded transition-colors"
+                          className={`inline-flex items-center gap-1 rounded bg-orange-100/70 px-2 py-0.5 text-[11px] font-semibold transition-colors hover:bg-orange-100 dark:bg-orange-950/50 dark:hover:bg-orange-950/80 ${accentStyles.text}`}
                           title="Salin alamat email"
                         >
                           {copiedKey === "email" ? (
@@ -335,7 +350,7 @@ function ContactPageContent({
                       </div>
                       <a
                         href={`mailto:${contactInfo?.email || "info@citsindonesia.co.id"}`}
-                        className="mt-1 inline-block text-xs md:text-sm text-orange-700 dark:text-orange-400 font-bold hover:underline break-all"
+                        className={`mt-1 inline-block text-xs md:text-sm font-bold hover:underline break-all ${accentStyles.text}`}
                       >
                         {contactInfo?.email || "info@citsindonesia.co.id"}
                       </a>
@@ -353,7 +368,7 @@ function ContactPageContent({
                     rel="noopener noreferrer"
                     className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-slate-50 p-5 hover:border-orange-400 dark:border-white/10 dark:bg-[#16162c]"
                   >
-                    <MessageSquare className="size-5 shrink-0 text-orange-700 dark:text-orange-400" />
+                    <MessageSquare className={`size-5 shrink-0 ${accentStyles.accent}`} />
                     <span className="min-w-0 text-sm">
                       <span className="block font-semibold">WhatsApp</span>
                       <span className="mt-1 block break-words text-slate-600 dark:text-slate-300">
@@ -367,14 +382,14 @@ function ContactPageContent({
                   <div className="rounded-2xl overflow-hidden border border-gray-200 dark:border-white/10 shadow-sm bg-slate-100 dark:bg-slate-900">
                     <div className="p-3 bg-slate-50 dark:bg-[#16162c] border-b border-gray-200 dark:border-white/10 flex items-center justify-between text-xs">
                       <span className="font-semibold text-dark dark:text-white flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-orange-700 dark:text-orange-400" />
+                        <MapPin className={`w-3.5 h-3.5 ${accentStyles.accent}`} />
                         Peta Lokasi Kantor
                       </span>
                       <a
                         href={mapUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-orange-700 dark:text-orange-400 hover:underline"
+                        className={`inline-flex items-center gap-1 text-[11px] font-semibold hover:underline ${accentStyles.text}`}
                       >
                         Buka di Google Maps
                         <ExternalLink className="w-3 h-3" />
@@ -405,36 +420,51 @@ function ContactPageContent({
                     <div>
                       <div className="flex items-start justify-between gap-4 pb-5 mb-6 border-b border-gray-200 dark:border-white/10">
                         <div>
-                          <h3 className="text-xl md:text-2xl font-extrabold text-dark dark:text-white">
+                          <h3
+                            id="consultation-form"
+                            ref={formHeading}
+                            tabIndex={-1}
+                            className="scroll-mt-24 text-xl md:text-2xl font-extrabold text-dark dark:text-white"
+                          >
                             Formulir Diskusi Kebutuhan Proyek
                           </h3>
                           <p className="mt-1 text-xs md:text-sm text-gray-700 dark:text-white/85">
                             Sampaikan detail kebutuhan instansi Anda. Kami siap merespons segera.
                           </p>
                         </div>
-                        <div className="hidden sm:flex w-11 h-11 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 items-center justify-center text-orange-700 dark:text-orange-400 shrink-0">
+                        <div className={`hidden sm:flex w-11 h-11 rounded-xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 items-center justify-center shrink-0 ${accentStyles.accent}`}>
                           <MessageSquare className="w-5 h-5" />
                         </div>
                       </div>
 
                       {submitted ? (
-                        <FormFeedback tone="success" className="my-8">
-                          <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center mx-auto text-emerald-700 dark:text-emerald-300">
-                            <CheckCircle2 className="w-8 h-8" />
+                        <FormFeedback
+                          tone="success"
+                          className="flex flex-col items-center gap-3 text-center sm:px-6 sm:py-8"
+                        >
+                          <div className="flex size-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+                            <CheckCircle2 aria-hidden="true" className="size-7" />
                           </div>
-                          <h4 className="text-xl font-extrabold text-emerald-900 dark:text-emerald-200">
-                            Pesan Berhasil Terkirim!
-                          </h4>
-                          <p className="text-sm text-emerald-800 dark:text-emerald-300 max-w-md mx-auto leading-relaxed">
-                            Terima kasih telah menghubungi CITS Indonesia. Tim konsultan kami akan meninjau pesan Anda
-                            dan segera menghubungi Anda kembali dalam 1x24 jam kerja.
-                          </p>
+                          <div className="max-w-md space-y-2">
+                            <h4
+                              ref={successHeading}
+                              tabIndex={-1}
+                              className="scroll-mt-24 text-xl font-extrabold text-emerald-900 dark:text-emerald-200"
+                            >
+                              Pesan Berhasil Terkirim!
+                            </h4>
+                            <p className="text-pretty">
+                              Terima kasih telah menghubungi CITS Indonesia. Tim konsultan kami akan meninjau pesan Anda
+                              dan segera menghubungi Anda kembali dalam 1x24 jam kerja.
+                            </p>
+                          </div>
                           <Button
-                            variant="unstyled"
-                            size="none"
-                            type="button"
-                            onClick={() => setSubmitted(false)}
-                            className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-orange-800 dark:text-orange-300 hover:underline cursor-pointer"
+                            variant="secondary"
+                            onClick={() => {
+                              setSubmitted(false);
+                              formHeading.current?.focus();
+                            }}
+                            className="mt-1"
                           >
                             Kirim Formulir Lain
                           </Button>
@@ -443,6 +473,7 @@ function ContactPageContent({
                         <form
                           onSubmit={async (e) => {
                             e.preventDefault();
+                            if (!hasConsented || isSubmitting) return;
                             if (selectedProductId && !selectedProduct) {
                               setSubmitError(
                                 "Produk yang dipilih tidak tersedia. Pilih produk lain atau kosongkan pilihan produk."
@@ -473,6 +504,7 @@ function ContactPageContent({
                                   referenceId: referenceId || undefined,
                                 },
                                 message: formMessage,
+                                consent: true,
                               });
                               setSubmitted(true);
                               setFormName("");
@@ -480,15 +512,17 @@ function ContactPageContent({
                               setFormEmail("");
                               setFormPhone("");
                               setFormMessage("");
+                              setHasConsented(false);
                               setSelectedService("");
                               setSelectedProductId("");
                               setRequirements(emptyRequirements());
                               setRequestedFeatures([]);
                               setReferenceId("");
-                            } catch (err: any) {
+                            } catch (err) {
                               setSubmitError(
-                                err?.message ||
-                                  "Gagal mengirim pesan ke server. Mohon periksa koneksi internet Anda atau hubungi kami langsung via WhatsApp."
+                                err instanceof Error && err.message
+                                  ? err.message
+                                  : "Gagal mengirim pesan ke server. Mohon periksa koneksi internet Anda atau hubungi kami langsung via WhatsApp."
                               );
                             } finally {
                               setIsSubmitting(false);
@@ -559,7 +593,6 @@ function ContactPageContent({
                                   name="email"
                                   type="email"
                                   autoComplete="email"
-                                  aria-describedby="contact-email-hint"
                                   required
                                   value={formEmail}
                                   onChange={(e) => setFormEmail(e.target.value)}
@@ -568,12 +601,6 @@ function ContactPageContent({
                                   placeholder="nama@perusahaan.com"
                                 />
                               </div>
-                              <p
-                                id="contact-email-hint"
-                                className="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300"
-                              >
-                                Gunakan email aktif agar tim CITS dapat menghubungi Anda.
-                              </p>
                             </div>
 
                             <div>
@@ -650,7 +677,7 @@ function ContactPageContent({
                               data-testid="consultation-reference"
                               className="rounded-xl border border-orange-200 dark:border-orange-800/60 bg-orange-50/60 dark:bg-orange-950/20 p-4 space-y-2 [overflow-wrap:anywhere]"
                             >
-                              <p className="text-xs font-semibold text-orange-800 dark:text-orange-300">
+                              <p className={`text-xs font-semibold ${accentStyles.text}`}>
                                 Referensi Proyek untuk Kebutuhan Serupa
                               </p>
                               {selectedPortfolio ? (
@@ -676,7 +703,7 @@ function ContactPageContent({
                                 size="none"
                                 type="button"
                                 onClick={() => setReferenceId("")}
-                                className="text-xs font-semibold text-orange-800 dark:text-orange-300 underline"
+                                className={`text-xs font-semibold underline ${accentStyles.text}`}
                               >
                                 Hapus Referensi Proyek
                               </Button>
@@ -708,40 +735,38 @@ function ContactPageContent({
                               id="contact-consent"
                               type="checkbox"
                               required
-                              defaultChecked
-                              className="w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 accent-orange-600 mt-0.5 cursor-pointer"
+                              checked={hasConsented}
+                              onChange={(event) => setHasConsented(event.target.checked)}
+                              aria-describedby="contact-data-use"
+                              className="mt-0.5 h-5 w-5 shrink-0 cursor-pointer rounded border-gray-300 accent-orange-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-700"
                             />
-                            <label
-                              htmlFor="contact-consent"
-                              className="text-sm text-gray-700 dark:text-white/80 leading-normal cursor-pointer select-none"
-                            >
-                              Saya menyetujui data formulir ini digunakan oleh CITS Indonesia untuk keperluan komunikasi
-                              teknis dan penyusunan proposal konsultasi.
-                            </label>
+                            <div className="space-y-1 text-sm leading-normal text-gray-700 dark:text-white/80">
+                              <label htmlFor="contact-consent" className="cursor-pointer font-medium">
+                                Saya setuju data ini digunakan untuk menindaklanjuti konsultasi saya.{" "}
+                                <span aria-hidden="true" className="text-rose-700 dark:text-rose-300">
+                                  *
+                                </span>
+                              </label>
+                              <p id="contact-data-use">
+                                Nama, kontak, dan isi pesan disimpan di kotak masuk CITS sesuai pengaturan retensi
+                                pesan. Jangan sertakan kata sandi atau dokumen rahasia di formulir ini.
+                              </p>
+                            </div>
                           </div>
 
                           {/* Submit Button */}
                           <div className="pt-2">
                             <Button
                               type="submit"
-                              disabled={isSubmitting}
+                              disabled={!hasConsented}
                               variant="public-primary"
                               size="lg"
-                              className="w-full group"
+                              className="w-full"
                               busy={isSubmitting}
                               busyLabel="Mengirim..."
                             >
-                              {isSubmitting ? (
-                                <>
-                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                  <span>Mengirim Permintaan Konsultasi...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Send className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                                  <span>Kirim Permintaan Konsultasi</span>
-                                </>
-                              )}
+                              <Send aria-hidden="true" className="w-4 h-4" />
+                              <span>Kirim Permintaan Konsultasi</span>
                             </Button>
                           </div>
                         </form>

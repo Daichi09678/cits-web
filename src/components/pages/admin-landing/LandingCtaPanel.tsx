@@ -1,5 +1,5 @@
 "use client";
-import Input, { Textarea } from "@/components/ui/Input";
+import { BackOfficeInput as Input, BackOfficeTextarea as Textarea } from "@/components/ui/Input";
 import FieldLabel from "@/components/ui/FieldLabel";
 
 import { Sparkles } from "lucide-react";

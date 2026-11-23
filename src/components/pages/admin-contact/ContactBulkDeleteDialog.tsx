@@ -1,5 +1,5 @@
 "use client";
-import Button from "@/components/ui/Button";
+import { BackOfficeButton as Button } from "@/components/ui/Button";
 
 import AdminDialogSurface from "@/components/pages/admin/AdminDialogSurface";
 import { Trash2, AlertTriangle } from "lucide-react";

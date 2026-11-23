@@ -154,6 +154,7 @@ const PublicSelect = load("components/pages/public/PublicSelect.tsx", {
   "react-dom": require("react-dom"),
   "lucide-react": require("lucide-react"),
   "./PublicSelect.module.css": { default: {} },
+  "./PublicAccent.module.css": { default: {} },
 }).default;
 const shared = {
   react: React,
@@ -223,9 +224,6 @@ function renderHome(landingData, overrides = {}) {
     "@/components/animations/Counter": { default: ({ value }) => React.createElement("span", null, value) },
     "@/components/animations/ParticleNetwork": { default: () => null },
     "@/components/animations/FloatingShapes": { default: () => null },
-    "@/components/animations/TypewriterText": {
-      default: ({ words }) => React.createElement("span", null, words.join(" | ")),
-    },
     "@/components/ui/HeroMockup": { default: HeroMockup },
     "@/components/ui/GridPattern": { default: () => null },
     "@/components/ui/GradientText": { default: wrap },
@@ -234,7 +232,7 @@ function renderHome(landingData, overrides = {}) {
     "@/components/ui/ManagedTeamSection": { default: () => null },
     "@/lib/publicPageContentClient": { usePublicPageContent: () => ({ content: {} }) },
     "@/components/pages/public/CompanyBrand": { useCompanyContent: () => ({}) },
-    "@/components/ui/Marquee": {
+    "@/components/pages/home/ClientLogoList": {
       default: ({ items }) => React.createElement("div", null, items.map((item) => item.name).join(", ")),
     },
   }).default;
@@ -267,6 +265,16 @@ test("public homepage displays edited hero, introduction and CTA text and only c
     assert.ok(!html.includes(text), text);
 });
 
+test("home consultation links go to the form and preserve custom CMS destinations", () => {
+  const data = structuredClone(initial.initialLandingPageData);
+  assert.match(renderHome(data), /href="\/contact\?source=home#consultation-form"/);
+  data.hero.primaryCtaLink = "/contact?purpose=quotation";
+  data.cta.primaryLink = "/services#alur-kerja";
+  const html = renderHome(data);
+  assert.match(html, /href="\/contact\?purpose=quotation#consultation-form"/);
+  assert.match(html, /href="\/services#alur-kerja"/);
+});
+
 test("unchecked homepage sections and deliberately empty text never restore hardcoded defaults", () => {
   const data = structuredClone(initial.initialLandingPageData);
   data.sectionVisibility = {
@@ -277,7 +285,7 @@ test("unchecked homepage sections and deliberately empty text never restore hard
     clients: false,
     cta: false,
   };
-  assert.equal(renderHome(data), "");
+  assert.equal(renderHome(data), '<main id="main-content"></main>');
   data.sectionVisibility.hero = true;
   data.hero.badgeText = "";
   data.hero.headlinePrefix = "";

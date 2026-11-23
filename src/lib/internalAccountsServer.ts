@@ -1,4 +1,5 @@
 import { createHash, randomBytes, randomUUID, scryptSync, timingSafeEqual } from "node:crypto";
+import { siteConfig } from "@/config/siteConfig";
 import { getSql } from "./db";
 import {
   isPageKey,
@@ -181,7 +182,7 @@ function validateInput(input: InternalAccountInput, existing: InternalAccountRec
     if (error) return error;
   }
   const email = normalizeEmail(input.email);
-  if (email === "maswahyuganteng@cits.id" || email === "admin@cits.id") {
+  if (email === siteConfig.admin.defaultEmail || email === "admin@cits.id") {
     return "Email tersebut dipakai akun Superadmin. Gunakan email internal lain.";
   }
   return null;
@@ -243,9 +244,10 @@ export async function createInternalAccount(input: InternalAccountInput): Promis
       `) as unknown as AccountRow[];
       return { success: true, account: toPublic(rowToRecord(rows[0])) };
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Gagal menyimpan akun ke database.";
+      if ((error as { code?: unknown })?.code === "23505")
+        return { success: false, message: "Email sudah dipakai akun internal lain." };
       console.error("DB Error createInternalAccount:", error);
-      return { success: false, message: `Gagal menyimpan akun: ${message}` };
+      throw new Error("Akun gagal disimpan ke database. Silakan coba lagi.");
     }
   }
 
@@ -297,9 +299,9 @@ export async function updateInternalAccount(id: string, input: InternalAccountIn
         UPDATE internal_accounts
         SET name = ${updated.name},
             email = ${updated.email},
-            password_hash = ${updated.passwordHash},
-            password_salt = ${updated.passwordSalt},
-            password_algo = ${updated.passwordAlgo},
+            password_hash = COALESCE(${input.password ? updated.passwordHash : null}, password_hash),
+            password_salt = COALESCE(${input.password ? updated.passwordSalt : null}, password_salt),
+            password_algo = COALESCE(${input.password ? updated.passwordAlgo : null}, password_algo),
             page_access = ${sql.json(updated.pageAccess as unknown as never)},
             permissions = ${sql.json(updated.permissions as never)},
             is_active = ${updated.isActive},
@@ -311,9 +313,10 @@ export async function updateInternalAccount(id: string, input: InternalAccountIn
       if (!rows[0]) return { success: false, message: "Akun internal tidak ditemukan." };
       return { success: true, account: toPublic(rowToRecord(rows[0])) };
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Gagal memperbarui akun.";
+      if ((error as { code?: unknown })?.code === "23505")
+        return { success: false, message: "Email sudah dipakai akun internal lain." };
       console.error("DB Error updateInternalAccount:", error);
-      return { success: false, message: `Gagal memperbarui akun: ${message}` };
+      throw new Error("Akun gagal diperbarui di database. Silakan coba lagi.");
     }
   }
 
@@ -385,28 +388,39 @@ export async function setInternalAccountName(id: string, name: string): Promise<
 }
 
 export async function deleteInternalAccount(id: string): Promise<AccountMutationResult> {
-  if (id === "admin-1") return { success: false, message: "Akun Superadmin utama tidak dapat dihapus." };
-  const existing = (await listRecords()).find((account) => account.id === id);
-  if (!existing) return { success: false, message: "Akun internal tidak ditemukan." };
+  const result = await deleteInternalAccounts([id]);
+  if (!result.success) return result;
+  return result.deletedCount ? { success: true } : { success: false, message: "Akun internal tidak ditemukan." };
+}
+
+export async function deleteInternalAccounts(
+  ids: string[]
+): Promise<{ success: true; deletedCount: number } | { success: false; message: string }> {
+  if (ids.includes("admin-1")) return { success: false, message: "Akun Superadmin utama tidak dapat dihapus." };
+  if (!ids.length) return { success: false, message: "Pilih setidaknya satu akun untuk dihapus." };
   const sql = getSql();
-  if (sql) {
-    try {
-      await ensureTable();
-      await sql`DELETE FROM internal_accounts WHERE id = ${id}`;
-      try {
-        await sql`DELETE FROM admin_profiles WHERE user_id = ${id}`;
-      } catch {
-        // Tabel profil mungkin belum pernah dibuat; abaikan.
-      }
-      return { success: true };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Gagal menghapus akun.";
-      console.error("DB Error deleteInternalAccount:", error);
-      return { success: false, message };
-    }
+  if (!sql) throw new Error("Database akun belum dikonfigurasi.");
+
+  let deletedIds: string[];
+  try {
+    await ensureTable();
+    const rows = await sql<{ id: string }[]>`
+      DELETE FROM internal_accounts WHERE id = ANY(${ids}::text[]) RETURNING id
+    `;
+    deletedIds = rows.map(({ id }) => id);
+  } catch (error) {
+    console.error("DB Error deleteInternalAccounts:", error);
+    throw new Error("Database akun tidak tersedia. Akun belum dapat dihapus.");
   }
 
-  throw new Error("Database akun belum dikonfigurasi.");
+  if (deletedIds.length) {
+    try {
+      await sql`DELETE FROM admin_profiles WHERE user_id = ANY(${deletedIds}::text[])`;
+    } catch {
+      // Database lama mungkin belum mempunyai tabel profil.
+    }
+  }
+  return { success: true, deletedCount: deletedIds.length };
 }
 
 export async function bulkSetPageAccess(
@@ -481,7 +495,7 @@ export async function migrateLegacyAccounts(rawAccounts: unknown): Promise<{ mig
     const passwordSalt = typeof item.passwordSalt === "string" ? item.passwordSalt : "";
 
     if (!name || !email || !/^[0-9a-f]{64}$/i.test(passwordHash) || !/^[0-9a-f]{32}$/i.test(passwordSalt)) continue;
-    if (existingEmails.has(email)) continue;
+    if (email === siteConfig.admin.defaultEmail || email === "admin@cits.id" || existingEmails.has(email)) continue;
     existingEmails.add(email);
 
     const now = new Date().toISOString();

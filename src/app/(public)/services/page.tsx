@@ -1,5 +1,6 @@
 "use client";
 
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import { useState } from "react";
 import ServicePhoto from "@/components/ui/ServicePhoto";
 import Link from "next/link";
@@ -151,8 +152,10 @@ const engagementModels: EngagementModel[] = [
   },
 ];
 
+const serviceContentResources = ["services", "portfolio"] as const;
+
 export default function ServicesPage() {
-  const { services: storeServices, caseStudies = [] } = useCitsStore();
+  const { services: storeServices, caseStudies = [] } = useCitsStore(serviceContentResources);
 
   const displayServices = resolveServiceCatalog(storeServices);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
@@ -163,7 +166,7 @@ export default function ServicesPage() {
       ? selectedSection
       : displayServices[0]?.id;
   const navigationItems = [
-    ...displayServices.map((item) => ({ id: item.id, label: item.category })),
+    ...displayServices.map((item) => ({ id: item.id, label: item.title })),
     { id: "alur-kerja", label: "Alur Metodologi" },
     { id: "skema-kerjasama", label: "Skema Pengadaan PBJ" },
   ];
@@ -211,8 +214,8 @@ export default function ServicesPage() {
                       aria-current={isActive ? "location" : undefined}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${
                         isActive
-                          ? "bg-[#F4511E] text-white shadow-md shadow-[#F4511E]/25 scale-105"
-                          : "bg-white dark:bg-[#16162c] text-gray-800 dark:text-white border border-gray-200 dark:border-white/15 hover:border-orange-500/40 hover:text-orange-700 dark:hover:text-orange-400"
+                          ? `shadow-md shadow-orange-700/25 scale-105 ${accentStyles.fill}`
+                          : `bg-white dark:bg-[#16162c] text-gray-800 dark:text-white border border-gray-200 dark:border-white/15 hover:border-orange-500/40 ${accentStyles.hoverText}`
                       }`}
                     >
                       {item.label}
@@ -297,7 +300,7 @@ export default function ServicesPage() {
                             className="flex items-start gap-2.5 text-xs text-slate-800 dark:text-slate-200 leading-normal"
                           >
                             <CheckCircle2
-                              className="w-4 h-4 text-orange-600 dark:text-orange-400 shrink-0 mt-0.5"
+                              className={`w-4 h-4 shrink-0 mt-0.5 ${accentStyles.accent}`}
                               aria-hidden="true"
                             />
                             <span>{feature}</span>
@@ -342,9 +345,9 @@ export default function ServicesPage() {
                         {service.caseStudies.map((cs) => (
                           <span
                             key={cs}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-950 dark:text-orange-200 bg-orange-50 dark:bg-orange-500/15 border border-orange-200/80 dark:border-orange-500/30 px-2.5 py-1 rounded-md"
+                            className={`inline-flex items-center gap-1.5 text-xs font-semibold bg-orange-50 dark:bg-orange-500/15 border border-orange-200/80 dark:border-orange-500/30 px-2.5 py-1 rounded-md ${accentStyles.text}`}
                           >
-                            <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" aria-hidden="true" />
+                            <Check className={`w-3.5 h-3.5 ${accentStyles.accent}`} aria-hidden="true" />
                             <span>{cs}</span>
                           </span>
                         ))}
@@ -355,7 +358,7 @@ export default function ServicesPage() {
                     <div className="pt-2 flex flex-wrap gap-3">
                       <Link
                         href={consultationHref({ service: service.title, source: "services" })}
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-md shadow-[#F4511E]/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                        className={`inline-flex items-center gap-2 px-6 py-3 font-semibold rounded-xl transition-colors shadow-md shadow-orange-700/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${accentStyles.action}`}
                       >
                         <span>Konsultasikan Kebutuhan Ini</span>
                         <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -385,7 +388,7 @@ export default function ServicesPage() {
                       <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 space-y-3">
                         <div className="flex flex-wrap gap-2 items-center justify-between border-b border-slate-200 dark:border-white/10 pb-2.5">
                           <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                            <Icon className="w-4 h-4 text-orange-600 dark:text-orange-400" aria-hidden="true" />
+                            <Icon className={`w-4 h-4 ${accentStyles.accent}`} aria-hidden="true" />
                             <span>Deliverable & Jaminan Kualitas</span>
                           </span>
                           {service.badge && (
@@ -415,11 +418,11 @@ export default function ServicesPage() {
                       {/* Service SLA Chip */}
                       {service.slaNote && (
                         <div className="p-3.5 rounded-xl bg-orange-50/80 dark:bg-orange-500/10 border border-orange-200/80 dark:border-orange-500/30 flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-orange-600/20">
+                          <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 shadow-sm shadow-orange-600/20 ${accentStyles.fill}`}>
                             <ShieldCheck className="w-4 h-4 text-white" aria-hidden="true" />
                           </div>
                           <div className="min-w-0">
-                            <span className="block text-xs font-bold text-orange-950 dark:text-orange-200">
+                            <span className={`block text-xs font-bold ${accentStyles.text}`}>
                               {service.slaNote}
                             </span>
                           </div>
@@ -471,7 +474,7 @@ export default function ServicesPage() {
                     <article className="p-6 h-full flex flex-col justify-between">
                       <div className="w-full">
                         <div className="flex items-center justify-between mb-4">
-                          <span className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white font-extrabold text-lg flex items-center justify-center shadow-md shadow-orange-600/25 shrink-0">
+                          <span className={`w-12 h-12 rounded-xl font-extrabold text-lg flex items-center justify-center shadow-md shadow-orange-600/25 shrink-0 ${accentStyles.fill}`}>
                             {p.step}
                           </span>
                         </div>
@@ -482,7 +485,7 @@ export default function ServicesPage() {
                         </h3>
 
                         {/* Subtitle Slot (Normalized height) */}
-                        <span className="inline-block text-xs font-semibold text-orange-800 dark:text-orange-300 mt-1 mb-2 min-h-[20px]">
+                        <span className={`inline-block text-xs font-semibold mt-1 mb-2 min-h-[20px] ${accentStyles.text}`}>
                           {p.subtitle}
                         </span>
 
@@ -538,7 +541,7 @@ export default function ServicesPage() {
                 <ScrollReveal key={item.title} delay={idx * 0.08} className="h-full">
                   <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-slate-200 dark:border-white/10 hover:border-orange-500/40 transition-all shadow-xs h-full flex flex-col justify-between">
                     <div>
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center mb-4 shadow-md shadow-orange-600/25 shrink-0">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 shadow-md shadow-orange-600/25 shrink-0 ${accentStyles.fill}`}>
                         <Icon className="w-6 h-6 text-white" aria-hidden="true" />
                       </div>
                       <h3 className="font-bold text-slate-900 dark:text-white text-base min-h-[44px] flex items-center">
@@ -594,7 +597,7 @@ export default function ServicesPage() {
                       <div>
                         {/* Header badge & icon */}
                         <div className="flex items-center justify-between mb-4">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-md shadow-orange-600/25 shrink-0">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md shadow-orange-600/25 shrink-0 ${accentStyles.fill}`}>
                             <IconModel className="w-6 h-6 text-white" aria-hidden="true" />
                           </div>
                         </div>
@@ -641,7 +644,7 @@ export default function ServicesPage() {
                       <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10">
                         <Link
                           href={consultationHref({ service: model.title, source: "services" })}
-                          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-semibold text-xs transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                          className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs transition-colors shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${accentStyles.action}`}
                         >
                           <span>Diskusikan Skema Ini</span>
                           <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
@@ -678,7 +681,7 @@ export default function ServicesPage() {
               <div className="mt-8 flex flex-wrap justify-center gap-3.5">
                 <Link
                   href={consultationHref({ source: "services" })}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-md shadow-[#F4511E]/20 hover:shadow-lg hover:shadow-[#F4511E]/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                  className={`inline-flex items-center gap-2 px-7 py-3.5 font-semibold rounded-xl transition-colors shadow-md shadow-orange-700/20 hover:shadow-lg hover:shadow-orange-700/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${accentStyles.action}`}
                 >
                   <span>Ajukan Diskusi Kebutuhan</span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -688,7 +691,7 @@ export default function ServicesPage() {
                   href="/portfolio"
                   className="inline-flex items-center gap-2 px-7 py-3.5 bg-white dark:bg-white/10 text-slate-800 dark:text-white hover:bg-slate-100 dark:hover:bg-white/15 font-semibold rounded-xl border border-slate-200 dark:border-white/15 transition-all text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                 >
-                  <Briefcase className="w-4 h-4 text-orange-600 dark:text-orange-400" aria-hidden="true" />
+                  <Briefcase className={`w-4 h-4 ${accentStyles.accent}`} aria-hidden="true" />
                   <span>Jelajahi Portofolio Klien</span>
                 </Link>
 
@@ -696,7 +699,7 @@ export default function ServicesPage() {
                   href="/products"
                   className="inline-flex items-center gap-2 px-7 py-3.5 bg-white dark:bg-white/10 text-slate-800 dark:text-white hover:bg-slate-100 dark:hover:bg-white/15 font-semibold rounded-xl border border-slate-200 dark:border-white/15 transition-all text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                 >
-                  <Layers className="w-4 h-4 text-orange-600 dark:text-orange-400" aria-hidden="true" />
+                  <Layers className={`w-4 h-4 ${accentStyles.accent}`} aria-hidden="true" />
                   <span>Katalog Produk Enterprise</span>
                 </Link>
               </div>
@@ -708,7 +711,7 @@ export default function ServicesPage() {
                   <span>Respon Cepat (&lt; 24 Jam Kerja)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-orange-700 dark:text-orange-400" aria-hidden="true" />
+                  <ShieldCheck className={`w-4 h-4 ${accentStyles.accent}`} aria-hidden="true" />
                   <span>Jaminan Kerahasiaan Data (NDA)</span>
                 </div>
                 <div className="flex items-center gap-1.5">

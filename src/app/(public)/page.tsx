@@ -1,19 +1,27 @@
 ﻿"use client";
 
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, ArrowUpRight } from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import ParticleNetwork from "@/components/animations/ParticleNetwork";
 import FloatingShapes from "@/components/animations/FloatingShapes";
-import TypewriterText from "@/components/animations/TypewriterText";
+import GradientText from "@/components/ui/GradientText";
 import HeroMockup from "@/components/ui/HeroMockup";
 import GridPattern from "@/components/ui/GridPattern";
-import Marquee from "@/components/ui/Marquee";
+import ClientLogoList from "@/components/pages/home/ClientLogoList";
 import { useCitsStore } from "@/stores/citsStore";
 import { initialAboutData, initialLandingPageData, defaultSectionVisibility } from "@/data/initialData";
 import FeaturedCatalog from "@/components/ui/FeaturedCatalog";
 import AboutHomeHighlights from "@/components/ui/AboutHomeHighlights";
 import { useCompanyContent } from "@/components/pages/public/CompanyBrand";
+import { buttonStyles } from "@/components/ui/Button";
+
+function homeCtaHref(href = "/contact") {
+  if (href === "/contact" || href === "/contact/") return "/contact?source=home#consultation-form";
+  if (href.startsWith("/contact?") && !href.includes("#")) return `${href}#consultation-form`;
+  return href;
+}
 
 export default function Home() {
   const {
@@ -29,6 +37,7 @@ export default function Home() {
   const currentLanding = landingData || initialLandingPageData;
   const visibility = { ...defaultSectionVisibility, ...currentLanding.sectionVisibility };
   const hero = { ...initialLandingPageData.hero, ...currentLanding.hero };
+  const heroHighlight = hero.typewriterWords.find((word) => word.trim());
   // Company statistics have one CMS source: Tentang Kami > Statistik Pencapaian.
   const activeHighlights = (aboutData ?? initialAboutData).stats.filter(
     (item) => item.label.trim() && item.value.trim()
@@ -38,7 +47,7 @@ export default function Home() {
   const clientsIntro = { ...initialLandingPageData.clientsIntro, ...currentLanding.clientsIntro };
   const cta = { ...initialLandingPageData.cta, ...currentLanding.cta };
 
-  const marqueeList = storeClients
+  const clientLogos = storeClients
     .filter((client) => client.isActive !== false && client.showOnHome !== false)
     .map((client) => ({ name: client.name, logo: client.logo, showLabel: true }));
   const featuredProducts = activeProducts.filter((product) => product.showOnHome !== false);
@@ -47,12 +56,12 @@ export default function Home() {
   );
 
   return (
-    <>
+    <main id="main-content">
       {/* Top Official Announcement Banner */}
       {contactInfo?.announcement?.isActive && contactInfo.announcement.text && (
         <aside
           aria-label="Pengumuman Resmi"
-          className="bg-gradient-to-r from-orange-600 via-amber-600 to-orange-700 text-white py-2.5 px-4 text-xs font-semibold shadow-xs"
+          className={`py-2.5 px-4 text-xs font-semibold shadow-xs ${accentStyles.fill}`}
         >
           <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-center sm:text-left">
             <div className="flex items-center gap-2 mx-auto sm:mx-0">
@@ -64,7 +73,7 @@ export default function Home() {
                 href={contactInfo.announcement.linkUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mx-auto sm:mx-0 inline-flex items-center gap-1 underline hover:text-orange-100 font-bold text-[11px]"
+                className="mx-auto inline-flex items-center gap-1 text-[11px] font-bold underline hover:decoration-2 sm:mx-0"
               >
                 <span>{contactInfo.announcement.linkText}</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -87,8 +96,12 @@ export default function Home() {
                 <ScrollReveal delay={0.1}>
                   <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-dark dark:text-white tracking-tight leading-[1.15] [overflow-wrap:anywhere]">
                     {hero.headlinePrefix ?? "Ciptakan Solusi"}
-                    <br />
-                    {hero.typewriterWords.length > 0 && <TypewriterText words={hero.typewriterWords} />}
+                    {heroHighlight && (
+                      <>
+                        <br />
+                        <GradientText>{heroHighlight}</GradientText>
+                      </>
+                    )}
                   </h1>
                 </ScrollReveal>
 
@@ -101,16 +114,19 @@ export default function Home() {
                 <ScrollReveal delay={0.3}>
                   <div className="mt-8 flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4 sm:items-center">
                     <Link
-                      href={hero.primaryCtaLink ?? "/contact"}
-                      className="group px-7 py-3.5 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-lg shadow-[#F4511E]/25 flex items-center justify-center gap-2.5 text-sm"
+                      href={homeCtaHref(hero.primaryCtaLink)}
+                      className={buttonStyles("public-primary", "lg", "group px-7 shadow-md shadow-action/25")}
                     >
                       {hero.primaryCtaText ?? "Konsultasi Sekarang"}
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight
+                        aria-hidden="true"
+                        className="size-4 group-hover:translate-x-1 motion-safe:transition-transform motion-reduce:group-hover:translate-x-0"
+                      />
                     </Link>
 
                     <Link
                       href={hero.secondaryCtaLink ?? "/products"}
-                      className="px-7 py-3.5 border-2 border-gray-200 dark:border-white/20 hover:border-orange-600 dark:hover:border-orange-400 text-gray-700 dark:text-white hover:text-orange-700 dark:hover:text-orange-400 font-semibold rounded-xl transition-all bg-white/70 dark:bg-white/10 backdrop-blur-sm text-center text-sm shadow-sm"
+                      className={`px-7 py-3.5 border-2 border-gray-200 dark:border-white/20 hover:border-orange-600 dark:hover:border-orange-400 text-gray-700 dark:text-white font-semibold rounded-xl transition-all bg-white/70 dark:bg-white/10 backdrop-blur-sm text-center text-sm shadow-sm ${accentStyles.hoverText}`}
                     >
                       {hero.secondaryCtaText ?? "Eksplorasi Produk"}
                     </Link>
@@ -158,7 +174,7 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
               {activeHighlights.map((item) => (
                 <div key={item.label} className="p-3">
-                  <p className="text-3xl sm:text-4xl md:text-5xl font-black text-orange-600 dark:text-orange-400 tracking-tight break-words">
+                  <p className={`text-3xl sm:text-4xl md:text-5xl font-black tracking-tight break-words ${accentStyles.accent}`}>
                     {item.value}
                   </p>
                   <p className="mt-2 text-xs sm:text-sm font-semibold text-gray-700 dark:text-white">{item.label}</p>
@@ -189,7 +205,7 @@ export default function Home() {
           products={featuredProducts}
           title={(productsIntro.title ?? "Produk Unggulan CITS").split(/(CITS)/g).map((part, index) =>
             part === "CITS" ? (
-              <span key={index} className="text-orange-700 dark:text-orange-400">
+              <span key={index} className={accentStyles.text}>
                 CITS
               </span>
             ) : (
@@ -206,17 +222,17 @@ export default function Home() {
       )}
       <AboutHomeHighlights content={companyContent} aboutData={aboutData} />
 
-      {/* Client Logos Marquee */}
-      {visibility.clients !== false && marqueeList.length > 0 && (
-        <section className="py-16 bg-white dark:bg-[#1A1A2E] border-t border-gray-100 dark:border-white/10 relative overflow-hidden transition-colors">
+      {/* Client logos */}
+      {visibility.clients !== false && clientLogos.length > 0 && (
+        <section aria-labelledby="client-logos-heading" className="py-16 bg-white dark:bg-[#1A1A2E] border-t border-gray-100 dark:border-white/10 relative overflow-hidden transition-colors">
           <GridPattern className="opacity-40" />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <ScrollReveal>
-              <p className="text-center text-xs md:text-sm text-gray-700 dark:text-white/90 uppercase tracking-widest mb-8 font-semibold">
+              <h2 id="client-logos-heading" className="text-center text-xs md:text-sm text-gray-700 dark:text-white/90 uppercase tracking-widest mb-8 font-semibold">
                 {clientsIntro?.title ?? "Dipercaya oleh Kementerian, BUMN, dan Lembaga Nasional"}
-              </p>
+              </h2>
             </ScrollReveal>
-            <Marquee items={marqueeList} speed={45} />
+            <ClientLogoList items={clientLogos} />
           </div>
         </section>
       )}
@@ -237,8 +253,8 @@ export default function Home() {
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Link
-                  href={cta.primaryLink ?? "/contact"}
-                  className="group inline-flex items-center gap-2 px-8 py-4 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-bold rounded-xl transition-colors shadow-lg shadow-[#F4511E]/25 hover:shadow-xl hover:shadow-[#F4511E]/35 text-sm"
+                  href={homeCtaHref(cta.primaryLink)}
+                  className={buttonStyles("public-primary", "lg", "group px-8 shadow-md shadow-action/25")}
                 >
                   {cta.primaryText ?? "Mulai Konsultasi Gratis"}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -254,6 +270,6 @@ export default function Home() {
           </div>
         </section>
       )}
-    </>
+    </main>
   );
 }

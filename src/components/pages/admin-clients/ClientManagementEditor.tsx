@@ -1,5 +1,6 @@
 "use client";
-import Input from "@/components/ui/Input";
+import { adminAction } from "@/components/pages/admin/accentStyles";
+import { BackOfficeInput as Input } from "@/components/ui/Input";
 
 import Image from "next/image";
 import { Plus, CheckCircle2, Trash2, Edit, Search } from "lucide-react";
@@ -62,7 +63,7 @@ export default function ClientManagementEditor({ editor }: { editor: ClientManag
           <button
             disabled={!canCreate}
             onClick={openAddModal}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-md shadow-orange-600/20 transition-all cursor-pointer"
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl ${adminAction} font-bold text-xs shadow-md shadow-orange-600/20 transition-all cursor-pointer`}
           >
             <Plus className="w-4 h-4" />
             <span>Tambah Mitra Baru</span>

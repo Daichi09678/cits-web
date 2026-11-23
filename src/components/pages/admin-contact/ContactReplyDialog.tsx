@@ -1,6 +1,7 @@
 "use client";
-import Input, { Textarea } from "@/components/ui/Input";
-import Button from "@/components/ui/Button";
+import { adminAccent } from "@/components/pages/admin/accentStyles";
+import { BackOfficeInput as Input, BackOfficeTextarea as Textarea } from "@/components/ui/Input";
+import { BackOfficeButton as Button } from "@/components/ui/Button";
 import FieldLabel from "@/components/ui/FieldLabel";
 
 import AdminDialogSurface from "@/components/pages/admin/AdminDialogSurface";
@@ -49,7 +50,7 @@ export default function ContactReplyDialog({ editor }: { editor: ContactEditorSt
           <div className="w-full max-w-2xl bg-white dark:bg-[#16162D] min-h-0 overflow-hidden flex flex-col">
             <div className="px-6 py-4 border-b border-slate-100 dark:border-white/10 flex items-center justify-between bg-slate-50/70 dark:bg-white/5">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-orange-600 text-white flex items-center justify-center shadow-md shadow-orange-600/20 shrink-0">
+                <div className={`w-10 h-10 rounded-xl ${adminAccent} flex items-center justify-center shadow-md shadow-orange-600/20 shrink-0`}>
                   <Reply className="w-5 h-5" />
                 </div>
                 <div>

@@ -1,4 +1,5 @@
 "use client";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Button from "@/components/ui/Button";
 
 import { useState } from "react";
@@ -24,8 +25,8 @@ export function TeamDirectory({ members, loading, error, onRetry }: TeamDirector
     ...new Set(published.map((member) => member.teamName).filter((name): name is string => Boolean(name))),
   ];
   const groups = groupTeamMembers(published);
+  const exampleCount = published.filter((member) => member.isDemo === true).length;
   const unavailable = Boolean(error && published.length === 0);
-  const hasDemoProfiles = published.some((member) => member.isDemo === true);
 
   return (
     <section
@@ -64,7 +65,7 @@ export function TeamDirectory({ members, loading, error, onRetry }: TeamDirector
               size="none"
               type="button"
               onClick={onRetry}
-              className="min-h-11 rounded-lg px-2 font-semibold text-orange-700 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 dark:text-orange-400"
+              className={`min-h-11 rounded-lg px-2 font-semibold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 ${accentStyles.text}`}
             >
               Coba lagi
             </Button>
@@ -93,34 +94,38 @@ export function TeamDirectory({ members, loading, error, onRetry }: TeamDirector
               size="none"
               type="button"
               onClick={onRetry}
-              className="mt-5 min-h-11 cursor-pointer rounded-xl border border-orange-600 px-5 text-sm font-semibold text-orange-700 transition-colors hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-500 dark:text-orange-400 dark:hover:bg-orange-500/10"
+              className={`mt-5 min-h-11 cursor-pointer rounded-xl border border-orange-600 px-5 text-sm font-semibold transition-colors hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-500 dark:hover:bg-orange-500/10 ${accentStyles.text}`}
             >
               Coba lagi
             </Button>
           </div>
         ) : !published.length ? (
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-6 py-14 text-center dark:border-white/10 dark:bg-[#151528]">
-            <Users aria-hidden="true" className="mx-auto mb-4 size-8 text-orange-600 dark:text-orange-400" />
+            <Users aria-hidden="true" className={`mx-auto mb-4 size-8 ${accentStyles.accent}`} />
             <p className="text-base font-semibold text-dark dark:text-white">Profil anggota tim belum tersedia.</p>
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-              Anda tetap dapat menghubungi CITS melalui halaman kontak.
+              Hubungi kami untuk berdiskusi dengan tim yang sesuai dengan kebutuhan Anda.
             </p>
+            <a
+              href="/contact?source=about#consultation-form"
+              className={`mt-5 inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-orange-700 ${accentStyles.action}`}
+            >
+              Hubungi Tim CITS
+            </a>
           </div>
         ) : (
           <>
             <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
               Menampilkan {published.length} dari {published.length} anggota
             </p>
-            {hasDemoProfiles && (
-              <p
-                role="note"
-                className="mb-5 rounded-xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
-              >
-                Sebagian profil di bawah masih berupa <strong>data contoh</strong> untuk pengembangan tampilan, bukan
-                data resmi anggota tim CITS.
-              </p>
-            )}
             <div className="space-y-7 sm:space-y-8">
+              {exampleCount > 0 && (
+                <p className="text-sm text-slate-600 dark:text-slate-300">
+                  {exampleCount === published.length
+                    ? "Seluruh profil di bagian ini adalah ilustrasi."
+                    : "Direktori ini juga memuat profil ilustrasi."}
+                </p>
+              )}
               {groups.map((group, index) => (
                 <section key={group.name} aria-labelledby={`team-group-heading-${index}`}>
                   <div className="mb-4 flex items-start justify-between gap-3">

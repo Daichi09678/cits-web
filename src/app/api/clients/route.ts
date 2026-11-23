@@ -4,10 +4,15 @@ import { DbRepo } from "@/lib/db";
 import { ClientPartner } from "@/types/schema";
 import { badRequest, missingStringFields, readJsonBody } from "@/lib/http";
 
-export async function GET() {
+export async function GET(req: Request) {
+  const admin = new URL(req.url).searchParams.get("admin") === "1";
+  if (admin) {
+    const denied = await requireAdmin(req, "clients", "view");
+    if (denied) return denied;
+  }
   try {
     const list = await DbRepo.getClients();
-    return NextResponse.json({ success: true, data: list });
+    return NextResponse.json({ success: true, data: admin ? list : list.filter((item) => item.isActive !== false) });
   } catch (e: any) {
     return NextResponse.json({ success: false, message: e.message }, { status: 500 });
   }

@@ -366,6 +366,7 @@ test("a stale page fetch cannot overwrite a confirmed edit, even if browser stor
           ];
         },
         useEffect: (effect) => effects.push(effect),
+        useRef: (current) => ({ current }),
       },
       "@/lib/publicPageContent": contentLib,
       "@/lib/api": { citsApi: { getPublicPageContent: () => pending, updatePublicPageContent: async () => updated } },
@@ -397,7 +398,7 @@ test("a stale page fetch cannot overwrite a confirmed edit, even if browser stor
   assert.equal(states[0].collections.awards.length, 0);
 });
 
-test("an open About or Portfolio page refreshes remote text and collection changes without navigation", async () => {
+test("open About and Portfolio pages refresh remote changes and can retry a failed read", async () => {
   for (const page of ["about", "portfolio"]) {
     const states = [],
       effects = [],
@@ -405,6 +406,7 @@ test("an open About or Portfolio page refreshes remote text and collection chang
       timers = new Map(),
       cache = new Map();
     const remote = fullContent(page);
+    let unavailable = false;
     const { usePublicPageContent } = load(
       "lib/publicPageContentClient.ts",
       {
@@ -420,9 +422,17 @@ test("an open About or Portfolio page refreshes remote text and collection chang
             ];
           },
           useEffect: (effect) => effects.push(effect),
+          useRef: (current) => ({ current }),
         },
         "@/lib/publicPageContent": contentLib,
-        "@/lib/api": { citsApi: { getPublicPageContent: async () => structuredClone(remote) } },
+        "@/lib/api": {
+          citsApi: {
+            getPublicPageContent: async () => {
+              if (unavailable) throw new Error("Connection unavailable");
+              return structuredClone(remote);
+            },
+          },
+        },
       },
       {
         window: {
@@ -438,7 +448,7 @@ test("an open About or Portfolio page refreshes remote text and collection chang
         localStorage: { getItem: (key) => cache.get(key), setItem: (key, value) => cache.set(key, value) },
       }
     );
-    usePublicPageContent(page);
+    const { retryLoad } = usePublicPageContent(page);
     const stop = effects[0]();
     await new Promise((resolve) => setImmediate(resolve));
     const key = Object.keys(remote.texts)[0];
@@ -453,6 +463,19 @@ test("an open About or Portfolio page refreshes remote text and collection chang
     timers.get(1)();
     await new Promise((resolve) => setImmediate(resolve));
     assert.equal(states[0].texts[key], "Perubahan berikutnya");
+    unavailable = true;
+    assert.equal(await retryLoad(), false);
+    assert.match(states[2], /belum dapat dimuat/);
+    assert.equal(states[0].texts[key], "Perubahan berikutnya");
+    unavailable = false;
+    remote.texts[key] = "Konten terbaru setelah coba lagi";
+    const retry = retryLoad();
+    assert.equal(retryLoad(), retry);
+    assert.equal(states[1], true);
+    assert.equal(await retry, true);
+    assert.equal(states[1], false);
+    assert.equal(states[2], "");
+    assert.equal(states[0].texts[key], remote.texts[key]);
     stop();
     assert.equal(timers.size, 0);
     assert.equal(handlers.size, 0);

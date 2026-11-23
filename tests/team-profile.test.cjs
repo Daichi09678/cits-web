@@ -32,10 +32,10 @@ test("public profile uses the selected member's saved identity, team and descrip
   assert.match(html, /Tutup detail profil/);
 });
 
-test("profiles retain empty-description fallbacks without a visible demo tag", () => {
+test("profiles retain empty-description fallbacks and identify published examples", () => {
   assert.match(render(), /Deskripsi anggota ini belum tersedia/);
   assert.match(render({ description: "  " }), /Deskripsi anggota ini belum tersedia/);
   assert.match(render({ teamName: "" }), /Tim: Belum ditentukan/);
-  assert.doesNotMatch(render({ isDemo: true }), /Data contoh|bukan profil anggota resmi/);
-  assert.doesNotMatch(render(), /bukan profil anggota resmi/);
+  assert.match(render({ isDemo: true, showDemoOnAbout: true }), /Profil ilustrasi/);
+  assert.doesNotMatch(render(), /Profil ilustrasi/);
 });

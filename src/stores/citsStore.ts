@@ -262,7 +262,7 @@ export const CitsStore = {
     return getStorageItem<ContactInfo>(siteConfig.storageKeys.contactInfo, initialContactInfo);
   },
   async saveContactInfo(info: ContactInfo): Promise<void> {
-    assertPageAction("contact", "edit");
+    assertPageAction("contact", "view");
     const result = await citsApi.updateContactInfo(info);
     if (!result?.success || !result.data) throw new Error(result?.message || "Informasi kontak gagal disimpan.");
     setStorageItem(siteConfig.storageKeys.contactInfo, result.data);
@@ -278,16 +278,15 @@ export const CitsStore = {
     setStorageItem(siteConfig.storageKeys.messages, valid);
   },
   async addMessage(
-    msg: Omit<ContactMessage, "id" | "status" | "createdAt"> & { id?: string }
+    msg: Omit<ContactMessage, "id" | "status" | "createdAt"> & { id?: string; consent: true }
   ): Promise<ContactMessage> {
     const result = await citsApi.sendMessage(msg);
     if (!result?.success || !result.data?.id) {
       throw new Error(result?.message || "Pesan belum tersimpan. Silakan coba lagi.");
     }
-    // Only confirmed server records may appear in the local inbox.
-    const saved = result.data as ContactMessage;
-    this.saveMessages([saved, ...this.getMessages().filter((m) => m.id !== saved.id)]);
-    return saved;
+    // Public submissions do not belong in the visitor's browser cache.
+    // Authorized inbox views already refresh their records from the server.
+    return result.data as ContactMessage;
   },
   updateMessageStatus(id: string, status: "unread" | "read" | "replied"): void {
     assertPageAction("contact", "edit");
@@ -453,18 +452,25 @@ export const CitsStore = {
     return newStatus;
   },
 
-  // RESET TO DEFAULT
-  resetAllToDefault(): void {
+  clearContentCache(): void {
     if (typeof window === "undefined") return;
-    localStorage.removeItem(siteConfig.storageKeys.products);
-    localStorage.removeItem(siteConfig.storageKeys.contactInfo);
-    localStorage.removeItem(siteConfig.storageKeys.messages);
-    localStorage.removeItem(siteConfig.storageKeys.about);
-    localStorage.removeItem(siteConfig.storageKeys.clients);
-    localStorage.removeItem(siteConfig.storageKeys.landing);
-    localStorage.removeItem(siteConfig.storageKeys.services);
-    localStorage.removeItem(siteConfig.storageKeys.portfolio);
+    const keys = siteConfig.storageKeys;
+    for (const key of [
+      keys.products,
+      keys.contactInfo,
+      keys.about,
+      keys.clients,
+      keys.landing,
+      keys.services,
+      keys.portfolio,
+    ]) {
+      localStorage.removeItem(key);
+      memoryStorage.delete(key);
+      parsedStorage.delete(key);
+    }
+    contentSession = undefined;
     window.dispatchEvent(new Event("cits-data-updated"));
+    void syncContentFromBackend(true);
   },
 };
 
@@ -526,8 +532,20 @@ export function startAdminInboxSync(): () => void {
 // ═══════════════════════════════════════════════════════════════════════
 // React Hook — subscribe to store + background sync
 // ═══════════════════════════════════════════════════════════════════════
-type BackendSync = { key: string; promise: Promise<void>; completedAt: number; ttl: number };
-let backendSync: BackendSync | null = null;
+const contentReaders = {
+  products: { read: () => citsApi.getAllProducts(), array: true },
+  contactInfo: { read: () => citsApi.getContactInfo(), array: false },
+  about: { read: () => citsApi.getAboutData(), array: false },
+  clients: { read: (admin: boolean) => citsApi.getClients(admin), array: true },
+  landing: { read: () => citsApi.getLandingData(), array: false },
+  services: { read: (admin: boolean) => citsApi.getServices(admin), array: true },
+  portfolio: { read: (admin: boolean) => citsApi.getPortfolio(admin), array: true },
+};
+
+type ContentResource = keyof typeof contentReaders;
+const allContent = Object.keys(contentReaders) as ContentResource[];
+type ContentRead = { promise: Promise<void>; completedAt?: number; ttl: number };
+let contentSession: { key: string; reads: Map<ContentResource, ContentRead>; notifying: boolean } | undefined;
 
 function contentSessionKey(): string {
   try {
@@ -537,79 +555,76 @@ function contentSessionKey(): string {
   }
 }
 
-/** Share one background refresh across the header, sidebar and page; cache confirmed snapshots for navigation. */
-export function syncContentFromBackend(force = false): Promise<void> {
+export function syncContentFromBackend(
+  force = false,
+  resources: readonly ContentResource[] = allContent
+): Promise<void> {
   if (typeof window === "undefined") return Promise.resolve();
   const key = contentSessionKey();
-  if (backendSync?.key === key) {
-    if (!backendSync.completedAt) return backendSync.promise;
-    if (!force && Date.now() - backendSync.completedAt < backendSync.ttl) return backendSync.promise;
+  if (contentSession?.key !== key) {
+    contentSession = { key, reads: new Map(), notifying: false };
   }
-  const entries = [
-    [siteConfig.storageKeys.products, () => citsApi.getAllProducts(), true],
-    [siteConfig.storageKeys.contactInfo, () => citsApi.getContactInfo(), false],
-    [siteConfig.storageKeys.about, () => citsApi.getAboutData(), false],
-    [siteConfig.storageKeys.clients, () => citsApi.getClients(), true],
-    [siteConfig.storageKeys.landing, () => citsApi.getLandingData(), false],
-    [siteConfig.storageKeys.services, () => citsApi.getServices(), true],
-    [siteConfig.storageKeys.portfolio, () => citsApi.getPortfolio(), true],
-  ] as const;
-  const before = entries.map(([storageKey]) => readStorage(storageKey));
-  const record: BackendSync = { key, promise: Promise.resolve(), completedAt: 0, ttl: 30000 };
-  backendSync = record;
-  record.promise = Promise.resolve()
-    .then(async () => {
-      let notificationPending = false;
-      await Promise.allSettled(
-        entries.map(async ([storageKey, fetchData, isArray], index) => {
-          try {
-            const value = await fetchData();
-            if (backendSync !== record || contentSessionKey() !== key) return;
-            if (!value || (isArray && !Array.isArray(value))) {
-              record.ttl = 5000;
-              return;
-            }
-            // Publish each ready section without waiting for the slowest API.
-            // A completed admin save takes precedence over an older in-flight read.
-            if (readStorage(storageKey) !== before[index]) return;
-            const raw = JSON.stringify(value);
-            if (raw === before[index]) return;
-            cacheStorage(storageKey, raw);
-            // Batch responses that finish together into one consumer update.
-            if (!notificationPending) {
-              notificationPending = true;
-              void Promise.resolve().then(() => {
-                notificationPending = false;
-                if (backendSync === record && contentSessionKey() === key) {
-                  window.dispatchEvent(new Event("cits-data-updated"));
-                }
-              });
-            }
-          } catch {
-            record.ttl = 5000;
+
+  const session = contentSession;
+  const pending = resources.map((resource) => {
+    const previous = session.reads.get(resource);
+    if (
+      previous &&
+      (previous.completedAt === undefined || (!force && Date.now() - previous.completedAt < previous.ttl))
+    )
+      return previous.promise;
+
+    const storageKey = siteConfig.storageKeys[resource];
+    const before = readStorage(storageKey);
+    const { read, array } = contentReaders[resource];
+    const refresh: ContentRead = {
+      ttl: 30000,
+      promise: Promise.resolve()
+        .then(async () => {
+          const value = await read(key !== "public");
+          if (contentSession !== session || contentSessionKey() !== key) return;
+          if (!value || (array && !Array.isArray(value))) {
+            refresh.ttl = 5000;
+            return;
+          }
+          // A settled admin edit wins over an older in-flight read.
+          if (readStorage(storageKey) !== before) return;
+          const raw = JSON.stringify(value);
+          if (raw === before) return;
+          cacheStorage(storageKey, raw);
+          if (!session.notifying) {
+            session.notifying = true;
+            void Promise.resolve().then(() => {
+              session.notifying = false;
+              if (contentSession === session && contentSessionKey() === key) {
+                window.dispatchEvent(new Event("cits-data-updated"));
+              }
+            });
           }
         })
-      );
-    })
-    .catch((error) => {
-      record.ttl = 5000;
-      console.warn("Backend background sync fallback:", error);
-    })
-    .finally(() => {
-      record.completedAt = Date.now();
-    });
-  return record.promise;
+        .catch(() => {
+          refresh.ttl = 5000;
+        })
+        .finally(() => {
+          refresh.completedAt = Date.now();
+        }),
+    };
+    session.reads.set(resource, refresh);
+    return refresh.promise;
+  });
+  return Promise.all(pending).then(() => undefined);
 }
 
-let contentSubscribers = 0;
+const contentSubscribers = new Map<ContentResource, number>();
 let stopContentRefresh: (() => void) | null = null;
 
-/** One live refresh for all store consumers, including public tabs on other devices. */
-export function startContentRefresh(): () => void {
-  contentSubscribers++;
+export function startContentRefresh(resources: readonly ContentResource[] = allContent): () => void {
+  for (const resource of resources) {
+    contentSubscribers.set(resource, (contentSubscribers.get(resource) ?? 0) + 1);
+  }
   if (!stopContentRefresh) {
     const refresh = () => {
-      if (!document.hidden) void syncContentFromBackend(true);
+      if (!document.hidden) void syncContentFromBackend(true, [...contentSubscribers.keys()]);
     };
     const timer = setInterval(refresh, 10000);
     window.addEventListener("focus", refresh);
@@ -624,15 +639,19 @@ export function startContentRefresh(): () => void {
   return () => {
     if (stopped) return;
     stopped = true;
-    contentSubscribers--;
-    if (contentSubscribers === 0) {
+    for (const resource of resources) {
+      const remaining = (contentSubscribers.get(resource) ?? 0) - 1;
+      if (remaining > 0) contentSubscribers.set(resource, remaining);
+      else contentSubscribers.delete(resource);
+    }
+    if (contentSubscribers.size === 0) {
       stopContentRefresh?.();
       stopContentRefresh = null;
     }
   };
 }
 
-export function useCitsStore() {
+export function useCitsStore(resources: readonly ContentResource[] = allContent) {
   // PENTING (hydration): render pertama WAJIB identik di server dan browser.
   // Jangan membaca localStorage saat inisialisasi state — cache lokal dimuat
   // setelah mount lewat refreshFromLocal() di useEffect di bawah.
@@ -664,8 +683,8 @@ export function useCitsStore() {
     refreshFromLocal();
 
     // ── 1. Initial Backend Sync ────────────────────────────────────────
-    void syncContentFromBackend();
-    const stopRefresh = startContentRefresh();
+    void syncContentFromBackend(false, resources);
+    const stopRefresh = startContentRefresh(resources);
     const onStorage = (event: StorageEvent) => {
       if (event.key) memoryStorage.delete(event.key);
       else memoryStorage.clear();
@@ -680,7 +699,7 @@ export function useCitsStore() {
       window.removeEventListener("cits-data-updated", refreshFromLocal);
       window.removeEventListener("storage", onStorage);
     };
-  }, []);
+  }, [resources]);
 
   return {
     isLoaded,

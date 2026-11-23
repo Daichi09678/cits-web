@@ -30,29 +30,18 @@ test("team directory combines name and role search with published status and sav
   assert.deepEqual(members, original);
 });
 
-test("sample roster contains four distinct teams with six members and one homepage lead each", () => {
+test("sample roster preserves four admin groups without exposing them through public filters", () => {
   const examples = load("data/teamMembers.ts").demoTeamMembers;
-  const grouped = directory.groupTeamMembers(examples);
   assert.equal(examples.length, 24);
   assert.equal(new Set(examples.map((member) => member.id)).size, 24);
-  assert.equal(grouped.length, 4);
-  for (const group of grouped) {
-    assert.equal(group.members.length, 6);
-    assert.ok(group.members.every((member) => member.isDemo && member.teamName === group.name));
-    assert.equal(directory.searchTeamMembers(examples, "", "", group.name).length, 6);
-    assert.equal(directory.searchTeamMembers(examples, group.name).length, 6);
+  const groups = new Set(examples.map((member) => member.teamName));
+  assert.equal(groups.size, 4);
+  for (const name of groups) {
+    assert.equal(examples.filter((member) => member.teamName === name && member.isDemo).length, 6);
   }
-  assert.equal(
-    new Set(
-      directory
-        .publicTeamMembers(examples)
-        .slice(0, 4)
-        .map((member) => member.teamName)
-    ).size,
-    4
-  );
-  const changed = examples.map((member, index) => (index === 0 ? { ...member, teamName: "Tim baru" } : member));
-  assert.equal(directory.groupTeamMembers(changed).find((group) => group.name === "Tim baru").members.length, 1);
+  assert.equal(directory.publicTeamMembers(examples).length, 0);
+  assert.equal(directory.searchTeamMembers(examples, "").length, 0);
+  assert.equal(directory.groupTeamMembers(examples).length, 0);
 });
 
 const Card = load("components/ui/TeamDirectoryCard.tsx", {
@@ -96,11 +85,14 @@ test("directory displays members directly without search controls or hidden memb
   assert.doesNotMatch(updated, /Rina|Engineer/);
 });
 
-test("directory marks demo profiles and handles loading, errors and an empty roster", () => {
+test("directory hides demo profiles and handles loading, errors and an empty roster", () => {
   const demo = render({ members: [{ ...members[0], isDemo: true }] });
-  assert.match(demo, /Rina/);
-  // Profil contoh harus dikenali sebagai data contoh, bukan tampil seperti staf resmi.
-  assert.match(demo, /data contoh/i);
+  assert.doesNotMatch(demo, /Rina|<article/);
+  assert.match(demo, /Hubungi Tim CITS/);
+  const publishedExample = render({ members: [{ ...members[0], isDemo: true, showDemoOnAbout: true }] });
+  assert.match(publishedExample, /Seluruh profil di bagian ini adalah ilustrasi/);
+  assert.match(publishedExample, /Lihat profil Rina \(profil ilustrasi\)/);
+  assert.doesNotMatch(publishedExample, /Data contoh/);
   const loading = render({ members: [], loading: true });
   assert.match(loading, /Memuat informasi tim/);
   assert.doesNotMatch(loading, /belum tersedia|anggota ditampilkan/);
@@ -117,7 +109,7 @@ test("directory marks demo profiles and handles loading, errors and an empty ros
 });
 
 test("directory renders four saved team groups and six editable profiles per group", () => {
-  const examples = load("data/teamMembers.ts").demoTeamMembers;
+  const examples = load("data/teamMembers.ts").demoTeamMembers.map((member) => ({ ...member, isDemo: false }));
   const html = render({ members: examples });
   assert.equal((html.match(/<article/g) || []).length, 24);
   assert.equal((html.match(/aria-labelledby="team-group-heading-/g) || []).length, 4);

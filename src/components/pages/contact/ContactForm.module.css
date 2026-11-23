@@ -15,6 +15,15 @@
   line-height: 1.5;
 }
 
+.form
+  :is(input:not([type="checkbox"], [type="radio"], [type="hidden"]), textarea, select):not(
+    :focus,
+    [aria-invalid="true"]
+  ),
+.form [role="combobox"]:not(:hover, :focus-visible, [aria-expanded="true"], [aria-invalid="true"]) {
+  border-color: var(--color-control-border);
+}
+
 .form input::placeholder,
 .form textarea::placeholder {
   font: inherit;

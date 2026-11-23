@@ -3,6 +3,7 @@
 import type { SelectHTMLAttributes } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { BACK_OFFICE_BORDER, FIELD_BORDER, FIELD_INVALID_BORDER } from "./Input";
 
 /**
  * Select standar (native `<select>` supaya tetap nyaman di mobile).
@@ -21,22 +22,16 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   invalid?: boolean;
 }
 
-export default function Select({
-  selectSize = "md",
-  containerClassName,
-  className,
-  children,
-  invalid = false,
-  ...rest
-}: SelectProps) {
+function renderSelect(
+  { selectSize = "md", containerClassName, className, children, invalid = false, ...rest }: SelectProps,
+  border: string
+) {
   return (
     <div className={cn("relative min-w-0", containerClassName)}>
       <select
         className={cn(
           "w-full min-w-0 cursor-pointer appearance-none truncate rounded-xl border bg-white text-left font-normal text-slate-900 outline-none transition-colors [font-family:inherit] focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#121222] dark:text-white",
-          invalid
-            ? "border-rose-400 focus:border-rose-500 focus:ring-rose-500/20 dark:border-rose-500/40"
-            : "border-slate-300 hover:border-slate-400 focus:border-orange-500 focus:ring-orange-500/20 dark:border-white/15 dark:hover:border-white/25",
+          invalid ? FIELD_INVALID_BORDER : border,
           SIZES[selectSize],
           className
         )}
@@ -51,4 +46,12 @@ export default function Select({
       />
     </div>
   );
+}
+
+export default function Select(props: SelectProps) {
+  return renderSelect(props, FIELD_BORDER);
+}
+
+export function BackOfficeSelect(props: SelectProps) {
+  return renderSelect(props, BACK_OFFICE_BORDER);
 }

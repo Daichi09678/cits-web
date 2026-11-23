@@ -95,6 +95,16 @@ export async function deleteInternalAccount(id: string): Promise<void> {
   await request<{ success: boolean }>(`${BASE}/${encodeURIComponent(id)}`, { method: "DELETE" });
 }
 
+export async function deleteInternalAccounts(ids: string[]): Promise<number> {
+  const { deletedCount } = await request<{ deletedCount: number }>(BASE, {
+    method: "DELETE",
+    body: JSON.stringify({ ids }),
+  });
+  if (!Number.isInteger(deletedCount) || deletedCount < 0 || deletedCount > ids.length)
+    throw new Error("Server belum mengonfirmasi jumlah akun yang dihapus.");
+  return deletedCount;
+}
+
 export async function savePageAccess(
   updates: { id: string; pageAccess: PageKey[] }[]
 ): Promise<PublicInternalAccount[]> {

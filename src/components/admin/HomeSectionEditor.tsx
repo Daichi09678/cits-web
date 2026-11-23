@@ -1,4 +1,5 @@
 "use client";
+import { adminAction } from "@/components/pages/admin/accentStyles";
 
 import { useAdminAuth } from "@/lib/auth";
 import { canPerformAction } from "@/lib/internalAccess";
@@ -182,7 +183,7 @@ export default function HomeSectionEditor({ page }: { page: HomeEditorPage }) {
             </p>
             <button
               type="submit"
-              className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-orange-700"
+              className={`inline-flex items-center gap-2 rounded-xl ${adminAction} px-4 py-2.5 text-xs font-bold`}
             >
               <Save className="h-4 w-4" />
               {saving ? "Menyimpan..." : "Simpan Konten Beranda"}

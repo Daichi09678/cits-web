@@ -1,4 +1,5 @@
 "use client";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Button from "@/components/ui/Button";
 
 import Image from "next/image";
@@ -66,11 +67,11 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
       }}
       className="fixed inset-0 m-auto max-h-[calc(100dvh-32px)] w-[min(700px,calc(100vw-32px))] max-w-none flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-950/55 open:flex dark:border-white/10 dark:bg-[#1A1A2E] dark:text-white"
     >
-      <div aria-hidden="true" className="h-1 shrink-0 bg-gradient-to-r from-orange-600 via-[#F4511E] to-amber-400" />
+      <div aria-hidden="true" className={`h-1 shrink-0 ${accentStyles.fill}`} />
       <header className="flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 px-5 py-3 dark:border-white/10">
         <p className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300">
-          <UserRound aria-hidden="true" className="size-4 shrink-0 text-orange-600 dark:text-orange-400" />
-          Profil anggota tim
+          <UserRound aria-hidden="true" className={`size-4 shrink-0 ${accentStyles.accent}`} />
+          {member.isDemo ? "Profil ilustrasi" : "Profil anggota tim"}
         </p>
         <Button
           variant="unstyled"
@@ -87,7 +88,7 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [overflow-wrap:anywhere]">
         <div className="grid sm:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
           <div className="flex min-w-0 flex-col gap-4 border-b border-slate-200 bg-orange-50/40 text-left sm:border-r sm:border-b-0 dark:border-white/10 dark:bg-orange-500/[0.04]">
-            <div className="relative flex aspect-[4/3] w-full shrink-0 items-center justify-center overflow-hidden bg-[#FFF0E5] text-orange-600 sm:aspect-square dark:bg-orange-500/10 dark:text-orange-400">
+            <div className={`relative flex aspect-[4/3] w-full shrink-0 items-center justify-center overflow-hidden bg-[#FFF0E5] sm:aspect-square dark:bg-orange-500/10 ${accentStyles.accent}`}>
               {member.photoUrl ? (
                 <Image
                   src={member.photoUrl}
@@ -108,19 +109,19 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
               >
                 {member.name}
               </h2>
-              <p className="mt-2 text-base font-semibold leading-relaxed text-orange-700 dark:text-orange-400">
+              <p className={`mt-2 text-base font-semibold leading-relaxed ${accentStyles.text}`}>
                 {member.position}
               </p>
             </div>
             <p className="mx-5 mb-5 flex max-w-full items-start gap-2 rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-left text-sm font-medium leading-snug text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
-              <Users aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-orange-600 dark:text-orange-400" />
+              <Users aria-hidden="true" className={`mt-0.5 size-4 shrink-0 ${accentStyles.accent}`} />
               <span className="min-w-0 break-words">Tim: {teamName || "Belum ditentukan"}</span>
             </p>
           </div>
           <div className="px-6 py-6">
             <section aria-labelledby={`${titleId}-about`}>
               <div className="flex items-center gap-2">
-                <span aria-hidden="true" className="h-4 w-1 shrink-0 rounded-full bg-orange-600 dark:bg-orange-400" />
+                <span aria-hidden="true" className={`h-4 w-1 shrink-0 rounded-full ${accentStyles.fill}`} />
                 <h3 id={`${titleId}-about`} className="min-w-0 text-lg font-bold text-[#0F172A] dark:text-white">
                   Tentang {member.name}
                 </h3>
@@ -144,7 +145,7 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
                       </p>
                       <Link
                         href="/contact"
-                        className="mt-1 inline-flex text-sm font-semibold text-orange-700 underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 dark:text-orange-400"
+                        className={`mt-1 inline-flex text-sm font-semibold underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 ${accentStyles.text}`}
                       >
                         Hubungi tim CITS
                       </Link>
@@ -157,13 +158,15 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
         </div>
       </div>
       <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50/60 px-5 py-4 dark:border-white/10 dark:bg-white/[0.02]">
-        <p className="text-xs font-medium text-slate-600 dark:text-slate-300">Profil tim CITS Indonesia</p>
+        <p className="text-xs font-medium text-slate-600 dark:text-slate-300">
+          Direktori tim CITS Indonesia
+        </p>
         <Button
           variant="unstyled"
           size="none"
           type="button"
           onClick={onClose}
-          className="min-h-11 rounded-xl bg-orange-700 px-5 text-sm font-semibold text-white transition-colors hover:bg-orange-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
+          className={`min-h-11 rounded-xl px-5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 ${accentStyles.action}`}
         >
           Tutup
         </Button>

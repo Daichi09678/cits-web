@@ -1,6 +1,6 @@
 export default function FloatingShapes() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none motion-reduce:hidden">
       {/* Hexagon */}
       <div
         className="absolute top-20 right-[10%] w-24 h-24 border border-brand/20 animate-float-hex"

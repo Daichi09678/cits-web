@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/apiAuth";
 import { badRequest, readJsonBody } from "@/lib/http";
-import { parseTeamMember } from "@/lib/team";
+import { isPublicTeamMember, parseTeamMember } from "@/lib/team";
 import { TeamRepo } from "@/lib/teamServer";
 
 export async function GET(req: Request) {
@@ -15,9 +15,7 @@ export async function GET(req: Request) {
     return NextResponse.json(
       {
         success: true,
-        data: admin
-          ? members
-          : members.filter((member) => member.isActive !== false && member.showOnHomepage !== false),
+        data: admin ? members : members.filter(isPublicTeamMember),
       },
       { headers: { "Cache-Control": "no-store" } }
     );

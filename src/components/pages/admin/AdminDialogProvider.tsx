@@ -3,7 +3,7 @@
 import { createContext, useCallback, useContext, useId, useMemo, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, Info, ShieldAlert, X, type LucideIcon } from "lucide-react";
 import AdminDialogSurface from "./AdminDialogSurface";
-import Button from "@/components/ui/Button";
+import { BackOfficeButton as Button } from "@/components/ui/Button";
 
 export type AdminDialogVariant = "danger" | "warning" | "success" | "info";
 

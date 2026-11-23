@@ -1,4 +1,5 @@
 "use client";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
 import Button from "@/components/ui/Button";
 
 import { Fragment, useState, type ReactNode } from "react";
@@ -18,6 +19,7 @@ import {
   FileCheck,
   Briefcase,
   Layers,
+  Download,
 } from "lucide-react";
 import ScrollReveal from "@/components/animations/ScrollReveal";
 import GradientText from "@/components/ui/GradientText";
@@ -28,6 +30,8 @@ import { useCitsStore } from "@/stores/citsStore";
 import { useCompanyContent } from "@/components/pages/public/CompanyBrand";
 import { pageCollection } from "@/lib/publicPageContent";
 import AboutTeamSection from "@/components/pages/about/AboutTeamSection";
+
+const contentResources = ["about"] as const;
 
 interface ValueItem {
   letter: string;
@@ -65,7 +69,7 @@ export default function AboutPage() {
   const milestones = pageCollection<MilestoneItem>(content, "milestones");
   const awards = pageCollection<AwardItem>(content, "awards");
   const governancePillars = pageCollection<GovernancePillar>(content, "governancePillars");
-  const { aboutData } = useCitsStore();
+  const { aboutData } = useCitsStore(contentResources);
   const [awardFilter, setAwardFilter] = useState<"all" | "kementerian" | "bumn" | "egov">("all");
 
   const filteredAwards = awardFilter === "all" ? awards : awards.filter((item) => item.category === awardFilter);
@@ -90,7 +94,7 @@ export default function AboutPage() {
                   {aboutData.title}
                 </h1>
                 {aboutData.subtitle && (
-                  <p className="mt-4 text-base font-medium leading-relaxed text-orange-700 dark:text-orange-400">
+                  <p className={`mt-4 text-base font-medium leading-relaxed ${accentStyles.text}`}>
                     {aboutData.subtitle}
                   </p>
                 )}
@@ -106,7 +110,7 @@ export default function AboutPage() {
             {/* Right Column: Symmetrical Credential Box */}
             <div className="lg:col-span-5">
               <ScrollReveal direction="right">
-                <SpotlightCard className="shadow-lg shadow-orange-600/5">
+                <SpotlightCard className="shadow-lg shadow-orange-600/5" disableSpotlight>
                   <div className="p-7 md:p-8 flex flex-col justify-between h-full space-y-6">
                     <div className="flex flex-wrap items-start justify-between gap-4 pb-5 border-b border-slate-200 dark:border-white/10">
                       <div className="min-w-0 flex-1">
@@ -147,7 +151,7 @@ export default function AboutPage() {
                           key={idx}
                           className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 text-center"
                         >
-                          <span className="block text-2xl md:text-3xl font-extrabold text-orange-700 dark:text-orange-400">
+                          <span className={`block text-2xl md:text-3xl font-extrabold ${accentStyles.accent}`}>
                             {st.value}
                           </span>
                           <span className="block mt-1 text-xs text-slate-700 dark:text-slate-300 font-medium">
@@ -166,7 +170,7 @@ export default function AboutPage() {
                     <div className="pt-2 space-y-2.5">
                       <Link
                         href={content.texts["about_hero_href_11"]}
-                        className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-md shadow-[#F4511E]/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                        className={`w-full inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-xl transition-colors shadow-md shadow-orange-700/20 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${accentStyles.action}`}
                       >
                         <span>{content.texts["about_hero_text_12"]}</span>
                         <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -181,6 +185,14 @@ export default function AboutPage() {
                           aria-hidden="true"
                         />
                         <span>{content.texts["about_hero_text_14"]}</span>
+                      </a>
+                      <a
+                        href="/api/company-profile"
+                        download="profil-perusahaan-cits.pdf"
+                        className={`inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-orange-200 px-4 py-2.5 text-center text-sm font-semibold transition hover:bg-orange-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-700 dark:border-orange-400/40 dark:hover:bg-orange-400/10 ${accentStyles.text}`}
+                      >
+                        <Download className="size-4 shrink-0" aria-hidden="true" />
+                        Unduh Profil Perusahaan (PDF)
                       </a>
                     </div>
                   </div>
@@ -215,32 +227,32 @@ export default function AboutPage() {
           <div className="grid lg:grid-cols-12 gap-8 items-stretch">
             {/* Visi Card (Span 5 - Symmetrical Height) */}
             <ScrollReveal className="lg:col-span-5 h-full">
-              <div className="h-full relative p-8 md:p-10 rounded-2xl bg-gradient-to-br from-orange-600 via-orange-700 to-orange-800 text-white shadow-xl shadow-orange-600/15 overflow-hidden flex flex-col justify-between">
+              <div className={`h-full relative p-8 md:p-10 rounded-2xl shadow-xl shadow-orange-600/15 overflow-hidden flex flex-col justify-between ${accentStyles.fill}`}>
                 <div className="relative z-10">
                   <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 flex items-center justify-center mb-6 shadow-md">
-                    <Target className="w-7 h-7 text-white" aria-hidden="true" />
+                    <Target className="w-7 h-7" aria-hidden="true" />
                   </div>
-                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mt-1 mb-4">
+                  <h3 className="text-2xl md:text-3xl font-extrabold mt-1 mb-4">
                     {content.texts["vision_mission_text_6"]}
                   </h3>
-                  <blockquote className="text-white/95 text-base md:text-lg leading-relaxed font-medium border-l-4 border-white/40 pl-4 my-6 italic">
+                  <blockquote className="text-base md:text-lg leading-relaxed font-medium border-l-4 border-white/40 pl-4 my-6 italic">
                     {content.texts["vision_mission_text_7"]}
                     {aboutData.vision}
                     {content.texts["vision_mission_text_8"]}
                   </blockquote>
                 </div>
 
-                <div className="relative z-10 pt-6 border-t border-white/20 space-y-3 text-xs text-white/90">
+                <div className="relative z-10 pt-6 border-t border-white/20 space-y-3 text-xs">
                   <div className="flex items-center gap-2.5">
-                    <Check className="w-4 h-4 text-white shrink-0" aria-hidden="true" />
+                    <Check className="w-4 h-4 shrink-0" aria-hidden="true" />
                     <span>{content.texts["vision_mission_text_9"]}</span>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <Check className="w-4 h-4 text-white shrink-0" aria-hidden="true" />
+                    <Check className="w-4 h-4 shrink-0" aria-hidden="true" />
                     <span>{content.texts["vision_mission_text_10"]}</span>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <Check className="w-4 h-4 text-white shrink-0" aria-hidden="true" />
+                    <Check className="w-4 h-4 shrink-0" aria-hidden="true" />
                     <span>{content.texts["vision_mission_text_11"]}</span>
                   </div>
                 </div>
@@ -259,7 +271,7 @@ export default function AboutPage() {
                 <div className="p-8 md:p-10 flex flex-col justify-between h-full">
                   <div>
                     <div className="flex items-center justify-between mb-6">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/20 text-white">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-600/20 ${accentStyles.fill}`}>
                         <Compass className="w-7 h-7 text-white" aria-hidden="true" />
                       </div>
                     </div>
@@ -281,7 +293,7 @@ export default function AboutPage() {
                             key={idx}
                             className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-slate-200 dark:border-white/10 flex items-start gap-4"
                           >
-                            <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-950/70 text-orange-900 dark:text-orange-200 border border-orange-300 dark:border-orange-800/80 flex items-center justify-center font-extrabold text-sm shrink-0 mt-0.5">
+                            <div className={`w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 flex items-center justify-center font-extrabold text-sm shrink-0 mt-0.5 ${accentStyles.text}`}>
                               {idx + 1}
                             </div>
                             <div>
@@ -339,7 +351,7 @@ export default function AboutPage() {
                     <div className="h-full p-6 flex flex-col justify-between text-center items-center">
                       <div className="w-full flex flex-col items-center">
                         {/* Letter Avatar */}
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-600 to-orange-500 text-white flex items-center justify-center font-extrabold text-2xl mb-4 shadow-md shadow-orange-600/20 shrink-0">
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-extrabold text-2xl mb-4 shadow-md shadow-orange-600/20 shrink-0 ${accentStyles.fill}`}>
                           {v.letter}
                         </div>
 
@@ -349,7 +361,7 @@ export default function AboutPage() {
                         </h3>
 
                         {/* Subtitle Slot (Normalized height) */}
-                        <span className="inline-block text-[11px] font-semibold text-orange-800 dark:text-orange-400 mt-1 mb-3">
+                        <span className={`inline-block text-[11px] font-semibold mt-1 mb-3 ${accentStyles.text}`}>
                           {v.subtitle}
                         </span>
 
@@ -388,17 +400,17 @@ export default function AboutPage() {
           </ScrollReveal>
 
           {/* Timeline Wrapper (Clean Mobile & Desktop Spine) */}
-          <div className="max-w-4xl mx-auto relative">
+          <div className="relative mx-auto max-w-5xl">
             {/* Desktop Center Connecting Line */}
             <div
               aria-hidden="true"
-              className="hidden md:block absolute left-1/2 top-4 bottom-4 w-0.5 bg-gradient-to-b from-orange-500 via-orange-400/50 to-orange-500/20 -translate-x-1/2"
+              className="absolute left-1/2 top-4 bottom-4 hidden w-0.5 -translate-x-1/2 bg-gradient-to-b from-orange-500 via-orange-400/50 to-orange-500/20 min-[58rem]:block"
             />
 
             {/* Mobile Left Connecting Line */}
             <div
               aria-hidden="true"
-              className="block md:hidden absolute left-5 top-4 bottom-4 w-0.5 bg-gradient-to-b from-orange-500 via-orange-400/50 to-orange-500/20"
+              className="absolute left-5 top-4 bottom-4 w-0.5 bg-gradient-to-b from-orange-500 via-orange-400/50 to-orange-500/20 min-[58rem]:hidden"
             />
 
             <ol className="space-y-8 md:space-y-12 list-none p-0 m-0" aria-label="Daftar Linimasa Milestone Perusahaan">
@@ -407,11 +419,11 @@ export default function AboutPage() {
                 return (
                   <li key={m.year}>
                     <ScrollReveal delay={i * 0.05} direction={isEven ? "left" : "right"}>
-                      <div className="relative grid md:grid-cols-2 gap-6 md:gap-12 items-center">
+                      <div className="relative grid items-center min-[58rem]:grid-cols-2 min-[58rem]:gap-8 lg:gap-12">
                         {/* Desktop Center Node Badge */}
                         <div
                           aria-hidden="true"
-                          className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-white dark:bg-[#16162c] border-2 border-orange-600 dark:border-orange-500 items-center justify-center text-orange-700 dark:text-orange-400 shadow-md z-10"
+                          className={`absolute left-1/2 z-10 hidden size-10 -translate-x-1/2 items-center justify-center rounded-full border-2 border-orange-600 bg-white shadow-md min-[58rem]:flex dark:border-orange-500 dark:bg-[#16162c] ${accentStyles.accent}`}
                         >
                           <History className="w-4 h-4" />
                         </div>
@@ -419,29 +431,28 @@ export default function AboutPage() {
                         {/* Mobile Left Node Badge */}
                         <div
                           aria-hidden="true"
-                          className="flex md:hidden absolute left-5 -translate-x-1/2 w-7 h-7 rounded-full bg-white dark:bg-[#16162c] border-2 border-orange-600 items-center justify-center text-orange-700 dark:text-orange-400 shadow-sm z-10"
+                          className={`absolute left-5 z-10 flex size-7 -translate-x-1/2 items-center justify-center rounded-full border-2 border-orange-600 bg-white shadow-sm min-[58rem]:hidden dark:bg-[#16162c] ${accentStyles.accent}`}
                         >
-                          <div className="w-2 h-2 rounded-full bg-orange-600" />
+                          <div className={`w-2 h-2 rounded-full ${accentStyles.fill}`} />
                         </div>
 
                         {/* Content Card (Left or Right on desktop, indented on mobile) */}
-                        <div className={`pl-11 md:pl-0 ${isEven ? "md:text-right md:pr-4" : "md:col-start-2 md:pl-4"}`}>
-                          <article className="p-6 rounded-2xl bg-slate-50 dark:bg-[#16162c] border border-slate-200 dark:border-white/10 hover:border-orange-500/40 transition-all shadow-sm">
-                            <div
-                              className={`flex flex-wrap items-center gap-2 mb-2.5 ${
-                                isEven ? "md:justify-end" : "justify-start"
-                              }`}
-                            >
+                        <div className={`min-w-0 pl-11 ${isEven ? "min-[58rem]:pl-0 min-[58rem]:pr-2 lg:pr-4" : "min-[58rem]:col-start-2 min-[58rem]:pl-2 lg:pl-4"}`}>
+                          <article className="rounded-2xl border border-slate-200 bg-slate-50 p-5 text-left shadow-sm transition-all hover:border-orange-500/40 md:p-4 lg:p-6 dark:border-white/10 dark:bg-[#16162c]">
+                            <div className="mb-2.5 flex flex-wrap items-baseline gap-x-2 gap-y-1 text-xs leading-5 text-slate-600 dark:text-slate-300">
                               <time
                                 dateTime={m.year}
-                                className="text-sm font-bold text-orange-700 dark:text-orange-400"
+                                className={`text-sm font-bold leading-5 ${accentStyles.text}`}
                               >
                                 {m.year}
                               </time>
-                              <span className="text-xs text-slate-600 dark:text-slate-300">{m.category}</span>
-                              <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
-                                • {m.scope}
-                              </span>
+                              {m.category && <span>{m.category}</span>}
+                              {m.scope && (
+                                <span className="inline-flex min-w-0 items-baseline gap-1 font-medium">
+                                  {m.category && <span aria-hidden="true">•</span>}
+                                  <span className="min-w-0 break-words">{m.scope}</span>
+                                </span>
+                              )}
                             </div>
 
                             <h3 className="text-base md:text-lg font-bold text-slate-900 dark:text-white">{m.title}</h3>
@@ -503,7 +514,7 @@ export default function AboutPage() {
                     onClick={() => setAwardFilter(tab.key as typeof awardFilter)}
                     className={`px-4 py-2 rounded-xl text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${
                       isActive
-                        ? "bg-orange-700 text-white shadow-sm shadow-orange-600/30"
+                        ? `shadow-sm shadow-orange-600/30 ${accentStyles.fill}`
                         : "bg-white dark:bg-white/10 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/15 border border-slate-200 dark:border-white/10"
                     }`}
                   >
@@ -524,7 +535,7 @@ export default function AboutPage() {
                     <div>
                       {/* Top Metadata */}
                       <div className="flex items-center justify-between mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 flex items-center justify-center text-orange-700 dark:text-orange-400 shadow-xs shrink-0">
+                        <div className={`w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 flex items-center justify-center shadow-xs shrink-0 ${accentStyles.accent}`}>
                           <Award className="w-6 h-6" aria-hidden="true" />
                         </div>
                       </div>
@@ -535,7 +546,7 @@ export default function AboutPage() {
                       </h3>
 
                       {/* Issuer Slot */}
-                      <p className="text-xs font-semibold text-orange-800 dark:text-orange-400 mt-1 min-h-[20px]">
+                      <p className={`text-xs font-semibold mt-1 min-h-[20px] ${accentStyles.text}`}>
                         {item.issuer}
                       </p>
 
@@ -586,7 +597,7 @@ export default function AboutPage() {
                       <div>
                         {/* Header Badge & Icon */}
                         <div className="flex items-center justify-between mb-4">
-                          <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 flex items-center justify-center text-orange-700 dark:text-orange-400 shadow-xs shrink-0">
+                          <div className={`w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-950/70 border border-orange-300 dark:border-orange-800/80 flex items-center justify-center shadow-xs shrink-0 ${accentStyles.accent}`}>
                             <IconComp className="w-6 h-6" aria-hidden="true" />
                           </div>
                         </div>
@@ -631,7 +642,7 @@ export default function AboutPage() {
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <ScrollReveal>
-            <div className="p-8 md:p-14 rounded-3xl bg-gradient-to-br from-white via-orange-50/40 to-white dark:from-[#181830] dark:via-[#1F1712] dark:to-[#181830] border border-orange-200/80 dark:border-orange-900/40 shadow-xl">
+            <div className="rounded-3xl border border-orange-200/80 bg-white p-8 shadow-xl md:p-14 dark:border-orange-900/40 dark:bg-[#181830]">
               <h2
                 id="about-cta-heading"
                 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-snug"
@@ -645,7 +656,7 @@ export default function AboutPage() {
               <div className="mt-8 flex flex-wrap justify-center gap-3.5">
                 <Link
                   href={content.texts["about_cta_href_4"]}
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#F4511E] hover:bg-[#DC3F0C] text-white font-semibold rounded-xl transition-colors shadow-md shadow-[#F4511E]/20 hover:shadow-lg hover:shadow-[#F4511E]/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                  className={`inline-flex items-center gap-2 px-7 py-3.5 font-semibold rounded-xl transition-colors shadow-md shadow-orange-700/20 hover:shadow-lg hover:shadow-orange-700/30 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 ${accentStyles.action}`}
                 >
                   <span>{content.texts["about_cta_text_5"]}</span>
                   <ArrowRight className="w-4 h-4" aria-hidden="true" />
@@ -655,7 +666,7 @@ export default function AboutPage() {
                   href={content.texts["about_cta_href_6"]}
                   className="inline-flex items-center gap-2 px-7 py-3.5 bg-white dark:bg-white/10 text-slate-800 dark:text-white hover:bg-slate-100 dark:hover:bg-white/15 font-semibold rounded-xl border border-slate-200 dark:border-white/15 transition-all text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                 >
-                  <Briefcase className="w-4 h-4 text-orange-600 dark:text-orange-400" aria-hidden="true" />
+                  <Briefcase className={`w-4 h-4 ${accentStyles.accent}`} aria-hidden="true" />
                   <span>{content.texts["about_cta_text_7"]}</span>
                 </Link>
 
@@ -663,7 +674,7 @@ export default function AboutPage() {
                   href={content.texts["about_cta_href_8"]}
                   className="inline-flex items-center gap-2 px-7 py-3.5 bg-white dark:bg-white/10 text-slate-800 dark:text-white hover:bg-slate-100 dark:hover:bg-white/15 font-semibold rounded-xl border border-slate-200 dark:border-white/15 transition-all text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
                 >
-                  <Layers className="w-4 h-4 text-orange-600 dark:text-orange-400" aria-hidden="true" />
+                  <Layers className={`w-4 h-4 ${accentStyles.accent}`} aria-hidden="true" />
                   <span>{content.texts["about_cta_text_9"]}</span>
                 </Link>
               </div>
@@ -675,7 +686,7 @@ export default function AboutPage() {
                   <span>{content.texts["about_cta_text_10"]}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-orange-700 dark:text-orange-400" aria-hidden="true" />
+                  <ShieldCheck className={`w-4 h-4 ${accentStyles.accent}`} aria-hidden="true" />
                   <span>{content.texts["about_cta_text_11"]}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
