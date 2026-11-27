@@ -1,4 +1,5 @@
 "use client";
+import { BackOfficeSelect as Select } from "@/components/ui/Select";
 import { adminAccent } from "@/components/pages/admin/accentStyles";
 
 import { BackOfficeButton as Button } from "@/components/ui/Button";
@@ -534,7 +535,7 @@ export default function AdminAccountEditor({
                   <span className="mb-2 block">
                     Role / Tingkat Hak Akses <span className="text-red-500">*</span>
                   </span>
-                  <select
+                  <Select
                     value={getAccessPreset(permissions)}
                     onChange={(event) => {
                       const preset = event.target.value;
@@ -548,18 +549,18 @@ export default function AdminAccountEditor({
                     </option>
                     <option value="view">Admin Internal — Lihat saja</option>
                     <option value="edit">Admin Internal — Lihat &amp; Edit</option>
-                  </select>
+                  </Select>
                 </label>
                 <label className="block text-xs font-medium text-[#334155] dark:text-slate-300">
                   <span className="mb-2 block">Status Akun</span>
-                  <select
+                  <Select
                     value={active ? "active" : "inactive"}
                     onChange={(event) => setActive(event.target.value === "active")}
                     className={fieldClass}
                   >
                     <option value="active">Aktif</option>
                     <option value="inactive">Nonaktif</option>
-                  </select>
+                  </Select>
                 </label>
               </div>
 

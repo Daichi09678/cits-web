@@ -1,4 +1,5 @@
 "use client";
+import { BackOfficeSelect as Select } from "@/components/ui/Select";
 import { adminAction } from "@/components/pages/admin/accentStyles";
 
 import { useAdminAuth } from "@/lib/auth";
@@ -299,7 +300,7 @@ export default function PublicPageContentEditor({ page }: { page: Exclude<Public
                                 >
                                   {fieldLabels[field] || field}
                                   {(field === "category" && key === "awards") || field === "icon" ? (
-                                    <select
+                                    <Select
                                       className={fieldClass}
                                       value={item[field] as string}
                                       onChange={(event) => itemField(key, index, field, event.target.value)}
@@ -321,7 +322,7 @@ export default function PublicPageContentEditor({ page }: { page: Exclude<Public
                                           {label}
                                         </option>
                                       ))}
-                                    </select>
+                                    </Select>
                                   ) : Array.isArray(initial) || ["description", "quote"].includes(field) ? (
                                     <textarea
                                       className={fieldClass}

@@ -1,0 +1,101 @@
+[data-select-control] {
+  --select-accent: #c2410c;
+  --select-tint: #fff1e8;
+  --select-surface: #fff;
+  --select-text: #334155;
+  --select-hover: #f1f5f9;
+  --select-border: #e2e8f0;
+}
+
+.dark [data-select-control] {
+  --select-accent: #fdba74;
+  --select-tint: #392425;
+  --select-surface: #1a1a2e;
+  --select-text: #e2e8f0;
+  --select-hover: #2c2c43;
+  --select-border: #444457;
+}
+
+[data-local-select] {
+  padding-inline-end: 2.75rem;
+}
+
+[data-local-select]:hover:not(:disabled),
+[data-local-select]:open {
+  border-color: var(--select-accent);
+}
+
+[data-local-select] option {
+  background-color: var(--select-surface);
+  color: var(--select-text);
+}
+
+[data-select-chevron] {
+  color: var(--select-accent);
+  background-color: var(--select-tint);
+}
+
+[data-local-select]:disabled + [data-select-chevron] {
+  opacity: 0.6;
+}
+
+[data-local-select]:open + [data-select-chevron] svg {
+  transform: rotate(180deg);
+}
+
+@supports (appearance: base-select) {
+  [data-local-select]:not([multiple], [size]),
+  [data-local-select]:not([multiple], [size])::picker(select) {
+    appearance: base-select;
+  }
+
+  [data-local-select]::picker-icon {
+    display: none;
+  }
+
+  [data-local-select]::picker(select) {
+    max-inline-size: calc(100dvw - 24px);
+    max-block-size: min(300px, calc(100dvh - 24px));
+    margin-block: 6px;
+    padding: 6px;
+    overflow: auto;
+    overscroll-behavior: contain;
+    border: 1px solid var(--select-border);
+    border-radius: 14px;
+    color: var(--select-text);
+    background: var(--select-surface);
+    box-shadow: 0 12px 32px rgb(15 23 42 / 14%);
+    font:
+      400 0.875rem / 1.5 var(--font-sans),
+      Arial,
+      sans-serif;
+  }
+
+  [data-local-select] option {
+    gap: 10px;
+    min-block-size: 44px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  [data-local-select] option + option {
+    margin-block-start: 2px;
+  }
+
+  [data-local-select] option:checked {
+    background: var(--select-tint);
+    font-weight: 600;
+  }
+
+  [data-local-select] option:is(:hover, :focus-visible):not(:disabled, :checked) {
+    background: var(--select-hover);
+  }
+
+  [data-local-select] option::checkmark {
+    order: 1;
+    margin-inline-start: auto;
+    color: var(--select-accent);
+  }
+}

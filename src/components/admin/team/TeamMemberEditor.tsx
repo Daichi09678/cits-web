@@ -1,5 +1,6 @@
 "use client";
 
+import { BackOfficeSelect as Select } from "@/components/ui/Select";
 import { useId, useState, type ChangeEvent, type FormEvent } from "react";
 import { Upload } from "lucide-react";
 import { citsApi } from "@/lib/api";
@@ -276,7 +277,7 @@ export default function TeamMemberEditor({
                 <label htmlFor={`${id}-status`} className="block text-xs font-medium">
                   Status
                 </label>
-                <select
+                <Select
                   id={`${id}-status`}
                   name="isActive"
                   value={draft.isActive !== false ? "active" : "inactive"}
@@ -285,7 +286,7 @@ export default function TeamMemberEditor({
                 >
                   <option value="active">Aktif</option>
                   <option value="inactive">Nonaktif</option>
-                </select>
+                </Select>
               </div>
             </div>
             <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
