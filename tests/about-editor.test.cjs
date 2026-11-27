@@ -12,7 +12,8 @@ test("about editor covers the seven actual website sections and uses descriptive
   for (const section of sections) {
     assert.ok(editor.aboutSectionDescriptions[section.key]);
     for (const field of section.fields) {
-      assert.ok(editor.aboutFieldLabels[field.key] || field.kind === "image" || field.key.includes("_alt_"), field.key);
+      const label = editor.aboutFieldLabels[field.key] ?? field.label;
+      assert.ok(label && label !== "Label", field.key);
     }
   }
 });

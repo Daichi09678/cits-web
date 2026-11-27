@@ -17,15 +17,23 @@ export default function CompanyBrandProvider({ children }: { children: ReactNode
   return <BrandContext.Provider value={content}>{children}</BrandContext.Provider>;
 }
 
-export function CompanyLogo({ location }: { location: "navbar" | "footer" }) {
+export function CompanyLogo({
+  location,
+  footerTexts,
+}: {
+  location: "navbar" | "footer";
+  footerTexts?: Record<string, string>;
+}) {
   const { texts } = useCompanyContent();
   const navbar = location === "navbar";
+  const lightSrc = footerTexts?.footer_logo_light ?? texts.about_hero_src_5;
+  const darkSrc = footerTexts?.footer_logo_dark ?? texts.about_hero_src_7;
   return (
     <span className={`relative block shrink-0 ${navbar ? "h-10 w-40" : "h-8 w-[130px]"}`}>
       <Image
-        key={`light:${texts.about_hero_src_5}`}
-        src={texts.about_hero_src_5}
-        alt={texts.about_hero_alt_6}
+        key={`light:${lightSrc}`}
+        src={lightSrc}
+        alt={footerTexts?.footer_logo_alt_light ?? texts.about_hero_alt_6}
         fill
         sizes={navbar ? "160px" : "130px"}
         unoptimized
@@ -33,9 +41,9 @@ export function CompanyLogo({ location }: { location: "navbar" | "footer" }) {
         className="block object-contain object-left dark:hidden"
       />
       <Image
-        key={`dark:${texts.about_hero_src_7}`}
-        src={texts.about_hero_src_7}
-        alt={texts.about_hero_alt_8}
+        key={`dark:${darkSrc}`}
+        src={darkSrc}
+        alt={footerTexts?.footer_logo_alt_dark ?? texts.about_hero_alt_8}
         fill
         sizes={navbar ? "160px" : "130px"}
         unoptimized

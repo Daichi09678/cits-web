@@ -110,7 +110,7 @@ test("every editable About text, logo, alt description and destination is render
   const fields = contentLib
     .pageDefinition("about")
     .sections.flatMap((section) => section.fields)
-    .filter((field) => !field.hidden);
+    .filter((field) => !field.hidden && !field.key.startsWith("footer_"));
   for (const field of fields) {
     data.texts[field.key] =
       field.kind === "image"

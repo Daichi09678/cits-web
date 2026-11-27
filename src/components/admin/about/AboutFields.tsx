@@ -83,6 +83,7 @@ export function AboutLogoField({
   onChange,
   onReading,
   onError,
+  maxSizeMb = 2,
 }: {
   dark?: boolean;
   value: string;
@@ -90,6 +91,7 @@ export function AboutLogoField({
   onChange: (value: string, alt: string) => void;
   onReading: (reading: boolean) => void;
   onError: (error: string) => void;
+  maxSizeMb?: number;
 }) {
   const ref = useRef<HTMLInputElement>(null);
   const id = useId();
@@ -129,8 +131,8 @@ export function AboutLogoField({
           onChange={(event) => {
             const file = event.target.files?.[0];
             if (!file) return;
-            if (!["image/png", "image/jpeg", "image/webp"].includes(file.type) || file.size > 2 * 1024 * 1024) {
-              onError("Gunakan logo PNG, JPG, atau WebP dengan ukuran maksimal 2 MB.");
+            if (!["image/png", "image/jpeg", "image/webp"].includes(file.type) || file.size > maxSizeMb * 1024 * 1024) {
+              onError(`Gunakan logo PNG, JPG, atau WebP dengan ukuran maksimal ${maxSizeMb} MB.`);
               event.target.value = "";
               return;
             }
@@ -171,7 +173,7 @@ export function AboutLogoField({
         </button>
       </div>
       <p className="mt-2.5 text-xs leading-relaxed text-slate-500">
-        PNG, JPG, atau WebP, maksimal 2 MB. Disarankan 300 × 100 px.
+        PNG, JPG, atau WebP, maksimal {maxSizeMb} MB. Disarankan 300 × 100 px.
       </p>
       <details className="mt-3 text-xs text-slate-500">
         <summary className="w-fit cursor-pointer rounded focus-visible:outline-2 focus-visible:outline-orange-500">

@@ -179,12 +179,12 @@ export default function PortfolioPage() {
 
                       {/* Title & Tagline */}
                       <div className="mt-5">
-                        <div className="h-14 sm:h-16 flex items-start overflow-hidden">
-                          <h3 className="text-xl sm:text-2xl font-extrabold text-dark dark:text-white tracking-tight line-clamp-2 leading-snug">
+                        <div className="min-h-14 sm:min-h-16">
+                          <h3 className="text-xl sm:text-2xl font-extrabold text-dark dark:text-white tracking-tight leading-snug">
                             {project.title}
                           </h3>
                         </div>
-                        <div className="h-12 flex items-start mt-2 overflow-hidden">
+                        <div className="mt-2 min-h-12">
                           <p className="text-xs sm:text-sm text-gray-700 dark:text-white/85 leading-relaxed font-medium line-clamp-2">
                             {project.tagline}
                           </p>
@@ -193,7 +193,7 @@ export default function PortfolioPage() {
 
                       {/* Challenge vs Solution Bento */}
                       <div className="mt-6 grid sm:grid-cols-2 gap-4">
-                        <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10 h-28 flex flex-col justify-center">
+                        <div className="p-4 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200 dark:border-white/10 min-h-28 flex flex-col justify-center">
                           <div className="flex items-center gap-1.5 text-xs font-bold text-rose-700 dark:text-rose-400 mb-1.5 shrink-0">
                             <Target className="w-3.5 h-3.5 shrink-0" />
                             <span>{content.texts["flagship_text_6"]}</span>
@@ -203,8 +203,10 @@ export default function PortfolioPage() {
                           </p>
                         </div>
 
-                        <div className="p-4 rounded-xl bg-orange-50/60 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-900/40 h-28 flex flex-col justify-center">
-                          <div className={`flex items-center gap-1.5 text-xs font-bold mb-1.5 shrink-0 ${accentStyles.text}`}>
+                        <div className="p-4 rounded-xl bg-orange-50/60 dark:bg-orange-950/30 border border-orange-200/70 dark:border-orange-900/40 min-h-28 flex flex-col justify-center">
+                          <div
+                            className={`flex items-center gap-1.5 text-xs font-bold mb-1.5 shrink-0 ${accentStyles.text}`}
+                          >
                             <Lightbulb className="w-3.5 h-3.5 shrink-0" />
                             <span>{content.texts["flagship_text_7"]}</span>
                           </div>
@@ -215,12 +217,12 @@ export default function PortfolioPage() {
                       </div>
 
                       {/* Measurable KPI Banner */}
-                      <div className="mt-5 p-4 rounded-xl bg-slate-100/90 dark:bg-[#1A1A32] border border-gray-200 dark:border-white/10 h-20 flex items-center justify-between gap-4">
+                      <div className="mt-5 p-4 rounded-xl bg-slate-100/90 dark:bg-[#1A1A32] border border-gray-200 dark:border-white/10 min-h-20 flex items-center justify-between gap-4">
                         <div className="min-w-0">
                           <span className={`block text-2xl sm:text-3xl font-black leading-none ${accentStyles.accent}`}>
                             {project.measurableImpact.highlightValue}
                           </span>
-                          <span className="block text-[11px] font-bold text-dark dark:text-white mt-1 truncate">
+                          <span className="block text-[11px] font-bold text-dark dark:text-white mt-1">
                             {project.measurableImpact.highlightLabel}
                           </span>
                         </div>
@@ -353,8 +355,7 @@ export default function PortfolioPage() {
                     <SpotlightCard className="h-full flex flex-col">
                       <article className="p-6 sm:p-7 flex flex-col justify-between h-full bg-white dark:bg-[#16162c]">
                         <div>
-                          {/* Header: Client Logo & Sector Badge (Fixed h-12) */}
-                          <div className="flex items-center justify-between gap-3 mb-4 h-12">
+                          <div className="mb-4 flex min-h-12 items-center justify-between gap-3">
                             <div className="flex items-center gap-2.5 min-w-0">
                               <div className="relative w-10 h-10 rounded-xl bg-slate-50 dark:bg-white/10 border border-gray-200 dark:border-white/15 p-1.5 flex items-center justify-center shrink-0">
                                 <Image
@@ -367,39 +368,38 @@ export default function PortfolioPage() {
                                 />
                               </div>
                               <div className="min-w-0">
-                                <span className="block text-xs font-bold text-dark dark:text-white leading-tight truncate">
+                                <span className="block text-xs font-bold text-dark dark:text-white leading-tight">
                                   {project.clientShort}
                                 </span>
-                                <span className="block text-[10px] text-gray-500 dark:text-white/60 truncate">
+                                <span className="block text-[10px] text-gray-500 dark:text-white/60">
                                   {project.period}
                                 </span>
                               </div>
                             </div>
                           </div>
 
-                          {/* Title (Normalized h-14) */}
-                          <div className="h-14 flex items-start overflow-hidden">
-                            <h3 className="text-base sm:text-lg font-extrabold text-dark dark:text-white tracking-tight line-clamp-2 leading-snug">
+                          <div className="min-h-14">
+                            <h3 className="text-base sm:text-lg font-extrabold text-dark dark:text-white tracking-tight leading-snug">
                               {project.title}
                             </h3>
                           </div>
 
-                          {/* Service Pillar Badge (Normalized h-6) */}
-                          <div className={`h-6 flex items-center gap-1.5 text-[11px] font-semibold mt-2 overflow-hidden ${accentStyles.text}`}>
+                          <div
+                            className={`mt-2 flex min-h-6 items-center gap-1.5 text-[11px] font-semibold ${accentStyles.text}`}
+                          >
                             <Layers className="w-3.5 h-3.5 shrink-0" />
-                            <span className="truncate">{project.servicePillar}</span>
+                            <span className="min-w-0">{project.servicePillar}</span>
                           </div>
 
-                          {/* Brief Tagline / Overview (Normalized h-10) */}
-                          <div className="h-10 flex items-start mt-2 overflow-hidden">
+                          <div className="mt-2 min-h-10">
                             <p className="text-xs text-gray-700 dark:text-white/80 leading-relaxed line-clamp-2">
                               {project.tagline}
                             </p>
                           </div>
 
-                          {/* Mini Challenge vs Solution Snippets (Symmetrical h-[4.75rem] each) */}
+                          {/* Challenge and solution excerpts */}
                           <div className="mt-4 space-y-2 text-xs">
-                            <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200/80 dark:border-white/10 h-[4.75rem] flex flex-col justify-center">
+                            <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#121222] border border-gray-200/80 dark:border-white/10 min-h-[4.75rem] flex flex-col justify-center">
                               <span className="block text-[10px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wide shrink-0">
                                 {content.texts["case_studies_list_text_9"]}
                               </span>
@@ -408,8 +408,10 @@ export default function PortfolioPage() {
                               </span>
                             </div>
 
-                            <div className="p-2.5 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-200/60 dark:border-orange-900/30 h-[4.75rem] flex flex-col justify-center">
-                              <span className={`block text-[10px] font-bold uppercase tracking-wide shrink-0 ${accentStyles.text}`}>
+                            <div className="p-2.5 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-200/60 dark:border-orange-900/30 min-h-[4.75rem] flex flex-col justify-center">
+                              <span
+                                className={`block text-[10px] font-bold uppercase tracking-wide shrink-0 ${accentStyles.text}`}
+                              >
                                 {content.texts["case_studies_list_text_10"]}
                               </span>
                               <span className="block mt-0.5 text-[11px] text-gray-800 dark:text-white/90 line-clamp-2 leading-relaxed">
@@ -418,13 +420,12 @@ export default function PortfolioPage() {
                             </div>
                           </div>
 
-                          {/* Impact Highlight Badge (Normalized h-16) */}
-                          <div className="mt-4 p-3 rounded-xl bg-slate-100/90 dark:bg-[#141426] border border-gray-200 dark:border-white/10 h-16 flex items-center justify-between gap-3">
+                          <div className="mt-4 p-3 rounded-xl bg-slate-100/90 dark:bg-[#141426] border border-gray-200 dark:border-white/10 min-h-16 flex items-center justify-between gap-3">
                             <div className="min-w-0">
-                              <span className={`block text-xl font-extrabold truncate leading-tight ${accentStyles.accent}`}>
+                              <span className={`block text-xl font-extrabold leading-tight ${accentStyles.accent}`}>
                                 {project.measurableImpact.highlightValue}
                               </span>
-                              <span className="block text-[10px] font-bold text-dark dark:text-white truncate">
+                              <span className="block text-[10px] font-bold text-dark dark:text-white">
                                 {project.measurableImpact.highlightLabel}
                               </span>
                             </div>
@@ -436,7 +437,7 @@ export default function PortfolioPage() {
                               {project.techStack.slice(0, 3).map((t) => (
                                 <span
                                   key={t}
-                                  className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-100 dark:bg-white/10 text-gray-800 dark:text-white border border-gray-200 dark:border-white/15 shrink-0"
+                                  className="max-w-full rounded border border-gray-200 bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-gray-800 dark:border-white/15 dark:bg-white/10 dark:text-white"
                                 >
                                   {t}
                                 </span>

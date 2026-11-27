@@ -98,7 +98,7 @@ function ContactPageContent({
   initialReference: string;
 }) {
   const { contactInfo, actions, services, activeProducts, activeCaseStudies } = useCitsStore(contactContentResources);
-  const { mapUrl, mapEmbedUrl, whatsappUrl } = contactPresentation(contactInfo);
+  const { mapUrl, mapEmbedUrl, whatsappUrl, phoneUrl } = contactPresentation(contactInfo);
   const [referenceId, setReferenceId] = useState(initialReference);
   const selectedPortfolio = activeCaseStudies.find((item) => item.id === referenceId);
   const [submitted, setSubmitted] = useState(false);
@@ -306,13 +306,13 @@ function ContactPageContent({
                         </Button>
                       </div>
                       <a
-                        href={`tel:${(contactInfo?.phone || "02139719677").replace(/[^0-9]/g, "")}`}
+                        href={phoneUrl || undefined}
                         className={`mt-1 inline-block text-xs md:text-sm font-bold hover:underline ${accentStyles.text}`}
                       >
-                        {contactInfo?.phone || "(021) 39719677"}
+                        {contactInfo.phone}
                       </a>
                       <span className="block mt-0.5 text-[11px] text-gray-700 dark:text-white/70">
-                        {contactInfo?.workingHours || "Senin – Jumat (08.30 – 17.30 WIB)"}
+                        {contactInfo.workingHours}
                       </span>
                     </div>
                   </div>

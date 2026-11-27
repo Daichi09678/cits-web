@@ -22,7 +22,7 @@ export async function PUT(request: Request, context: Context) {
   if (authDenied) return authDenied;
   const { page } = await context.params;
   if (!isPublicContentPage(page)) return badRequest("Halaman tidak ditemukan.");
-  const denied = await requireAdmin(request, page);
+  const denied = await requireAdmin(request, page === "footer" ? "contact" : page);
   if (denied) return denied;
   const parsed = await readJsonBody<unknown>(request);
   if (!parsed.ok) return parsed.response;

@@ -4,7 +4,10 @@ export function contactPresentation(contact: ContactInfo) {
   const digits = (contact.emergencyPhone || "").replace(/\D/g, "");
   const whatsappNumber = digits.startsWith("0") ? `62${digits.slice(1)}` : digits;
   const query = encodeURIComponent(contact.address);
+  const phone = contact.phone?.trim() || "";
+  const phoneDigits = phone.replace(/\D/g, "");
   return {
+    phoneUrl: phoneDigits ? `tel:${phone.startsWith("+") ? "+" : ""}${phoneDigits}` : "",
     mapUrl: `https://www.google.com/maps/search/?api=1&query=${query}`,
     mapEmbedUrl: `https://maps.google.com/maps?q=${query}&output=embed`,
     whatsappUrl: whatsappNumber

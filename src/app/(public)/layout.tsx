@@ -10,7 +10,7 @@ export const metadata = publicPageMetadata("/");
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <CompanyBrandProvider>
-      <div className={`${styles.surface} flex flex-1 flex-col`}>
+      <div className={`${styles.surface} flex min-w-0 flex-1 flex-col [overflow-wrap:anywhere]`}>
         <a href="#public-content" className="skip-link">
           Lewati ke konten utama
         </a>

@@ -38,7 +38,7 @@ const fieldLabels: Record<string, string> = {
   company: "Instansi / perusahaan",
 };
 
-export default function PublicPageContentEditor({ page }: { page: PublicContentPage }) {
+export default function PublicPageContentEditor({ page }: { page: Exclude<PublicContentPage, "footer"> }) {
   const { session } = useAdminAuth();
   const canEdit = canPerformAction(session?.user, page, "edit");
   const { content, loading, loadError, save, retryLoad } = usePublicPageContent(page);

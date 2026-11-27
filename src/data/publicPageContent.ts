@@ -83,6 +83,12 @@ export const publicPageDefinitions = {
             label: "Label",
             kind: "text",
           },
+          { key: "footer_description", label: "Deskripsi footer", kind: "textarea", hidden: true },
+          { key: "footer_legal", label: "Nama legal dan NIB", kind: "text", hidden: true },
+          { key: "footer_contact_heading", label: "Judul kontak", kind: "text", hidden: true },
+          { key: "footer_map_label", label: "Teks tautan peta", kind: "text", hidden: true },
+          { key: "footer_whatsapp_label", label: "Teks tombol WhatsApp", kind: "text", hidden: true },
+          { key: "footer_copyright", label: "Teks hak cipta setelah tahun", kind: "text", hidden: true },
         ],
       },
       {
@@ -374,6 +380,12 @@ export const publicPageDefinitions = {
       about_hero_text_12: "Konsultasi Kemitraan Bersama Tim CITS",
       about_hero_href_13: "#legalitas-governance",
       about_hero_text_14: "Verifikasi Legalitas & Kepatuhan SPBE",
+      footer_description: "",
+      footer_legal: "PT Cipta Integrasi Teknologi Solusi • NIB 0220205842886",
+      footer_contact_heading: "Hubungi Kami",
+      footer_map_label: "Buka di Google Maps",
+      footer_whatsapp_label: "Konsultasi Gratis",
+      footer_copyright: "CITS Indonesia. Seluruh hak cipta dilindungi.",
       vision_mission_text_1: "Komitmen & Landasan Filosofis",
       vision_mission_text_2: "Visi & Misi",
       vision_mission_text_3: "Perusahaan",
@@ -732,6 +744,30 @@ export const publicPageDefinitions = {
         ],
       },
     },
+  },
+  footer: {
+    title: "Footer",
+    sections: [
+      {
+        key: "footer",
+        title: "Isi footer",
+        fields: [
+          { key: "footer_logo_light", label: "Logo tema terang", kind: "image" },
+          { key: "footer_logo_dark", label: "Logo tema gelap", kind: "image" },
+          { key: "footer_logo_alt_light", label: "Teks alternatif logo terang", kind: "text" },
+          { key: "footer_logo_alt_dark", label: "Teks alternatif logo gelap", kind: "text" },
+          { key: "footer_description", label: "Deskripsi perusahaan", kind: "textarea" },
+          { key: "footer_legal", label: "Nama legal dan NIB", kind: "text" },
+          { key: "footer_contact_heading", label: "Judul kontak", kind: "text" },
+          { key: "footer_map_label", label: "Teks tautan Google Maps", kind: "text" },
+          { key: "footer_whatsapp_label", label: "Teks tombol WhatsApp", kind: "text" },
+          { key: "footer_copyright_year", label: "Tahun hak cipta", kind: "text" },
+          { key: "footer_copyright", label: "Teks hak cipta", kind: "text" },
+        ],
+      },
+    ],
+    texts: {},
+    collections: {},
   },
   portfolio: {
     title: "Portofolio",
@@ -1218,4 +1254,4 @@ export const publicPageDefinitions = {
       },
     },
   },
-} satisfies Record<"about" | "portfolio", PublicPageDefinition>;
+} satisfies Record<"about" | "portfolio" | "footer", PublicPageDefinition>;
