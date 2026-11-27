@@ -6,6 +6,7 @@ import FieldLabel from "@/components/ui/FieldLabel";
 
 import { Mail, Phone, MapPin, Clock, Save, CheckCircle2 } from "lucide-react";
 import type { ContactEditorState } from "./useContactEditor";
+import FooterEditor from "./FooterEditor";
 
 export default function ContactInfoPanel({ editor }: { editor: ContactEditorState }) {
   const {
@@ -28,11 +29,12 @@ export default function ContactInfoPanel({ editor }: { editor: ContactEditorStat
   return (
     <>
       {activeTab === "info" && (
-        <div className="mt-6 max-w-3xl rounded-xl bg-white dark:bg-[#151528] border border-gray-200 dark:border-white/10 p-6 md:p-8">
+        <div className="mt-6 min-w-0 max-w-3xl rounded-xl border border-gray-200 bg-white p-4 sm:p-6 md:p-8 dark:border-white/10 dark:bg-[#151528]">
           <div className="mb-6">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Pengaturan Informasi Kontak</h2>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Informasi Kontak dan Footer</h2>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Data kontak ini otomatis disinkronkan ke footer dan halaman kontak publik.
+              Alamat, nomor telepon, WhatsApp, email, dan jam operasional tersinkronisasi dengan footer dan informasi
+              kontak di halaman Hubungi Kami.
             </p>
           </div>
 
@@ -71,7 +73,7 @@ export default function ContactInfoPanel({ editor }: { editor: ContactEditorStat
                   <div className="relative">
                     <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <Input
-                      type="text"
+                      type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       fieldSize="sm"
@@ -122,12 +124,12 @@ export default function ContactInfoPanel({ editor }: { editor: ContactEditorStat
 
                 <div>
                   <FieldLabel htmlFor="contact-info-panel-emergency-phone" fieldSize="sm">
-                    Nomor Darurat WhatsApp
+                    Nomor WhatsApp
                   </FieldLabel>
                   <div className="relative">
                     <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                     <Input
-                      type="text"
+                      type="tel"
                       value={emergencyPhone}
                       onChange={(e) => setEmergencyPhone(e.target.value)}
                       fieldSize="sm"
@@ -142,11 +144,12 @@ export default function ContactInfoPanel({ editor }: { editor: ContactEditorStat
               <div className="pt-4 border-t border-slate-100 dark:border-white/5">
                 <Button type="submit" variant="primary" size="md" busy={settingsSaving} busyLabel="Menyimpan...">
                   <Save className="w-4 h-4" />
-                  <span>Simpan Perubahan</span>
+                  <span>Simpan Info Kontak</span>
                 </Button>
               </div>
             </fieldset>
           </form>
+          <FooterEditor />
         </div>
       )}
     </>

@@ -3,7 +3,13 @@
 import { useId, useState, type ChangeEvent, type FormEvent } from "react";
 import { Upload } from "lucide-react";
 import { citsApi } from "@/lib/api";
-import { isTeamMemberListedOnAbout, isTeamPhotoUrl, parseTeamMember, type TeamMember, type TeamMemberInput } from "@/lib/team";
+import {
+  isTeamMemberListedOnAbout,
+  isTeamPhotoUrl,
+  parseTeamMember,
+  type TeamMember,
+  type TeamMemberInput,
+} from "@/lib/team";
 import TeamDialog, { teamButton, teamField, teamPrimary, teamSecondary } from "./TeamDialog";
 import { TeamPhoto } from "./TeamMemberDetails";
 import TeamAssignmentSelect from "./TeamAssignmentSelect";
@@ -202,10 +208,51 @@ export default function TeamMemberEditor({
                   id={`${id}-description-help`}
                   className="mt-2 block text-xs font-normal leading-5 text-slate-600 dark:text-slate-300"
                 >
-                  Ditampilkan pada detail profil di halaman Tim.{" "}
+                  Ditampilkan pada detail profil di Tentang Kami.{" "}
                   {(draft.description ?? "").length.toLocaleString("id-ID")}/3.000 karakter.
                 </span>
               </label>
+              <fieldset className="grid min-w-0 gap-4 rounded-xl border border-slate-200 p-4 sm:col-span-2 sm:grid-cols-2 dark:border-white/10">
+                <legend className="px-1 text-xs font-semibold">Detail profil publik (opsional)</legend>
+                {(
+                  [
+                    ["serviceFocus", "Fokus layanan"],
+                    ["availability", "Ketersediaan"],
+                  ] as const
+                ).map(([field, label]) => (
+                  <label key={field} className="block min-w-0 text-xs font-medium">
+                    {label}
+                    <input
+                      name={field}
+                      maxLength={200}
+                      value={draft[field] ?? ""}
+                      onChange={(event) => setDraft({ ...draft, [field]: event.target.value })}
+                      className={teamField}
+                    />
+                  </label>
+                ))}
+                {(
+                  [
+                    ["expertise", "Bidang keahlian", 80],
+                    ["projectRoles", "Peran dalam proyek", 300],
+                  ] as const
+                ).map(([field, label, limit]) => (
+                  <label key={field} className="block min-w-0 text-xs font-medium sm:col-span-2">
+                    {label}
+                    <textarea
+                      name={field}
+                      rows={3}
+                      maxLength={12 * (limit + 1) - 1}
+                      value={draft[field]?.join("\n") ?? ""}
+                      onChange={(event) => setDraft({ ...draft, [field]: event.target.value.split("\n") })}
+                      className={teamField + " resize-y leading-6"}
+                    />
+                    <span className="mt-2 block font-normal text-slate-600 dark:text-slate-300">
+                      Satu poin per baris, maksimal 12 poin dan {limit} karakter per baris.
+                    </span>
+                  </label>
+                ))}
+              </fieldset>
               <label htmlFor={`${id}-order`} className="block text-xs font-medium">
                 Urutan Tampil <span className="text-red-700 dark:text-red-300">*</span>
                 <input

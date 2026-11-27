@@ -24,13 +24,21 @@ test("contact channels use the saved office address and WhatsApp number, includi
   );
 });
 
-function renderFooter(services, info = contact) {
+function renderFooter(services, info = contact, savedTexts = {}) {
+  const { publicPageDefinitions } = load("data/publicPageContent.ts");
   const Footer = load("components/pages/public/Footer.tsx", {
     react: React,
     "react/jsx-runtime": require("react/jsx-runtime"),
     "lucide-react": require("lucide-react"),
     "next/link": { default: ({ children, ...props }) => React.createElement("a", props, children) },
-    "@/components/pages/public/CompanyBrand": { CompanyLogo: () => null },
+    "@/components/pages/public/CompanyBrand": {
+      CompanyLogo: () => null,
+      useCompanyContent: () => ({ texts: publicPageDefinitions.about.texts }),
+    },
+    "@/lib/footerContent": load("lib/footerContent.ts"),
+    "@/lib/publicPageContentClient": {
+      usePublicPageContent: () => ({ content: { texts: savedTexts } }),
+    },
     "@/lib/contactPresentation": presentation,
     "@/data/initialData": { initialContactInfo: contact },
     "@/stores/citsStore": {
@@ -61,4 +69,18 @@ test("footer publishes edited company/contact content without duplicating navbar
   assert.doesNotMatch(html, /6281239719677|Pengembangan Perangkat Lunak/);
   const cleared = renderFooter([], { ...contact, emergencyPhone: "" });
   assert.doesNotMatch(cleared, /wa\.me|Layanan terbaru|Layanan nonaktif/);
+  const edited = renderFooter(
+    [],
+    { ...contact, phone: "+62 21 999" },
+    {
+      footer_description: "Deskripsi footer baru",
+      footer_legal: "NIB 123456",
+      footer_whatsapp_label: "Chat dengan tim",
+    }
+  );
+  assert.match(edited, /href="tel:\+6221999"/);
+  assert.match(edited, /Deskripsi footer baru/);
+  assert.match(edited, /NIB 123456/);
+  assert.match(edited, /Chat dengan tim/);
+  assert.doesNotMatch(renderFooter([], { ...contact, phone: "" }), /href="tel:/);
 });

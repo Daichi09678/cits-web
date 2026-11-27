@@ -58,7 +58,7 @@ export const citsApi = {
     return result.data;
   },
   async updatePublicPageContent(page: PublicContentPage, data: PublicPageContent): Promise<PublicPageContent> {
-    assertPageAction(page, "edit");
+    assertPageAction(page === "footer" ? "contact" : page, "edit");
     const response = await fetch(`${API_URL}/page-content/${page}`, {
       method: "PUT",
       headers: getHeaders(),
@@ -281,6 +281,16 @@ export const citsApi = {
   },
 
   // 7. File Upload
+  async saveCompanyProfilePdf(file: File) {
+    assertPageAction("about", "edit");
+    const headers = new Headers(getHeaders());
+    headers.set("Content-Type", "application/pdf");
+    const response = await fetch(`${API_URL}/company-profile`, { method: "PUT", headers, body: file });
+    const result = await response.json().catch(() => null);
+    if (!response.ok || result?.success !== true)
+      throw new Error(result?.message || "PDF belum tersimpan. Silakan coba lagi.");
+  },
+
   async uploadFile(file: File) {
     const formData = new FormData();
     formData.append("file", file);

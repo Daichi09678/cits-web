@@ -1,12 +1,14 @@
 "use client";
-import accentStyles from "@/components/pages/public/PublicAccent.module.css";
-import Button from "@/components/ui/Button";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useId, useRef } from "react";
-import { FileText, UserRound, Users, X } from "lucide-react";
+import { CalendarDays, ShieldCheck, Users, X } from "lucide-react";
+import accentStyles from "@/components/pages/public/PublicAccent.module.css";
+import Button from "@/components/ui/Button";
 import type { TeamMember } from "@/lib/team";
+
+const detailLabel = "text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400";
+const profileSectionLabel = "text-xs font-bold uppercase tracking-wide text-slate-950 dark:text-slate-100";
 
 export default function TeamProfileDialog({ member, onClose }: { member: TeamMember; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -15,6 +17,13 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
   const descriptionId = useId();
   const description = member.description?.trim() || "";
   const teamName = member.teamName?.trim() || "";
+  const initials = member.name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => Array.from(part)[0])
+    .join("")
+    .toLocaleUpperCase("id");
 
   useEffect(() => {
     const dialog = ref.current;
@@ -39,9 +48,11 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
       aria-modal="true"
       onKeyDown={(event) => {
         if (event.key !== "Tab") return;
-        const buttons = event.currentTarget.querySelectorAll<HTMLButtonElement>("button:not([disabled])");
-        const first = buttons[0];
-        const last = buttons[buttons.length - 1];
+        const stops = event.currentTarget.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), a[href], [tabindex="0"]'
+        );
+        const first = stops[0];
+        const last = stops[stops.length - 1];
         if (event.shiftKey && document.activeElement === first) {
           event.preventDefault();
           last?.focus();
@@ -65,14 +76,10 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
         )
           onClose();
       }}
-      className="fixed inset-0 m-auto max-h-[calc(100dvh-32px)] w-[min(700px,calc(100vw-32px))] max-w-none flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-950/55 open:flex dark:border-white/10 dark:bg-[#1A1A2E] dark:text-white"
+      className="fixed inset-0 m-auto max-h-[calc(100dvh-24px)] w-[min(680px,calc(100vw-24px))] max-w-none flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-950/55 open:flex dark:border-white/10 dark:bg-[#1A1A2E] dark:text-white"
     >
-      <div aria-hidden="true" className={`h-1 shrink-0 ${accentStyles.fill}`} />
-      <header className="flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 px-5 py-3 dark:border-white/10">
-        <p className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-300">
-          <UserRound aria-hidden="true" className={`size-4 shrink-0 ${accentStyles.accent}`} />
-          {member.isDemo ? "Profil ilustrasi" : "Profil anggota tim"}
-        </p>
+      <div aria-hidden="true" className={`h-0.5 shrink-0 ${accentStyles.fill}`} />
+      <header className="flex shrink-0 justify-end border-b border-slate-200 px-4 py-1 dark:border-white/10">
         <Button
           variant="unstyled"
           size="none"
@@ -80,96 +87,127 @@ export default function TeamProfileDialog({ member, onClose }: { member: TeamMem
           type="button"
           onClick={onClose}
           aria-label="Tutup detail profil"
-          className="-mr-2 flex size-11 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-orange-600 dark:text-slate-300 dark:hover:bg-white/5"
+          className="flex size-11 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-orange-600 dark:text-slate-300 dark:hover:bg-white/5"
         >
-          <X aria-hidden="true" className="size-5" />
+          <X aria-hidden="true" className="size-4" />
         </Button>
       </header>
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [overflow-wrap:anywhere]">
-        <div className="grid sm:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
-          <div className="flex min-w-0 flex-col gap-4 border-b border-slate-200 bg-orange-50/40 text-left sm:border-r sm:border-b-0 dark:border-white/10 dark:bg-orange-500/[0.04]">
-            <div className={`relative flex aspect-[4/3] w-full shrink-0 items-center justify-center overflow-hidden bg-[#FFF0E5] sm:aspect-square dark:bg-orange-500/10 ${accentStyles.accent}`}>
+      <div
+        role="region"
+        aria-label="Isi profil anggota"
+        tabIndex={0}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain [overflow-wrap:anywhere] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-orange-600"
+      >
+        <div className="grid sm:grid-cols-[minmax(0,41.5%)_minmax(0,1fr)]">
+          <div className="flex min-w-0 flex-col gap-4 border-b border-slate-200 bg-[#fcf8f4] p-4 sm:border-r sm:border-b-0 sm:p-6 dark:border-white/10 dark:bg-orange-500/[0.04]">
+            <div className="relative flex size-36 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-orange-200 bg-[#ffecd5] text-4xl font-bold text-orange-800 sm:size-44 dark:border-orange-500/30 dark:bg-orange-500/10 dark:text-orange-200">
               {member.photoUrl ? (
                 <Image
                   src={member.photoUrl}
-                  alt={`Foto ${member.name}`}
+                  alt=""
                   fill
                   unoptimized
-                  sizes="(min-width: 640px) 260px, calc(100vw - 34px)"
+                  sizes="(min-width: 640px) 176px, 144px"
                   className="object-cover object-top"
                 />
               ) : (
-                <UserRound aria-hidden="true" className="size-20" strokeWidth={1.5} />
+                <span aria-hidden="true">{initials}</span>
               )}
             </div>
-            <div className="min-w-0 px-5">
-              <h2
-                id={titleId}
-                className="text-xl font-bold leading-snug tracking-tight text-[#0F172A] sm:text-2xl dark:text-white"
-              >
+            <div className="mt-auto min-w-0">
+              <h2 id={titleId} className="text-xl font-bold leading-snug tracking-tight sm:text-2xl">
                 {member.name}
               </h2>
-              <p className={`mt-2 text-base font-semibold leading-relaxed ${accentStyles.text}`}>
-                {member.position}
+              <p className="mt-1 text-sm font-semibold text-orange-800 dark:text-orange-300">{member.position}</p>
+              <p className="mt-3 flex w-fit max-w-full items-start gap-2 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
+                <Users aria-hidden="true" className={`size-3.5 shrink-0 ${accentStyles.accent}`} />
+                <span className="min-w-0">Tim: {teamName || "Belum ditentukan"}</span>
               </p>
             </div>
-            <p className="mx-5 mb-5 flex max-w-full items-start gap-2 rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-left text-sm font-medium leading-snug text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-200">
-              <Users aria-hidden="true" className={`mt-0.5 size-4 shrink-0 ${accentStyles.accent}`} />
-              <span className="min-w-0 break-words">Tim: {teamName || "Belum ditentukan"}</span>
-            </p>
-          </div>
-          <div className="px-6 py-6">
-            <section aria-labelledby={`${titleId}-about`}>
-              <div className="flex items-center gap-2">
-                <span aria-hidden="true" className={`h-4 w-1 shrink-0 rounded-full ${accentStyles.fill}`} />
-                <h3 id={`${titleId}-about`} className="min-w-0 text-lg font-bold text-[#0F172A] dark:text-white">
-                  Tentang {member.name}
-                </h3>
-              </div>
-              <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50/80 p-4 dark:border-white/10 dark:bg-white/[0.04]">
-                {description ? (
-                  <p
-                    id={descriptionId}
-                    className="whitespace-pre-line text-base leading-7 text-slate-700 dark:text-slate-200"
-                  >
-                    {description}
-                  </p>
-                ) : (
-                  <div id={descriptionId} className="flex items-start gap-3">
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white text-slate-400 ring-1 ring-slate-200 dark:bg-white/5 dark:text-slate-400 dark:ring-white/10">
-                      <FileText aria-hidden="true" className="size-4" />
-                    </span>
+            {(member.serviceFocus || member.availability) && (
+              <dl className="space-y-3 border-t border-orange-200/70 pt-4 text-xs text-slate-700 dark:border-orange-500/20 dark:text-slate-200">
+                {member.serviceFocus && (
+                  <div className="flex items-start gap-2">
+                    <ShieldCheck aria-hidden="true" className={`size-4 shrink-0 ${accentStyles.accent}`} />
                     <div className="min-w-0">
-                      <p className="text-sm italic leading-7 text-slate-500 dark:text-slate-400">
-                        Deskripsi anggota ini belum tersedia.
-                      </p>
-                      <Link
-                        href="/contact"
-                        className={`mt-1 inline-flex text-sm font-semibold underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 ${accentStyles.text}`}
-                      >
-                        Hubungi tim CITS
-                      </Link>
+                      <dt className={detailLabel}>Fokus layanan</dt>
+                      <dd>{member.serviceFocus}</dd>
                     </div>
                   </div>
                 )}
-              </div>
+                {member.availability && (
+                  <div className="flex items-start gap-2">
+                    <CalendarDays
+                      aria-hidden="true"
+                      className="size-4 shrink-0 text-emerald-700 dark:text-emerald-400"
+                    />
+                    <div className="min-w-0">
+                      <dt className={detailLabel}>Ketersediaan</dt>
+                      <dd>{member.availability}</dd>
+                    </div>
+                  </div>
+                )}
+              </dl>
+            )}
+          </div>
+          <div className="min-w-0 space-y-5 p-4 sm:p-6">
+            <section aria-labelledby={`${titleId}-about`}>
+              <h3 id={`${titleId}-about`} className="flex items-center gap-2.5 text-sm font-bold">
+                <span aria-hidden="true" className={`h-[18px] w-1 shrink-0 rounded-full ${accentStyles.fill}`} />
+                <span className="min-w-0">Tentang {member.name}</span>
+              </h3>
+              <p
+                id={descriptionId}
+                className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600 dark:text-slate-300"
+              >
+                {description || "Deskripsi anggota ini belum tersedia."}
+              </p>
             </section>
+            {!!member.expertise?.length && (
+              <section aria-labelledby={`${titleId}-expertise`}>
+                <h3 id={`${titleId}-expertise`} className={profileSectionLabel}>
+                  Bidang keahlian
+                </h3>
+                <ul className="mt-2 flex flex-wrap gap-2">
+                  {member.expertise.map((skill) => (
+                    <li
+                      key={skill}
+                      className="max-w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-950 dark:border-white/15 dark:bg-white/5 dark:text-slate-100"
+                    >
+                      {skill}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+            {!!member.projectRoles?.length && (
+              <section aria-labelledby={`${titleId}-project-roles`}>
+                <h3 id={`${titleId}-project-roles`} className={profileSectionLabel}>
+                  Peran dalam proyek
+                </h3>
+                <ul className="mt-2 list-disc space-y-2.5 pl-4 text-sm leading-relaxed text-slate-950 dark:text-slate-100">
+                  {member.projectRoles.map((role) => (
+                    <li key={role}>{role}</li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </div>
         </div>
       </div>
-      <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50/60 px-5 py-4 dark:border-white/10 dark:bg-white/[0.02]">
-        <p className="text-xs font-medium text-slate-600 dark:text-slate-300">
-          Direktori tim CITS Indonesia
-        </p>
-        <Button
-          variant="unstyled"
-          size="none"
-          type="button"
-          onClick={onClose}
-          className={`min-h-11 rounded-xl px-5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 ${accentStyles.action}`}
-        >
-          Tutup
-        </Button>
+      <footer className="flex shrink-0 flex-wrap items-center justify-between gap-2.5 border-t border-slate-200 bg-slate-50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.04]">
+        <p className="text-xs font-medium text-slate-600 dark:text-slate-300">Direktori tim CITS Indonesia</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="unstyled"
+            size="none"
+            type="button"
+            onClick={onClose}
+            className={`min-h-10 rounded-xl px-5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 ${accentStyles.action}`}
+          >
+            Tutup
+          </Button>
+        </div>
       </footer>
     </dialog>
   );

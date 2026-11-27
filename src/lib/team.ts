@@ -4,6 +4,10 @@ export interface TeamMember {
   position: string;
   teamName?: string;
   description?: string;
+  expertise?: string[];
+  projectRoles?: string[];
+  serviceFocus?: string;
+  availability?: string;
   photoUrl: string | null;
   displayOrder?: number;
   isActive?: boolean;
@@ -13,6 +17,15 @@ export interface TeamMember {
 }
 
 export type TeamMemberInput = Omit<TeamMember, "id">;
+
+function validProfileList(value: unknown, itemLimit: number): value is string[] | undefined {
+  return (
+    value === undefined ||
+    (Array.isArray(value) &&
+      value.length <= 12 &&
+      value.every((item) => typeof item === "string" && item.trim().length <= itemLimit))
+  );
+}
 
 export function isTeamMemberListedOnAbout(member: TeamMemberInput): boolean {
   return member.showOnHomepage !== false && (member.isDemo !== true || member.showDemoOnAbout === true);
@@ -38,6 +51,15 @@ export function parseTeamMember(value: unknown): { ok: true; value: TeamMemberIn
     (typeof input.description !== "string" || input.description.trim().length > 3000)
   )
     return { ok: false, message: "Deskripsi harus berupa teks, maksimal 3.000 karakter." };
+  if (!validProfileList(input.expertise, 80) || !validProfileList(input.projectRoles, 300))
+    return {
+      ok: false,
+      message: "Isi maksimal 12 keahlian (80 karakter) dan 12 peran proyek (300 karakter per poin).",
+    };
+  for (const field of [input.serviceFocus, input.availability]) {
+    if (field !== undefined && (typeof field !== "string" || field.trim().length > 200))
+      return { ok: false, message: "Fokus layanan dan ketersediaan maksimal 200 karakter per kolom." };
+  }
   if (typeof order !== "number" || !Number.isSafeInteger(order) || order < 0 || order > 9999)
     return { ok: false, message: "Urutan harus berupa angka bulat antara 0 dan 9999." };
   for (const key of ["isActive", "showOnHomepage", "isDemo", "showDemoOnAbout"])
@@ -56,6 +78,12 @@ export function parseTeamMember(value: unknown): { ok: true; value: TeamMemberIn
       position: input.position.trim(),
       ...(typeof input.teamName === "string" ? { teamName: input.teamName.trim() } : {}),
       ...(typeof input.description === "string" ? { description: input.description.trim() } : {}),
+      ...(input.expertise && { expertise: [...new Set(input.expertise.map((item) => item.trim()).filter(Boolean))] }),
+      ...(input.projectRoles && {
+        projectRoles: [...new Set(input.projectRoles.map((item) => item.trim()).filter(Boolean))],
+      }),
+      ...(typeof input.serviceFocus === "string" ? { serviceFocus: input.serviceFocus.trim() } : {}),
+      ...(typeof input.availability === "string" ? { availability: input.availability.trim() } : {}),
       photoUrl: photoUrl || null,
       displayOrder: order,
       isActive: input.isActive !== false,

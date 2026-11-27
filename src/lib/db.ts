@@ -263,7 +263,7 @@ export async function ensureDbReady(): Promise<void> {
   // Saat circuit breaker terbuka (database mati/salah kredensial), jangan ulangi
   // 11 statement migrasi di setiap request — itu sumber utama halaman terasa lama.
   if (dbIsDown()) return;
-  const schemaVersion = 8;
+  const schemaVersion = 10;
   if (globalThis._citsDbInitialized && globalThis._citsDbSchemaVersion === schemaVersion) return;
   if (globalThis._citsDbInitPromise) return globalThis._citsDbInitPromise;
 
@@ -275,6 +275,8 @@ export async function ensureDbReady(): Promise<void> {
     const migrations: string[] = [
       `CREATE TABLE IF NOT EXISTS team_members (id TEXT PRIMARY KEY, data JSONB NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
       `CREATE TABLE IF NOT EXISTS public_page_content (page TEXT PRIMARY KEY CHECK (page IN ('about', 'portfolio')), data JSONB NOT NULL DEFAULT '{}'::jsonb, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`,
+      `ALTER TABLE public_page_content ADD COLUMN IF NOT EXISTS profile_pdf BYTEA`,
+      `ALTER TABLE public_page_content ADD COLUMN IF NOT EXISTS footer_data JSONB`,
       `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS consultation_details JSONB DEFAULT '{}'::jsonb`,
       `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS product_id TEXT`,
       `ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS product_requested TEXT`,
@@ -358,10 +360,32 @@ export async function ensureDbReady(): Promise<void> {
 // ----------------------------------------------------
 
 export const DbRepo = {
+  async getCompanyProfilePdf(): Promise<Buffer | null> {
+    const sql = getSql();
+    if (!sql) return null;
+    await ensureDbReady();
+    const [row] = await sql<{ profile_pdf: Buffer | null }[]>`
+      SELECT profile_pdf FROM public_page_content WHERE page = 'about';
+    `;
+    return row?.profile_pdf ?? null;
+  },
+  async saveCompanyProfilePdf(pdf: Buffer): Promise<void> {
+    const sql = getSql();
+    if (!sql) throw new Error("Database belum dikonfigurasi.");
+    await ensureDbReady();
+    await sql`
+      INSERT INTO public_page_content (page, profile_pdf) VALUES ('about', ${pdf})
+      ON CONFLICT (page) DO UPDATE SET profile_pdf = EXCLUDED.profile_pdf;
+    `;
+  },
   async getPublicPageContent(page: PublicContentPage): Promise<Partial<PublicPageContent> | null> {
     const sql = getSql();
     if (!sql) return null;
     await ensureDbReady();
+    if (page === "footer") {
+      const [row] = await sql`SELECT footer_data FROM public_page_content WHERE page = 'about';`;
+      return row ? asJson(row.footer_data, null) : null;
+    }
     const [row] = await sql`SELECT data FROM public_page_content WHERE page = ${page} LIMIT 1;`;
     return row ? asJson(row.data, null) : null;
   },
@@ -369,6 +393,13 @@ export const DbRepo = {
     const sql = getSql();
     if (!sql) throw new Error("Database belum dikonfigurasi.");
     await ensureDbReady();
+    if (page === "footer") {
+      await sql`
+        INSERT INTO public_page_content (page, footer_data) VALUES ('about', ${jsonb(sql, data)})
+        ON CONFLICT (page) DO UPDATE SET footer_data = EXCLUDED.footer_data;
+      `;
+      return data;
+    }
     const [row] = await sql`
       INSERT INTO public_page_content (page, data, updated_at) VALUES (${page}, ${jsonb(sql, data)}, NOW())
       ON CONFLICT (page) DO UPDATE SET data = EXCLUDED.data, updated_at = NOW() RETURNING data;

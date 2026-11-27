@@ -1,13 +1,79 @@
 "use client";
 
 import { Plus, Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { citsApi } from "@/lib/api";
 import { aboutFieldLabels } from "@/lib/aboutEditor";
 import { pageDefinition, type PublicPageContent, type ContentRecord } from "@/lib/publicPageContent";
 import type { AboutData } from "@/types/schema";
-import { AboutField, AboutFieldGroup, AboutLogoField, aboutSecondaryButton } from "./AboutFields";
+import { AboutField, AboutFieldGroup, AboutLogoField, aboutInputClass, aboutSecondaryButton } from "./AboutFields";
 import AboutCollectionEditor from "./AboutCollectionEditor";
 
 const definition = pageDefinition("about");
+
+function CompanyProfilePdfField() {
+  const input = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState<{ text: string; error: boolean } | null>(null);
+
+  async function savePdf() {
+    if (!file || saving) return;
+    if (file.size > 4 * 1024 * 1024) {
+      setFeedback({ text: "Ukuran PDF maksimal 4 MB.", error: true });
+      return;
+    }
+    setSaving(true);
+    setFeedback(null);
+    try {
+      await citsApi.saveCompanyProfilePdf(file);
+      setFeedback({ text: "PDF baru sudah tersedia di Tentang Kami.", error: false });
+      setFile(null);
+      if (input.current) input.current.value = "";
+    } catch (error) {
+      setFeedback({ text: error instanceof Error ? error.message : "PDF belum tersimpan.", error: true });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-slate-200 p-4 dark:border-white/10">
+      <label htmlFor="company-profile-pdf" className="text-sm font-semibold">
+        Ganti Profil Perusahaan (PDF)
+      </label>
+      <p id="company-profile-pdf-help" className="mt-2 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
+        Pilih PDF maksimal 4 MB. Simpan PDF untuk langsung mengganti file yang diunduh dari Tentang Kami.
+      </p>
+      <input
+        ref={input}
+        id="company-profile-pdf"
+        type="file"
+        accept=".pdf,application/pdf"
+        aria-describedby="company-profile-pdf-help"
+        className={aboutInputClass}
+        disabled={saving}
+        onChange={(event) => {
+          setFile(event.currentTarget.files?.[0] ?? null);
+          setFeedback(null);
+        }}
+      />
+      <button
+        type="button"
+        className={aboutSecondaryButton + " mt-3 disabled:opacity-50"}
+        disabled={!file || saving}
+        onClick={() => void savePdf()}
+      >
+        {saving ? "Menyimpan PDF..." : "Simpan PDF"}
+      </button>
+      {feedback && (
+        <p role={feedback.error ? "alert" : "status"} className="mt-3 break-words text-sm">
+          {feedback.text}
+        </p>
+      )}
+    </div>
+  );
+}
 
 export default function AboutSectionFields({
   sectionKey,
@@ -101,6 +167,7 @@ export default function AboutSectionFields({
             {field("about_hero_text_14", "Teks tombol tambahan yang ditampilkan.")}
             {field("about_hero_href_13", "Alamat halaman atau bagian yang dituju.")}
           </div>
+          <CompanyProfilePdfField />
           <details className="border-t border-slate-100 pt-5 dark:border-white/10">
             <summary className="w-fit cursor-pointer rounded text-[13px] font-semibold text-slate-700 focus-visible:outline-2 focus-visible:outline-orange-500 dark:text-slate-200">
               Judul Profil, Keterangan & Statistik

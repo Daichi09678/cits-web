@@ -93,15 +93,42 @@ export default function TeamMemberDetails({
             </div>
           ))}
         </dl>
-        <section className="border-t border-slate-200 pt-4 dark:border-white/10">
+        <section className="border-t border-slate-200 pt-4 [overflow-wrap:anywhere] dark:border-white/10">
           <h3 className="text-sm font-semibold">Tentang anggota</h3>
           <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-slate-300 [overflow-wrap:anywhere]">
             {member.description?.trim() || "Deskripsi anggota belum ditambahkan."}
           </p>
         </section>
-        {member.isDemo && (
-          <p className="text-xs text-slate-600 dark:text-slate-300">Data contoh.</p>
-        )}
+        <section className="mt-5 [overflow-wrap:anywhere]">
+          <h3 className="text-sm font-semibold">Bidang keahlian</h3>
+          {member.expertise?.length ? (
+            <ul className="mt-2 flex flex-wrap gap-2">
+              {member.expertise.map((skill) => (
+                <li
+                  key={skill}
+                  className="max-w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium dark:border-white/10 dark:bg-white/5"
+                >
+                  {skill}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Keahlian belum ditambahkan.</p>
+          )}
+        </section>
+        <section className="mt-5 [overflow-wrap:anywhere]">
+          <h3 className="text-sm font-semibold">Peran dalam proyek</h3>
+          {member.projectRoles?.length ? (
+            <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm leading-6 text-slate-600 dark:text-slate-300">
+              {member.projectRoles.map((role) => (
+                <li key={role}>{role}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Peran proyek belum ditambahkan.</p>
+          )}
+        </section>
+        {member.isDemo && <p className="text-xs text-slate-600 dark:text-slate-300">Data contoh.</p>}
       </div>
       <footer className="flex shrink-0 justify-end gap-3 border-t border-slate-200 dark:border-white/10 px-6 py-4">
         <button type="button" onClick={onClose} className={teamSecondary}>

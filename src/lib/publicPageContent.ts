@@ -1,6 +1,6 @@
 import { publicPageDefinitions } from "@/data/publicPageContent";
 
-export type PublicContentPage = "about" | "portfolio";
+export type PublicContentPage = "about" | "portfolio" | "footer";
 export type ContentRecord = Record<string, string | string[]>;
 export interface PublicPageContent {
   texts: Record<string, string>;
@@ -19,7 +19,7 @@ export interface PublicPageDefinition {
 }
 
 export function isPublicContentPage(page: string): page is PublicContentPage {
-  return page === "about" || page === "portfolio";
+  return page === "about" || page === "portfolio" || page === "footer";
 }
 export function pageDefinition(page: PublicContentPage): PublicPageDefinition {
   return publicPageDefinitions[page];

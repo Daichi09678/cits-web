@@ -125,6 +125,7 @@ function inbox() {
       "@/components/admin/ConsultationDetailModal": { default: () => null },
       "@/components/pages/admin/AdminDialogSurface": { default: () => null },
       "@/components/pages/admin/AdminTopbar": { default: Topbar },
+      "./FooterEditor": { default: () => null },
       "@/components/admin/Pagination": { default: () => null },
       "@/components/pages/admin/AdminDialogProvider": { useAdminDialog: () => ({ alert() {} }) },
       "@/lib/auth": { useAdminAuth: () => ({ session: { user: { role: "Super Admin" } } }) },
@@ -215,7 +216,8 @@ test("row callbacks and bulk selection still invoke the existing store actions",
   app.rows()[0].props.onDelete();
   assert.match(text(app.render()), /Hapus Pesan/);
   button(app.render(), "Info Kontak").props.onClick();
-  assert.match(text(app.render()), /Pengaturan Informasi Kontak/);
+  assert.match(text(app.render()), /Informasi Kontak dan Footer/);
+  assert.match(text(app.render()), /WhatsApp, email, dan jam operasional tersinkronisasi dengan footer/);
   button(app.render(), "Kelola FAQ & Layanan").props.onClick();
   assert.match(text(app.render()), /FAQ/);
 });

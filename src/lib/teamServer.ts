@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { ensureDbReady, getSql } from "@/lib/db";
 import { sortTeamMembers, type TeamMember, type TeamMemberInput } from "@/lib/team";
-import { demoTeamMembers } from "@/data/teamMembers";
+import { demoTeamMembers, withExampleProfileDetails } from "@/data/teamMembers";
 
 function database() {
   const sql = getSql();
@@ -22,7 +22,7 @@ async function withTeamTable<T>(query: (sql: ReturnType<typeof database>) => Pro
 
 function readMember(row: { id: string; data: unknown }): TeamMember {
   const data = typeof row.data === "string" ? JSON.parse(row.data) : row.data;
-  return { ...data, id: row.id };
+  return withExampleProfileDetails({ ...data, id: row.id });
 }
 
 export const TeamRepo = {

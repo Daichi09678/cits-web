@@ -225,10 +225,12 @@ export default function ProductsPage() {
 
                           {/* Icon & Product Name */}
                           <div className="flex items-center gap-3.5 mb-3">
-                            <div className={`w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center shadow-sm shrink-0 ${accentStyles.accent}`}>
+                            <div
+                              className={`w-12 h-12 rounded-2xl bg-orange-100 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-800/60 flex items-center justify-center shadow-sm shrink-0 ${accentStyles.accent}`}
+                            >
                               <Icon className="w-6 h-6" />
                             </div>
-                            <div>
+                            <div className="min-w-0">
                               <h3 className="text-xl font-extrabold text-dark dark:text-white tracking-tight leading-tight">
                                 {product.name}
                               </h3>
@@ -252,7 +254,7 @@ export default function ProductsPage() {
                                   className="flex items-start gap-2 text-xs text-gray-800 dark:text-white/90 leading-tight"
                                 >
                                   <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${accentStyles.accent}`} />
-                                  <span>{feat}</span>
+                                  <span className="min-w-0">{feat}</span>
                                 </li>
                               ))}
                             </ul>
@@ -271,22 +273,22 @@ export default function ProductsPage() {
                         </div>
 
                         {/* Actions */}
-                        <div className="pt-2 flex flex-col sm:flex-row items-center gap-2.5">
+                        <div className="flex flex-wrap gap-2.5 pt-2">
                           <Button
                             variant="unstyled"
                             size="none"
                             onClick={() => setActiveModalProduct(product)}
-                            className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-gray-800 dark:text-white text-xs font-bold border border-gray-200 dark:border-white/15 transition-all cursor-pointer"
+                            className="inline-flex min-h-11 w-full min-w-0 grow items-center justify-center gap-2 rounded-xl border border-gray-200 bg-slate-100 px-4 py-2.5 text-center text-xs font-bold text-gray-800 transition-all hover:bg-slate-200 sm:w-auto dark:border-white/15 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
                           >
                             Spesifikasi Lengkap
-                            <ChevronRight className="w-3.5 h-3.5" />
+                            <ChevronRight className="size-3.5 shrink-0" />
                           </Button>
                           <Link
                             href={consultationHref({ productId: product.id, purpose: "demo", source: "products" })}
-                            className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-md shadow-orange-700/20 hover:shadow-orange-700/30 ${accentStyles.action}`}
+                            className={`inline-flex min-h-11 w-full min-w-0 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-center text-xs font-bold shadow-md shadow-orange-700/20 transition-colors hover:shadow-orange-700/30 sm:w-auto ${accentStyles.action}`}
                           >
                             Minta Demo
-                            <ArrowRight className="w-3.5 h-3.5" />
+                            <ArrowRight className="size-3.5 shrink-0" />
                           </Link>
                         </div>
                       </article>
