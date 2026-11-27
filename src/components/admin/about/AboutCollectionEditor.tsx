@@ -1,5 +1,6 @@
 "use client";
 
+import { BackOfficeSelect as Select } from "@/components/ui/Select";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { type ContentRecord } from "@/lib/publicPageContent";
 import { AboutField, aboutInputClass, aboutSecondaryButton } from "./AboutFields";
@@ -97,7 +98,7 @@ export default function AboutCollectionEditor({
                 return options ? (
                   <label key={field} className="block min-w-0 text-[13px] font-semibold text-slate-900 dark:text-white">
                     {labels[field]}
-                    <select
+                    <Select
                       className={`${aboutInputClass} mt-1.5 font-normal`}
                       value={item[field] as string}
                       onChange={(event) => update(index, field, event.target.value)}
@@ -107,7 +108,7 @@ export default function AboutCollectionEditor({
                           {label}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </label>
                 ) : (
                   <AboutField

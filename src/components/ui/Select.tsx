@@ -27,7 +27,7 @@ function renderSelect(
   border: string
 ) {
   return (
-    <div className={cn("relative min-w-0", containerClassName)}>
+    <div className={cn("relative min-w-0", containerClassName)} data-select-control>
       <select
         className={cn(
           "w-full min-w-0 cursor-pointer appearance-none truncate rounded-xl border bg-white text-left font-normal text-slate-900 outline-none transition-colors [font-family:inherit] focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#121222] dark:text-white",
@@ -36,14 +36,18 @@ function renderSelect(
           className
         )}
         {...rest}
+        data-local-select
         aria-invalid={invalid || rest["aria-invalid"] || undefined}
       >
         {children}
       </select>
-      <ChevronDown
+      <span
         aria-hidden="true"
-        className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 dark:text-white/60"
-      />
+        data-select-chevron
+        className="pointer-events-none absolute right-2.5 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded-md"
+      >
+        <ChevronDown className="size-4" />
+      </span>
     </div>
   );
 }

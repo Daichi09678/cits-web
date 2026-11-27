@@ -1,10 +1,10 @@
 "use client";
+import { BackOfficeSelect as Select } from "@/components/ui/Select";
 import { adminAccent, adminAction, adminAccentFill } from "@/components/pages/admin/accentStyles";
 
 import { useEffect, useId, useState } from "react";
 import {
   Calendar,
-  ChevronDown,
   Clock,
   History,
   Layers,
@@ -112,7 +112,7 @@ export default function ConsultationDetailModal({
           <label htmlFor={stageId} className="sr-only">
             Tahapan konsultasi
           </label>
-          <select
+          <Select
             id={stageId}
             value={stage}
             disabled={!canEdit || saving}
@@ -124,14 +124,10 @@ export default function ConsultationDetailModal({
                 {item.label}
               </option>
             ))}
-          </select>
+          </Select>
           <span
             aria-hidden="true"
             className={`pointer-events-none absolute left-3 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full ${currentStage?.dotBg || "bg-slate-400"}`}
-          />
-          <ChevronDown
-            aria-hidden="true"
-            className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
           />
         </div>
         <button
@@ -315,7 +311,7 @@ export default function ConsultationDetailModal({
           <label htmlFor={readStatusId} className="text-xs text-slate-500">
             Status Keterbacaan
           </label>
-          <select
+          <Select
             id={readStatusId}
             value={message.status}
             disabled={!canEdit}
@@ -325,7 +321,7 @@ export default function ConsultationDetailModal({
             <option value="unread">Belum Dibaca</option>
             <option value="read">Dibaca</option>
             <option value="replied">Dibalas</option>
-          </select>
+          </Select>
         </div>
       </div>
 

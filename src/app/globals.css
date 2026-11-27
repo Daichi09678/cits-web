@@ -73,13 +73,13 @@ select {
   color-scheme: light dark;
 }
 
-html.dark select,
-html.dark select option {
+html.dark select:not([data-local-select]),
+html.dark select:not([data-local-select]) option {
   background-color: #0f172a !important;
   color: #f8fafc !important;
 }
 
-html:not(.dark) select option {
+html:not(.dark) select:not([data-local-select]) option {
   background-color: #ffffff !important;
   color: #0f172a !important;
 }

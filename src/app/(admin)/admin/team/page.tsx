@@ -1,5 +1,6 @@
 "use client";
 
+import { BackOfficeSelect as Select } from "@/components/ui/Select";
 import { BackOfficeButton as Button } from "@/components/ui/Button";
 import { useId, useRef, useState } from "react";
 import { Eye, Pencil, Plus, Search, Trash2 } from "lucide-react";
@@ -170,7 +171,7 @@ export default function AdminTeamPage() {
                 <label htmlFor="team-status" className="text-xs text-slate-600 dark:text-slate-300">
                   Status
                 </label>
-                <select
+                <Select
                   id="team-status"
                   value={status}
                   onChange={(event) => setStatus(event.target.value)}
@@ -179,7 +180,7 @@ export default function AdminTeamPage() {
                   <option value="all">Semua</option>
                   <option value="active">Aktif</option>
                   <option value="inactive">Nonaktif</option>
-                </select>
+                </Select>
               </div>
             </div>
             {loading ? (

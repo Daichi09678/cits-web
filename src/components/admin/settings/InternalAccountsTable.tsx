@@ -1,5 +1,6 @@
 "use client";
 
+import { BackOfficeSelect as Select } from "@/components/ui/Select";
 import { BackOfficeButton as Button } from "@/components/ui/Button";
 import { useState } from "react";
 import {
@@ -114,32 +115,34 @@ export default function InternalAccountsTable({
               className={`${fieldClass} h-9 min-h-9 pl-9`}
             />
           </label>
-          <select
+          <Select
             aria-label="Filter role"
             value={role}
             onChange={(event) => {
               setRole(event.target.value);
               setPage(1);
             }}
-            className={`${fieldClass} h-9 min-h-9 !w-auto`}
+            selectSize="sm"
+            containerClassName="w-full sm:w-auto"
           >
             <option value="all">Semua Role</option>
             <option value="superadmin">Superadmin</option>
             <option value="internal">Admin Internal</option>
-          </select>
-          <select
+          </Select>
+          <Select
             aria-label="Filter status"
             value={status}
             onChange={(event) => {
               setStatus(event.target.value);
               setPage(1);
             }}
-            className={`${fieldClass} h-9 min-h-9 !w-auto`}
+            selectSize="sm"
+            containerClassName="w-full sm:w-auto"
           >
             <option value="all">Semua Status</option>
             <option value="active">Aktif</option>
             <option value="inactive">Nonaktif</option>
-          </select>
+          </Select>
           <span className="flex items-center gap-1.5 text-[11px] whitespace-nowrap text-slate-600 dark:text-slate-300">
             <span className="size-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
             {loading ? "Memuat..." : `${activeCount} akun aktif`}
